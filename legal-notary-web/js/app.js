@@ -3692,7 +3692,7 @@
           html += '</td>';
           html += '<td><div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">';
           html += '<button type="button" class="btn btn-primary btn-ouvrir-modal-taxe" data-id="' + d.id + '" style="font-size:11px;padding:3px 8px;font-weight:700" title="Établir ou modifier la fiche de taxe">' + (ficheRecente ? '✏️ Fiche de taxe' : '➕ Fiche de taxe') + '</button>';
-          html += '<button type="button" class="btn btn-secondary btn-imprimer-taxe-direct" data-id="' + d.id + '" style="font-size:11px;padding:3px 8px" title="Imprimer le décompte officiel de taxe">🖨️ Imprimer</button>';
+          html += '<button type="button" class="btn btn-secondary btn-imprimer-taxe-direct" data-id="' + d.id + '" style="font-size:11px;padding:3px 8px" title="Imprimer la facture officielle de taxe">🖨️ Facture</button>';
           html += '<button type="button" class="btn btn-ghost btn-voir-dossier-direct" data-id="' + d.id + '" style="font-size:11px;padding:3px 6px" title="Voir le dossier">📁</button>';
           html += '</div></td>';
           html += '</tr>';
@@ -3824,7 +3824,7 @@
     html += '<div style="display:flex;justify-content:space-between;align-items:center;gap:var(--space-2);margin-top:var(--space-2);flex-wrap:wrap">';
     html += '<button type="button" class="btn btn-ghost" id="btn-annuler-modal-taxe">Fermer</button>';
     html += '<div style="display:flex;gap:var(--space-2)">';
-    html += '<button type="button" class="btn btn-secondary" id="btn-imprimer-modal-taxe">🖨️ Imprimer Décompte</button>';
+    html += '<button type="button" class="btn btn-secondary" id="btn-imprimer-modal-taxe">🖨️ Imprimer Facture</button>';
     html += '<button type="submit" class="btn btn-primary" id="btn-enregistrer-modal-taxe">💾 Enregistrer la Fiche de Taxe</button>';
     html += '</div>';
     html += '</div>';
@@ -4309,7 +4309,7 @@
 
       // Titre
       html += '<div style="text-align:center;margin-bottom:24px">';
-      html += '<div style="font-family:\'Space Grotesk\',sans-serif;font-weight:700;font-size:14pt;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid #111;display:inline-block;padding-bottom:4px">DÉCOMPTE DE TAXE & ÉMOLUMENTS</div>';
+      html += '<div style="font-family:\'Space Grotesk\',sans-serif;font-weight:700;font-size:14pt;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid #111;display:inline-block;padding-bottom:4px">FACTURE DE FRAIS & TAXE NOTARIÉE (DÉCRET N° 2013-279)</div>';
       html += '<div style="font-size:10pt;color:#4b5563;margin-top:6px">Dossier N° <strong>' + dossier.numeroDossier + '</strong> — Acte : <strong>' + labelActe(dossier.typeActeId) + '</strong></div>';
       html += '<div style="font-size:10pt;color:#4b5563">Montant de l\'assiette fiscale : <strong>' + fmtFCFA(dossier.montantAssiette) + '</strong></div>';
       html += '</div>';
@@ -4327,12 +4327,12 @@
       if (f.vacations) html += '<tr><td style="border:1px solid #d1d5db;padding:6px 10px">7. Vacations</td><td style="border:1px solid #d1d5db;padding:6px 10px;text-align:right">' + fmtFCFA(f.vacations) + '</td></tr>';
       if (f.divers) html += '<tr><td style="border:1px solid #d1d5db;padding:6px 10px">8. Forfait papeterie & débours divers</td><td style="border:1px solid #d1d5db;padding:6px 10px;text-align:right">' + fmtFCFA(f.divers) + '</td></tr>';
 
-      html += '<tr class="print-total-row" style="background:#f9fafb;font-weight:700;font-size:11pt"><td style="border:2px solid #111827;padding:8px 10px">TOTAL GÉNÉRAL DU DÉCOMPTE (TTC)</td><td style="border:2px solid #111827;padding:8px 10px;text-align:right;color:#111827">' + fmtFCFA(f.totaux.general) + '</td></tr>';
+      html += '<tr class="print-total-row" style="background:#f9fafb;font-weight:700;font-size:11pt"><td style="border:2px solid #111827;padding:8px 10px">TOTAL GÉNÉRAL DE LA FACTURE (TTC)</td><td style="border:2px solid #111827;padding:8px 10px;text-align:right;color:#111827">' + fmtFCFA(f.totaux.general) + '</td></tr>';
       html += '</tbody></table>';
 
       // Mention arrêtée
       html += '<div style="margin-top:16px;font-size:10pt;font-style:italic">';
-      html += 'Arrêté le présent décompte de taxe à la somme totale de : <strong>' + fmtFCFA(f.totaux.general) + '</strong>.';
+      html += 'Arrêtée la présente facture à la somme totale de : <strong>' + fmtFCFA(f.totaux.general) + '</strong>.';
       html += '</div>';
 
       // Signatures
@@ -4512,7 +4512,7 @@
     html += '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:var(--space-3);padding-top:var(--space-3);border-top:1px solid var(--color-divider);margin-bottom:var(--space-3)">';
     html += '<span style="font-family:var(--font-heading);font-weight:700;font-size:16px">Total général</span>';
     html += '<span style="font-family:var(--font-heading);font-weight:700;font-size:22px;color:var(--color-accent)">' + fmtFCFA(f.totaux.general) + '</span></div>';
-    html += '<div style="display:flex;justify-content:flex-end"><button class="btn btn-secondary" id="bouton-imprimer-apercu-taxe">🖨️ Imprimer ce décompte</button></div>';
+    html += '<div style="display:flex;justify-content:flex-end"><button class="btn btn-secondary" id="bouton-imprimer-apercu-taxe">🖨️ Imprimer Facture</button></div>';
     html += '</div>';
     return html;
   }
