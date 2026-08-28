@@ -42,7 +42,14 @@ router.post("/dossiers/:dossierId/enregistrer", exigerPermission("fiscal:enregis
     if (!rows.length) return res.status(404).json({ erreur: "Dossier introuvable." });
     const dossier = rows[0];
 
-    const fiche = await calculerPourTypeActe(dossier.type_acte_id, Number(dossier.montant_assiette), req.body.saisies);
+    const typeActeId = req.body.typeActeId || dossier.type_acte_id;
+    const montant = req.body.montant !== undefined ? Number(req.body.montant) : Number(dossier.montant_assiette);
+
+    if (req.body.typeActeId || req.body.montant !== undefined) {
+      await pool.query("UPDATE dossiers SET type_acte_id = $1, montant_assiette = $2 WHERE id = $3", [typeActeId, montant, dossier.id]);
+    }
+
+    const fiche = await calculerPourTypeActe(typeActeId, montant, req.body.saisies);
     if (!fiche) return res.status(404).json({ erreur: "Type d'acte introuvable." });
 
     const inseree = await pool.query(

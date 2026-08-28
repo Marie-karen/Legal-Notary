@@ -4105,193 +4105,218 @@
   // MODALE INTERACTIVE : CRÉER / ÉTABLIR UNE FICHE DE TAXE
   // =========================================================================
   function modalCreerFicheTaxe(dossierIdSelectionne) {
-    var dossierInitial = dossierIdSelectionne 
-      ? cache.dossiers.find(function (d) { return d.id === dossierIdSelectionne; })
-      : (cache.dossiers.length > 0 ? cache.dossiers[0] : null);
+    var chargerTypes = (cache.typesActesListe && cache.typesActesListe.length > 0)
+      ? Promise.resolve(cache.typesActesListe)
+      : API.get("/api/referentiel/types-actes").then(function (r) {
+          cache.typesActesListe = r || [];
+          (r || []).forEach(function (t) { cache.typesActesParId[t.id] = t; });
+          return cache.typesActesListe;
+        }).catch(function () { return []; });
 
-    var html = '<form id="form-modal-creer-taxe" style="display:flex;flex-direction:column;gap:var(--space-3)">';
+    var chargerDossiers = (cache.dossiers && cache.dossiers.length > 0)
+      ? Promise.resolve(cache.dossiers)
+      : API.get("/api/dossiers/mes-dossiers").then(function (d) {
+          cache.dossiers = d || [];
+          return cache.dossiers;
+        }).catch(function () { return []; });
 
-    // 1. Choix du dossier et client
-    html += '<div class="field"><label>Dossier Notarial & Client (Comparants)</label><select class="input" id="taxe-modal-select-dossier" style="font-weight:600">';
-    cache.dossiers.forEach(function (d) {
-      var clientAff = d.comparantsNoms && d.comparantsNoms.trim() ? d.comparantsNoms.trim() : "Comparant(s)";
-      var isSel = (dossierInitial && d.id === dossierInitial.id) ? " selected" : "";
-      html += '<option value="' + d.id + '"' + isSel + '>📁 [' + d.numeroDossier + '] ' + clientAff + ' — ' + labelActe(d.typeActeId) + ' (' + fmtFCFA(d.montantAssiette) + ')</option>';
-    });
-    html += '</select></div>';
+    Promise.all([chargerTypes, chargerDossiers]).then(function (res) {
+      var typesActes = res[0] || [];
+      var dossiers = res[1] || [];
 
-    // 2. Type d'acte et montant de l'assiette
-    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2)">';
-    html += '<div class="field"><label>Type d\'Acte Notarié (Barème)</label><select class="input" id="taxe-modal-type-acte">';
-    (cache.typesActesListe || []).forEach(function (t) {
-      var isActSel = (dossierInitial && t.id === dossierInitial.typeActeId) ? " selected" : "";
-      html += '<option value="' + t.id + '"' + isActSel + '>' + t.nom + '</option>';
-    });
-    html += '</select></div>';
-    html += '<div class="field"><label>Montant Assiette Fiscale (FCFA)</label><input class="input" type="number" min="0" step="1000" id="taxe-modal-montant" value="' + (dossierInitial ? (Number(dossierInitial.montantAssiette) || 0) : 10000000) + '" required></div>';
-    html += '</div>';
+      var dossierInitial = dossierIdSelectionne 
+        ? dossiers.find(function (d) { return d.id === dossierIdSelectionne; })
+        : (dossiers.length > 0 ? dossiers[0] : null);
 
-    // 3. Paramètres & Formalités
-    html += '<div style="background:var(--color-surface-2);padding:10px 12px;border-radius:var(--radius);border:1px solid var(--color-border)">';
-    html += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--color-text-dim);margin-bottom:8px">Paramètres de Rédaction & Droits de Timbre</div>';
-    html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:var(--space-2)">';
-    html += '<div class="field" style="margin:0"><label style="font-size:11px">Pages Minute</label><input class="input" type="number" min="0" id="taxe-m-timbres-min" value="4"></div>';
-    html += '<div class="field" style="margin:0"><label style="font-size:11px">Pages Expédition</label><input class="input" type="number" min="0" id="taxe-m-timbres-exp" value="4"></div>';
-    html += '<div class="field" style="margin:0"><label style="font-size:11px">Nb Expéditions</label><input class="input" type="number" min="1" id="taxe-m-timbres-nbexp" value="2"></div>';
-    html += '<div class="field" style="margin:0"><label style="font-size:11px">Pages Rôles</label><input class="input" type="number" min="0" id="taxe-m-roles-min" value="4"></div>';
-    html += '<div class="field" style="margin:0"><label style="font-size:11px">Vacations (FCFA)</label><input class="input" type="number" min="0" step="5000" id="taxe-m-vacations" value="0"></div>';
-    html += '<div class="field" style="margin:0"><label style="font-size:11px">Débours / Divers</label><input class="input" type="number" min="0" step="1000" id="taxe-m-divers" value="24000"></div>';
-    html += '</div>';
-    html += '</div>';
+      var html = '<form id="form-modal-creer-taxe" style="display:flex;flex-direction:column;gap:var(--space-3)">';
 
-    // 4. Zone d'aperçu du calcul en temps réel
-    html += '<div id="zone-apercu-calcul-modal" style="margin-top:2px"></div>';
+      // 1. Choix du dossier et client
+      html += '<div class="field"><label>Dossier Notarial & Client (Comparants)</label><select class="input" id="taxe-modal-select-dossier" style="font-weight:600">';
+      dossiers.forEach(function (d) {
+        var clientAff = d.comparantsNoms && d.comparantsNoms.trim() ? d.comparantsNoms.trim() : "Comparant(s)";
+        var isSel = (dossierInitial && d.id === dossierInitial.id) ? " selected" : "";
+        html += '<option value="' + d.id + '"' + isSel + '>📁 [' + d.numeroDossier + '] ' + clientAff + ' — ' + labelActe(d.typeActeId) + ' (' + fmtFCFA(d.montantAssiette) + ')</option>';
+      });
+      html += '</select></div>';
 
-    html += '<div id="erreur-creer-taxe" class="erreur-inline" style="display:none"></div>';
+      // 2. Type d'acte et montant de l'assiette
+      html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2)">';
+      html += '<div class="field"><label>Type d\'Acte Notarié (Barème Décret N° 2013-279)</label><select class="input" id="taxe-modal-type-acte">';
+      typesActes.forEach(function (t) {
+        var isActSel = (dossierInitial && t.id === dossierInitial.typeActeId) ? " selected" : "";
+        var libelleAff = t.libelle || t.nom || labelActe(t.id);
+        html += '<option value="' + t.id + '"' + isActSel + '>' + libelleAff + '</option>';
+      });
+      html += '</select></div>';
+      html += '<div class="field"><label>Montant Assiette Fiscale (FCFA)</label><input class="input" type="number" min="0" step="1000" id="taxe-modal-montant" value="' + (dossierInitial ? (Number(dossierInitial.montantAssiette) || 0) : 10000000) + '" required></div>';
+      html += '</div>';
 
-    html += '<div style="display:flex;justify-content:space-between;align-items:center;gap:var(--space-2);margin-top:var(--space-2);flex-wrap:wrap">';
-    html += '<button type="button" class="btn btn-ghost" id="btn-annuler-modal-taxe">Fermer</button>';
-    html += '<div style="display:flex;gap:var(--space-2)">';
-    html += '<button type="button" class="btn btn-secondary" id="btn-imprimer-modal-taxe">🖨️ Imprimer Facture</button>';
-    html += '<button type="submit" class="btn btn-primary" id="btn-enregistrer-modal-taxe">💾 Enregistrer la Fiche de Taxe</button>';
-    html += '</div>';
-    html += '</div>';
+      // 3. Paramètres & Formalités
+      html += '<div style="background:var(--color-surface-2);padding:10px 12px;border-radius:var(--radius);border:1px solid var(--color-border)">';
+      html += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--color-text-dim);margin-bottom:8px">Paramètres de Rédaction & Droits de Timbre</div>';
+      html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:var(--space-2)">';
+      html += '<div class="field" style="margin:0"><label style="font-size:11px">Pages Minute</label><input class="input" type="number" min="0" id="taxe-m-timbres-min" value="4"></div>';
+      html += '<div class="field" style="margin:0"><label style="font-size:11px">Pages Expédition</label><input class="input" type="number" min="0" id="taxe-m-timbres-exp" value="4"></div>';
+      html += '<div class="field" style="margin:0"><label style="font-size:11px">Nb Expéditions</label><input class="input" type="number" min="1" id="taxe-m-timbres-nbexp" value="2"></div>';
+      html += '<div class="field" style="margin:0"><label style="font-size:11px">Pages Rôles</label><input class="input" type="number" min="0" id="taxe-m-roles-min" value="4"></div>';
+      html += '<div class="field" style="margin:0"><label style="font-size:11px">Vacations (FCFA)</label><input class="input" type="number" min="0" step="5000" id="taxe-m-vacations" value="0"></div>';
+      html += '<div class="field" style="margin:0"><label style="font-size:11px">Débours / Divers</label><input class="input" type="number" min="0" step="1000" id="taxe-m-divers" value="24000"></div>';
+      html += '</div>';
+      html += '</div>';
 
-    html += '</form>';
+      // 4. Zone d'aperçu du calcul en temps réel
+      html += '<div id="zone-apercu-calcul-modal" style="margin-top:2px"></div>';
 
-    ouvrirModal({
-      titre: '<span>💰</span> Établissement & Calcul d\'une Fiche de Taxe (Décret N° 2013-279)',
-      corps: html,
-      boutonFermer: true,
-      largeur: "640px",
-      apresOuverture: function () {
-        document.getElementById("btn-annuler-modal-taxe").addEventListener("click", fermerModal);
+      html += '<div id="erreur-creer-taxe" class="erreur-inline" style="display:none"></div>';
 
-        var selectDossier = document.getElementById("taxe-modal-select-dossier");
-        var selectTypeActe = document.getElementById("taxe-modal-type-acte");
-        var inputMontant = document.getElementById("taxe-modal-montant");
+      html += '<div style="display:flex;justify-content:space-between;align-items:center;gap:var(--space-2);margin-top:var(--space-2);flex-wrap:wrap">';
+      html += '<button type="button" class="btn btn-ghost" id="btn-annuler-modal-taxe">Fermer</button>';
+      html += '<div style="display:flex;gap:var(--space-2)">';
+      html += '<button type="button" class="btn btn-secondary" id="btn-imprimer-modal-taxe">🖨️ Imprimer Facture</button>';
+      html += '<button type="submit" class="btn btn-primary" id="btn-enregistrer-modal-taxe">💾 Enregistrer la Fiche de Taxe</button>';
+      html += '</div>';
+      html += '</div>';
 
-        var dernierCalculResultat = null;
+      html += '</form>';
 
-        function recalculerApercuModal() {
-          if (!selectTypeActe || !inputMontant) return;
-          var typeActeId = selectTypeActe.value;
-          var montant = parseFloat(inputMontant.value) || 0;
-          var saisies = {
-            timbres: {
-              pagesMinute: parseInt(document.getElementById("taxe-m-timbres-min").value, 10) || 0,
-              pagesExpedition: parseInt(document.getElementById("taxe-m-timbres-exp").value, 10) || 0,
-              nombreExpeditions: parseInt(document.getElementById("taxe-m-timbres-nbexp").value, 10) || 1,
-              pagesBordereau: 0,
-            },
-            roles: {
-              pagesMinute: parseInt(document.getElementById("taxe-m-roles-min").value, 10) || 0,
-              pagesExpedition: parseInt(document.getElementById("taxe-m-timbres-exp").value, 10) || 0,
-              nombreExpeditions: parseInt(document.getElementById("taxe-m-timbres-nbexp").value, 10) || 1,
-              pagesCopie: 0,
-            },
-            vacations: parseFloat(document.getElementById("taxe-m-vacations").value) || 0,
-            fraisFormalites: { depotBanque: 0, depotEnregistrement: 0, inscriptionLivreFoncier: 0, requisitionEtat: 0 },
-            diversSupplementaire: parseFloat(document.getElementById("taxe-m-divers").value) || 0,
-          };
+      ouvrirModal({
+        titre: '<span>💰</span> Établissement & Calcul d\'une Fiche de Taxe (Décret N° 2013-279)',
+        corps: html,
+        boutonFermer: true,
+        largeur: "640px",
+        apresOuverture: function () {
+          document.getElementById("btn-annuler-modal-taxe").addEventListener("click", fermerModal);
 
-          API.post("/api/fiscal/calculer", { typeActeId: typeActeId, montant: montant, saisies: saisies })
-            .then(function (f) {
-              dernierCalculResultat = f;
-              var zoneApercu = document.getElementById("zone-apercu-calcul-modal");
-              if (!zoneApercu) return;
+          var selectDossier = document.getElementById("taxe-modal-select-dossier");
+          var selectTypeActe = document.getElementById("taxe-modal-type-acte");
+          var inputMontant = document.getElementById("taxe-modal-montant");
 
-              var h = '<div class="card" style="background:var(--color-surface);border-color:var(--color-border);padding:10px 14px">';
-              h += '<div style="font-size:11.5px;font-weight:700;text-transform:uppercase;color:var(--color-accent);margin-bottom:6px">📊 Décompte Fiscal Officiel en Temps Réel</div>';
-              h += '<table class="table" style="font-size:12px;margin-bottom:0"><tbody>';
-              h += '<tr><td>1. Émoluments Notaire HT ' + (f.emoluments.minimumApplique ? '<em>(Minimum légal)</em>' : '') + '</td><td style="text-align:right;font-weight:700;color:var(--color-accent)">' + fmtFCFA(f.emoluments.montantHT) + '</td></tr>';
-              h += '<tr><td>2. TVA légale (18 %)</td><td style="text-align:right">' + fmtFCFA(f.tva) + '</td></tr>';
-              h += '<tr><td>3. Droits d\'enregistrement DGI</td><td style="text-align:right;font-weight:600">' + fmtFCFA(f.droitEnregistrement.montant) + '</td></tr>';
-              if (f.taxeFonciere && f.taxeFonciere.total > 0) {
-                h += '<tr><td>4. Taxe Foncière (1,2 % + 3 000 FCFA)</td><td style="text-align:right">' + fmtFCFA(f.taxeFonciere.total) + '</td></tr>';
-              }
-              h += '<tr><td>5. Timbres fiscaux & rôles</td><td style="text-align:right">' + fmtFCFA(f.timbres.total + f.roles.total) + '</td></tr>';
-              if (f.divers > 0) {
-                h += '<tr><td>6. Débours & Papeterie</td><td style="text-align:right">' + fmtFCFA(f.divers) + '</td></tr>';
-              }
-              h += '<tr style="background:rgba(56,189,248,0.08);border-top:2px solid var(--color-accent)"><td style="font-weight:700;font-size:13.5px;color:var(--color-text)">TOTAL GÉNÉRAL TTC DU DÉCOMPTE</td><td style="text-align:right;font-weight:800;font-size:15px;color:var(--color-accent)">' + fmtFCFA(f.totaux.general) + '</td></tr>';
-              h += '</tbody></table>';
-              h += '</div>';
+          var dernierCalculResultat = null;
 
-              zoneApercu.innerHTML = h;
-            }).catch(function (err) {
-              console.warn("Calcul modal taxe:", err);
-            });
-        }
+          function recalculerApercuModal() {
+            if (!selectTypeActe || !inputMontant) return;
+            var typeActeId = selectTypeActe.value;
+            var montant = parseFloat(inputMontant.value) || 0;
+            var saisies = {
+              timbres: {
+                pagesMinute: parseInt(document.getElementById("taxe-m-timbres-min").value, 10) || 0,
+                pagesExpedition: parseInt(document.getElementById("taxe-m-timbres-exp").value, 10) || 0,
+                nombreExpeditions: parseInt(document.getElementById("taxe-m-timbres-nbexp").value, 10) || 1,
+                pagesBordereau: 0,
+              },
+              roles: {
+                pagesMinute: parseInt(document.getElementById("taxe-m-roles-min").value, 10) || 0,
+                pagesExpedition: parseInt(document.getElementById("taxe-m-timbres-exp").value, 10) || 0,
+                nombreExpeditions: parseInt(document.getElementById("taxe-m-timbres-nbexp").value, 10) || 1,
+                pagesCopie: 0,
+              },
+              vacations: parseFloat(document.getElementById("taxe-m-vacations").value) || 0,
+              fraisFormalites: { depotBanque: 0, depotEnregistrement: 0, inscriptionLivreFoncier: 0, requisitionEtat: 0 },
+              diversSupplementaire: parseFloat(document.getElementById("taxe-m-divers").value) || 0,
+            };
 
-        // Écouteurs de modification
-        selectDossier.addEventListener("change", function () {
-          var dId = selectDossier.value;
-          var curDossier = cache.dossiers.find(function (d) { return d.id === dId; });
-          if (curDossier) {
-            selectTypeActe.value = curDossier.typeActeId;
-            inputMontant.value = Number(curDossier.montantAssiette) || 0;
-            recalculerApercuModal();
+            API.post("/api/fiscal/calculer", { typeActeId: typeActeId, montant: montant, saisies: saisies })
+              .then(function (f) {
+                dernierCalculResultat = f;
+                var zoneApercu = document.getElementById("zone-apercu-calcul-modal");
+                if (!zoneApercu) return;
+
+                var h = '<div class="card" style="background:var(--color-surface);border-color:var(--color-border);padding:10px 14px">';
+                h += '<div style="font-size:11.5px;font-weight:700;text-transform:uppercase;color:var(--color-accent);margin-bottom:6px">📊 Décompte Fiscal Officiel en Temps Réel</div>';
+                h += '<table class="table" style="font-size:12px;margin-bottom:0"><tbody>';
+                h += '<tr><td>1. Émoluments Notaire HT ' + (f.emoluments.minimumApplique ? '<em>(Minimum légal)</em>' : '') + '</td><td style="text-align:right;font-weight:700;color:var(--color-accent)">' + fmtFCFA(f.emoluments.montantHT) + '</td></tr>';
+                h += '<tr><td>2. TVA légale (18 %)</td><td style="text-align:right">' + fmtFCFA(f.tva) + '</td></tr>';
+                h += '<tr><td>3. Droits d\'enregistrement DGI</td><td style="text-align:right;font-weight:600">' + fmtFCFA(f.droitEnregistrement.montant) + '</td></tr>';
+                if (f.taxeFonciere && f.taxeFonciere.total > 0) {
+                  h += '<tr><td>4. Taxe Foncière (1,2 % + 3 000 FCFA)</td><td style="text-align:right">' + fmtFCFA(f.taxeFonciere.total) + '</td></tr>';
+                }
+                h += '<tr><td>5. Timbres fiscaux & rôles</td><td style="text-align:right">' + fmtFCFA(f.timbres.total + f.roles.total) + '</td></tr>';
+                if (f.divers > 0) {
+                  h += '<tr><td>6. Débours & Papeterie</td><td style="text-align:right">' + fmtFCFA(f.divers) + '</td></tr>';
+                }
+                h += '<tr style="background:rgba(56,189,248,0.08);border-top:2px solid var(--color-accent)"><td style="font-weight:700;font-size:13.5px;color:var(--color-text)">TOTAL GÉNÉRAL TTC DU DÉCOMPTE</td><td style="text-align:right;font-weight:800;font-size:15px;color:var(--color-accent)">' + fmtFCFA(f.totaux.general) + '</td></tr>';
+                h += '</tbody></table>';
+                h += '</div>';
+
+                zoneApercu.innerHTML = h;
+              }).catch(function (err) {
+                console.warn("Calcul modal taxe:", err);
+              });
           }
-        });
 
-        selectTypeActe.addEventListener("change", recalculerApercuModal);
-        inputMontant.addEventListener("input", recalculerApercuModal);
-
-        ["taxe-m-timbres-min", "taxe-m-timbres-exp", "taxe-m-timbres-nbexp", "taxe-m-roles-min", "taxe-m-vacations", "taxe-m-divers"].forEach(function (fId) {
-          var elem = document.getElementById(fId);
-          if (elem) elem.addEventListener("input", recalculerApercuModal);
-        });
-
-        // Premier calcul immédiat
-        recalculerApercuModal();
-
-        // Bouton imprimer
-        document.getElementById("btn-imprimer-modal-taxe").addEventListener("click", function () {
-          var dId = selectDossier.value;
-          var curDossier = cache.dossiers.find(function (d) { return d.id === dId; });
-          if (curDossier && dernierCalculResultat) {
-            imprimerDecompteOfficiel(curDossier, dernierCalculResultat);
-          } else {
-            toast("Veuillez patienter pendant le calcul du décompte.");
-          }
-        });
-
-        // Form submit : Enregistrer
-        document.getElementById("form-modal-creer-taxe").addEventListener("submit", function (ev) {
-          ev.preventDefault();
-          var dId = selectDossier.value;
-          var errZone = document.getElementById("erreur-creer-taxe");
-          errZone.style.display = "none";
-
-          var saisies = {
-            timbres: {
-              pagesMinute: parseInt(document.getElementById("taxe-m-timbres-min").value, 10) || 0,
-              pagesExpedition: parseInt(document.getElementById("taxe-m-timbres-exp").value, 10) || 0,
-              nombreExpeditions: parseInt(document.getElementById("taxe-m-timbres-nbexp").value, 10) || 1,
-              pagesBordereau: 0,
-            },
-            roles: {
-              pagesMinute: parseInt(document.getElementById("taxe-m-roles-min").value, 10) || 0,
-              pagesExpedition: parseInt(document.getElementById("taxe-m-timbres-exp").value, 10) || 0,
-              nombreExpeditions: parseInt(document.getElementById("taxe-m-timbres-nbexp").value, 10) || 1,
-              pagesCopie: 0,
-            },
-            vacations: parseFloat(document.getElementById("taxe-m-vacations").value) || 0,
-            fraisFormalites: { depotBanque: 0, depotEnregistrement: 0, inscriptionLivreFoncier: 0, requisitionEtat: 0 },
-            diversSupplementaire: parseFloat(document.getElementById("taxe-m-divers").value) || 0,
-          };
-
-          API.post("/api/fiscal/dossiers/" + dId + "/enregistrer", { saisies: saisies }).then(function () {
-            toast("Fiche de taxe enregistrée avec succès sur le dossier !");
-            fermerModal();
-            renderComptabilite();
-          }).catch(function (e) {
-            errZone.textContent = "Erreur : " + e.message;
-            errZone.style.display = "block";
+          // Écouteurs de modification
+          selectDossier.addEventListener("change", function () {
+            var dId = selectDossier.value;
+            var curDossier = (cache.dossiers || []).find(function (d) { return d.id === dId; });
+            if (curDossier) {
+              selectTypeActe.value = curDossier.typeActeId;
+              inputMontant.value = Number(curDossier.montantAssiette) || 0;
+              recalculerApercuModal();
+            }
           });
-        });
-      },
+
+          selectTypeActe.addEventListener("change", recalculerApercuModal);
+          inputMontant.addEventListener("input", recalculerApercuModal);
+
+          ["taxe-m-timbres-min", "taxe-m-timbres-exp", "taxe-m-timbres-nbexp", "taxe-m-roles-min", "taxe-m-vacations", "taxe-m-divers"].forEach(function (fId) {
+            var elem = document.getElementById(fId);
+            if (elem) elem.addEventListener("input", recalculerApercuModal);
+          });
+
+          // Premier calcul immédiat
+          recalculerApercuModal();
+
+          // Bouton imprimer
+          document.getElementById("btn-imprimer-modal-taxe").addEventListener("click", function () {
+            var dId = selectDossier.value;
+            var curDossier = (cache.dossiers || []).find(function (d) { return d.id === dId; });
+            if (curDossier && dernierCalculResultat) {
+              imprimerDecompteOfficiel(curDossier, dernierCalculResultat);
+            } else {
+              toast("Veuillez patienter pendant le calcul du décompte.");
+            }
+          });
+
+          // Form submit : Enregistrer
+          document.getElementById("form-modal-creer-taxe").addEventListener("submit", function (ev) {
+            ev.preventDefault();
+            var dId = selectDossier.value;
+            var errZone = document.getElementById("erreur-creer-taxe");
+            errZone.style.display = "none";
+
+            var saisies = {
+              timbres: {
+                pagesMinute: parseInt(document.getElementById("taxe-m-timbres-min").value, 10) || 0,
+                pagesExpedition: parseInt(document.getElementById("taxe-m-timbres-exp").value, 10) || 0,
+                nombreExpeditions: parseInt(document.getElementById("taxe-m-timbres-nbexp").value, 10) || 1,
+                pagesBordereau: 0,
+              },
+              roles: {
+                pagesMinute: parseInt(document.getElementById("taxe-m-roles-min").value, 10) || 0,
+                pagesExpedition: parseInt(document.getElementById("taxe-m-timbres-exp").value, 10) || 0,
+                nombreExpeditions: parseInt(document.getElementById("taxe-m-timbres-nbexp").value, 10) || 1,
+                pagesCopie: 0,
+              },
+              vacations: parseFloat(document.getElementById("taxe-m-vacations").value) || 0,
+              fraisFormalites: { depotBanque: 0, depotEnregistrement: 0, inscriptionLivreFoncier: 0, requisitionEtat: 0 },
+              diversSupplementaire: parseFloat(document.getElementById("taxe-m-divers").value) || 0,
+            };
+
+            API.post("/api/fiscal/dossiers/" + dId + "/enregistrer", {
+              saisies: saisies,
+              typeActeId: selectTypeActe.value,
+              montant: parseFloat(inputMontant.value) || 0,
+            }).then(function () {
+              toast("Fiche de taxe enregistrée avec succès sur le dossier !");
+              fermerModal();
+              renderComptabilite();
+            }).catch(function (e) {
+              errZone.textContent = "Erreur : " + e.message;
+              errZone.style.display = "block";
+            });
+          });
+        },
+      });
     });
   }
 
