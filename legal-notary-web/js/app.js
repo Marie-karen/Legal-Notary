@@ -282,11 +282,6 @@
   }
 
   function chargerEquipe() {
-    if (!cache.permissions || !cache.permissions.equipe) {
-      cache.equipeListe = [];
-      cache.equipeParId = {};
-      return Promise.resolve();
-    }
     return API.get("/api/equipe").then(function (liste) {
       cache.equipeListe = liste || [];
       cache.equipeParId = {};
@@ -1472,13 +1467,13 @@
     html += '</div>';
 
     html += '<div style="max-width:720px;margin-bottom:var(--space-2)">';
-    if (cache.permissions.dossiersTous || cache.permissions.equipe) {
-      html += '<div class="field"><label>Clerc assigné</label><select class="input" id="nd-clerc"><option value="">Non assigné pour l\'instant</option>';
-      cache.equipeListe.forEach(function (m) { html += '<option value="' + m.id + '">' + m.nomComplet + ' — ' + ROLE_LABEL[m.role] + '</option>'; });
-      html += '</select></div>';
-    } else {
-      html += '<div class="field"><label>Clerc assigné</label><div class="input" style="opacity:.65;display:flex;align-items:center">Vous-même (' + cache.utilisateur.nomComplet + ')</div></div>';
-    }
+    html += '<div class="field"><label>Clerc assigné / Responsable de l\'instruction</label><select class="input" id="nd-clerc"><option value="">Sélectionner un clerc de l\'étude…</option>';
+    (cache.equipeListe || []).forEach(function (m) {
+      if (["superadmin", "dev", "commercial", "support", "assistante_editeur"].indexOf(m.role) !== -1) return;
+      var isMe = (cache.utilisateur && m.id === cache.utilisateur.id) ? " (Vous)" : "";
+      html += '<option value="' + m.id + '">' + m.nomComplet + ' — ' + (ROLE_LABEL[m.role] || m.role) + isMe + '</option>';
+    });
+    html += '</select></div>';
     html += '</div>';
 
     html += '<h3 style="margin-bottom:var(--space-2)">Comparants</h3>';

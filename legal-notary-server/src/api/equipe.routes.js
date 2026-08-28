@@ -17,7 +17,7 @@ const auditService = require("../services/audit.service");
 
 const router = express.Router();
 
-router.get("/", exigerPermission("equipe:gerer"), async (req, res, next) => {
+router.get("/", async (req, res, next) => {
   try {
     const avecSalaires = aPermission(req.utilisateur.role, "equipe:voir_salaires");
     res.json(await authService.listerUtilisateurs({ avecSalaires }));
