@@ -200,6 +200,141 @@ async function ajouterTacheStandard(typeActeId, donnees) {
   return tacheStandardVersCamel(rows[0]);
 }
 
+/**
+ * Gestion complète des Barèmes d'Émoluments (Décret N° 2013-279 et barèmes d'étude)
+ */
+async function listerBaremes() {
+  const { rows: baremes } = await pool.query(
+    `SELECT b.id, b.code, b.libelle, b.archived_at,
+            COALESCE(json_agg(
+              json_build_object('id', t.id, 'ordre', t.ordre, 'jusqua', t.jusqua, 'taux', t.taux)
+              ORDER BY t.ordre
+            ) FILTER (WHERE t.id IS NOT NULL), '[]') AS tranches,
+            (SELECT COUNT(*)::int FROM types_actes a WHERE a.bareme_emoluments_id = b.id AND a.archived_at IS NULL) AS nb_actes_associes
+     FROM baremes_emoluments b
+     LEFT JOIN baremes_emoluments_tranches t ON t.bareme_id = b.id
+     WHERE b.archived_at IS NULL
+     GROUP BY b.id, b.code, b.libelle, b.archived_at
+     ORDER BY b.libelle`
+  );
+
+  return baremes.map(b => ({
+    id: b.id,
+    code: b.code,
+    libelle: b.libelle,
+    tranches: (b.tranches || []).map(tr => ({
+      id: tr.id,
+      ordre: tr.ordre,
+      jusqua: tr.jusqua === null ? null : Number(tr.jusqua),
+      taux: Number(tr.taux),
+    })),
+    nbActesAssocies: Number(b.nb_actes_associes || 0),
+  }));
+}
+
+async function obtenirBareme(id) {
+  const { rows: bRows } = await pool.query("SELECT * FROM baremes_emoluments WHERE id = $1 AND archived_at IS NULL", [id]);
+  if (!bRows.length) return null;
+  const b = bRows[0];
+  const { rows: tranches } = await pool.query(
+    "SELECT id, ordre, jusqua, taux FROM baremes_emoluments_tranches WHERE bareme_id = $1 ORDER BY ordre",
+    [id]
+  );
+  const { rows: actes } = await pool.query(
+    "SELECT id, libelle FROM types_actes WHERE bareme_emoluments_id = $1 AND archived_at IS NULL ORDER BY libelle",
+    [id]
+  );
+  return {
+    id: b.id,
+    code: b.code,
+    libelle: b.libelle,
+    tranches: tranches.map(tr => ({
+      id: tr.id,
+      ordre: tr.ordre,
+      jusqua: tr.jusqua === null ? null : Number(tr.jusqua),
+      taux: Number(tr.taux),
+    })),
+    actes: actes,
+    nbActesAssocies: actes.length,
+  };
+}
+
+async function creerBareme(donnees) {
+  const { code, libelle, tranches = [] } = donnees;
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const codeNettoye = (code || libelle.toLowerCase().replace(/[^a-z0-9]/g, "_")).slice(0, 50);
+    const { rows: bRows } = await client.query(
+      "INSERT INTO baremes_emoluments (code, libelle) VALUES ($1, $2) RETURNING *",
+      [codeNettoye, libelle]
+    );
+    const bareme = bRows[0];
+
+    if (tranches && tranches.length) {
+      for (let i = 0; i < tranches.length; i++) {
+        const tr = tranches[i];
+        await client.query(
+          "INSERT INTO baremes_emoluments_tranches (bareme_id, ordre, jusqua, taux) VALUES ($1, $2, $3, $4)",
+          [bareme.id, tr.ordre || (i + 1), tr.jusqua === null || tr.jusqua === "" ? null : Number(tr.jusqua), Number(tr.taux)]
+        );
+      }
+    }
+    await client.query("COMMIT");
+    return obtenirBareme(bareme.id);
+  } catch (err) {
+    await client.query("ROLLBACK");
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
+async function modifierBareme(id, donnees) {
+  const { code, libelle, tranches } = donnees;
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    if (code || libelle) {
+      await client.query(
+        "UPDATE baremes_emoluments SET code = COALESCE($1, code), libelle = COALESCE($2, libelle) WHERE id = $3",
+        [code, libelle, id]
+      );
+    }
+    if (Array.isArray(tranches)) {
+      await client.query("DELETE FROM baremes_emoluments_tranches WHERE bareme_id = $1", [id]);
+      for (let i = 0; i < tranches.length; i++) {
+        const tr = tranches[i];
+        await client.query(
+          "INSERT INTO baremes_emoluments_tranches (bareme_id, ordre, jusqua, taux) VALUES ($1, $2, $3, $4)",
+          [id, tr.ordre || (i + 1), tr.jusqua === null || tr.jusqua === "" ? null : Number(tr.jusqua), Number(tr.taux)]
+        );
+      }
+    }
+    await client.query("COMMIT");
+    return obtenirBareme(id);
+  } catch (err) {
+    await client.query("ROLLBACK");
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
+async function supprimerBareme(id) {
+  await pool.query("UPDATE types_actes SET bareme_emoluments_id = NULL WHERE bareme_emoluments_id = $1", [id]);
+  await pool.query("UPDATE baremes_emoluments SET archived_at = NOW() WHERE id = $1", [id]);
+  return { id, supprime: true };
+}
+
+async function associerBaremeTypeActe(typeActeId, baremeId) {
+  const { rows } = await pool.query(
+    "UPDATE types_actes SET bareme_emoluments_id = $1 WHERE id = $2 RETURNING *",
+    [baremeId || null, typeActeId]
+  );
+  return rows.length ? typeActeVersCamel(rows[0]) : null;
+}
+
 module.exports = {
   typeActeVersCamel,
   tacheStandardVersCamel,
@@ -211,4 +346,10 @@ module.exports = {
   modifierDureeTache,
   creerTypeActe,
   ajouterTacheStandard,
+  listerBaremes,
+  obtenirBareme,
+  creerBareme,
+  modifierBareme,
+  supprimerBareme,
+  associerBaremeTypeActe,
 };

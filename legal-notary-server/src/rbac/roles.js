@@ -105,6 +105,7 @@ const ROLES = {
       "finances:modifier_compte_client",
       "fiscal:calculer",
       "fiscal:enregistrer_fiche_taxe",
+      "referentiel:gerer",
       "archives:acceder",
       "archives:archiver_physiquement",
     ],

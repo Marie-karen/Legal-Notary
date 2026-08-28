@@ -613,6 +613,7 @@
   var MENU_ITEMS_PAR_ROLE = {
     superadmin: [
       { nav: "superadmin", label: "🏛️ Parc des Études", sousOnglet: "etudes", vueParDefaut: true },
+      { nav: "emoluments", label: "⚖️ Barèmes d'Émoluments" },
       { nav: "rapports", label: "📊 Rapports & Échéances" },
       { nav: "superadmin", label: "👥 Équipe Éditeur SaaS", sousOnglet: "equipe" },
       { nav: "superadmin", label: "⚙️ Infrastructure & Clusters", sousOnglet: "infrastructure" },
@@ -650,6 +651,7 @@
       { nav: "dossiers", label: "📁 Dossiers de l'étude" },
       { nav: "clients", label: "👥 Clients & KYC" },
       { nav: "actes", label: "📜 Actes & Référentiel" },
+      { nav: "emoluments", label: "⚖️ Barèmes d'Émoluments" },
       { nav: "comptabilite", label: "💰 Comptabilité & Fiscale" },
       { nav: "archives", label: "🏛️ Minutier & Archives" },
       { nav: "equipe", label: "👔 Équipe & Salaires" },
@@ -662,6 +664,7 @@
       { nav: "dossiers", label: "📁 Tous les dossiers" },
       { nav: "clients", label: "👥 Clients & KYC" },
       { nav: "actes", label: "📜 Actes & Modèles" },
+      { nav: "emoluments", label: "⚖️ Barèmes d'Émoluments" },
       { nav: "archives", label: "🏛️ Minutier & Archives" },
       { nav: "equipe", label: "👔 Supervision Équipe" },
       { nav: "evolution", label: "📈 Mon évolution" },
@@ -682,6 +685,7 @@
     comptable_taxateur: [
       { nav: "dashboard", label: "📊 Tableau de bord Financier", vueParDefaut: true },
       { nav: "comptabilite", label: "💰 Fiches de Taxe & Calculs" },
+      { nav: "emoluments", label: "⚖️ Barèmes d'Émoluments" },
       { nav: "dossiers", label: "📁 Dossiers (Suivi Financier)" },
       { nav: "evolution", label: "📈 Mon évolution" },
     ],
@@ -800,6 +804,7 @@
     if (vue === "nouveau-dossier") renderNouveauDossier();
     if (vue === "clients") renderClients();
     if (vue === "actes") renderActes();
+    if (vue === "emoluments") renderEmoluments();
     if (vue === "archives") renderArchives();
     if (vue === "equipe") renderEquipe();
     if (vue === "evolution") renderEvolution();
@@ -3873,6 +3878,467 @@
     });
   }
 
+  // =========================================================================
+  // GESTION COMPLÈTE DES BARÈMES D'ÉMOLUMENTS (DÉCRET N° 2013-279)
+  // Accessible au Notaire, au Premier Clerc et au Comptable Taxateur
+  // =========================================================================
+  var etatEmoluments = {
+    recherche: "",
+  };
+
+  function renderEmoluments() {
+    var c = document.getElementById("vue-emoluments");
+    if (!c) return;
+    c.innerHTML = '<p class="text-muted">Chargement des barèmes d\'émoluments et du catalogue…</p>';
+
+    Promise.all([
+      API.get("/api/referentiel/baremes").catch(function () { return []; }),
+      API.get("/api/referentiel/types-actes").catch(function () { return []; }),
+    ]).then(function (res) {
+      var baremes = res[0] || [];
+      var tousLesActes = res[1] || [];
+
+      // Mapper les actes par barème
+      var actesParBareme = {};
+      tousLesActes.forEach(function (act) {
+        if (act.baremeEmolumentsId) {
+          if (!actesParBareme[act.baremeEmolumentsId]) actesParBareme[act.baremeEmolumentsId] = [];
+          actesParBareme[act.baremeEmolumentsId].push(act);
+        }
+      });
+
+      var q = (etatEmoluments.recherche || "").toLowerCase().trim();
+      var baremesFiltres = baremes.filter(function (b) {
+        if (!q) return true;
+        var inNom = (b.libelle || "").toLowerCase().indexOf(q) !== -1;
+        var inCode = (b.code || "").toLowerCase().indexOf(q) !== -1;
+        var actesAssoc = actesParBareme[b.id] || [];
+        var inActes = actesAssoc.some(function (a) { return (a.libelle || "").toLowerCase().indexOf(q) !== -1; });
+        return inNom || inCode || inActes;
+      });
+
+      var html = '<div style="position:sticky;top:calc(-1 * var(--space-6));background:var(--color-bg);z-index:2;padding-top:var(--space-1);margin-bottom:var(--space-4)">';
+      html += '<div style="display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);flex-wrap:wrap">';
+      html += '<div><h1 style="margin:0">⚖️ Référentiel des Barèmes d\'Émoluments</h1>';
+      html += '<p style="opacity:.65;font-size:14px;margin:2px 0 0">Barèmes officiels réglementés (Décret N° 2013-279 du 24/04/2013) et barèmes d\'étude dégressifs par tranches.</p></div>';
+      
+      html += '<div style="display:flex;gap:var(--space-2);align-items:center">';
+      html += '<button type="button" class="btn btn-secondary" id="btn-emoluments-ouvrir-taxe" style="font-size:13px;padding:8px 14px;font-weight:600;display:flex;align-items:center;gap:6px"><span>💰</span> Établir une Fiche de Taxe</button>';
+      html += '<button type="button" class="btn btn-primary" id="btn-creer-nouveau-bareme" style="font-size:13px;padding:8px 16px;font-weight:700;display:flex;align-items:center;gap:6px"><span>➕</span> Nouveau Barème d\'Émoluments</button>';
+      html += '</div>';
+      html += '</div></div>';
+
+      // KPI Grid
+      var kpis = [
+        { label: "Barèmes Actifs", valeur: String(baremes.length), indice: "accent", icon: "⚖️", sub: "Dégressifs par tranches" },
+        { label: "Types d'Actes Rattachés", valeur: String(tousLesActes.filter(function (a) { return a.baremeEmolumentsId; }).length) + " / " + tousLesActes.length, indice: "", icon: "📜", sub: "Au catalogue de l'étude" },
+        { label: "Référence Légale", valeur: "Décret 2013-279", indice: "", icon: "🏛️", sub: "Barème officiel notariat CI" },
+        { label: "Rôles Autorisés", valeur: "Notaire · 1er Clerc · Compta", indice: "accent", icon: "👥", sub: "Paramétrage & facturation" },
+      ];
+      html += renderKpisGrid(kpis);
+
+      // Barre de recherche
+      html += '<div class="dashboard-panel" style="margin-top:var(--space-4)">';
+      html += '<div class="panel-header" style="flex-wrap:wrap;gap:var(--space-3);align-items:center">';
+      html += '<div class="panel-title" style="display:flex;align-items:center;gap:6px"><span>📚</span> Catalogue des Barèmes d\'Émoluments & Dégressivité</div>';
+      html += '<div style="font-size:12px;font-weight:600;color:var(--color-text-dim)">' + baremesFiltres.length + ' barème(s) listé(s)</div>';
+      html += '</div>';
+
+      html += '<div style="padding:var(--space-3) var(--space-4);background:var(--color-surface-2);border-bottom:1px solid var(--color-border);display:flex;align-items:center;gap:var(--space-3)">';
+      html += '<div style="flex:1;position:relative">';
+      html += '<input type="search" id="filtre-recherche-baremes" class="input" placeholder="🔍 Rechercher un barème par nom, code ou type d\'acte associé..." value="' + (etatEmoluments.recherche || "") + '" style="background:var(--color-bg);font-size:13px;padding:8px 12px 8px 36px;width:100%">';
+      html += '<span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);opacity:.5">🔍</span>';
+      html += '</div>';
+      if (etatEmoluments.recherche) {
+        html += '<button type="button" id="btn-effacer-recherche-baremes" class="btn btn-ghost" style="font-size:12px;padding:6px 10px">Effacer</button>';
+      }
+      html += '</div>';
+
+      // Grille des cartes de barèmes
+      if (!baremesFiltres.length) {
+        html += '<div style="padding:40px 20px;text-align:center;color:var(--color-text-dim)">';
+        html += '<div style="font-size:32px;margin-bottom:8px">⚖️</div>';
+        html += '<div style="font-size:15px;font-weight:600">Aucun barème d\'émoluments trouvé.</div>';
+        html += '<div style="font-size:12px;margin-top:4px">Cliquez sur le bouton "➕ Nouveau Barème d\'Émoluments" pour en créer un.</div>';
+        html += '</div>';
+      } else {
+        html += '<div style="padding:var(--space-4);display:grid;grid-template-columns:repeat(auto-fit, minmax(420px, 1fr));gap:var(--space-4)">';
+
+        baremesFiltres.forEach(function (b) {
+          var actesAssocies = actesParBareme[b.id] || [];
+          var estBaremeSysteme = (b.code === "vente" || b.code === "societe" || b.code === "pret");
+
+          html += '<div class="card" style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius);padding:var(--space-4);display:flex;flex-direction:column;gap:var(--space-3);box-shadow:var(--shadow-sm)">';
+
+          // Titre et code du barème
+          html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">';
+          html += '<div>';
+          html += '<div style="font-size:16px;font-weight:700;color:var(--color-text);display:flex;align-items:center;gap:6px"><span>⚖️</span> ' + b.libelle + '</div>';
+          html += '<div style="display:flex;align-items:center;gap:6px;margin-top:4px">';
+          html += '<span class="tag tag-outline" style="font-family:monospace;font-size:11px">code: ' + b.code + '</span>';
+          if (estBaremeSysteme) {
+            html += '<span class="tag tag-accent" style="font-size:10.5px">Décret N° 2013-279</span>';
+          } else {
+            html += '<span class="tag" style="background:rgba(16,185,129,0.12);color:#10b981;font-size:10.5px">Barème d\'Étude</span>';
+          }
+          html += '</div>';
+          html += '</div>';
+
+          // Actions Modifier / Associer / Supprimer
+          html += '<div style="display:flex;gap:4px">';
+          html += '<button type="button" class="btn btn-secondary btn-modifier-bareme" data-id="' + b.id + '" style="font-size:11.5px;padding:4px 8px;font-weight:600" title="Modifier le barème et ses tranches">✏️ Modifier</button>';
+          html += '<button type="button" class="btn btn-ghost btn-associer-bareme" data-id="' + b.id + '" style="font-size:11.5px;padding:4px 8px;font-weight:600" title="Associer des types d\'actes">🔗 Actes (' + actesAssocies.length + ')</button>';
+          if (!estBaremeSysteme) {
+            html += '<button type="button" class="btn btn-ghost btn-supprimer-bareme" data-id="' + b.id + '" style="font-size:11.5px;padding:4px 8px;color:#ef4444" title="Supprimer ce barème">🗑️</button>';
+          }
+          html += '</div>';
+          html += '</div>';
+
+          // Tableau des tranches
+          html += '<div style="background:var(--color-surface-2);border-radius:var(--radius);border:1px solid var(--color-border);padding:8px 10px">';
+          html += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--color-text-dim);margin-bottom:6px">Tranches Dégressives Réglementées :</div>';
+
+          if (!b.tranches || !b.tranches.length) {
+            html += '<div style="font-size:12px;color:var(--color-text-dim);font-style:italic">Aucune tranche définie (Minimum légal de minute appliqué).</div>';
+          } else {
+            html += '<table class="table" style="font-size:12px;margin:0"><thead><tr>';
+            html += '<th style="padding:4px 6px">Tranche</th><th style="padding:4px 6px">Assiette (FCFA)</th><th style="padding:4px 6px;text-align:right">Taux (%)</th>';
+            html += '</tr></thead><tbody>';
+
+            var bornePrec = 0;
+            b.tranches.forEach(function (tr, idx) {
+              var borneSupStr = tr.jusqua ? fmtFCFA(tr.jusqua) : "Au-delà";
+              var plageStr = tr.jusqua ? (fmtFCFA(bornePrec) + " à " + borneSupStr) : ("Au-delà de " + fmtFCFA(bornePrec));
+              bornePrec = tr.jusqua || bornePrec;
+              var pct = (tr.taux * 100).toFixed(tr.taux < 0.01 ? 2 : 1) + " %";
+
+              html += '<tr>';
+              html += '<td style="padding:4px 6px;font-weight:600">Tranche ' + (tr.ordre || (idx + 1)) + '</td>';
+              html += '<td style="padding:4px 6px;color:var(--color-text)">' + plageStr + '</td>';
+              html += '<td style="padding:4px 6px;text-align:right;font-weight:700;color:var(--color-accent)">' + pct + '</td>';
+              html += '</tr>';
+            });
+            html += '</tbody></table>';
+          }
+          html += '</div>';
+
+          // Types d'actes rattachés
+          html += '<div style="margin-top:auto">';
+          html += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--color-text-dim);margin-bottom:4px">Actes appliquant ce barème (' + actesAssocies.length + ') :</div>';
+          if (!actesAssocies.length) {
+            html += '<div style="font-size:11.5px;color:var(--color-text-dim);font-style:italic">Aucun acte actuellement rattaché. <a href="javascript:void(0)" class="btn-associer-bareme" data-id="' + b.id + '" style="color:var(--color-accent);text-decoration:underline">Rattacher des actes →</a></div>';
+          } else {
+            html += '<div style="display:flex;flex-wrap:wrap;gap:4px">';
+            actesAssocies.forEach(function (act) {
+              html += '<span class="tag" style="background:var(--color-surface-2);border:1px solid var(--color-border);font-size:11px">📜 ' + act.libelle + '</span>';
+            });
+            html += '</div>';
+          }
+          html += '</div>';
+
+          html += '</div>'; // fin card
+        });
+
+        html += '</div>'; // fin grille
+      }
+
+      html += '</div>'; // fin dashboard-panel
+
+      c.innerHTML = html;
+
+      // Écouteurs de recherche
+      var inputRecherche = document.getElementById("filtre-recherche-baremes");
+      if (inputRecherche) {
+        inputRecherche.addEventListener("input", function () {
+          etatEmoluments.recherche = inputRecherche.value;
+          renderEmoluments();
+        });
+      }
+      var btnEffacer = document.getElementById("btn-effacer-recherche-baremes");
+      if (btnEffacer) {
+        btnEffacer.addEventListener("click", function () {
+          etatEmoluments.recherche = "";
+          renderEmoluments();
+        });
+      }
+
+      // Bouton Nouveau Barème
+      var btnCreer = document.getElementById("btn-creer-nouveau-bareme");
+      if (btnCreer) {
+        btnCreer.addEventListener("click", function () {
+          modalCreerModifierBareme(null, tousLesActes);
+        });
+      }
+
+      // Bouton Ouvrir Taxe
+      var btnTaxe = document.getElementById("btn-emoluments-ouvrir-taxe");
+      if (btnTaxe) {
+        btnTaxe.addEventListener("click", function () {
+          modalCreerFicheTaxe();
+        });
+      }
+
+      // Boutons Modifier
+      c.querySelectorAll(".btn-modifier-bareme").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          var bId = btn.dataset.id;
+          var baremeChoisi = baremes.find(function (b) { return b.id === bId; });
+          if (baremeChoisi) modalCreerModifierBareme(baremeChoisi, tousLesActes);
+        });
+      });
+
+      // Boutons Associer Actes
+      c.querySelectorAll(".btn-associer-bareme").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          var bId = btn.dataset.id;
+          var baremeChoisi = baremes.find(function (b) { return b.id === bId; });
+          if (baremeChoisi) modalAssocierActesBareme(baremeChoisi, tousLesActes);
+        });
+      });
+
+      // Boutons Supprimer
+      c.querySelectorAll(".btn-supprimer-bareme").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          var bId = btn.dataset.id;
+          if (confirm("Êtes-vous sûr de vouloir supprimer ce barème d'émoluments ? Les actes qui y étaient rattachés reviendront au minimum légal.")) {
+            API.delete("/api/referentiel/baremes/" + bId).then(function () {
+              toast("Barème supprimé avec succès.");
+              renderEmoluments();
+              chargerReferentiel();
+            }).catch(function (e) {
+              toast("Erreur : " + e.message);
+            });
+          }
+        });
+      });
+
+    }).catch(function (err) {
+      c.innerHTML = '<p class="erreur-inline">Erreur de chargement des barèmes : ' + err.message + '</p>';
+    });
+  }
+
+  // MODALE : CRÉER / MODIFIER UN BARÈME D'ÉMOLUMENTS
+  function modalCreerModifierBareme(baremeExistant, tousLesActes) {
+    var estEdition = !!baremeExistant;
+    var titreModal = estEdition 
+      ? "✏️ Modifier le Barème : " + baremeExistant.libelle 
+      : "➕ Nouveau Barème d'Émoluments (Décret N° 2013-279)";
+
+    var tranchesInitiales = (baremeExistant && baremeExistant.tranches && baremeExistant.tranches.length > 0)
+      ? baremeExistant.tranches.slice()
+      : [
+          { ordre: 1, jusqua: 10000000, taux: 0.04 },
+          { ordre: 2, jusqua: 30000000, taux: 0.025 },
+          { ordre: 3, jusqua: 90000000, taux: 0.015 },
+          { ordre: 4, jusqua: null, taux: 0.0075 },
+        ];
+
+    var html = '<form id="form-modal-bareme" style="display:flex;flex-direction:column;gap:var(--space-3)">';
+
+    // Libellé et Code
+    html += '<div style="display:grid;grid-template-columns:1.5fr 1fr;gap:var(--space-2)">';
+    html += '<div class="field"><label>Libellé du Barème d\'Émoluments</label><input class="input" id="bareme-modal-libelle" value="' + (baremeExistant ? baremeExistant.libelle : "") + '" placeholder="Ex: Barème Baux Commerciaux & Ruraux" required></div>';
+    html += '<div class="field"><label>Code unique</label><input class="input" id="bareme-modal-code" value="' + (baremeExistant ? baremeExistant.code : "") + '" placeholder="Ex: baux_commerciaux" ' + (estEdition ? "readonly" : "required") + ' style="font-family:monospace"></div>';
+    html += '</div>';
+
+    // Section des tranches dynamiques
+    html += '<div style="background:var(--color-surface-2);border-radius:var(--radius);border:1px solid var(--color-border);padding:12px">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">';
+    html += '<div style="font-size:11.5px;font-weight:700;text-transform:uppercase;color:var(--color-text-dim)">Tranches Dégressives (En Pourcentage)</div>';
+    html += '<button type="button" class="btn btn-secondary" id="btn-ajouter-tranche" style="font-size:11px;padding:3px 8px;font-weight:700">➕ Ajouter une tranche</button>';
+    html += '</div>';
+
+    html += '<div id="conteneur-tranches-dynamiques" style="display:flex;flex-direction:column;gap:6px">';
+    html += '</div>';
+    html += '</div>';
+
+    html += '<div id="erreur-modal-bareme" class="erreur-inline" style="display:none"></div>';
+
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:var(--space-2)">';
+    html += '<button type="button" class="btn btn-ghost" id="btn-annuler-modal-bareme">Annuler</button>';
+    html += '<button type="submit" class="btn btn-primary" id="btn-sauvegarder-bareme">💾 ' + (estEdition ? "Enregistrer les modifications" : "Créer le Barème") + '</button>';
+    html += '</div>';
+
+    html += '</form>';
+
+    ouvrirModal({
+      titre: titreModal,
+      corps: html,
+      boutonFermer: true,
+      largeur: "640px",
+      apresOuverture: function () {
+        document.getElementById("btn-annuler-modal-bareme").addEventListener("click", fermerModal);
+
+        var conteneurTranches = document.getElementById("conteneur-tranches-dynamiques");
+        var tranchesLocales = JSON.parse(JSON.stringify(tranchesInitiales));
+
+        function renderTranchesLignes() {
+          if (!conteneurTranches) return;
+          var h = '';
+          if (!tranchesLocales.length) {
+            h = '<p style="font-size:12px;color:var(--color-text-dim);font-style:italic">Aucune tranche. Cliquez sur "Ajouter une tranche".</p>';
+          } else {
+            tranchesLocales.forEach(function (tr, index) {
+              var jusquaVal = tr.jusqua !== null && tr.jusqua !== undefined ? tr.jusqua : "";
+              var tauxPct = (Number(tr.taux) * 100).toFixed(2);
+
+              h += '<div class="ligne-tranche-edit" data-idx="' + index + '" style="display:flex;align-items:center;gap:8px;background:var(--color-surface);padding:6px 8px;border-radius:var(--radius);border:1px solid var(--color-border)">';
+              h += '<span style="font-size:12px;font-weight:700;width:80px">Tranche ' + (index + 1) + '</span>';
+              h += '<div style="flex:1;display:flex;align-items:center;gap:4px">';
+              h += '<span style="font-size:11px;color:var(--color-text-dim)">Jusqu\'à :</span>';
+              h += '<input class="input tranche-jusqua" type="number" step="1000" min="0" placeholder="Vide = Au-delà" value="' + jusquaVal + '" style="font-size:12px;padding:4px 8px;height:30px">';
+              h += '<span style="font-size:11px;color:var(--color-text-dim)">FCFA</span>';
+              h += '</div>';
+              h += '<div style="width:120px;display:flex;align-items:center;gap:4px">';
+              h += '<span style="font-size:11px;color:var(--color-text-dim)">Taux :</span>';
+              h += '<input class="input tranche-taux" type="number" step="0.01" min="0" max="100" placeholder="Ex: 4" value="' + tauxPct + '" style="font-size:12px;padding:4px 8px;height:30px;font-weight:700;color:var(--color-accent)">';
+              h += '<span style="font-size:11px;font-weight:700">%</span>';
+              h += '</div>';
+              h += '<button type="button" class="btn btn-ghost btn-suppr-tranche" data-idx="' + index + '" style="padding:2px 6px;font-size:13px;color:#ef4444" title="Supprimer cette tranche">✕</button>';
+              h += '</div>';
+            });
+          }
+          conteneurTranches.innerHTML = h;
+
+          // Écouteurs sur chaque ligne
+          conteneurTranches.querySelectorAll(".ligne-tranche-edit").forEach(function (row) {
+            var idx = parseInt(row.dataset.idx, 10);
+            var inJusqua = row.querySelector(".tranche-jusqua");
+            var inTaux = row.querySelector(".tranche-taux");
+            var btnSupp = row.querySelector(".btn-suppr-tranche");
+
+            inJusqua.addEventListener("input", function () {
+              var val = inJusqua.value.trim();
+              tranchesLocales[idx].jusqua = val === "" ? null : Number(val);
+            });
+            inTaux.addEventListener("input", function () {
+              var val = parseFloat(inTaux.value) || 0;
+              tranchesLocales[idx].taux = val / 100;
+            });
+            btnSupp.addEventListener("click", function () {
+              tranchesLocales.splice(idx, 1);
+              renderTranchesLignes();
+            });
+          });
+        }
+
+        renderTranchesLignes();
+
+        document.getElementById("btn-ajouter-tranche").addEventListener("click", function () {
+          var dernierJusqua = tranchesLocales.length > 0 ? (tranchesLocales[tranchesLocales.length - 1].jusqua || 50000000) : 10000000;
+          tranchesLocales.push({
+            ordre: tranchesLocales.length + 1,
+            jusqua: dernierJusqua ? dernierJusqua * 2 : null,
+            taux: 0.01,
+          });
+          renderTranchesLignes();
+        });
+
+        // Submit form
+        document.getElementById("form-modal-bareme").addEventListener("submit", function (ev) {
+          ev.preventDefault();
+          var libelle = document.getElementById("bareme-modal-libelle").value.trim();
+          var code = document.getElementById("bareme-modal-code").value.trim();
+          var errZone = document.getElementById("erreur-modal-bareme");
+          errZone.style.display = "none";
+
+          if (!libelle || !code) {
+            errZone.textContent = "Le libellé et le code sont obligatoires.";
+            errZone.style.display = "block";
+            return;
+          }
+
+          var tranchesFinales = tranchesLocales.map(function (tr, i) {
+            return {
+              ordre: i + 1,
+              jusqua: tr.jusqua === null || tr.jusqua === "" ? null : Number(tr.jusqua),
+              taux: Number(tr.taux) || 0,
+            };
+          });
+
+          var p = estEdition
+            ? API.put("/api/referentiel/baremes/" + baremeExistant.id, { libelle: libelle, tranches: tranchesFinales })
+            : API.post("/api/referentiel/baremes", { code: code, libelle: libelle, tranches: tranchesFinales });
+
+          p.then(function () {
+            toast(estEdition ? "Barème mis à jour avec succès !" : "Nouveau barème créé avec succès !");
+            fermerModal();
+            renderEmoluments();
+            chargerReferentiel();
+          }).catch(function (e) {
+            errZone.textContent = "Erreur : " + e.message;
+            errZone.style.display = "block";
+          });
+        });
+      }
+    });
+  }
+
+  // MODALE : ASSOCIER DES TYPES D'ACTES À UN BARÈME
+  function modalAssocierActesBareme(bareme, tousLesActes) {
+    var html = '<form id="form-modal-associer-actes" style="display:flex;flex-direction:column;gap:var(--space-3)">';
+    html += '<p style="font-size:13px;color:var(--color-text-dim);margin:0">Cochez les types d\'actes qui doivent appliquer le <strong>' + bareme.libelle + '</strong> lors du calcul de la fiche de taxe :</p>';
+
+    html += '<div style="max-height:360px;overflow-y:auto;border:1px solid var(--color-border);border-radius:var(--radius);padding:8px 12px;display:flex;flex-direction:column;gap:6px;background:var(--color-surface-2)">';
+
+    tousLesActes.forEach(function (act) {
+      var estAssocie = (act.baremeEmolumentsId === bareme.id);
+      var autreBareme = act.baremeEmolumentsId && act.baremeEmolumentsId !== bareme.id ? " (rattaché à un autre barème)" : "";
+
+      html += '<label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;padding:4px 0">';
+      html += '<input type="checkbox" class="chk-assoc-acte" data-id="' + act.id + '" ' + (estAssocie ? "checked" : "") + ' style="width:16px;height:16px">';
+      html += '<span><strong>' + act.libelle + '</strong><span style="font-size:11px;color:var(--color-text-dim);margin-left:4px">' + autreBareme + '</span></span>';
+      html += '</label>';
+    });
+
+    html += '</div>';
+
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:var(--space-2)">';
+    html += '<button type="button" class="btn btn-ghost" id="btn-annuler-assoc-actes">Fermer</button>';
+    html += '<button type="submit" class="btn btn-primary">💾 Enregistrer les associations</button>';
+    html += '</div>';
+
+    html += '</form>';
+
+    ouvrirModal({
+      titre: "🔗 Associer des Actes — " + bareme.libelle,
+      corps: html,
+      boutonFermer: true,
+      largeur: "560px",
+      apresOuverture: function () {
+        document.getElementById("btn-annuler-assoc-actes").addEventListener("click", fermerModal);
+
+        document.getElementById("form-modal-associer-actes").addEventListener("submit", function (ev) {
+          ev.preventDefault();
+          var checkboxes = document.querySelectorAll(".chk-assoc-acte");
+          var promises = [];
+
+          checkboxes.forEach(function (chk) {
+            var acteId = chk.dataset.id;
+            var coche = chk.checked;
+            var acteOrig = tousLesActes.find(function (a) { return a.id === acteId; });
+            var etaitAssocie = (acteOrig && acteOrig.baremeEmolumentsId === bareme.id);
+
+            if (coche && !etaitAssocie) {
+              promises.push(API.post("/api/referentiel/types-actes/" + acteId + "/associer-bareme", { baremeId: bareme.id }));
+            } else if (!coche && etaitAssocie) {
+              promises.push(API.post("/api/referentiel/types-actes/" + acteId + "/associer-bareme", { baremeId: null }));
+            }
+          });
+
+          Promise.all(promises).then(function () {
+            toast("Associations enregistrées avec succès !");
+            fermerModal();
+            renderEmoluments();
+            chargerReferentiel();
+          }).catch(function (e) {
+            toast("Erreur : " + e.message);
+          });
+        });
+      }
+    });
+  }
+
   // -----------------------------------------------------------------
   // Comptabilité & Facturation (Décret 2013-279 & TEST.xlsx)
   // =========================================================================
@@ -4155,7 +4621,7 @@
 
       // 2. Type d'acte et montant de l'assiette avec espacement
       html += '<div style="display:grid;grid-template-columns:1.2fr 1fr;gap:var(--space-2)">';
-      html += '<div class="field"><label>Type d\'Acte Notarié (Barème Décret N° 2013-279)</label><select class="input" id="taxe-modal-type-acte" style="font-weight:600">';
+      html += '<div class="field"><div style="display:flex;justify-content:space-between;align-items:center"><label style="margin:0">Type d\'Acte Notarié (Barème)</label><button type="button" class="btn btn-ghost" id="btn-modal-taxe-voir-baremes" style="font-size:11px;padding:0 4px;color:var(--color-accent);text-decoration:underline;cursor:pointer" title="Consulter et gérer le référentiel des barèmes">⚖️ Barèmes →</button></div><select class="input" id="taxe-modal-type-acte" style="font-weight:600;margin-top:4px">';
       typesActes.forEach(function (t) {
         var isActSel = (dossierInitial && t.id === dossierInitial.typeActeId) ? " selected" : "";
         var libelleAff = t.libelle || t.nom || labelActe(t.id);
@@ -4204,6 +4670,14 @@
         largeur: "680px",
         apresOuverture: function () {
           document.getElementById("btn-annuler-modal-taxe").addEventListener("click", fermerModal);
+
+          var btnVoirBaremes = document.getElementById("btn-modal-taxe-voir-baremes");
+          if (btnVoirBaremes) {
+            btnVoirBaremes.addEventListener("click", function () {
+              fermerModal();
+              irVers("emoluments");
+            });
+          }
 
           var selectDossier = document.getElementById("taxe-modal-select-dossier");
           var selectTypeActe = document.getElementById("taxe-modal-type-acte");
