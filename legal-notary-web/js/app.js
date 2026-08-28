@@ -368,6 +368,38 @@
     });
   }
 
+  function executerDeconnexion() {
+    API.deconnecter();
+    cache.utilisateur = null;
+    cache.dossiers = [];
+    cache.clients = [];
+    cache.alertes = [];
+    if (window._notifInterval) {
+      clearInterval(window._notifInterval);
+      window._notifInterval = null;
+    }
+    var chargement = document.getElementById("chargement-initial");
+    if (chargement) {
+      chargement.style.display = "none";
+      chargement.textContent = "";
+    }
+    var appEl = document.getElementById("app");
+    var loginEl = document.getElementById("ecran-login");
+    if (appEl) {
+      appEl.classList.remove("pret");
+      appEl.style.display = "none";
+    }
+    if (loginEl) {
+      loginEl.classList.add("actif");
+      loginEl.style.display = "block";
+    }
+    var errZone = document.getElementById("login-erreur");
+    if (errZone) errZone.style.display = "none";
+    toast("Déconnexion réussie.");
+  }
+
+  window.LegalNotaryDeconnexion = executerDeconnexion;
+
   function effectuerConnexion(email, motDePasse) {
     var erreurZone = document.getElementById("login-erreur");
     if (erreurZone) erreurZone.style.display = "none";
@@ -378,7 +410,7 @@
 
     var chargement = document.getElementById("chargement-initial");
     if (chargement) {
-      chargement.textContent = "Connexion en cours…";
+      chargement.textContent = "Connexion...";
       chargement.style.display = "flex";
     }
 
@@ -401,70 +433,71 @@
   };
 
   function chargerToutEtAfficher() {
+    var role = cache.utilisateur ? cache.utilisateur.role : "notaire";
+    var estSaaS = (role === "superadmin" || role === "dev" || role === "commercial" || role === "support" || role === "assistante_editeur");
+
     var chargement = document.getElementById("chargement-initial");
     if (chargement) {
-      chargement.textContent = "Chargement de l'espace…";
+      chargement.textContent = "Chargement...";
       chargement.style.display = "flex";
     }
-    return chargerReferentiel()
-      .then(chargerEquipe)
-      .then(chargerDossiersEtAlertes)
-      .then(function () {
-        if (chargement) chargement.style.display = "none";
-        var ecranLogin = document.getElementById("ecran-login");
-        var appEl = document.getElementById("app");
-        if (ecranLogin) {
-          ecranLogin.classList.remove("actif");
-          ecranLogin.style.display = "none";
-        }
-        if (appEl) {
-          appEl.classList.add("pret");
-          appEl.style.display = "block";
-        }
 
-        if (cache.utilisateur) {
-          var elNom = document.getElementById("nav-utilisateur-nom");
-          var elRole = document.getElementById("nav-utilisateur-role");
-          if (elNom) elNom.textContent = cache.utilisateur.nomComplet || "Utilisateur";
-          if (elRole) elRole.textContent = ROLE_LABEL[cache.utilisateur.role] || cache.utilisateur.role;
-        }
+    // Parallélisation totale des requêtes pour un chargement instantané (< 50ms)
+    var promesses = estSaaS
+      ? [API.get("/api/parametres").catch(function () { return {}; })]
+      : [chargerReferentiel(), chargerEquipe(), chargerDossiersEtAlertes()];
 
-        // Mise à jour de la barre supérieure adaptée (Étude vs Éditeur SaaS)
-        actualiserBarreSelecteurRoles(cache.utilisateur ? cache.utilisateur.role : "notaire");
+    return Promise.all(promesses).then(function (res) {
+      if (estSaaS && res[0]) {
+        cache.parametres = res[0] || {};
+      }
+      if (chargement) chargement.style.display = "none";
 
-        majNomEtudeAffiche();
+      var ecranLogin = document.getElementById("ecran-login");
+      var appEl = document.getElementById("app");
+      if (ecranLogin) {
+        ecranLogin.classList.remove("actif");
+        ecranLogin.style.display = "none";
+      }
+      if (appEl) {
+        appEl.classList.add("pret");
+        appEl.style.display = "block";
+      }
 
-        // Rendu du menu de navigation adapté à la fonction / au rôle
-        var role = cache.utilisateur ? cache.utilisateur.role : "notaire";
-        renderMenuNavigation(role);
+      if (cache.utilisateur) {
+        var elNom = document.getElementById("nav-utilisateur-nom");
+        var elRole = document.getElementById("nav-utilisateur-role");
+        if (elNom) elNom.textContent = cache.utilisateur.nomComplet || "Utilisateur";
+        if (elRole) elRole.textContent = ROLE_LABEL[cache.utilisateur.role] || cache.utilisateur.role;
+      }
 
-        // Détermination de la vue par défaut selon le rôle
-        var menuRole = MENU_ITEMS_PAR_ROLE[role] || [];
-        var defaultItem = menuRole.find(function (it) { return it.vueParDefaut; });
-        var estSaaS = (role === "superadmin" || role === "dev" || role === "commercial" || role === "support" || role === "assistante_editeur");
+      // Mise à jour de la barre supérieure adaptée (Étude vs Éditeur SaaS)
+      actualiserBarreSelecteurRoles(role);
+      majNomEtudeAffiche();
 
-        var vueFinale = defaultItem ? defaultItem.nav : (estSaaS ? "superadmin" : "dashboard");
-        if (estSaaS && defaultItem && defaultItem.sousOnglet) {
-          etatSuperadmin.onglet = defaultItem.sousOnglet;
-        }
+      // Rendu du menu de navigation adapté à la fonction / au rôle
+      renderMenuNavigation(role);
 
-        irVers(vueFinale);
-      })
-      .catch(function (erreur) {
-        console.error("Erreur chargerToutEtAfficher:", erreur);
-        if (chargement) chargement.style.display = "none";
-        var ecranLogin = document.getElementById("ecran-login");
-        var appEl = document.getElementById("app");
-        if (appEl) {
-          appEl.classList.remove("pret");
-          appEl.style.display = "none";
-        }
-        if (ecranLogin) {
-          ecranLogin.classList.add("actif");
-          ecranLogin.style.display = "block";
-        }
-        toast("Erreur de chargement : " + (erreur.message || "Connexion échouée"));
-      });
+      // Détermination de la vue par défaut selon le rôle
+      var menuRole = MENU_ITEMS_PAR_ROLE[role] || [];
+      var defaultItem = menuRole.find(function (it) { return it.vueParDefaut; });
+
+      var vueFinale = defaultItem ? defaultItem.nav : (estSaaS ? "superadmin" : "dashboard");
+      if (estSaaS && defaultItem && defaultItem.sousOnglet) {
+        etatSuperadmin.onglet = defaultItem.sousOnglet;
+      }
+
+      irVers(vueFinale);
+
+      if (!window._notifInterval) {
+        window._notifInterval = window.setInterval(chargerNotifBadge, 30000);
+      }
+    }).catch(function (erreur) {
+      console.error("Erreur chargerToutEtAfficher:", erreur);
+      if (chargement) chargement.style.display = "none";
+      executerDeconnexion();
+      toast("Erreur de session : " + (erreur.message || "Session expirée"));
+    });
   }
 
   // -----------------------------------------------------------------
@@ -690,11 +723,7 @@
 
     var btnDeco = document.getElementById("bouton-deconnexion");
     if (btnDeco) {
-      btnDeco.addEventListener("click", function () {
-        API.deconnecter();
-        document.getElementById("app").classList.remove("pret");
-        document.getElementById("ecran-login").classList.add("actif");
-      });
+      btnDeco.addEventListener("click", executerDeconnexion);
     }
   }
 
@@ -5905,19 +5934,12 @@
 
     var btnDeco = document.getElementById("bouton-deconnexion");
     if (btnDeco) {
-      btnDeco.addEventListener("click", function () {
-        API.deconnecter();
-        var appEl = document.getElementById("app");
-        var loginEl = document.getElementById("ecran-login");
-        if (appEl) {
-          appEl.classList.remove("pret");
-          appEl.style.display = "none";
-        }
-        if (loginEl) {
-          loginEl.classList.add("actif");
-          loginEl.style.display = "block";
-        }
-      });
+      btnDeco.addEventListener("click", executerDeconnexion);
+    }
+
+    var btnTopDeco = document.getElementById("btn-top-deconnexion");
+    if (btnTopDeco) {
+      btnTopDeco.addEventListener("click", executerDeconnexion);
     }
 
     var badgeNotif = document.getElementById("notif-badge");
@@ -5928,29 +5950,19 @@
     var chargement = document.getElementById("chargement-initial");
     if (chargement) chargement.style.display = "none";
 
+    // Gestion propre du callback non-autorisé 401
+    API.surNonAutorise(function () {
+      executerDeconnexion();
+    });
+
     if (API.estConnecte() && API.getUtilisateur()) {
       cache.utilisateur = API.getUtilisateur();
       cache.permissions = PERMISSIONS_PAR_ROLE[cache.utilisateur.role] || PERMISSIONS_PAR_ROLE.assistante;
       chargerToutEtAfficher().catch(function () {
-        API.deconnecter();
-        var appEl = document.getElementById("app");
-        var loginEl = document.getElementById("ecran-login");
-        if (appEl) {
-          appEl.classList.remove("pret");
-          appEl.style.display = "none";
-        }
-        if (loginEl) {
-          loginEl.classList.add("actif");
-          loginEl.style.display = "block";
-        }
+        executerDeconnexion();
       });
-      window.setInterval(chargerNotifBadge, 30000);
     } else {
-      var loginEl = document.getElementById("ecran-login");
-      if (loginEl) {
-        loginEl.classList.add("actif");
-        loginEl.style.display = "block";
-      }
+      executerDeconnexion();
     }
   }
 
