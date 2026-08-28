@@ -847,6 +847,7 @@
     if (role === "clerc_formaliste") return renderDashboardClercFormaliste();
     if (role === "comptable_taxateur") return renderDashboardComptableTaxateur();
     if (role === "assistante") return renderDashboardAssistante();
+    if (role === "archiviste") return renderDashboardArchiviste();
     return renderDashboardNotaire();
   }
 
@@ -1276,6 +1277,156 @@
     if (cardNouveau) cardNouveau.addEventListener("click", function () { irVers("nouveau-dossier"); });
     var cardClients = document.getElementById("card-action-clients");
     if (cardClients) cardClients.addEventListener("click", function () { irVers("clients"); });
+  }
+
+  // --- 7. TABLEAU DE BORD DE L'ARCHIVISTE / MINUTIER (CONSERVATION & TRAÇABILITÉ) ---
+  function renderDashboardArchiviste() {
+    var c = document.getElementById("vue-dashboard");
+    var anneeCourante = new Date().getFullYear();
+    var dateDuJour = new Date().toLocaleDateString("fr-CI", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+
+    c.innerHTML = '<p class="text-muted">Chargement de la supervision du minutier…</p>';
+
+    Promise.all([
+      API.get("/api/archives/repertoire").catch(function () { return []; }),
+      API.get("/api/archives/cartons").catch(function () { return []; }),
+      API.get("/api/archives/en-attente").catch(function () { return []; }),
+      API.get("/api/archives/mouvements").catch(function () { return []; }),
+    ]).then(function (res) {
+      var repertoire = res[0] || [];
+      var cartons = res[1] || [];
+      var enAttente = res[2] || [];
+      var mouvements = res[3] || [];
+      var sortisActuels = mouvements.filter(function (m) { return !m.dateRetour; });
+
+      var totalDossiersEnCarton = cartons.reduce(function (acc, k) { return acc + (k.nombreDossiers || 0); }, 0);
+
+      var kpis = [
+        { label: "Minutes Scellées & Numérisées", valeur: String(repertoire.length), indice: "accent", icon: "🏛️", sub: "Registre officiel" },
+        { label: "Cartons d'Archives en Rayon", valeur: String(cartons.length), indice: "", icon: "📦", sub: totalDossiersEnCarton + " dossiers classés" },
+        { label: "En attente de versement", valeur: String(enAttente.length), indice: enAttente.length ? "warning" : "accent", icon: "⏳", sub: enAttente.length ? "Dossiers clôturés à classer" : "Minutier à jour" },
+        { label: "Dossiers Physiques Sortis", valeur: String(sortisActuels.length), indice: sortisActuels.length ? "danger" : "", icon: "📤", sub: sortisActuels.length ? "En consultation au bureau" : "Tous en cartons" },
+      ];
+
+      var html = '<div style="position:sticky;top:calc(-1 * var(--space-6));background:var(--color-bg);z-index:2;padding-top:var(--space-1);margin-bottom:var(--space-4)">';
+      html += '<div style="display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);padding-bottom:var(--space-2);border-bottom:1px solid var(--color-border);flex-wrap:wrap">';
+      html += '<div><h1 style="margin:0">Supervision du Minutier & Archives</h1>';
+      html += '<p style="opacity:.65;font-size:14px;margin:2px 0 0">Bonjour ' + cache.utilisateur.nomComplet + ' — conservation légale, scellement SHA-256 et traçabilité des originaux papier.</p></div>';
+      html += '<div style="display:flex;align-items:center;gap:var(--space-3);margin-left:auto">';
+      html += '<div style="text-align:right"><div style="font-size:13px;font-weight:700;color:var(--color-text)">' + dateDuJour + '</div><div style="font-size:11px;color:var(--color-text-dim)">Minutier de l\'Étude · ' + anneeCourante + '</div></div></div></div></div>';
+
+      html += renderKpisGrid(kpis);
+
+      // Panneau Raccourcis Métier de l'archiviste
+      html += '<div class="dashboard-panel">';
+      html += '<div class="panel-header"><div class="panel-title"><span>⚡</span> Actions rapides d\'archivage & conservation</div></div>';
+      html += '<div class="panel-body">';
+      html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:var(--space-3)">';
+      
+      html += '<div class="card" id="card-action-scan-ocr" style="cursor:pointer;border-left:4px solid var(--color-accent);padding:var(--space-4)">';
+      html += '<div style="font-family:var(--font-heading);font-weight:700;font-size:15px;margin-bottom:4px">📄 Numériser & Scanner (OCR)</div>';
+      html += '<div class="card-body">Reconnaissance de texte OCR et rattachement automatique au dossier cible.</div></div>';
+
+      html += '<div class="card" id="card-action-verser-minute" style="cursor:pointer;border-left:4px solid #10b981;padding:var(--space-4)">';
+      html += '<div style="font-family:var(--font-heading);font-weight:700;font-size:15px;margin-bottom:4px">📥 Verser au Minutier & Sceller</div>';
+      html += '<div class="card-body">Attribuer un numéro d\'ordre, sceller l\'empreinte SHA-256 et archiver.</div></div>';
+
+      html += '<div class="card" id="card-action-nouveau-carton" style="cursor:pointer;border-left:4px solid #f59e0b;padding:var(--space-4)">';
+      html += '<div style="font-family:var(--font-heading);font-weight:700;font-size:15px;margin-bottom:4px">📦 Nouveau Carton physique</div>';
+      html += '<div class="card-body">Créer un nouveau carton, définir sa cote, son rayonnage et sa capacité.</div></div>';
+
+      html += '<div class="card" id="card-action-sortie-physique" style="cursor:pointer;border-left:4px solid #ec4899;padding:var(--space-4)">';
+      html += '<div style="font-family:var(--font-heading);font-weight:700;font-size:15px;margin-bottom:4px">📤 Sortie / Consultation</div>';
+      html += '<div class="card-body">Tracer le prêt temporaire d\'un dossier physique à un notaire ou clerc.</div></div>';
+
+      html += '</div></div></div>';
+
+      // Section 1 : File d'attente d'archivage
+      html += '<div class="dashboard-panel">';
+      html += '<div class="panel-header"><div class="panel-title"><span>⏳</span> Dossiers en attente de numérisation & versement</div><span class="tag tag-outline">' + enAttente.length + ' en attente</span></div>';
+      html += '<div class="panel-body">';
+      if (!enAttente.length) {
+        html += '<p class="text-muted" style="margin:0">🎉 Aucune minute en attente. Toutes les minutes clôturées ont été numérisées et versées.</p>';
+      } else {
+        html += '<div class="table-container"><table class="table" style="font-size:13px"><thead><tr>';
+        html += '<th>Dossier</th><th>Type d\'acte</th><th>Comparants</th><th>Clôturé le</th><th>Action</th>';
+        html += '</tr></thead><tbody>';
+        enAttente.slice(0, 8).forEach(function (d) {
+          html += '<tr>';
+          html += '<td><strong style="color:var(--color-accent)">' + d.numeroDossier + '</strong></td>';
+          html += '<td>' + labelActe(d.typeActeId) + '</td>';
+          html += '<td>' + (d.comparantsNoms || d.premierComparantNom || "—") + '</td>';
+          html += '<td>' + fmtDate(d.dateCloture || d.updatedAt) + '</td>';
+          html += '<td><button type="button" class="btn btn-primary btn-archiver-direct" data-id="' + d.id + '" style="font-size:11.5px;padding:3px 10px">📥 Archiver</button></td>';
+          html += '</tr>';
+        });
+        html += '</tbody></table></div>';
+      }
+      html += '</div></div>';
+
+      // Section 2 : Dernières Minutes Scellées
+      html += '<div class="dashboard-panel">';
+      html += '<div class="panel-header"><div class="panel-title"><span>🏛️</span> Dernières Minutes Scellées au Registre (Empreinte SHA-256)</div><button class="btn btn-ghost" id="btn-voir-tout-repertoire" style="font-size:12px">Consulter tout le Répertoire →</button></div>';
+      html += '<div class="panel-body">';
+      if (!repertoire.length) {
+        html += '<p class="text-muted" style="margin:0">Aucun acte scellé au minutier pour le moment.</p>';
+      } else {
+        html += '<div class="table-container"><table class="table" style="font-size:12.5px"><thead><tr>';
+        html += '<th>N° Ordre</th><th>Dossier</th><th>Type d\'acte</th><th>Date Minute</th><th>Empreinte SHA-256</th><th>Carton</th><th>Action</th>';
+        html += '</tr></thead><tbody>';
+        repertoire.slice(0, 6).forEach(function (m) {
+          var hashTronque = m.empreinteSha256 ? (m.empreinteSha256.slice(0, 10) + '…' + m.empreinteSha256.slice(-6)) : '—';
+          html += '<tr>';
+          html += '<td><strong>#' + (m.numeroOrdre || '—') + '</strong></td>';
+          html += '<td>' + (m.numeroDossier || '—') + '</td>';
+          html += '<td>' + (m.typeActeLibelle || '—') + '</td>';
+          html += '<td>' + fmtDate(m.dateActe || m.createdAt) + '</td>';
+          html += '<td><code style="font-size:11px;background:var(--color-surface-2);padding:2px 4px;border-radius:3px;color:var(--color-accent)">' + hashTronque + '</code></td>';
+          html += '<td>' + (m.cartonCode ? '<span class="tag tag-outline">' + m.cartonCode + '</span>' : '<span style="opacity:.6">Non classé</span>') + '</td>';
+          html += '<td><button type="button" class="btn btn-secondary btn-jumeau-direct" data-id="' + m.dossierId + '" style="font-size:11px;padding:3px 8px">🏢 360° Jumeau</button></td>';
+          html += '</tr>';
+        });
+        html += '</tbody></table></div>';
+      }
+      html += '</div></div>';
+
+      c.innerHTML = html;
+
+      // Écouteurs des boutons d'actions
+      var btnScanOcr = document.getElementById("card-action-scan-ocr");
+      if (btnScanOcr) btnScanOcr.addEventListener("click", function () { modalScanOcrIA(); });
+
+      var btnVerser = document.getElementById("card-action-verser-minute");
+      if (btnVerser) btnVerser.addEventListener("click", function () { modalNumeriserEtArchiver(); });
+
+      var btnCarton = document.getElementById("card-action-nouveau-carton");
+      if (btnCarton) btnCarton.addEventListener("click", function () { modalNouveauCarton(); });
+
+      var btnSortie = document.getElementById("card-action-sortie-physique");
+      if (btnSortie) btnSortie.addEventListener("click", function () { modalMouvementSortie(); });
+
+      var btnVoirRep = document.getElementById("btn-voir-tout-repertoire");
+      if (btnVoirRep) btnVoirRep.addEventListener("click", function () {
+        etatArchives.onglet = "repertoire";
+        irVers("archives");
+      });
+
+      c.querySelectorAll(".btn-archiver-direct").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          modalNumeriserEtArchiver(btn.dataset.id);
+        });
+      });
+
+      c.querySelectorAll(".btn-jumeau-direct").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          etatArchives.onglet = "jumeau";
+          etatArchives.dossierJumeauId = btn.dataset.id;
+          irVers("archives");
+        });
+      });
+    }).catch(function (err) {
+      c.innerHTML = '<p class="erreur-inline">Erreur de chargement du tableau de bord archiviste : ' + err.message + '</p>';
+    });
   }
 
   function renderKpisGrid(kpis) {
@@ -2025,7 +2176,7 @@
       // Boutons d'action en en-tête
       html += '<div style="display:flex;gap:var(--space-2);flex-wrap:wrap">';
       html += '<button type="button" class="btn btn-primary" id="btn-ouvrir-modal-numeriser">📥 + Numériser & Archiver</button>';
-      html += '<button type="button" class="btn btn-secondary" id="btn-ouvrir-modal-scan-ocr">🤖 + Scanner & OCR IA</button>';
+      html += '<button type="button" class="btn btn-secondary" id="btn-ouvrir-modal-scan-ocr">📄 + Scanner & OCR</button>';
       html += '<button type="button" class="btn btn-secondary" id="btn-ouvrir-modal-sortie">📤 + Sortie physique</button>';
       html += '<button type="button" class="btn btn-secondary" id="btn-ouvrir-modal-carton">📦 + Nouveau carton</button>';
       html += '</div></div>';
@@ -2672,15 +2823,15 @@
   }
 
   // =========================================================================
-  // MODALE : SCANNER & OCR IA AVEC PROPOSITION D'INDEXATION
+  // MODALE : SCANNER & RECONNAISSANCE OCR AVEC INDEXATION AUTOMATIQUE
   // =========================================================================
   function modalScanOcrIA(dossierIdPreselectionne) {
     var html = '<form id="form-scan-ocr-ia" style="display:flex;flex-direction:column;gap:var(--space-3)">';
     html += '<div class="field"><label>Sélectionner le fichier numérisé (Scan 300 DPI PDF/A)</label><input class="input" name="nomFichier" value="SCAN_ACTE_VENTE_ACD_2026.pdf" required></div>';
 
     html += '<div style="background:var(--color-surface-2);padding:12px;border-radius:var(--radius);border:1px solid var(--color-border)">';
-    html += '<div style="font-weight:700;font-size:13px;margin-bottom:6px">🤖 Moteur d\'Extraction OCR & Suggestion IA</div>';
-    html += '<div style="font-size:12px;color:var(--color-text-dim)">L\'IA extrait le texte du scan, identifie automatiquement la nature de l\'acte et propose le rattachement au dossier correspondant avec un score de confiance.</div>';
+    html += '<div style="font-weight:700;font-size:13px;margin-bottom:6px">📄 Moteur d\'Extraction & Traitement OCR</div>';
+    html += '<div style="font-size:12px;color:var(--color-text-dim)">Le moteur OCR extrait le texte du scan, identifie la nature de l\'acte et propose le rattachement automatique au dossier correspondant.</div>';
     html += '</div>';
 
     html += '<div id="zone-proposition-ia" style="display:none;background:var(--color-surface);padding:12px;border-radius:var(--radius);border:1px solid var(--color-border)"></div>';
@@ -2688,13 +2839,13 @@
     html += '<div id="erreur-scan-ocr" class="erreur-inline" style="display:none"></div>';
     html += '<div style="display:flex;justify-content:flex-end;gap:var(--space-2);margin-top:var(--space-2)">';
     html += '<button type="button" class="btn btn-ghost" id="btn-annuler-scan-ocr">Annuler</button>';
-    html += '<button type="button" class="btn btn-secondary" id="btn-analyser-scan">Lancer l\'OCR & Détection IA →</button>';
+    html += '<button type="button" class="btn btn-secondary" id="btn-analyser-scan">Lancer la Reconnaissance OCR →</button>';
     html += '<button type="submit" class="btn btn-primary" id="btn-valider-ocr-ia" style="display:none">✅ Valider & Classer dans le dossier</button>';
     html += '</div>';
     html += '</form>';
 
     ouvrirModal({
-      titre: '<span>🤖</span> Numérisation Haute Définition, OCR & Indexation IA',
+      titre: '<span>📄</span> Numérisation Haute Définition & Reconnaissance OCR',
       corps: html,
       boutonFermer: true,
       largeur: "600px",
@@ -2718,8 +2869,8 @@
             var prop = res.propositionIA;
 
             var propHtml = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">';
-            propHtml += '<strong style="color:var(--color-text);font-size:14px">Proposition IA de rattachement :</strong>';
-            propHtml += '<span class="tag tag-accent" style="font-weight:bold">Confiance : ' + prop.scoreConfiance + ' %</span>';
+            propHtml += '<strong style="color:var(--color-text);font-size:14px">Indexation OCR automatique :</strong>';
+            propHtml += '<span class="tag tag-accent" style="font-weight:bold">Qualité OCR : ' + prop.scoreConfiance + ' %</span>';
             propHtml += '</div>';
             propHtml += '<div style="font-size:12px;margin-bottom:4px"><strong>Dossier cible :</strong> ' + prop.numeroDossier + ' (' + prop.typeActeLibelle + ')</div>';
             propHtml += '<div style="font-size:12px;margin-bottom:8px"><strong>Type de pièce :</strong> ' + prop.typeDocument + '</div>';
@@ -2732,7 +2883,7 @@
           }).catch(function (e) {
             document.getElementById("erreur-scan-ocr").textContent = e.message;
             document.getElementById("erreur-scan-ocr").style.display = "block";
-            btnAnalyser.textContent = "Lancer l'OCR & Détection IA →";
+            btnAnalyser.textContent = "Lancer la Reconnaissance OCR →";
             btnAnalyser.disabled = false;
           });
         });
