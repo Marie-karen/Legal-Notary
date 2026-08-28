@@ -38,8 +38,10 @@ const supportRoutes = require("./api/support.routes");
 const superadminRoutes = require("./api/superadmin.routes");
 const telemetrieRoutes = require("./api/telemetrie.routes");
 const telemetrieService = require("./services/telemetrie.service");
+const { appliquerEnTetesSecurite } = require("./middleware/securite.middleware");
 
 const app = express();
+app.use(appliquerEnTetesSecurite);
 app.use(express.json());
 
 // CORS minimal, écrit à la main plutôt que d'ajouter une dépendance : le
