@@ -1297,35 +1297,51 @@
       var cartons = res[1] || [];
       var enAttente = res[2] || [];
       var mouvements = res[3] || [];
-      var sortisActuels = mouvements.filter(function (m) { return !m.dateRetour; });
+
+      var sortisActuels = mouvements.filter(function (m) { return m.statut === "en_cours"; });
+      var demandesEnAttente = mouvements.filter(function (m) { return m.statut === "en_attente_approbation"; });
+      var dossiersEnRetard = mouvements.filter(function (m) {
+        return m.statut === "en_cours" && Boolean(m.est_en_retard || (m.date_retour_prevue && new Date(m.date_retour_prevue) < new Date().setHours(0,0,0,0)));
+      });
 
       var totalDossiersEnCarton = cartons.reduce(function (acc, k) { return acc + (k.nombreDossiers || 0); }, 0);
 
       var kpis = [
         { label: "Minutes Scellées & Numérisées", valeur: String(repertoire.length), indice: "accent", icon: "🏛️", sub: "Registre officiel" },
-        { label: "Cartons d'Archives en Rayon", valeur: String(cartons.length), indice: "", icon: "📦", sub: totalDossiersEnCarton + " dossiers classés" },
-        { label: "En attente de versement", valeur: String(enAttente.length), indice: enAttente.length ? "warning" : "accent", icon: "⏳", sub: enAttente.length ? "Dossiers clôturés à classer" : "Minutier à jour" },
-        { label: "Dossiers Physiques Sortis", valeur: String(sortisActuels.length), indice: sortisActuels.length ? "danger" : "", icon: "📤", sub: sortisActuels.length ? "En consultation au bureau" : "Tous en cartons" },
+        { label: "Demandes de Sortie en Attente", valeur: String(demandesEnAttente.length), indice: demandesEnAttente.length ? "warning" : "accent", icon: "⏳", sub: demandesEnAttente.length ? "À valider et remettre" : "Aucune demande en attente" },
+        { label: "Dossiers Physiques en Prêt", valeur: String(sortisActuels.length), indice: "", icon: "📤", sub: totalDossiersEnCarton + " classés en cartons" },
+        { label: "Alertes Retards de Restitution", valeur: String(dossiersEnRetard.length), indice: dossiersEnRetard.length ? "danger" : "accent", icon: "🚨", sub: dossiersEnRetard.length ? "Date retour dépassée !" : "Aucun retard constaté" },
       ];
 
       var html = '<div style="position:sticky;top:calc(-1 * var(--space-6));background:var(--color-bg);z-index:2;padding-top:var(--space-1);margin-bottom:var(--space-4)">';
       html += '<div style="display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);padding-bottom:var(--space-2);border-bottom:1px solid var(--color-border);flex-wrap:wrap">';
       html += '<div><h1 style="margin:0">Supervision du Minutier & Archives</h1>';
-      html += '<p style="opacity:.65;font-size:14px;margin:2px 0 0">Bonjour ' + cache.utilisateur.nomComplet + ' — conservation légale, scellement SHA-256 et traçabilité des originaux papier.</p></div>';
+      html += '<p style="opacity:.65;font-size:14px;margin:2px 0 0">Bonjour ' + cache.utilisateur.nomComplet + ' — validation des demandes de sorties physiques, scellement SHA-256 et traçabilité.</p></div>';
       html += '<div style="display:flex;align-items:center;gap:var(--space-3);margin-left:auto">';
       html += '<div style="text-align:right"><div style="font-size:13px;font-weight:700;color:var(--color-text)">' + dateDuJour + '</div><div style="font-size:11px;color:var(--color-text-dim)">Minutier de l\'Étude · ' + anneeCourante + '</div></div></div></div></div>';
+
+      // Alerte visuelle prioritaire si des dossiers sont en retard
+      if (dossiersEnRetard.length > 0) {
+        html += '<div class="card" style="background:rgba(239,68,68,0.1);border:1.5px solid var(--color-danger);margin-bottom:var(--space-4);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">';
+        html += '<div style="display:flex;align-items:center;gap:10px">';
+        html += '<span style="font-size:24px">🚨</span>';
+        html += '<div><strong style="color:var(--color-danger);font-size:14px">Alerte non-respect des délais : ' + dossiersEnRetard.length + ' dossier(s) papier en retard de restitution !</strong>';
+        html += '<div style="font-size:12px;color:var(--color-text-dim)">Veuillez relancer les collaborateurs concernés ou enregistrer le retour du dossier.</div></div></div>';
+        html += '<button type="button" class="btn btn-secondary btn-aller-mouvements" style="font-size:11.5px;padding:4px 10px">Voir les retards →</button>';
+        html += '</div>';
+      }
 
       html += renderKpisGrid(kpis);
 
       // Panneau Raccourcis Métier de l'archiviste
       html += '<div class="dashboard-panel">';
-      html += '<div class="panel-header"><div class="panel-title"><span>⚡</span> Actions rapides d\'archivage & conservation</div></div>';
+      html += '<div class="panel-header"><div class="panel-title"><span>⚡</span> Actions rapides d\'archivage & gestion des sorties</div></div>';
       html += '<div class="panel-body">';
       html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:var(--space-3)">';
       
       html += '<div class="card" id="card-action-scan-ocr" style="cursor:pointer;border-left:4px solid var(--color-accent);padding:var(--space-4)">';
       html += '<div style="font-family:var(--font-heading);font-weight:700;font-size:15px;margin-bottom:4px">📄 Numériser & Scanner (OCR)</div>';
-      html += '<div class="card-body">Reconnaissance de texte OCR et rattachement automatique au dossier cible.</div></div>';
+      html += '<div class="card-body">Reconnaissance de texte OCR et indexation automatique sur le dossier.</div></div>';
 
       html += '<div class="card" id="card-action-verser-minute" style="cursor:pointer;border-left:4px solid #10b981;padding:var(--space-4)">';
       html += '<div style="font-family:var(--font-heading);font-weight:700;font-size:15px;margin-bottom:4px">📥 Verser au Minutier & Sceller</div>';
@@ -1336,14 +1352,37 @@
       html += '<div class="card-body">Créer un nouveau carton, définir sa cote, son rayonnage et sa capacité.</div></div>';
 
       html += '<div class="card" id="card-action-sortie-physique" style="cursor:pointer;border-left:4px solid #ec4899;padding:var(--space-4)">';
-      html += '<div style="font-family:var(--font-heading);font-weight:700;font-size:15px;margin-bottom:4px">📤 Sortie / Consultation</div>';
-      html += '<div class="card-body">Tracer le prêt temporaire d\'un dossier physique à un notaire ou clerc.</div></div>';
+      html += '<div style="font-family:var(--font-heading);font-weight:700;font-size:15px;margin-bottom:4px">📤 Demande de sortie physique</div>';
+      html += '<div class="card-body">Enregistrer une demande de prêt de dossier papier pour consultation au bureau.</div></div>';
 
       html += '</div></div></div>';
 
-      // Section 1 : File d'attente d'archivage
+      // Section 1 : Demandes de sorties physiques en attente d'approbation
+      if (demandesEnAttente.length > 0) {
+        html += '<div class="dashboard-panel" style="border:1.5px solid var(--color-warning);background:rgba(245,158,11,0.03)">';
+        html += '<div class="panel-header"><div class="panel-title" style="color:var(--color-warning)"><span>⏳</span> Demandes de sorties de dossiers à approuver (' + demandesEnAttente.length + ')</div></div>';
+        html += '<div class="panel-body">';
+        html += '<div class="table-container"><table class="table" style="font-size:13px"><thead><tr>';
+        html += '<th>Dossier</th><th>Client</th><th>Demandeur</th><th>Bureau cible</th><th>Date sortie</th><th>Retour prévu</th><th>Action</th>';
+        html += '</tr></thead><tbody>';
+        demandesEnAttente.forEach(function (m) {
+          html += '<tr>';
+          html += '<td><strong style="color:var(--color-accent)">' + m.numero_dossier + '</strong></td>';
+          html += '<td>' + (m.comparants_noms || "Comparants") + '</td>';
+          html += '<td><strong>' + m.nom_demandeur + '</strong></td>';
+          html += '<td><span style="color:#f59e0b;font-weight:600">' + m.destination_bureau + '</span></td>';
+          html += '<td>' + fmtDate(m.date_sortie || m.date_mouvement) + '</td>';
+          html += '<td>' + fmtDate(m.date_retour_prevue) + '</td>';
+          html += '<td><button type="button" class="btn btn-primary btn-approuver-sortie-dash" data-mouvement-id="' + m.id + '" style="font-size:11.5px;padding:3px 10px;font-weight:700">✅ Approuver & Remettre</button></td>';
+          html += '</tr>';
+        });
+        html += '</tbody></table></div>';
+        html += '</div></div>';
+      }
+
+      // Section 2 : File d'attente d'archivage
       html += '<div class="dashboard-panel">';
-      html += '<div class="panel-header"><div class="panel-title"><span>⏳</span> Dossiers en attente de numérisation & versement</div><span class="tag tag-outline">' + enAttente.length + ' en attente</span></div>';
+      html += '<div class="panel-header"><div class="panel-title"><span>📥</span> Dossiers clôturés en attente de versement</div><span class="tag tag-outline">' + enAttente.length + ' en attente</span></div>';
       html += '<div class="panel-body">';
       if (!enAttente.length) {
         html += '<p class="text-muted" style="margin:0">🎉 Aucune minute en attente. Toutes les minutes clôturées ont été numérisées et versées.</p>';
@@ -1351,7 +1390,7 @@
         html += '<div class="table-container"><table class="table" style="font-size:13px"><thead><tr>';
         html += '<th>Dossier</th><th>Type d\'acte</th><th>Comparants</th><th>Clôturé le</th><th>Action</th>';
         html += '</tr></thead><tbody>';
-        enAttente.slice(0, 8).forEach(function (d) {
+        enAttente.slice(0, 6).forEach(function (d) {
           html += '<tr>';
           html += '<td><strong style="color:var(--color-accent)">' + d.numeroDossier + '</strong></td>';
           html += '<td>' + labelActe(d.typeActeId) + '</td>';
@@ -1364,7 +1403,7 @@
       }
       html += '</div></div>';
 
-      // Section 2 : Dernières Minutes Scellées
+      // Section 3 : Dernières Minutes Scellées
       html += '<div class="dashboard-panel">';
       html += '<div class="panel-header"><div class="panel-title"><span>🏛️</span> Dernières Minutes Scellées au Registre (Empreinte SHA-256)</div><button class="btn btn-ghost" id="btn-voir-tout-repertoire" style="font-size:12px">Consulter tout le Répertoire →</button></div>';
       html += '<div class="panel-body">';
@@ -1403,12 +1442,29 @@
       if (btnCarton) btnCarton.addEventListener("click", function () { modalNouveauCarton(); });
 
       var btnSortie = document.getElementById("card-action-sortie-physique");
-      if (btnSortie) btnSortie.addEventListener("click", function () { modalMouvementSortie(); });
+      if (btnSortie) btnSortie.addEventListener("click", function () { modalSortiePhysique(); });
 
       var btnVoirRep = document.getElementById("btn-voir-tout-repertoire");
       if (btnVoirRep) btnVoirRep.addEventListener("click", function () {
         etatArchives.onglet = "repertoire";
         irVers("archives");
+      });
+
+      c.querySelectorAll(".btn-aller-mouvements").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          etatArchives.onglet = "mouvements";
+          irVers("archives");
+        });
+      });
+
+      c.querySelectorAll(".btn-approuver-sortie-dash").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          var mId = btn.dataset.mouvementId;
+          API.post("/api/archives/mouvements/" + mId + "/approuver").then(function () {
+            toast("Demande approuvée avec succès ! Le dossier physique est remis.");
+            renderDashboardArchiviste();
+          }).catch(function (e) { toast("Erreur : " + e.message); });
+        });
       });
 
       c.querySelectorAll(".btn-archiver-direct").forEach(function (btn) {
@@ -2299,33 +2355,62 @@
 
       } else if (etatArchives.onglet === "mouvements") {
         // --- ONGLET 3 : TRAÇABILITÉ DES MOUVEMENTS PHYSIQUES DES DOSSIERS ---
+        var estGestionnaireArchives = (cache.utilisateur.role === "archiviste") ||
+          (cache.parametres && cache.parametres.presenceArchiviste === false && (cache.utilisateur.role === "assistante" || cache.utilisateur.role === "notaire" || cache.utilisateur.role === "premier_clerc"));
+
         html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-3);flex-wrap:wrap;gap:var(--space-2)">';
-        html += '<p style="font-size:13px;color:var(--color-text-dim);margin:0">Suivi rigoureux des sorties physiques de dossiers papier pour consultation au bureau et des retours en carton.</p>';
-        html += '<button type="button" class="btn btn-primary" id="btn-ouvrir-modal-sortie-tab" style="font-size:12px">📤 + Enregistrer une sortie physique</button>';
+        html += '<p style="font-size:13px;color:var(--color-text-dim);margin:0">Suivi rigoureux des demandes de sorties physiques de dossiers papier, validation et alertes de retards.</p>';
+        html += '<button type="button" class="btn btn-primary" id="btn-ouvrir-modal-sortie-tab" style="font-size:12px">📤 + Demande de sortie dossier papier</button>';
         html += '</div>';
 
-        html += '<div class="table-wrap"><table class="table"><thead><tr><th>Dossier</th><th>Client (Comparants)</th><th>Type de mouvement</th><th>Demandeur</th><th>Localisation / Bureau</th><th>Date sortie</th><th>Date retour prévue</th><th>Statut</th><th>Action</th></tr></thead><tbody>';
+        html += '<div class="table-wrap"><table class="table"><thead><tr><th>Dossier</th><th>Client (Comparants)</th><th>Demandeur</th><th>Bureau cible</th><th>Date sortie</th><th>Date retour prévue</th><th>Statut & Alertes</th><th>Action</th></tr></thead><tbody>';
         if (!mouvements.length) {
-          html += '<tr><td colspan="9" class="text-muted" style="text-align:center;padding:var(--space-4)">Aucun mouvement physique enregistré. Tous les dossiers sont en archives.</td></tr>';
+          html += '<tr><td colspan="8" class="text-muted" style="text-align:center;padding:var(--space-4)">Aucun mouvement physique enregistré. Tous les dossiers sont en carton d\'archives.</td></tr>';
         } else {
           mouvements.forEach(function (mv) {
-            var estEnCours = mv.statut === "en_cours";
-            html += '<tr>';
+            var estEnAttente = (mv.statut === "en_attente_approbation");
+            var estEnCours = (mv.statut === "en_cours");
+            var estRetourne = (mv.statut === "retourne");
+            var estEnRetard = Boolean(mv.est_en_retard || (estEnCours && mv.date_retour_prevue && new Date(mv.date_retour_prevue) < new Date().setHours(0,0,0,0)));
+
+            html += '<tr' + (estEnRetard ? ' style="background:rgba(239,68,68,0.06)"' : (estEnAttente ? ' style="background:rgba(245,158,11,0.06)"' : '')) + '>';
             html += '<td><strong style="color:var(--color-accent)">' + mv.numero_dossier + '</strong></td>';
             html += '<td style="font-size:12px">' + (mv.comparants_noms || "Comparants") + '</td>';
-            html += '<td><span class="tag tag-outline" style="font-size:11px">' + mv.type_mouvement + '</span></td>';
             html += '<td><strong>' + mv.nom_demandeur + '</strong></td>';
             html += '<td><span style="font-weight:600;color:#f59e0b">' + mv.destination_bureau + '</span></td>';
-            html += '<td style="font-size:12px">' + fmtDate(mv.date_mouvement) + '</td>';
+            html += '<td style="font-size:12px">' + fmtDate(mv.date_sortie || mv.date_mouvement) + '</td>';
             html += '<td style="font-size:12px">' + (mv.date_retour_prevue ? fmtDate(mv.date_retour_prevue) : "—") + '</td>';
-            html += '<td><span class="tag ' + (estEnCours ? "tag-neutral" : "tag-accent") + '">' + (estEnCours ? "📍 En consultation" : "✅ Retourné") + '</span></td>';
+            
             html += '<td>';
-            if (estEnCours) {
-              html += '<button type="button" class="btn btn-secondary btn-retourner-carton" data-mouvement-id="' + mv.id + '" data-dossier-id="' + mv.dossier_id + '" style="font-size:11px;padding:3px 8px">📥 Retourner en carton</button>';
+            if (estEnAttente) {
+              html += '<span class="tag tag-warning" style="font-weight:bold;font-size:11px">⏳ En attente d\'approbation</span>';
+            } else if (estEnRetard) {
+              var nbJ = mv.jours_retard || Math.max(1, Math.round((Date.now() - new Date(mv.date_retour_prevue).getTime()) / 86400000));
+              html += '<span class="tag tag-danger" style="font-weight:800;font-size:11px">🚨 EN RETARD (+ ' + nbJ + ' j)</span>';
+            } else if (estEnCours) {
+              html += '<span class="tag tag-neutral" style="font-size:11px">📍 En consultation au bureau</span>';
             } else {
-              html += '<span style="font-size:11px;color:var(--color-text-dim)">Classé en archive</span>';
+              html += '<span class="tag tag-accent" style="font-size:11px">✅ Restitué aux archives</span>';
             }
             html += '</td>';
+
+            html += '<td><div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">';
+            if (estEnAttente) {
+              if (estGestionnaireArchives) {
+                html += '<button type="button" class="btn btn-primary btn-approuver-sortie-direct" data-mouvement-id="' + mv.id + '" style="font-size:11px;padding:3px 8px;font-weight:700">✅ Approuver & Remettre</button>';
+              } else {
+                html += '<span style="font-size:11px;color:var(--color-text-dim)">En attente de validation</span>';
+              }
+            } else if (estEnCours) {
+              if (estGestionnaireArchives) {
+                html += '<button type="button" class="btn btn-secondary btn-retourner-carton" data-mouvement-id="' + mv.id + '" data-dossier-id="' + mv.dossier_id + '" style="font-size:11px;padding:3px 8px">📥 Enregistrer restitution</button>';
+              } else {
+                html += '<span style="font-size:11px;color:var(--color-text-dim)">Prêt en cours</span>';
+              }
+            } else {
+              html += '<button type="button" class="btn btn-ghost btn-voir-jumeau-dossier" data-dossier-id="' + mv.dossier_id + '" style="font-size:10.5px;padding:2px 6px">🔍 360° Jumeau</button>';
+            }
+            html += '</div></td>';
             html += '</tr>';
           });
         }
@@ -2707,6 +2792,17 @@
         });
       });
 
+      // Clics approbation demande de sortie physique
+      c.querySelectorAll(".btn-approuver-sortie-direct").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          var mouvId = btn.dataset.mouvementId;
+          API.post("/api/archives/mouvements/" + mouvId + "/approuver").then(function () {
+            toast("Demande approuvée avec succès ! Le dossier physique est remis.");
+            renderArchives();
+          }).catch(function (e) { toast("Erreur : " + e.message); });
+        });
+      });
+
       // Avancement campagne
       c.querySelectorAll(".btn-avancement-campagne").forEach(function (btn) {
         btn.addEventListener("click", function () {
@@ -2909,10 +3005,19 @@
   }
 
   // =========================================================================
-  // MODALE : ENREGISTRER UNE SORTIE PHYSIQUE (EMPRUNT BUREAU)
+  // MODALE : DEMANDE DE SORTIE DE DOSSIER PAPIER
   // =========================================================================
   function modalSortiePhysique(dossierIdPreselectionne) {
-    API.get("/api/dossiers/mes-dossiers").catch(function () { return cache.dossiers || []; }).then(function (dossiers) {
+    var dateDuJourStr = new Date().toISOString().slice(0, 10);
+    var dateRetourDefaut = new Date(Date.now() + 3 * 86400000).toISOString().slice(0, 10);
+
+    Promise.all([
+      API.get("/api/dossiers/mes-dossiers").catch(function () { return cache.dossiers || []; }),
+      API.get("/api/equipe").catch(function () { return cache.equipeListe || []; }),
+    ]).then(function (res) {
+      var dossiers = res[0] || [];
+      var equipe = res[1] || [];
+
       var html = '<form id="form-sortie-physique" style="display:flex;flex-direction:column;gap:var(--space-3)">';
 
       html += '<div class="field"><label>Sélectionner le dossier papier à sortir</label><select class="input" name="dossierId" required>';
@@ -2923,27 +3028,63 @@
       });
       html += '</select></div>';
 
+      // 1. Liste déroulante du demandeur (équipe de l'étude)
       html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2)">';
-      html += '<div class="field"><label>Nom du demandeur / Collaborateur</label><input class="input" name="nomDemandeur" value="' + (cache.utilisateur ? cache.utilisateur.nomComplet : "Collaborateur") + '" required></div>';
-      html += '<div class="field"><label>Bureau / Localisation de consultation</label><input class="input" name="destinationBureau" value="Bureau 3 (Clerc Rédacteur)" required></div>';
+      html += '<div class="field"><label>Nom du demandeur</label><select class="input" name="nomDemandeur" required>';
+      var monNom = cache.utilisateur ? cache.utilisateur.nomComplet : "";
+      equipe.forEach(function (m) {
+        if (["superadmin", "dev", "commercial", "support", "assistante_editeur"].indexOf(m.role) !== -1) return;
+        var isMe = (m.nomComplet === monNom || (cache.utilisateur && m.id === cache.utilisateur.id));
+        html += '<option value="' + m.nomComplet + '"' + (isMe ? " selected" : "") + '>' + m.nomComplet + ' (' + (ROLE_LABEL[m.role] || m.role) + ')</option>';
+      });
+      if (!equipe.length) {
+        html += '<option value="' + (monNom || "Collaborateur") + '" selected>' + (monNom || "Collaborateur") + '</option>';
+      }
+      html += '</select></div>';
+
+      // 2. Liste déroulante du bureau
+      html += '<div class="field"><label>Bureau de consultation</label><select class="input" name="destinationBureau" required>';
+      var bureaux = [
+        "Bureau Notaire Titulaire",
+        "Bureau Premier Clerc",
+        "Bureau Clerc Rédacteur 1",
+        "Bureau Clerc Rédacteur 2",
+        "Bureau Formalités & DGI",
+        "Bureau Comptabilité & Taxe",
+        "Bureau Accueil / Réception",
+        "Salle de Signature / Réunion 1",
+        "Salle de Signature / Réunion 2",
+      ];
+      bureaux.forEach(function (b) {
+        html += '<option value="' + b + '">' + b + '</option>';
+      });
+      html += '</select></div>';
       html += '</div>';
 
+      // 3. Date de sortie (date du jour par défaut) & Date de retour prévue
       html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2)">';
-      html += '<div class="field"><label>Motif de la sortie</label><input class="input" name="motif" value="Consultation pour instruction et vérification des pièces originales" required></div>';
-      html += '<div class="field"><label>Date de retour prévue</label><input class="input" type="date" name="dateRetourPrevue" value="' + new Date(Date.now() + 3 * 86400000).toISOString().slice(0, 10) + '"></div>';
+      html += '<div class="field"><label>Date de sortie (date du jour)</label><input class="input" type="date" name="dateSortie" value="' + dateDuJourStr + '" required></div>';
+      html += '<div class="field"><label>Date de retour prévue</label><input class="input" type="date" name="dateRetourPrevue" value="' + dateRetourDefaut + '" required></div>';
+      html += '</div>';
+
+      html += '<div class="field"><label>Motif de la demande de sortie</label><input class="input" name="motif" value="Consultation pour instruction et vérification des pièces originales" required></div>';
+
+      var sansArch = (cache.parametres && cache.parametres.presenceArchiviste === false);
+      html += '<div style="font-size:12px;color:var(--color-text-dim);background:rgba(56,189,248,0.06);padding:8px 12px;border-radius:var(--radius);border:1px solid var(--color-border)">';
+      html += 'ℹ️ <em>' + (sansArch ? "La demande est transmise à l'Assistante / l'Office pour approbation avant remise du dossier physique." : "La demande est transmise à l'Archiviste pour approbation, remise physique et suivi du délai de restitution.") + '</em>';
       html += '</div>';
 
       html += '<div id="erreur-sortie" class="erreur-inline" style="display:none"></div>';
       html += '<div style="display:flex;justify-content:flex-end;gap:var(--space-2);margin-top:var(--space-2)">';
       html += '<button type="button" class="btn btn-ghost" id="btn-annuler-sortie">Annuler</button>';
-      html += '<button type="submit" class="btn btn-primary">Enregistrer la sortie physique →</button>';
+      html += '<button type="submit" class="btn btn-primary">Envoyer la demande de sortie physique →</button>';
       html += '</div></form>';
 
       ouvrirModal({
-        titre: '<span>📤</span> Enregistrer une sortie de dossier papier',
+        titre: '<span>📤</span> Demande de sortie de dossier papier',
         corps: html,
         boutonFermer: true,
-        largeur: "540px",
+        largeur: "580px",
         apresOuverture: function () {
           document.getElementById("btn-annuler-sortie").addEventListener("click", fermerModal);
           document.getElementById("form-sortie-physique").addEventListener("submit", function (ev) {
@@ -2951,13 +3092,14 @@
             var form = ev.target;
             var payload = {
               dossierId: form.dossierId.value,
-              nomDemandeur: form.nomDemandeur.value.trim(),
-              destinationBureau: form.destinationBureau.value.trim(),
-              motif: form.motif.value.trim(),
+              nomDemandeur: form.nomDemandeur.value,
+              destinationBureau: form.destinationBureau.value,
+              dateSortie: form.dateSortie.value,
               dateRetourPrevue: form.dateRetourPrevue.value || null,
+              motif: form.motif.value.trim(),
             };
-            API.post("/api/archives/mouvements/sortie", payload).then(function () {
-              toast("Sortie physique enregistrée avec succès.");
+            API.post("/api/archives/mouvements/demande", payload).then(function (res) {
+              toast(res.statut === "en_cours" ? "Sortie physique enregistrée." : "Demande de sortie transmise avec succès !");
               fermerModal();
               etatArchives.onglet = "mouvements";
               renderArchives();

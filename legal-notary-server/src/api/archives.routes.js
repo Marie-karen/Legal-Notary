@@ -61,17 +61,49 @@ router.get("/mouvements", exigerPermission("archives:acceder"), async (req, res,
   } catch (e) { next(e); }
 });
 
-router.post("/mouvements/sortie", exigerPermission("archives:archiver_physiquement"), async (req, res, next) => {
+router.post("/mouvements/sortie", exigerPermission("archives:acceder"), async (req, res, next) => {
   try {
-    const r = await mouvementsService.enregistrerSortiePhysique({
+    const r = await mouvementsService.enregistrerDemandeSortie({
       ...req.body,
       utilisateurId: req.utilisateur.id,
+      roleUtilisateur: req.utilisateur.role,
     });
     res.status(201).json(r);
   } catch (e) { next(e); }
 });
 
-router.post("/mouvements/retour", exigerPermission("archives:archiver_physiquement"), async (req, res, next) => {
+router.post("/mouvements/demande", exigerPermission("archives:acceder"), async (req, res, next) => {
+  try {
+    const r = await mouvementsService.enregistrerDemandeSortie({
+      ...req.body,
+      utilisateurId: req.utilisateur.id,
+      roleUtilisateur: req.utilisateur.role,
+    });
+    res.status(201).json(r);
+  } catch (e) { next(e); }
+});
+
+router.post("/mouvements/:id/approuver", exigerPermission("archives:acceder"), async (req, res, next) => {
+  try {
+    const r = await mouvementsService.approuverDemandeSortie({
+      mouvementId: req.params.id,
+      utilisateurId: req.utilisateur.id,
+    });
+    res.json(r);
+  } catch (e) { next(e); }
+});
+
+router.post("/mouvements/:id/retour", exigerPermission("archives:acceder"), async (req, res, next) => {
+  try {
+    const r = await mouvementsService.enregistrerRetourPhysique({
+      mouvementId: req.params.id,
+      ...(req.body || {}),
+    });
+    res.status(200).json(r);
+  } catch (e) { next(e); }
+});
+
+router.post("/mouvements/retour", exigerPermission("archives:acceder"), async (req, res, next) => {
   try {
     const r = await mouvementsService.enregistrerRetourPhysique(req.body || {});
     res.status(200).json(r);
