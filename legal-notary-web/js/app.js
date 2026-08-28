@@ -571,6 +571,7 @@
   var MENU_ITEMS_PAR_ROLE = {
     superadmin: [
       { nav: "superadmin", label: "🏛️ Parc des Études", sousOnglet: "etudes", vueParDefaut: true },
+      { nav: "rapports", label: "📊 Rapports & Échéances" },
       { nav: "superadmin", label: "👥 Équipe Éditeur SaaS", sousOnglet: "equipe" },
       { nav: "superadmin", label: "⚙️ Infrastructure & Clusters", sousOnglet: "infrastructure" },
       { nav: "superadmin", label: "💾 Sauvegardes & PRA", sousOnglet: "sauvegardes" },
@@ -579,21 +580,25 @@
     ],
     dev: [
       { nav: "superadmin", label: "⚙️ Infrastructure & Clusters", sousOnglet: "infrastructure", vueParDefaut: true },
+      { nav: "rapports", label: "📝 Mon Rapport DevOps" },
       { nav: "superadmin", label: "💾 Sauvegardes & PRA", sousOnglet: "sauvegardes" },
       { nav: "superadmin", label: "📊 Télémétrie & Logs", sousOnglet: "telemetrie" },
       { nav: "superadmin", label: "🏛️ Parc des Études", sousOnglet: "etudes" },
     ],
     commercial: [
       { nav: "superadmin", label: "🏛️ Parc des Études", sousOnglet: "etudes", vueParDefaut: true },
+      { nav: "rapports", label: "📝 Mon Rapport Commercial" },
       { nav: "superadmin", label: "👥 Équipe Éditeur SaaS", sousOnglet: "equipe" },
     ],
     support: [
       { nav: "superadmin", label: "🎫 Support L1 - L4", sousOnglet: "support", vueParDefaut: true },
+      { nav: "rapports", label: "📝 Mon Rapport Support" },
       { nav: "superadmin", label: "🏛️ Parc des Études", sousOnglet: "etudes" },
       { nav: "superadmin", label: "📊 Télémétrie & Logs", sousOnglet: "telemetrie" },
     ],
     assistante_editeur: [
       { nav: "superadmin", label: "🏛️ Parc des Études", sousOnglet: "etudes", vueParDefaut: true },
+      { nav: "rapports", label: "📝 Mon Rapport d'Activité" },
       { nav: "superadmin", label: "👥 Équipe Éditeur SaaS", sousOnglet: "equipe" },
       { nav: "superadmin", label: "🎫 Support L1 - L4", sousOnglet: "support" },
     ],
@@ -738,6 +743,7 @@
     if (vue === "parametres") renderParametres();
     if (vue === "notifications") renderNotifications();
     if (vue === "superadmin") renderSuperAdmin();
+    if (vue === "rapports") renderRapports();
   }
 
   function ouvrirDossier(id, depuis) {
@@ -5366,6 +5372,532 @@
           }).catch(function (e) {
             document.getElementById("erreur-acces-audit").textContent = e.message;
             document.getElementById("erreur-acces-audit").style.display = "block";
+          });
+        });
+      },
+    });
+  }
+
+  // =========================================================================
+  // MODULE : RAPPORTS D'ACTIVITÉ & ÉCHÉANCES DIRECTION SAAS
+  // =========================================================================
+  var etatRapports = { filtreRole: "tous" };
+
+  function renderRapports() {
+    var c = document.getElementById("vue-rapports");
+    if (!c) return;
+
+    var role = cache.utilisateur ? cache.utilisateur.role : "superadmin";
+    c.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:240px;color:var(--color-text-dim)">Chargement des rapports d\'activité…</div>';
+
+    if (role === "superadmin") {
+      API.get("/api/rapports/synthese-direction").then(function (synthese) {
+        renderRapportsDirection(c, synthese);
+      }).catch(function (e) {
+        c.innerHTML = '<p class="erreur-inline">Erreur chargement rapports : ' + e.message + '</p>';
+      });
+    } else {
+      Promise.all([
+        API.get("/api/rapports/mes-rapports"),
+        API.get("/api/rapports/parametres-frequences"),
+      ]).then(function (res) {
+        renderRapportsCollaborateur(c, role, res[0], res[1]);
+      }).catch(function (e) {
+        c.innerHTML = '<p class="erreur-inline">Erreur chargement rapports : ' + e.message + '</p>';
+      });
+    }
+  }
+
+  // --- A. VUE DIRECTION GÉNÉRALE (SYNTHÈSE, GESTION DES ÉCHÉANCES & VALIDATION) ---
+  function renderRapportsDirection(c, synthese) {
+    var kpisGlobaux = synthese.kpisGlobaux || {};
+    var kpisCom = synthese.kpisCommerciaux || {};
+    var kpisSup = synthese.kpisSupport || {};
+    var params = synthese.parametresFrequences || [];
+    var tousRapports = synthese.derniersRapports || [];
+
+    var rapportsFiltres = tousRapports;
+    if (etatRapports.filtreRole !== "tous") {
+      rapportsFiltres = tousRapports.filter(function (r) { return r.role === etatRapports.filtreRole; });
+    }
+
+    var kpis = [
+      { label: "Ponctualité de l'Équipe", valeur: (kpisGlobaux.tauxPonctualite || 100) + "%", indice: "accent", icon: "⏱️", sub: (kpisGlobaux.enRetard || 0) + " rapport(s) en retard" },
+      { label: "Total Rapports Soumis", valeur: String(kpisGlobaux.totalRapports || 0), indice: "", icon: "📊", sub: (kpisGlobaux.enAttenteLecture || 0) + " en attente de validation" },
+      { label: "Performance Commerciale", valeur: fmtFCFA(kpisCom.totalMrrGenere || 0) + " MRR", indice: "accent", icon: "💼", sub: (kpisCom.totalContratsSignes || 0) + " contrat(s) · " + (kpisCom.totalDemosRealisees || 0) + " démos" },
+      { label: "Qualité Support & CSAT", valeur: kpisSup.moyenneCsat || "98.5%", indice: "", icon: "🎧", sub: (kpisSup.totalTicketsResolus || 0) + " tickets résolus · Rép: " + (kpisSup.tempsMoyenResolution || "1h 35m") },
+    ];
+
+    var html = '<div style="margin-bottom:var(--space-4)">';
+    html += '<div style="display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);padding-bottom:var(--space-2);border-bottom:1px solid var(--color-border)">';
+    html += '<div><h1 style="margin:0;font-size:22px;color:var(--color-text)">📊 Direction Générale · Rapports & Échéances Équipe</h1>';
+    html += '<p style="opacity:.65;font-size:13px;margin:2px 0 0">Supervision de l\'activité hebdomadaire, contrôle des performances et configuration des délais de soumission.</p></div>';
+    html += '<div style="display:flex;gap:var(--space-2)">';
+    html += '<button type="button" class="btn btn-secondary" id="btn-refresh-rapports" style="padding:6px 12px;font-size:12px">🔄 Actualiser</button>';
+    html += '</div>';
+    html += '</div></div>';
+
+    html += renderKpisGrid(kpis);
+
+    // =========================================================================
+    // 1. SECTION : PARAMÉTRAGE DES ÉCHÉANCES & FRÉQUENCES (PAR LA DIRECTION)
+    // =========================================================================
+    html += '<div class="card elev-sm" style="margin-bottom:var(--space-5);border-color:rgba(56,189,248,0.25)">';
+    html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-3)">';
+    html += '<div><strong style="font-size:15px;color:#38bdf8">⚙️ Configuration des Échéances & Délais de Soumission</strong>';
+    html += '<p style="font-size:12px;color:var(--color-text-dim);margin:2px 0 0">Définissez quand chaque collaborateur doit impérativement vous remettre son compte-rendu d\'activité.</p></div>';
+    html += '<span class="tag tag-accent">👑 Contrôle Direction</span>';
+    html += '</div>';
+
+    html += '<div style="overflow-x:auto">';
+    html += '<table class="table" style="font-size:12.5px;width:100%">';
+    html += '<thead><tr><th>Fonction / Rôle</th><th>Fréquence</th><th>Jour & Heure Limite</th><th>Attendus & Objectifs Clés</th><th>Statut</th><th>Action</th></tr></thead>';
+    html += '<tbody>';
+
+    params.forEach(function (p) {
+      var iconRole = p.roleCible === "commercial" ? "💼" : p.roleCible === "support" ? "🎧" : p.roleCible === "dev" ? "💻" : "📋";
+      var libelleRole = ROLE_LABEL[p.roleCible] || p.roleCible;
+      html += '<tr>';
+      html += '<td><strong>' + iconRole + ' ' + libelleRole + '</strong></td>';
+      html += '<td><span class="tag tag-outline" style="text-transform:capitalize">' + p.frequence + '</span></td>';
+      html += '<td><strong style="color:var(--color-text)">Chaque ' + p.jourLimite + '</strong> avant <code style="color:#38bdf8">' + p.heureLimite + '</code></td>';
+      html += '<td style="max-width:320px;font-size:11.5px;color:var(--color-text-dim)">' + (p.descriptionAttendus || "—") + '</td>';
+      html += '<td>' + (p.actif ? '<span class="tag tag-accent">🟢 Actif</span>' : '<span class="tag tag-outline">Désactivé</span>') + '</td>';
+      html += '<td><button type="button" class="btn btn-secondary btn-modifier-echeance" data-role="' + p.roleCible + '" style="font-size:11px;padding:3px 8px">⚙️ Modifier</button></td>';
+      html += '</tr>';
+    });
+
+    html += '</tbody></table></div></div>';
+
+    // =========================================================================
+    // 2. SECTION : FLUX DES RAPPORTS DE L'ÉQUIPE (AVEC FILTRES & VALIDATION)
+    // =========================================================================
+    html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-3)">';
+    html += '<div><h2 style="margin:0;font-size:16px;color:var(--color-text)">📋 Derniers Rapports d\'Activité Soumis</h2>';
+    html += '<p style="font-size:12px;color:var(--color-text-dim);margin:2px 0 0">Consultez les bilans détaillés, validez les rapports ou demandez des directives spécifiques.</p></div>';
+
+    // Filtres par rôle
+    html += '<div style="display:flex;gap:4px;background:var(--color-surface-2);padding:3px;border-radius:var(--radius);border:1px solid var(--color-border)">';
+    var filtres = [
+      { id: "tous", label: "Tous (" + tousRapports.length + ")" },
+      { id: "commercial", label: "💼 Commercial (" + tousRapports.filter(function (r) { return r.role === "commercial"; }).length + ")" },
+      { id: "support", label: "🎧 Support (" + tousRapports.filter(function (r) { return r.role === "support"; }).length + ")" },
+      { id: "dev", label: "💻 DevOps (" + tousRapports.filter(function (r) { return r.role === "dev"; }).length + ")" },
+    ];
+    filtres.forEach(function (f) {
+      var actif = etatRapports.filtreRole === f.id;
+      html += '<button type="button" class="btn-role-switch btn-filtre-rapport' + (actif ? ' actif' : '') + '" data-filtre="' + f.id + '" style="font-size:11px;padding:3px 8px">' + f.label + '</button>';
+    });
+    html += '</div></div>';
+
+    if (rapportsFiltres.length === 0) {
+      html += '<div class="card" style="text-align:center;padding:var(--space-6);color:var(--color-text-dim)">Aucun rapport d\'activité soumis pour ce filtre pour le moment.</div>';
+    } else {
+      html += '<div style="display:grid;grid-template-columns:1fr;gap:var(--space-4)">';
+      rapportsFiltres.forEach(function (r) {
+        var icon = r.role === "commercial" ? "💼" : r.role === "support" ? "🎧" : r.role === "dev" ? "💻" : "📋";
+        var badgeStatut = r.statut === "valide_direction"
+          ? '<span class="tag tag-accent">✅ Validé par la Direction</span>'
+          : r.statut === "demande_precision"
+          ? '<span class="tag tag-danger">⚠️ Précisions demandées</span>'
+          : '<span class="tag tag-outline" style="border-color:#38bdf8;color:#38bdf8">⏳ En attente d\'évaluation</span>';
+
+        var badgeRetard = r.enRetard ? '<span class="tag tag-danger">🔴 Soumis en retard</span>' : '<span class="tag tag-outline" style="color:#22c55e;border-color:#22c55e">🟢 À temps</span>';
+
+        html += '<div class="card elev-sm" style="background:var(--color-surface);border:1px solid var(--color-border);padding:var(--space-4)">';
+        html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:var(--space-3)">';
+        html += '<div>';
+        html += '<div style="display:flex;align-items:center;gap:8px">';
+        html += '<span style="font-size:18px">' + icon + '</span>';
+        html += '<strong style="font-size:15px;color:var(--color-text)">' + r.titre + '</strong>';
+        html += badgeStatut;
+        html += badgeRetard;
+        html += '</div>';
+        html += '<div style="font-size:12px;color:var(--color-text-dim);margin-top:3px">';
+        html += 'Auteur : <strong>' + r.auteurNom + '</strong> (' + (ROLE_LABEL[r.role] || r.role) + ') · Période du ' + fmtDate(r.periodeDebut) + ' au ' + fmtDate(r.periodeFin) + ' · Soumis le ' + fmtDate(r.dateSoumission);
+        html += '</div>';
+        html += '</div>';
+
+        // Bouton d'action Direction
+        html += '<div style="display:flex;gap:var(--space-2)">';
+        html += '<button type="button" class="btn btn-secondary btn-evaluer-rapport" data-id="' + r.id + '" data-titre="' + r.titre + '" style="font-size:11.5px;padding:4px 10px">💬 Évaluer / Directives</button>';
+        html += '</div>';
+        html += '</div>';
+
+        // Corps des données selon le rôle
+        var d = r.donnees || {};
+        html += '<div style="background:var(--color-surface-2);padding:12px;border-radius:var(--radius);border:1px solid var(--color-border);margin-bottom:var(--space-2)">';
+
+        if (r.role === "commercial") {
+          html += '<div style="display:grid;grid-template-columns:repeat(4, 1fr);gap:10px;margin-bottom:10px">';
+          html += '<div><span style="font-size:11px;color:var(--color-text-dim)">Études Prospectées</span><div style="font-size:16px;font-weight:700;color:var(--color-text)">' + (d.etudesContactees || 0) + '</div></div>';
+          html += '<div><span style="font-size:11px;color:var(--color-text-dim)">Démos Réalisées</span><div style="font-size:16px;font-weight:700;color:#38bdf8">' + (d.demosRealisees || 0) + '</div></div>';
+          html += '<div><span style="font-size:11px;color:var(--color-text-dim)">Contrats Signés</span><div style="font-size:16px;font-weight:700;color:#22c55e">' + (d.contratsSignes || 0) + ' études</div></div>';
+          html += '<div><span style="font-size:11px;color:var(--color-text-dim)">MRR Récurrent</span><div style="font-size:16px;font-weight:700;color:#22c55e">' + fmtFCFA(d.mrrGenereFCFA || 0) + '</div></div>';
+          html += '</div>';
+          if (d.etudesEnClosing && d.etudesEnClosing.length) {
+            html += '<div style="font-size:12px;margin-bottom:6px"><strong>🎯 Études en phase de signature / closing :</strong> <span style="color:#38bdf8">' + (Array.isArray(d.etudesEnClosing) ? d.etudesEnClosing.join(", ") : d.etudesEnClosing) + '</span></div>';
+          }
+        } else if (r.role === "support") {
+          html += '<div style="display:grid;grid-template-columns:repeat(4, 1fr);gap:10px;margin-bottom:10px">';
+          html += '<div><span style="font-size:11px;color:var(--color-text-dim)">Tickets Traités</span><div style="font-size:16px;font-weight:700;color:var(--color-text)">' + (d.ticketsTraites || 0) + '</div></div>';
+          html += '<div><span style="font-size:11px;color:var(--color-text-dim)">Tickets Résolus</span><div style="font-size:16px;font-weight:700;color:#22c55e">' + (d.ticketsResolus || 0) + '</div></div>';
+          html += '<div><span style="font-size:11px;color:var(--color-text-dim)">Score CSAT</span><div style="font-size:16px;font-weight:700;color:#38bdf8">' + (d.scoreCsatPct || 98.2) + '%</div></div>';
+          html += '<div><span style="font-size:11px;color:var(--color-text-dim)">Délai Réponse</span><div style="font-size:16px;font-weight:700;color:var(--color-text)">' + (d.tempsReponseMinutes || 12) + ' min</div></div>';
+          html += '</div>';
+          if (d.topProblemes) {
+            html += '<div style="font-size:12px;margin-bottom:6px"><strong>🔧 Problèmes récurrents :</strong> <span style="color:var(--color-text)">' + d.topProblemes + '</span></div>';
+          }
+          if (d.etudesSousSurveillance) {
+            html += '<div style="font-size:12px;margin-bottom:6px"><strong>⚠️ Études nécessitant accompagnement :</strong> <span style="color:#f59e0b">' + d.etudesSousSurveillance + '</span></div>';
+          }
+        } else if (r.role === "dev") {
+          html += '<div style="display:grid;grid-template-columns:repeat(4, 1fr);gap:10px;margin-bottom:10px">';
+          html += '<div><span style="font-size:11px;color:var(--color-text-dim)">Disponibilité Uptime</span><div style="font-size:16px;font-weight:700;color:#22c55e">' + (d.uptimePourcentage || 99.98) + '%</div></div>';
+          html += '<div><span style="font-size:11px;color:var(--color-text-dim)">Incidents Bloquants</span><div style="font-size:16px;font-weight:700;color:var(--color-text)">' + (d.incidentsBloquants || 0) + '</div></div>';
+          html += '<div><span style="font-size:11px;color:var(--color-text-dim)">Sauvegardes WORM</span><div style="font-size:16px;font-weight:700;color:#38bdf8">' + (d.snapshotsWormGeneres || 7) + ' snapshots</div></div>';
+          html += '<div><span style="font-size:11px;color:var(--color-text-dim)">Conformité PRA</span><div style="font-size:16px;font-weight:700;color:#22c55e">' + (d.testPraConformite || "100% OK") + '</div></div>';
+          html += '</div>';
+          if (d.misesEnProduction) {
+            html += '<div style="font-size:12px;margin-bottom:6px"><strong>🚀 Mises en production :</strong> <span style="color:var(--color-text)">' + d.misesEnProduction + '</span></div>';
+          }
+        }
+
+        if (d.faitsMarquants) {
+          html += '<div style="font-size:12px;margin-top:6px"><strong>💡 Faits marquants :</strong> <span style="color:var(--color-text)">' + d.faitsMarquants + '</span></div>';
+        }
+        if (d.pointsBloquants) {
+          html += '<div style="font-size:12px;margin-top:4px"><strong>🚧 Points bloquants :</strong> <span style="color:#f43f5e">' + d.pointsBloquants + '</span></div>';
+        }
+        if (d.prioritesSemaineProchaine || d.prioritesTechniques) {
+          html += '<div style="font-size:12px;margin-top:4px"><strong>🎯 Priorités semaine prochaine :</strong> <span style="color:#38bdf8">' + (d.prioritesSemaineProchaine || d.prioritesTechniques) + '</span></div>';
+        }
+
+        html += '</div>';
+
+        // Commentaire existant de la Direction
+        if (r.commentaireDirection) {
+          html += '<div style="background:rgba(56,189,248,0.08);border-left:3px solid #38bdf8;padding:8px 12px;border-radius:4px;font-size:12px;margin-top:6px">';
+          html += '<strong style="color:#38bdf8">👑 Directive de la Direction :</strong> ' + r.commentaireDirection;
+          html += '</div>';
+        }
+
+        html += '</div>';
+      });
+      html += '</div>';
+    }
+
+    c.innerHTML = html;
+
+    // Attachement des événements
+    document.getElementById("btn-refresh-rapports").addEventListener("click", renderRapports);
+
+    c.querySelectorAll(".btn-filtre-rapport").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        etatRapports.filtreRole = btn.dataset.filtre;
+        renderRapports();
+      });
+    });
+
+    c.querySelectorAll(".btn-modifier-echeance").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var roleCible = btn.dataset.role;
+        var p = params.find(function (it) { return it.roleCible === roleCible; }) || {};
+        modalModifierFrequence(roleCible, p);
+      });
+    });
+
+    c.querySelectorAll(".btn-evaluer-rapport").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var id = btn.dataset.id;
+        var titre = btn.dataset.titre;
+        modalEvaluerRapport(id, titre);
+      });
+    });
+  }
+
+  // --- B. VUE COLLABORATEUR SAAS (COMMERCIAL, SUPPORT, DEV, ASSISTANTE) ---
+  function renderRapportsCollaborateur(c, role, mesRapports, params) {
+    var param = params.find(function (p) { return p.roleCible === role; }) || { frequence: "hebdomadaire", jourLimite: "vendredi", heureLimite: "17:00", descriptionAttendus: "" };
+    var icon = role === "commercial" ? "💼" : role === "support" ? "🎧" : role === "dev" ? "💻" : "📋";
+
+    var html = '<div style="margin-bottom:var(--space-4)">';
+    html += '<div style="display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);padding-bottom:var(--space-2);border-bottom:1px solid var(--color-border)">';
+    html += '<div><h1 style="margin:0;font-size:22px;color:var(--color-text)">' + icon + ' Mes Rapports d\'Activité · ' + (ROLE_LABEL[role] || role) + '</h1>';
+    html += '<p style="opacity:.65;font-size:13px;margin:2px 0 0">Rédigez et soumettez vos comptes-rendus périodiques à la Direction Générale.</p></div>';
+    html += '<button type="button" class="btn btn-primary" id="btn-nouveau-rapport-collab" style="font-size:13px;padding:8px 14px">📝 + Rédiger mon Rapport</button>';
+    html += '</div></div>';
+
+    // Bandeau d'information sur l'échéance fixée par la Direction
+    html += '<div class="card" style="background:rgba(56,189,248,0.06);border:1px solid rgba(56,189,248,0.3);padding:var(--space-3);margin-bottom:var(--space-4);display:flex;align-items:center;justify-content:space-between">';
+    html += '<div><strong style="color:#38bdf8;font-size:13.5px">⏰ Échéance fixée par la Direction :</strong>';
+    html += '<span style="font-size:13px;color:var(--color-text);margin-left:6px">Votre rapport est attendu chaque <strong>' + param.jourLimite + '</strong> avant <code style="color:#38bdf8">' + param.heureLimite + '</code> (' + param.frequence + ').</span>';
+    html += '<div style="font-size:11.5px;color:var(--color-text-dim);margin-top:2px">Attendus clés : ' + (param.descriptionAttendus || "Compte-rendu complet de l'activité.") + '</div></div>';
+    html += '<span class="tag tag-accent">👑 Directive Direction</span>';
+    html += '</div>';
+
+    // Historique des rapports soumis par ce collaborateur
+    html += '<div style="margin-bottom:var(--space-3)"><h2 style="margin:0;font-size:16px;color:var(--color-text)">📚 Historique de mes Rapports Soumis</h2></div>';
+
+    if (mesRapports.length === 0) {
+      html += '<div class="card" style="text-align:center;padding:var(--space-6);color:var(--color-text-dim)">Vous n\'avez pas encore soumis de rapport d\'activité. Cliquez sur "+ Rédiger mon Rapport" pour démarrer.</div>';
+    } else {
+      html += '<div style="display:grid;grid-template-columns:1fr;gap:var(--space-3)">';
+      mesRapports.forEach(function (r) {
+        var badgeStatut = r.statut === "valide_direction"
+          ? '<span class="tag tag-accent">✅ Validé par la Direction</span>'
+          : r.statut === "demande_precision"
+          ? '<span class="tag tag-danger">⚠️ Précisions demandées</span>'
+          : '<span class="tag tag-outline" style="border-color:#38bdf8;color:#38bdf8">⏳ En cours de lecture</span>';
+
+        html += '<div class="card elev-sm" style="background:var(--color-surface);border:1px solid var(--color-border);padding:var(--space-3)">';
+        html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-2)">';
+        html += '<div style="display:flex;align-items:center;gap:8px">';
+        html += '<strong style="font-size:14px;color:var(--color-text)">' + r.titre + '</strong>';
+        html += badgeStatut;
+        html += '</div>';
+        html += '<div style="font-size:12px;color:var(--color-text-dim)">Période du ' + fmtDate(r.periodeDebut) + ' au ' + fmtDate(r.periodeFin) + '</div>';
+        html += '</div>';
+
+        // Directive retour
+        if (r.commentaireDirection) {
+          html += '<div style="background:rgba(56,189,248,0.08);border-left:3px solid #38bdf8;padding:6px 10px;border-radius:4px;font-size:12px;margin-top:6px">';
+          html += '<strong style="color:#38bdf8">👑 Retour de la Direction :</strong> ' + r.commentaireDirection;
+          html += '</div>';
+        }
+
+        html += '</div>';
+      });
+      html += '</div>';
+    }
+
+    c.innerHTML = html;
+
+    document.getElementById("btn-nouveau-rapport-collab").addEventListener("click", function () {
+      modalRedigerRapport(role);
+    });
+  }
+
+  // --- C. MODALE : RÉDACTION DE RAPPORT ADAPTÉE AU RÔLE ---
+  function modalRedigerRapport(role) {
+    var icon = role === "commercial" ? "💼" : role === "support" ? "🎧" : role === "dev" ? "💻" : "📋";
+    var aujourdhui = new Date().toISOString().split("T")[0];
+
+    var html = '<form id="form-soumettre-rapport" style="display:flex;flex-direction:column;gap:var(--space-3)">';
+    html += '<div class="field"><label>Titre du Rapport</label><input class="input" name="titre" value="Rapport d\'Activité · ' + (ROLE_LABEL[role] || role) + ' · Semaine ' + Math.ceil(new Date().getDate() / 7) + '" required></div>';
+
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2)">';
+    html += '<div class="field"><label>Période du</label><input class="input" type="date" name="periodeDebut" value="' + aujourdhui + '" required></div>';
+    html += '<div class="field"><label>Au</label><input class="input" type="date" name="periodeFin" value="' + aujourdhui + '" required></div>';
+    html += '</div>';
+
+    if (role === "commercial") {
+      html += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:var(--space-2)">';
+      html += '<div class="field"><label>Études Contactées</label><input class="input" type="number" name="etudesContactees" value="10" required></div>';
+      html += '<div class="field"><label>Démos Réalisées</label><input class="input" type="number" name="demosRealisees" value="4" required></div>';
+      html += '<div class="field"><label>Contrats Signés</label><input class="input" type="number" name="contratsSignes" value="1" required></div>';
+      html += '<div class="field"><label>MRR Généré (FCFA)</label><input class="input" type="number" name="mrrGenereFCFA" value="250000" required></div>';
+      html += '</div>';
+
+      html += '<div class="field"><label>Études en phase de signature / closing (Pipeline chaud)</label><input class="input" name="etudesEnClosing" placeholder="Ex. Étude Me Touré (Plateau), Étude Me Bamba (Cocody)"></div>';
+      html += '<div class="field"><label>Faits marquants & Succès de la semaine</label><textarea class="input" name="faitsMarquants" rows="2" placeholder="Ex. Très bon accueil de la fonction simulation d\'émoluments Décret 2013." required></textarea></div>';
+      html += '<div class="field"><label>Points bloquants & Objections rencontrées</label><textarea class="input" name="pointsBloquants" rows="2" placeholder="Ex. Réticence sur la formation du personnel senior."></textarea></div>';
+      html += '<div class="field"><label>Plan d\'action & Priorités semaine prochaine</label><textarea class="input" name="prioritesSemaineProchaine" rows="2" placeholder="Ex. Relancer les 3 études en attente de validation budgétaire." required></textarea></div>';
+    } else if (role === "support") {
+      html += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:var(--space-2)">';
+      html += '<div class="field"><label>Tickets Traités</label><input class="input" type="number" name="ticketsTraites" value="25" required></div>';
+      html += '<div class="field"><label>Tickets Résolus</label><input class="input" type="number" name="ticketsResolus" value="24" required></div>';
+      html += '<div class="field"><label>Score CSAT (%)</label><input class="input" type="number" step="0.1" name="scoreCsatPct" value="98.5" required></div>';
+      html += '<div class="field"><label>Délai Rép. (min)</label><input class="input" type="number" name="tempsReponseMinutes" value="15" required></div>';
+      html += '</div>';
+
+      html += '<div class="field"><label>Top 3 des problèmes récurrents rencontrés</label><input class="input" name="topProblemes" placeholder="Ex. Scanner réseau, calcul mixte, droit fixe DGI" required></div>';
+      html += '<div class="field"><label>Études nécessitant une attention ou formation</label><input class="input" name="etudesSousSurveillance" placeholder="Ex. Étude Me Kouassi (besoin formation clerc formaliste)"></div>';
+      html += '<div class="field"><label>Faits marquants & Recommandations produit</label><textarea class="input" name="faitsMarquants" rows="2" placeholder="Ex. Les études apprécient la rapidité du moteur de recherche unifié." required></textarea></div>';
+      html += '<div class="field"><label>Points bloquants & Priorités semaine prochaine</label><textarea class="input" name="prioritesSemaineProchaine" rows="2" placeholder="Ex. Préparer le webinaire de prise en main du lundi." required></textarea></div>';
+    } else {
+      // Dev & Assistante
+      html += '<div class="field"><label>Bilan des réalisations principales</label><textarea class="input" name="faitsMarquants" rows="3" placeholder="Décrivez les réalisations majeures..." required></textarea></div>';
+      html += '<div class="field"><label>Points bloquants & Incidents</label><textarea class="input" name="pointsBloquants" rows="2" placeholder="Difficultés rencontrées..."></textarea></div>';
+      html += '<div class="field"><label>Priorités pour la période suivante</label><textarea class="input" name="prioritesSemaineProchaine" rows="2" placeholder="Objectifs prioritaires..." required></textarea></div>';
+    }
+
+    html += '<div id="erreur-soumettre-rapport" class="erreur-inline" style="display:none"></div>';
+    html += '<div style="display:flex;justify-content:flex-end;gap:var(--space-2);margin-top:var(--space-2)"><button type="button" class="btn btn-ghost" id="btn-annuler-rapport">Annuler</button><button type="submit" class="btn btn-primary">Soumettre mon rapport à la Direction</button></div>';
+    html += '</form>';
+
+    ouvrirModal({
+      titre: '<span>' + icon + '</span> Rédiger mon Rapport d\'Activité (' + (ROLE_LABEL[role] || role) + ')',
+      corps: html,
+      boutonFermer: true,
+      largeur: "640px",
+      apresOuverture: function () {
+        document.getElementById("btn-annuler-rapport").addEventListener("click", fermerModal);
+        document.getElementById("form-soumettre-rapport").addEventListener("submit", function (ev) {
+          ev.preventDefault();
+          var f = ev.target;
+          var donnees = {};
+
+          if (role === "commercial") {
+            donnees = {
+              etudesContactees: parseInt(f.etudesContactees.value, 10) || 0,
+              demosRealisees: parseInt(f.demosRealisees.value, 10) || 0,
+              contratsSignes: parseInt(f.contratsSignes.value, 10) || 0,
+              mrrGenereFCFA: parseInt(f.mrrGenereFCFA.value, 10) || 0,
+              etudesEnClosing: f.etudesEnClosing ? f.etudesEnClosing.value.trim() : "",
+              faitsMarquants: f.faitsMarquants.value.trim(),
+              pointsBloquants: f.pointsBloquants.value.trim(),
+              prioritesSemaineProchaine: f.prioritesSemaineProchaine.value.trim(),
+            };
+          } else if (role === "support") {
+            donnees = {
+              ticketsTraites: parseInt(f.ticketsTraites.value, 10) || 0,
+              ticketsResolus: parseInt(f.ticketsResolus.value, 10) || 0,
+              scoreCsatPct: parseFloat(f.scoreCsatPct.value) || 98.5,
+              tempsReponseMinutes: parseInt(f.tempsReponseMinutes.value, 10) || 15,
+              topProblemes: f.topProblemes.value.trim(),
+              etudesSousSurveillance: f.etudesSousSurveillance ? f.etudesSousSurveillance.value.trim() : "",
+              faitsMarquants: f.faitsMarquants.value.trim(),
+              prioritesSemaineProchaine: f.prioritesSemaineProchaine.value.trim(),
+            };
+          } else {
+            donnees = {
+              faitsMarquants: f.faitsMarquants.value.trim(),
+              pointsBloquants: f.pointsBloquants ? f.pointsBloquants.value.trim() : "",
+              prioritesSemaineProchaine: f.prioritesSemaineProchaine.value.trim(),
+            };
+          }
+
+          var payload = {
+            titre: f.titre.value.trim(),
+            periodeDebut: f.periodeDebut.value,
+            periodeFin: f.periodeFin.value,
+            donnees: donnees,
+          };
+
+          API.post("/api/rapports/soumettre", payload).then(function () {
+            toast("Rapport d'activité transmis avec succès à la Direction Générale.");
+            fermerModal();
+            renderRapports();
+          }).catch(function (err) {
+            document.getElementById("erreur-soumettre-rapport").textContent = err.message;
+            document.getElementById("erreur-soumettre-rapport").style.display = "block";
+          });
+        });
+      },
+    });
+  }
+
+  // --- D. MODALE : MODIFICATION D'ÉCHÉANCE PAR LA DIRECTION ---
+  function modalModifierFrequence(roleCible, p) {
+    var libelleRole = ROLE_LABEL[roleCible] || roleCible;
+    var html = '<form id="form-modifier-frequence" style="display:flex;flex-direction:column;gap:var(--space-3)">';
+
+    html += '<div style="background:var(--color-surface-2);padding:8px 12px;border-radius:var(--radius);border:1px solid var(--color-border);font-size:13px">';
+    html += '<strong>Fonction ciblée :</strong> <span style="color:#38bdf8">' + libelleRole + '</span>';
+    html += '</div>';
+
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--space-2)">';
+    html += '<div class="field"><label>Fréquence</label><select class="input" name="frequence">';
+    html += '<option value="quotidien"' + (p.frequence === "quotidien" ? " selected" : "") + '>Quotidien (Chaque jour)</option>';
+    html += '<option value="hebdomadaire"' + (p.frequence === "hebdomadaire" ? " selected" : "") + '>Hebdomadaire (1x / semaine)</option>';
+    html += '<option value="mensuel"' + (p.frequence === "mensuel" ? " selected" : "") + '>Mensuel (1x / mois)</option>';
+    html += '</select></div>';
+
+    html += '<div class="field"><label>Jour limite</label><select class="input" name="jourLimite">';
+    html += '<option value="lundi"' + (p.jourLimite === "lundi" ? " selected" : "") + '>Lundi</option>';
+    html += '<option value="mardi"' + (p.jourLimite === "mardi" ? " selected" : "") + '>Mardi</option>';
+    html += '<option value="mercredi"' + (p.jourLimite === "mercredi" ? " selected" : "") + '>Mercredi</option>';
+    html += '<option value="jeudi"' + (p.jourLimite === "jeudi" ? " selected" : "") + '>Jeudi</option>';
+    html += '<option value="vendredi"' + (p.jourLimite === "vendredi" ? " selected" : "") + '>Vendredi</option>';
+    html += '</select></div>';
+
+    html += '<div class="field"><label>Heure limite</label><input class="input" type="time" name="heureLimite" value="' + (p.heureLimite || "17:00") + '" required></div>';
+    html += '</div>';
+
+    html += '<div class="field"><label>Objectifs & Attendus précis de la Direction</label><textarea class="input" name="descriptionAttendus" rows="3" required>' + (p.descriptionAttendus || "") + '</textarea></div>';
+
+    html += '<div class="field"><label>Activer cette exigence de rapport</label><select class="input" name="actif">';
+    html += '<option value="true"' + (p.actif !== false ? " selected" : "") + '>🟢 Oui (Obligatoire)</option>';
+    html += '<option value="false"' + (p.actif === false ? " selected" : "") + '>🔴 Non (Optionnel)</option>';
+    html += '</select></div>';
+
+    html += '<div id="erreur-modifier-frequence" class="erreur-inline" style="display:none"></div>';
+    html += '<div style="display:flex;justify-content:flex-end;gap:var(--space-2);margin-top:var(--space-2)"><button type="button" class="btn btn-ghost" id="btn-annuler-freq">Annuler</button><button type="submit" class="btn btn-primary">Enregistrer les paramètres</button></div>';
+    html += '</form>';
+
+    ouvrirModal({
+      titre: '<span>⚙️</span> Configurer l\'Échéance de Rapport · ' + libelleRole,
+      corps: html,
+      boutonFermer: true,
+      largeur: "560px",
+      apresOuverture: function () {
+        document.getElementById("btn-annuler-freq").addEventListener("click", fermerModal);
+        document.getElementById("form-modifier-frequence").addEventListener("submit", function (ev) {
+          ev.preventDefault();
+          var form = ev.target;
+          var payload = {
+            frequence: form.frequence.value,
+            jourLimite: form.jourLimite.value,
+            heureLimite: form.heureLimite.value,
+            descriptionAttendus: form.descriptionAttendus.value.trim(),
+            actif: form.actif.value === "true",
+          };
+
+          API.put("/api/rapports/parametres-frequences/" + roleCible, payload).then(function () {
+            toast("Échéance mise à jour avec succès pour " + libelleRole + ".");
+            fermerModal();
+            renderRapports();
+          }).catch(function (err) {
+            document.getElementById("erreur-modifier-frequence").textContent = err.message;
+            document.getElementById("erreur-modifier-frequence").style.display = "block";
+          });
+        });
+      },
+    });
+  }
+
+  // --- E. MODALE : ÉVALUATION / VALIDATION DE RAPPORT PAR LA DIRECTION ---
+  function modalEvaluerRapport(id, titre) {
+    var html = '<form id="form-evaluer-rapport" style="display:flex;flex-direction:column;gap:var(--space-3)">';
+
+    html += '<div style="background:var(--color-surface-2);padding:8px 12px;border-radius:var(--radius);border:1px solid var(--color-border);font-size:13px">';
+    html += '<strong>Rapport :</strong> <span style="color:#38bdf8">' + titre + '</span>';
+    html += '</div>';
+
+    html += '<div class="field"><label>Décision de la Direction</label><select class="input" name="statut">';
+    html += '<option value="valide_direction" selected>✅ Valider & Approuver le compte-rendu</option>';
+    html += '<option value="demande_precision">⚠️ Demander des précisions / Actions correctives</option>';
+    html += '</select></div>';
+
+    html += '<div class="field"><label>Commentaires & Directives de la Direction</label><textarea class="input" name="commentaireDirection" rows="3" placeholder="Ex. Excellent travail sur les signatures. Pour la semaine prochaine, prioriser le closing sur Me Touré..."></textarea></div>';
+
+    html += '<div id="erreur-evaluer-rapport" class="erreur-inline" style="display:none"></div>';
+    html += '<div style="display:flex;justify-content:flex-end;gap:var(--space-2);margin-top:var(--space-2)"><button type="button" class="btn btn-ghost" id="btn-annuler-eval">Annuler</button><button type="submit" class="btn btn-primary">Valider la décision</button></div>';
+    html += '</form>';
+
+    ouvrirModal({
+      titre: '<span>👑</span> Évaluation Direction · Rapport d\'Activité',
+      corps: html,
+      boutonFermer: true,
+      largeur: "540px",
+      apresOuverture: function () {
+        document.getElementById("btn-annuler-eval").addEventListener("click", fermerModal);
+        document.getElementById("form-evaluer-rapport").addEventListener("submit", function (ev) {
+          ev.preventDefault();
+          var form = ev.target;
+          var payload = {
+            statut: form.statut.value,
+            commentaireDirection: form.commentaireDirection.value.trim(),
+          };
+
+          API.post("/api/rapports/" + id + "/evaluer", payload).then(function () {
+            toast("Évaluation et directives enregistrées avec succès.");
+            fermerModal();
+            renderRapports();
+          }).catch(function (err) {
+            document.getElementById("erreur-evaluer-rapport").textContent = err.message;
+            document.getElementById("erreur-evaluer-rapport").style.display = "block";
           });
         });
       },
