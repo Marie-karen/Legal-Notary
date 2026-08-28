@@ -74,11 +74,15 @@ async function listerTachesStandard(typeActeId) {
  */
 async function obtenirTranchesBareme(baremeEmolumentsId) {
   if (!baremeEmolumentsId) return [];
+  const { rows: bRows } = await pool.query("SELECT libelle, code FROM baremes_emoluments WHERE id = $1", [baremeEmolumentsId]);
   const { rows } = await pool.query(
     "SELECT jusqua, taux FROM baremes_emoluments_tranches WHERE bareme_id = $1 ORDER BY ordre",
     [baremeEmolumentsId]
   );
-  return rows.map((r) => ({ jusqua: r.jusqua === null ? null : Number(r.jusqua), taux: Number(r.taux) }));
+  const res = rows.map((r) => ({ jusqua: r.jusqua === null ? null : Number(r.jusqua), taux: Number(r.taux) }));
+  res.baremeNom = bRows.length ? bRows[0].libelle : null;
+  res.baremeCode = bRows.length ? bRows[0].code : null;
+  return res;
 }
 
 /**

@@ -40,8 +40,18 @@ function arrondi(n) {
  * @param {number} minimumLegalMinute
  */
 function calculEmoluments(montant, tranches, minimumLegalMinute) {
+  const baremeNom = (tranches && tranches.baremeNom) || null;
+  const baremeCode = (tranches && tranches.baremeCode) || null;
+
   if (!montant || montant <= 0 || !tranches || !tranches.length) {
-    return { montantHT: minimumLegalMinute || 0, detailTranches: [], minimumApplique: true };
+    return {
+      montantHT: minimumLegalMinute || 50000,
+      detailTranches: [],
+      minimumApplique: true,
+      baremeNom,
+      baremeCode,
+      libelleRegle: "Émolument forfaitaire / Minimum légal de minute (Décret N° 2013-279)",
+    };
   }
   let borneInf = 0;
   let total = 0;
@@ -59,11 +69,16 @@ function calculEmoluments(montant, tranches, minimumLegalMinute) {
   }
   total = arrondi(total);
   let minimumApplique = false;
+  let libelleRegle = baremeNom
+    ? `${baremeNom}`
+    : "Barème proportionnel dégressif (Décret N° 2013-279)";
+
   if (minimumLegalMinute && total < minimumLegalMinute) {
     total = minimumLegalMinute;
     minimumApplique = true;
+    libelleRegle = `Minimum légal de minute (${minimumLegalMinute} FCFA — Art. 19 Décret N° 2013-279)`;
   }
-  return { montantHT: total, detailTranches: detail, minimumApplique };
+  return { montantHT: total, detailTranches: detail, minimumApplique, baremeNom, baremeCode, libelleRegle };
 }
 
 /**

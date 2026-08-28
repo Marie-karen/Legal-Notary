@@ -4105,6 +4105,18 @@
   // MODALE INTERACTIVE : CRÉER / ÉTABLIR UNE FICHE DE TAXE
   // =========================================================================
   function modalCreerFicheTaxe(dossierIdSelectionne) {
+    function formaterEspaces(val) {
+      if (val === null || val === undefined || val === "") return "0";
+      var str = String(val).replace(/\s/g, "").replace(/[^0-9]/g, "");
+      if (!str) return "0";
+      return str.replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+    }
+    function extraireNombre(str) {
+      if (!str) return 0;
+      var net = String(str).replace(/\s/g, "").replace(/[^0-9]/g, "");
+      return parseFloat(net) || 0;
+    }
+
     var chargerTypes = (cache.typesActesListe && cache.typesActesListe.length > 0)
       ? Promise.resolve(cache.typesActesListe)
       : API.get("/api/referentiel/types-actes").then(function (r) {
@@ -4128,6 +4140,8 @@
         ? dossiers.find(function (d) { return d.id === dossierIdSelectionne; })
         : (dossiers.length > 0 ? dossiers[0] : null);
 
+      var montantInitialVal = dossierInitial ? (Number(dossierInitial.montantAssiette) || 10000000) : 10000000;
+
       var html = '<form id="form-modal-creer-taxe" style="display:flex;flex-direction:column;gap:var(--space-3)">';
 
       // 1. Choix du dossier et client
@@ -4139,16 +4153,20 @@
       });
       html += '</select></div>';
 
-      // 2. Type d'acte et montant de l'assiette
-      html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2)">';
-      html += '<div class="field"><label>Type d\'Acte Notarié (Barème Décret N° 2013-279)</label><select class="input" id="taxe-modal-type-acte">';
+      // 2. Type d'acte et montant de l'assiette avec espacement
+      html += '<div style="display:grid;grid-template-columns:1.2fr 1fr;gap:var(--space-2)">';
+      html += '<div class="field"><label>Type d\'Acte Notarié (Barème Décret N° 2013-279)</label><select class="input" id="taxe-modal-type-acte" style="font-weight:600">';
       typesActes.forEach(function (t) {
         var isActSel = (dossierInitial && t.id === dossierInitial.typeActeId) ? " selected" : "";
         var libelleAff = t.libelle || t.nom || labelActe(t.id);
         html += '<option value="' + t.id + '"' + isActSel + '>' + libelleAff + '</option>';
       });
       html += '</select></div>';
-      html += '<div class="field"><label>Montant Assiette Fiscale (FCFA)</label><input class="input" type="number" min="0" step="1000" id="taxe-modal-montant" value="' + (dossierInitial ? (Number(dossierInitial.montantAssiette) || 0) : 10000000) + '" required></div>';
+      
+      html += '<div class="field"><label>Montant Assiette Fiscale (FCFA)</label>';
+      html += '<input class="input" type="text" inputmode="numeric" id="taxe-modal-montant" value="' + formaterEspaces(montantInitialVal) + '" style="font-weight:700;font-size:15px;color:var(--color-accent);letter-spacing:0.5px" required placeholder="Ex: 50 000 000">';
+      html += '<div style="font-size:11px;color:var(--color-text-dim);margin-top:3px" id="taxe-modal-montant-aff">Assiette : ' + fmtFCFA(montantInitialVal) + '</div>';
+      html += '</div>';
       html += '</div>';
 
       // 3. Paramètres & Formalités
@@ -4183,20 +4201,23 @@
         titre: '<span>💰</span> Établissement & Calcul d\'une Fiche de Taxe (Décret N° 2013-279)',
         corps: html,
         boutonFermer: true,
-        largeur: "640px",
+        largeur: "680px",
         apresOuverture: function () {
           document.getElementById("btn-annuler-modal-taxe").addEventListener("click", fermerModal);
 
           var selectDossier = document.getElementById("taxe-modal-select-dossier");
           var selectTypeActe = document.getElementById("taxe-modal-type-acte");
           var inputMontant = document.getElementById("taxe-modal-montant");
+          var affMontant = document.getElementById("taxe-modal-montant-aff");
 
           var dernierCalculResultat = null;
 
           function recalculerApercuModal() {
             if (!selectTypeActe || !inputMontant) return;
             var typeActeId = selectTypeActe.value;
-            var montant = parseFloat(inputMontant.value) || 0;
+            var montant = extraireNombre(inputMontant.value);
+            if (affMontant) affMontant.textContent = "Assiette : " + fmtFCFA(montant);
+
             var saisies = {
               timbres: {
                 pagesMinute: parseInt(document.getElementById("taxe-m-timbres-min").value, 10) || 0,
@@ -4221,20 +4242,65 @@
                 var zoneApercu = document.getElementById("zone-apercu-calcul-modal");
                 if (!zoneApercu) return;
 
-                var h = '<div class="card" style="background:var(--color-surface);border-color:var(--color-border);padding:10px 14px">';
-                h += '<div style="font-size:11.5px;font-weight:700;text-transform:uppercase;color:var(--color-accent);margin-bottom:6px">📊 Décompte Fiscal Officiel en Temps Réel</div>';
-                h += '<table class="table" style="font-size:12px;margin-bottom:0"><tbody>';
-                h += '<tr><td>1. Émoluments Notaire HT ' + (f.emoluments.minimumApplique ? '<em>(Minimum légal)</em>' : '') + '</td><td style="text-align:right;font-weight:700;color:var(--color-accent)">' + fmtFCFA(f.emoluments.montantHT) + '</td></tr>';
-                h += '<tr><td>2. TVA légale (18 %)</td><td style="text-align:right">' + fmtFCFA(f.tva) + '</td></tr>';
-                h += '<tr><td>3. Droits d\'enregistrement DGI</td><td style="text-align:right;font-weight:600">' + fmtFCFA(f.droitEnregistrement.montant) + '</td></tr>';
+                var emo = f.emoluments || {};
+                var nomRegle = emo.libelleRegle || (emo.baremeNom ? emo.baremeNom : (emo.minimumApplique ? "Minimum légal de minute (50 000 FCFA — Décret N° 2013-279)" : "Barème Décret 2013-279"));
+
+                var h = '<div class="card" style="background:var(--color-surface);border-color:var(--color-border);padding:12px 14px">';
+                h += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:4px">';
+                h += '<div style="font-size:11.5px;font-weight:700;text-transform:uppercase;color:var(--color-accent)">📊 Décompte Fiscal Officiel en Temps Réel</div>';
+                h += '<span class="tag tag-accent" style="font-size:11px">📜 ' + (f.typeActe ? f.typeActe.libelle : "Acte notarié") + '</span>';
+                h += '</div>';
+
+                h += '<table class="table" style="font-size:12.5px;margin-bottom:0"><tbody>';
+
+                // 1. Émoluments du notaire avec citation explicite de la règle
+                h += '<tr>';
+                h += '<td style="vertical-align:top">';
+                h += '<div style="font-weight:700;color:var(--color-text)">1. Émoluments Notaire HT</div>';
+                h += '<div style="font-size:11px;color:var(--color-accent);font-weight:600;margin-top:2px">⚖️ ' + nomRegle + '</div>';
+
+                // Détail des tranches calculées
+                if (emo.detailTranches && emo.detailTranches.length > 0) {
+                  h += '<div style="background:var(--color-surface-2);border-radius:var(--radius);padding:6px 10px;margin-top:6px;font-size:11px;border:1px solid var(--color-border)">';
+                  h += '<div style="font-weight:700;color:var(--color-text);margin-bottom:4px">Détail du calcul par tranches dégressives :</div>';
+                  emo.detailTranches.forEach(function (tr, idx) {
+                    var pct = (tr.taux * 100).toFixed(tr.taux < 0.01 ? 2 : 1) + ' %';
+                    var trancheLib = tr.a ? (fmtFCFA(tr.de) + ' à ' + fmtFCFA(tr.a)) : ('Au-delà de ' + fmtFCFA(tr.de));
+                    h += '<div style="display:flex;justify-content:space-between;color:var(--color-text-dim);padding:2px 0">';
+                    h += '<span>• Tranche ' + (idx + 1) + ' (' + trancheLib + ' à ' + pct + ')</span>';
+                    h += '<strong style="color:var(--color-text)">' + fmtFCFA(tr.montant) + '</strong>';
+                    h += '</div>';
+                  });
+                  h += '</div>';
+                }
+                h += '</td>';
+                h += '<td style="text-align:right;font-weight:800;font-size:13.5px;color:var(--color-accent);vertical-align:top">' + fmtFCFA(emo.montantHT) + '</td>';
+                h += '</tr>';
+
+                // 2. TVA légale
+                h += '<tr><td><strong>2. TVA légale (18 %)</strong><div style="font-size:11px;color:var(--color-text-dim)">Applicable sur les émoluments et vacations du notaire</div></td><td style="text-align:right;font-weight:600">' + fmtFCFA(f.tva) + '</td></tr>';
+
+                // 3. Droits d'enregistrement DGI
+                var dgiInfo = f.droitEnregistrement.mode === 'fixe'
+                  ? 'Droit fixe DGI de ' + fmtFCFA(f.droitEnregistrement.montant)
+                  : (f.droitEnregistrement.valeur ? ((f.droitEnregistrement.valeur * 100) + ' % sur assiette de ' + fmtFCFA(f.montantAssiette)) : 'Selon assiette de l\'acte');
+                h += '<tr><td><strong>3. Droits d\'enregistrement DGI</strong><div style="font-size:11px;color:var(--color-text-dim)">🏛️ ' + dgiInfo + '</div></td><td style="text-align:right;font-weight:600">' + fmtFCFA(f.droitEnregistrement.montant) + '</td></tr>';
+
+                // 4. Taxe foncière
                 if (f.taxeFonciere && f.taxeFonciere.total > 0) {
-                  h += '<tr><td>4. Taxe Foncière (1,2 % + 3 000 FCFA)</td><td style="text-align:right">' + fmtFCFA(f.taxeFonciere.total) + '</td></tr>';
+                  h += '<tr><td><strong>4. Taxe Foncière (Livre Foncier)</strong><div style="font-size:11px;color:var(--color-text-dim)">🗺️ 1,2 % proportionnel (' + fmtFCFA(f.taxeFonciere.proportionnel) + ') + 3 000 FCFA fixe</div></td><td style="text-align:right;font-weight:600">' + fmtFCFA(f.taxeFonciere.total) + '</td></tr>';
                 }
-                h += '<tr><td>5. Timbres fiscaux & rôles</td><td style="text-align:right">' + fmtFCFA(f.timbres.total + f.roles.total) + '</td></tr>';
-                if (f.divers > 0) {
-                  h += '<tr><td>6. Débours & Papeterie</td><td style="text-align:right">' + fmtFCFA(f.divers) + '</td></tr>';
+
+                // 5. Timbres et rôles
+                h += '<tr><td><strong>5. Timbres fiscaux & rôles</strong><div style="font-size:11px;color:var(--color-text-dim)">📄 Minute, expéditions et copies (500 FCFA / page)</div></td><td style="text-align:right;font-weight:600">' + fmtFCFA(f.timbres.total + f.roles.total) + '</td></tr>';
+
+                // 6. Débours et divers
+                if (f.divers > 0 || f.vacations > 0) {
+                  h += '<tr><td><strong>6. Débours & Papeterie</strong><div style="font-size:11px;color:var(--color-text-dim)">📦 Débours administratifs et formalités</div></td><td style="text-align:right;font-weight:600">' + fmtFCFA(f.divers + f.vacations + f.totalFraisFormalites) + '</td></tr>';
                 }
-                h += '<tr style="background:rgba(56,189,248,0.08);border-top:2px solid var(--color-accent)"><td style="font-weight:700;font-size:13.5px;color:var(--color-text)">TOTAL GÉNÉRAL TTC DU DÉCOMPTE</td><td style="text-align:right;font-weight:800;font-size:15px;color:var(--color-accent)">' + fmtFCFA(f.totaux.general) + '</td></tr>';
+
+                // Total TTC
+                h += '<tr style="background:rgba(56,189,248,0.08);border-top:2px solid var(--color-accent)"><td style="font-weight:700;font-size:14px;color:var(--color-text)">TOTAL GÉNÉRAL TTC DU DÉCOMPTE</td><td style="text-align:right;font-weight:800;font-size:16px;color:var(--color-accent)">' + fmtFCFA(f.totaux.general) + '</td></tr>';
                 h += '</tbody></table>';
                 h += '</div>';
 
@@ -4244,19 +4310,26 @@
               });
           }
 
+          // Formatage du montant avec espaces au fur et à mesure de la saisie
+          inputMontant.addEventListener("input", function () {
+            var raw = inputMontant.value.replace(/\s/g, "").replace(/[^0-9]/g, "");
+            var cursorPos = inputMontant.selectionStart;
+            inputMontant.value = formaterEspaces(raw);
+            recalculerApercuModal();
+          });
+
           // Écouteurs de modification
           selectDossier.addEventListener("change", function () {
             var dId = selectDossier.value;
             var curDossier = (cache.dossiers || []).find(function (d) { return d.id === dId; });
             if (curDossier) {
               selectTypeActe.value = curDossier.typeActeId;
-              inputMontant.value = Number(curDossier.montantAssiette) || 0;
+              inputMontant.value = formaterEspaces(Number(curDossier.montantAssiette) || 0);
               recalculerApercuModal();
             }
           });
 
           selectTypeActe.addEventListener("change", recalculerApercuModal);
-          inputMontant.addEventListener("input", recalculerApercuModal);
 
           ["taxe-m-timbres-min", "taxe-m-timbres-exp", "taxe-m-timbres-nbexp", "taxe-m-roles-min", "taxe-m-vacations", "taxe-m-divers"].forEach(function (fId) {
             var elem = document.getElementById(fId);
@@ -4305,7 +4378,7 @@
             API.post("/api/fiscal/dossiers/" + dId + "/enregistrer", {
               saisies: saisies,
               typeActeId: selectTypeActe.value,
-              montant: parseFloat(inputMontant.value) || 0,
+              montant: extraireNombre(inputMontant.value),
             }).then(function () {
               toast("Fiche de taxe enregistrée avec succès sur le dossier !");
               fermerModal();
@@ -4695,7 +4768,7 @@
       html += '<table class="print-table" style="width:100%;border-collapse:collapse;margin-top:16px;margin-bottom:20px;font-size:10pt">';
       html += '<thead><tr style="background:#f3f4f6"><th style="border:1px solid #9ca3af;padding:6px 10px;text-align:left">RUBRIQUE TARIFAIRE</th><th style="border:1px solid #9ca3af;padding:6px 10px;text-align:right">MONTANT FCFA</th></tr></thead>';
       html += '<tbody>';
-      html += '<tr><td style="border:1px solid #d1d5db;padding:6px 10px">1. Émoluments proportionnels / fixes du Notaire (HT)' + (f.emoluments.minimumApplique ? " <em>(Minimum légal de minute appliqué)</em>" : "") + '</td><td style="border:1px solid #d1d5db;padding:6px 10px;text-align:right;font-weight:600">' + fmtFCFA(f.emoluments.montantHT) + '</td></tr>';
+      html += '<tr><td style="border:1px solid #d1d5db;padding:6px 10px">1. Émoluments proportionnels / fixes du Notaire (HT)<div style="font-size:8.5pt;color:#4b5563;margin-top:2px">⚖️ ' + (f.emoluments.libelleRegle || (f.emoluments.minimumApplique ? "Minimum légal de minute (Décret N° 2013-279)" : "Barème réglementé Décret N° 2013-279")) + '</div></td><td style="border:1px solid #d1d5db;padding:6px 10px;text-align:right;font-weight:600">' + fmtFCFA(f.emoluments.montantHT) + '</td></tr>';
       html += '<tr><td style="border:1px solid #d1d5db;padding:6px 10px">2. Taxe sur la Valeur Ajoutée (TVA 18 %)</td><td style="border:1px solid #d1d5db;padding:6px 10px;text-align:right">' + fmtFCFA(f.tva) + '</td></tr>';
       html += '<tr><td style="border:1px solid #d1d5db;padding:6px 10px">3. Droits d\'enregistrement DGI' + (!f.droitEnregistrement.confirme ? " <em>(à confirmer)</em>" : "") + '</td><td style="border:1px solid #d1d5db;padding:6px 10px;text-align:right">' + fmtFCFA(f.droitEnregistrement.montant) + '</td></tr>';
       html += '<tr><td style="border:1px solid #d1d5db;padding:6px 10px">4. Taxe de publicité foncière (1,2 % + 3 000 FCFA)</td><td style="border:1px solid #d1d5db;padding:6px 10px;text-align:right">' + fmtFCFA(f.taxeFonciere.total) + '</td></tr>';
