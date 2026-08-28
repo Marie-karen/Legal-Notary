@@ -78,6 +78,8 @@ const ROLES = {
       "dossiers:creer",
       "taches:modifier",
       "actes:rediger",
+      "archives:acceder",
+      "archives:archiver_physiquement",
       "referentiel:creer_acte",
       "referentiel:creer_etape",
     ],
@@ -116,6 +118,16 @@ const ROLES = {
       "kyc:modifier",
       "archives:acceder",
       "referentiel:creer_acte",
+      "referentiel:creer_etape",
+    ],
+  },
+  ARCHIVISTE: {
+    id: "archiviste",
+    label: "Archiviste / Minutier",
+    permissions: [
+      "dossiers:voir_tous",
+      "archives:acceder",
+      "archives:archiver_physiquement",
       "referentiel:creer_etape",
     ],
   },
@@ -177,6 +189,7 @@ function porteeDossiers(role) {
     case "superadmin":
     case "premier_clerc":
     case "comptable_taxateur":
+    case "archiviste":
       return "tous";
     case "clerc_formaliste":
       return "formalites";

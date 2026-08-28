@@ -43,16 +43,18 @@
     clerc_redacteur: { addDossier: true, editTasks: true, decideProjet: false, closeDossier: false, manageCompte: false, fiscal: false, settingsAdvanced: false, equipe: false, dossiersTous: false, referentielFixerDelais: false, referentielCreerActe: true, superadmin: false },
     clerc_formaliste: { addDossier: false, editTasks: true, decideProjet: false, closeDossier: false, manageCompte: false, fiscal: false, settingsAdvanced: false, equipe: false, dossiersTous: false, referentielFixerDelais: false, referentielCreerActe: false, superadmin: false },
     comptable_taxateur: { addDossier: false, editTasks: false, decideProjet: false, closeDossier: false, manageCompte: true, fiscal: true, settingsAdvanced: false, equipe: false, dossiersTous: true, referentielFixerDelais: false, referentielCreerActe: false, superadmin: false },
-    assistante: { addDossier: true, editTasks: false, decideProjet: false, closeDossier: false, manageCompte: false, fiscal: false, settingsAdvanced: false, equipe: false, dossiersTous: false, referentielFixerDelais: false, referentielCreerActe: true, superadmin: false },
-    superadmin: { addDossier: true, editTasks: true, decideProjet: true, closeDossier: true, manageCompte: true, fiscal: true, settingsAdvanced: true, equipe: true, dossiersTous: true, referentielFixerDelais: true, referentielCreerActe: true, superadmin: true },
-    dev: { addDossier: false, editTasks: false, decideProjet: false, closeDossier: false, manageCompte: false, fiscal: false, settingsAdvanced: false, equipe: false, dossiersTous: false, referentielFixerDelais: false, referentielCreerActe: false, superadmin: true },
-    commercial: { addDossier: false, editTasks: false, decideProjet: false, closeDossier: false, manageCompte: false, fiscal: false, settingsAdvanced: false, equipe: false, dossiersTous: false, referentielFixerDelais: false, referentielCreerActe: false, superadmin: true },
-    support: { addDossier: false, editTasks: false, decideProjet: false, closeDossier: false, manageCompte: false, fiscal: false, settingsAdvanced: false, equipe: false, dossiersTous: false, referentielFixerDelais: false, referentielCreerActe: false, superadmin: true },
-    assistante_editeur: { addDossier: false, editTasks: false, decideProjet: false, closeDossier: false, manageCompte: false, fiscal: false, settingsAdvanced: false, equipe: false, dossiersTous: false, referentielFixerDelais: false, referentielCreerActe: false, superadmin: true },
+    assistante: { addDossier: true, editTasks: false, decideProjet: false, closeDossier: false, manageCompte: false, fiscal: false, settingsAdvanced: false, equipe: false, dossiersTous: false, referentielFixerDelais: false, referentielCreerActe: true, superadmin: false, archives: false },
+    archiviste: { addDossier: false, editTasks: false, decideProjet: false, closeDossier: false, manageCompte: false, fiscal: false, settingsAdvanced: false, equipe: false, dossiersTous: true, referentielFixerDelais: false, referentielCreerActe: false, superadmin: false, archives: true },
+    superadmin: { addDossier: true, editTasks: true, decideProjet: true, closeDossier: true, manageCompte: true, fiscal: true, settingsAdvanced: true, equipe: true, dossiersTous: true, referentielFixerDelais: true, referentielCreerActe: true, superadmin: true, archives: true },
+    dev: { addDossier: false, editTasks: false, decideProjet: false, closeDossier: false, manageCompte: false, fiscal: false, settingsAdvanced: false, equipe: false, dossiersTous: false, referentielFixerDelais: false, referentielCreerActe: false, superadmin: true, archives: false },
+    commercial: { addDossier: false, editTasks: false, decideProjet: false, closeDossier: false, manageCompte: false, fiscal: false, settingsAdvanced: false, equipe: false, dossiersTous: false, referentielFixerDelais: false, referentielCreerActe: false, superadmin: true, archives: false },
+    support: { addDossier: false, editTasks: false, decideProjet: false, closeDossier: false, manageCompte: false, fiscal: false, settingsAdvanced: false, equipe: false, dossiersTous: false, referentielFixerDelais: false, referentielCreerActe: false, superadmin: true, archives: false },
+    assistante_editeur: { addDossier: false, editTasks: false, decideProjet: false, closeDossier: false, manageCompte: false, fiscal: false, settingsAdvanced: false, equipe: false, dossiersTous: false, referentielFixerDelais: false, referentielCreerActe: false, superadmin: true, archives: false },
   };
   var ROLE_LABEL = {
     notaire: "Notaire Titulaire", premier_clerc: "Premier Clerc", clerc_redacteur: "Clerc Rédacteur",
     clerc_formaliste: "Clerc aux Formalités", comptable_taxateur: "Comptable Taxateur", assistante: "Assistante / Accueil",
+    archiviste: "Archiviste / Minutier",
     superadmin: "Super Administrateur SaaS",
     dev: "Développeur / DevOps SaaS",
     commercial: "Commercial & Onboarding SaaS",
@@ -319,6 +321,7 @@
     clerc_formaliste: { email: "formalites@notaire.ci", mdp: "notaire123" },
     comptable_taxateur: { email: "comptable@notaire.ci", mdp: "notaire123" },
     assistante: { email: "accueil@notaire.ci", mdp: "notaire123" },
+    archiviste: { email: "archiviste@notaire.ci", mdp: "notaire123" },
     superadmin: { email: "admin@editeur-legal.ci", mdp: "admin123" },
     dev: { email: "dev@editeur-legal.ci", mdp: "admin123" },
     commercial: { email: "commercial@editeur-legal.ci", mdp: "admin123" },
@@ -348,6 +351,9 @@
       html += '<button type="button" class="btn-role-switch' + (role === "clerc_formaliste" ? " actif" : "") + '" data-role="clerc_formaliste" title="Espace Clerc Formaliste">🏛️ Formaliste</button>';
       html += '<button type="button" class="btn-role-switch' + (role === "comptable_taxateur" ? " actif" : "") + '" data-role="comptable_taxateur" title="Espace Comptable Taxateur">💰 Comptable</button>';
       html += '<button type="button" class="btn-role-switch' + (role === "assistante" ? " actif" : "") + '" data-role="assistante" title="Espace Assistante Accueil">📞 Assistante</button>';
+      if (!cache.parametres || cache.parametres.presenceArchiviste !== false) {
+        html += '<button type="button" class="btn-role-switch' + (role === "archiviste" ? " actif" : "") + '" data-role="archiviste" title="Espace Archiviste & Minutier">📦 Archiviste</button>';
+      }
     }
 
     barre.innerHTML = html;
@@ -440,12 +446,20 @@
     // Parallélisation totale des requêtes pour un chargement instantané (< 50ms)
     var promesses = estSaaS
       ? [API.get("/api/parametres").catch(function () { return {}; })]
-      : [chargerReferentiel(), chargerEquipe(), chargerDossiersEtAlertes()];
+      : [chargerReferentiel(), chargerEquipe(), chargerDossiersEtAlertes(), API.get("/api/parametres").catch(function () { return {}; })];
 
     return Promise.all(promesses).then(function (res) {
       if (estSaaS && res[0]) {
         cache.parametres = res[0] || {};
+      } else if (!estSaaS && res[3]) {
+        cache.parametres = res[3] || {};
       }
+
+      // Si pas d'archiviste dédié dans l'étude, tous les clercs ont accès aux archives de facto
+      if (cache.parametres && cache.parametres.presenceArchiviste === false && cache.permissions) {
+        cache.permissions.archives = true;
+      }
+
       if (chargement) chargement.style.display = "none";
 
       var ecranLogin = document.getElementById("ecran-login");
@@ -678,13 +692,39 @@
       { nav: "dossiers", label: "📁 Dossiers assignés" },
       { nav: "evolution", label: "📈 Mon évolution" },
     ],
+    archiviste: [
+      { nav: "dashboard", label: "📊 Supervision & Minutier", vueParDefaut: true },
+      { nav: "archives", label: "🏛️ Minutier Numérique & Scellement", sousOnglet: "minutier" },
+      { nav: "archives", label: "📦 Cartons & Dépôt Physique", sousOnglet: "cartons" },
+      { nav: "archives", label: "🔍 Piste d'Audit & Registre", sousOnglet: "audit" },
+      { nav: "dossiers", label: "📁 Tous les Dossiers" },
+      { nav: "evolution", label: "📈 Mon évolution" },
+    ],
   };
 
   function renderMenuNavigation(role) {
     var conteneur = document.getElementById("menu-navigation-laterale");
     if (!conteneur) return;
 
-    var items = MENU_ITEMS_PAR_ROLE[role] || MENU_ITEMS_PAR_ROLE.notaire;
+    var items = (MENU_ITEMS_PAR_ROLE[role] || MENU_ITEMS_PAR_ROLE.notaire).slice();
+
+    // Règle Métier : Si l'étude n'a pas d'archiviste dédié (case décochée dans Paramètres),
+    // tous les clercs de l'office ont de facto accès au menu Minutier & Archives dans leur barre latérale !
+    var sansArchiviste = (cache.parametres && cache.parametres.presenceArchiviste === false);
+    if (sansArchiviste) {
+      if (cache.permissions) cache.permissions.archives = true;
+      var aDejaArchives = items.some(function (it) { return it.nav === "archives"; });
+      if (!aDejaArchives && role !== "superadmin" && role !== "dev" && role !== "commercial" && role !== "support" && role !== "assistante_editeur") {
+        var idxEvol = items.findIndex(function (it) { return it.nav === "evolution"; });
+        var itemArchive = { nav: "archives", label: "🏛️ Minutier & Archives" };
+        if (idxEvol !== -1) {
+          items.splice(idxEvol, 0, itemArchive);
+        } else {
+          items.push(itemArchive);
+        }
+      }
+    }
+
     var html = '';
 
     // En-tête du menu contextuel avec libellé du rôle
@@ -4021,7 +4061,20 @@
         html += champ("param-centreImpots", "Centre des Impôts de rattachement", paramsEtude.centreImpots);
         html += champ("param-compteSequestreCDCI", "Compte séquestre CDCI (Caisse des Dépôts)", paramsEtude.compteSequestreCDCI);
         html += '</div>';
-        html += '<button class="btn btn-primary" id="bouton-save-identite">Enregistrer l\'identité</button>';
+
+        html += '<h3 style="margin-top:var(--space-5);margin-bottom:var(--space-2)">Organisation & Pôle Archivage</h3>';
+        html += '<div class="card" style="max-width:720px;margin-bottom:var(--space-4);background:rgba(56,189,248,0.03);border:1px solid var(--color-border);padding:14px 16px;border-radius:var(--radius)">';
+        html += '<div class="toggle" style="display:flex;align-items:center;gap:10px">';
+        html += '<input type="checkbox" id="param-presenceArchiviste"' + (paramsEtude.presenceArchiviste !== false ? ' checked' : '') + ' style="width:18px;height:18px;cursor:pointer">';
+        html += '<label for="param-presenceArchiviste" style="font-weight:700;font-size:14px;color:var(--color-text);cursor:pointer">📦 Présence d\'un Archiviste dédié dans l\'office</label>';
+        html += '</div>';
+        html += '<p style="font-size:12px;color:var(--color-text-dim);margin:6px 0 0;line-height:1.4">';
+        html += '• <strong>Activé (Archiviste dédié) :</strong> L\'étude dispose d\'un profil Archiviste qui gère le minutier, le scellement et les cartons d\'archives.<br>';
+        html += '• <strong>Désactivé (Sans archiviste / Petite étude) :</strong> Tous les clercs (Premier clerc, rédacteurs, formalistes, accueil) ont <em>de facto</em> accès à l\'espace Minutier & Archives dans leur menu latéral.';
+        html += '</p>';
+        html += '</div>';
+
+        html += '<button class="btn btn-primary" id="bouton-save-identite">Enregistrer l\'identité & l\'organisation</button>';
       }
       html += '</div>';
 
@@ -4154,6 +4207,8 @@
       var btnSaveIdentite = document.getElementById("bouton-save-identite");
       if (btnSaveIdentite) {
         btnSaveIdentite.addEventListener("click", function () {
+          var chkArch = document.getElementById("param-presenceArchiviste");
+          var presenceArch = chkArch ? chkArch.checked : true;
           API.put("/api/parametres", {
             nomEtude: document.getElementById("param-nomEtude").value.trim(),
             titreNotaire: document.getElementById("param-titreNotaire").value.trim(),
@@ -4167,7 +4222,16 @@
             numeroCC: document.getElementById("param-numeroCC").value.trim(),
             centreImpots: document.getElementById("param-centreImpots").value.trim(),
             compteSequestreCDCI: document.getElementById("param-compteSequestreCDCI").value.trim(),
-          }).then(function () { toast("Identité de l'étude mise à jour."); }).catch(function (e) { toast(e.message); });
+            presenceArchiviste: presenceArch,
+          }).then(function (misAJour) {
+            cache.parametres = misAJour;
+            if (cache.permissions) {
+              cache.permissions.archives = (misAJour.presenceArchiviste === false || cache.utilisateur.role === "archiviste" || cache.utilisateur.role === "notaire" || cache.utilisateur.role === "premier_clerc" || cache.utilisateur.role === "superadmin");
+            }
+            actualiserBarreSelecteurRoles(cache.utilisateur.role);
+            renderMenuNavigation(cache.utilisateur.role);
+            toast("Identité & organisation de l'étude mises à jour avec succès !");
+          }).catch(function (e) { toast("Erreur : " + e.message); });
         });
       }
 

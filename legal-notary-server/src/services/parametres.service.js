@@ -41,6 +41,7 @@ function versCamel(ligne) {
     seuilStagnationJours: ligne.seuil_stagnation_jours,
     seuilAlerteEcheanceHeures: ligne.seuil_alerte_echeance_heures,
     capaciteCartonArchive: ligne.capacite_carton_archive,
+    presenceArchiviste: ligne.presence_archiviste !== false,
   };
 }
 
@@ -71,8 +72,9 @@ async function mettreAJour(champs) {
        taux_tva = $14, minimum_legal_minute = $15, tarif_page_timbre = $16, tarif_page_role = $17,
        taxe_fonciere_taux_proportionnel = $18, taxe_fonciere_droit_fixe = $19, forfait_divers = $20,
        seuil_stagnation_jours = $21, seuil_alerte_echeance_heures = $22, capacite_carton_archive = $23,
+       presence_archiviste = $24,
        updated_at = now()
-     WHERE id = $24
+     WHERE id = $25
      RETURNING *`,
     [
       fusion.nomEtude, fusion.titreNotaire, fusion.nomNotaire, fusion.numeroOrdre, fusion.adresse,
@@ -81,6 +83,7 @@ async function mettreAJour(champs) {
       fusion.tauxTVA, fusion.minimumLegalMinute, fusion.tarifPageTimbre, fusion.tarifPageRole,
       fusion.taxeFonciereTauxProportionnel, fusion.taxeFonciereDroitFixe, fusion.forfaitDivers,
       fusion.seuilStagnationJours, fusion.seuilAlerteEcheanceHeures, fusion.capaciteCartonArchive,
+      fusion.presenceArchiviste !== false,
       actuels.id,
     ]
   );
