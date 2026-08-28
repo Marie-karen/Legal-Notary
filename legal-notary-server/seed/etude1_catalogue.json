@@ -1,0 +1,1196 @@
+[
+  {
+    "classification": "Actes liés à la vente ou cession de biens immobiliers",
+    "libelle": "Acte de promesse de vente",
+    "dateline_brut": "1 mois 10 jours",
+    "taches": [
+      {
+        "libelle": "Collecte d'informations",
+        "jours": 3
+      },
+      {
+        "libelle": "Réquisition",
+        "jours": 1
+      },
+      {
+        "libelle": "Retrait état foncier",
+        "jours": 7
+      },
+      {
+        "libelle": "Vérification authenticité (pieces d'identité, extrait de naissance)",
+        "jours": 14
+      },
+      {
+        "libelle": "Visite du bien et demande de certificat de localisation",
+        "jours": 7
+      },
+      {
+        "libelle": "Rédaction de l'acte",
+        "jours": 3
+      },
+      {
+        "libelle": "Signature de l'acte",
+        "jours": 1
+      },
+      {
+        "libelle": "Dépôt à la Conservation foncière",
+        "jours": 1
+      },
+      {
+        "libelle": "Enregistrement et retrait de la minute enregistrée",
+        "jours": 14
+      },
+      {
+        "libelle": "Délivrance de l'expédition et copie",
+        "jours": 7
+      }
+    ]
+  },
+  {
+    "classification": "Actes liés à la vente ou cession de biens immobiliers",
+    "libelle": "Donation",
+    "dateline_brut": "1 mois 10 jours",
+    "taches": [
+      {
+        "libelle": "Collecte d'informations",
+        "jours": 3
+      },
+      {
+        "libelle": "Réquisition",
+        "jours": 1
+      },
+      {
+        "libelle": "Retrait état foncier",
+        "jours": 7
+      },
+      {
+        "libelle": "Vérification authenticité (acte d'hérédité; certificat non appel; Titre de propriété)",
+        "jours": 14
+      },
+      {
+        "libelle": "Visite du bien et demande de certificat de localisation",
+        "jours": 7
+      },
+      {
+        "libelle": "Rédaction de l'acte",
+        "jours": 3
+      },
+      {
+        "libelle": "Signature de l'acte",
+        "jours": 1
+      },
+      {
+        "libelle": "Dépôt à la Conservation foncière",
+        "jours": 1
+      },
+      {
+        "libelle": "Enregistrement et retrait de la minute enregistrée",
+        "jours": 14
+      },
+      {
+        "libelle": "Délivrance de l'expédition et copie",
+        "jours": 7
+      }
+    ]
+  },
+  {
+    "classification": "Actes liés à la vente ou cession de biens immobiliers",
+    "libelle": "Acte de vente SCS",
+    "dateline_brut": "1 mois 10 jours",
+    "taches": [
+      {
+        "libelle": "Collecte d'informations",
+        "jours": 3
+      },
+      {
+        "libelle": "Réquisition",
+        "jours": 1
+      },
+      {
+        "libelle": "Retrait état foncier",
+        "jours": 7
+      },
+      {
+        "libelle": "Vérification authenticité (acte d'hérédité; certificat non appel; Titre de propriété)",
+        "jours": 14
+      },
+      {
+        "libelle": "Visite du bien et demande de certificat de localisation",
+        "jours": 7
+      },
+      {
+        "libelle": "Rédaction de l'acte",
+        "jours": 3
+      },
+      {
+        "libelle": "Signature de l'acte",
+        "jours": 1
+      },
+      {
+        "libelle": "Dépôt à la Conservation foncière",
+        "jours": 1
+      },
+      {
+        "libelle": "Enregistrement et retrait de la minute enregistrée",
+        "jours": 14
+      },
+      {
+        "libelle": "Délivrance de l'expédition et copie",
+        "jours": 7
+      }
+    ]
+  },
+  {
+    "classification": "Actes liés à la vente ou cession de biens immobiliers",
+    "libelle": "Acte de vente avec Titre de propriété",
+    "dateline_brut": "3 mois 7 jours",
+    "taches": [
+      {
+        "libelle": "Collecte d'informations",
+        "jours": 3
+      },
+      {
+        "libelle": "Réquisition",
+        "jours": 1
+      },
+      {
+        "libelle": "Retrait état foncier",
+        "jours": 7
+      },
+      {
+        "libelle": "Vérification authenticité (titre de propriété)",
+        "jours": 14
+      },
+      {
+        "libelle": "Visite du bien et demande de certificat de localisation",
+        "jours": 7
+      },
+      {
+        "libelle": "Rédaction de l'acte",
+        "jours": 3
+      },
+      {
+        "libelle": "Signature de l'acte",
+        "jours": 1
+      },
+      {
+        "libelle": "Dépôt à la Conservation foncière",
+        "jours": 1
+      },
+      {
+        "libelle": "Enregistrement et retrait de la minute enregistrée",
+        "jours": 14
+      },
+      {
+        "libelle": "Délivrance de l'expédition",
+        "jours": 7
+      },
+      {
+        "libelle": "Mutation au livre foncier",
+        "jours": 21
+      },
+      {
+        "libelle": "Délivrance du CMPF",
+        "jours": 30
+      }
+    ]
+  },
+  {
+    "classification": "Actes liés à la vente ou cession de biens immobiliers",
+    "libelle": "Acte de vente + morcellement",
+    "dateline_brut": "3 mois 10 jours",
+    "taches": [
+      {
+        "libelle": "Collecte d'informations",
+        "jours": 3
+      },
+      {
+        "libelle": "Réquisition",
+        "jours": 1
+      },
+      {
+        "libelle": "Retrait état foncier",
+        "jours": 7
+      },
+      {
+        "libelle": "Vérification authenticité (titre de propriété)",
+        "jours": 14
+      },
+      {
+        "libelle": "Visite du bien et demande de certificat de localisation",
+        "jours": 7
+      },
+      {
+        "libelle": "Etablissement du dossier technique",
+        "jours": 7
+      },
+      {
+        "libelle": "Rédaction de l'acte",
+        "jours": 3
+      },
+      {
+        "libelle": "Signature de l'acte",
+        "jours": 1
+      },
+      {
+        "libelle": "Dépôt à la Conservation foncière",
+        "jours": 1
+      },
+      {
+        "libelle": "Enregistrement et retrait de la minute enregistrée",
+        "jours": 14
+      },
+      {
+        "libelle": "Délivrance de l'expédition",
+        "jours": 3
+      },
+      {
+        "libelle": "Transmission au cadastre",
+        "jours": 14
+      },
+      {
+        "libelle": "Bornage contradictoire",
+        "jours": 7
+      },
+      {
+        "libelle": "Création de Titre Foncier",
+        "jours": 21
+      },
+      {
+        "libelle": "Mutation au livre foncier",
+        "jours": 21
+      },
+      {
+        "libelle": "Délivrance du CMPF",
+        "jours": 30
+      }
+    ]
+  },
+  {
+    "classification": "Actes liés à la vente ou cession de biens immobiliers",
+    "libelle": "Cession de droits immobiliers",
+    "dateline_brut": "1 mois 4 jours",
+    "taches": [
+      {
+        "libelle": "Collecte d'informations",
+        "jours": 3
+      },
+      {
+        "libelle": "Rédaction de l'acte",
+        "jours": 3
+      },
+      {
+        "libelle": "Signature de l'acte",
+        "jours": 3
+      },
+      {
+        "libelle": "Dépôt à la Conservation foncière",
+        "jours": 1
+      },
+      {
+        "libelle": "Enregistrement et retrait de la minute enregistrée",
+        "jours": 14
+      },
+      {
+        "libelle": "Délivrance de l'expédition et copie",
+        "jours": 7
+      }
+    ]
+  },
+  {
+    "classification": "Actes liés à la vente ou cession de biens immobiliers",
+    "libelle": "Abandon de droits immobiliers",
+    "dateline_brut": "1 mois 22 jours",
+    "taches": [
+      {
+        "libelle": "Collecte d'informations",
+        "jours": 3
+      },
+      {
+        "libelle": "Vérification authenticité (lettre d'attribution, pieces d'identités, extrait de naissance)",
+        "jours": 7
+      },
+      {
+        "libelle": "Demande d'état domanial",
+        "jours": 14
+      },
+      {
+        "libelle": "Rédaction de l'acte",
+        "jours": 3
+      },
+      {
+        "libelle": "Signature de l'acte",
+        "jours": 3
+      },
+      {
+        "libelle": "Dépôt à la Conservation foncière",
+        "jours": 2
+      },
+      {
+        "libelle": "Enregistrement et retrait de la minute enregistrée",
+        "jours": 14
+      },
+      {
+        "libelle": "Délivrance de l'expédition et copie",
+        "jours": 7
+      }
+    ]
+  },
+  {
+    "classification": "Actes liés à la vente ou cession de biens immobiliers",
+    "libelle": "Régularisation de titre de propriété (sans titre foncier)",
+    "dateline_brut": "17 mois 14 jours",
+    "taches": [
+      {
+        "libelle": "Collecte d'informations",
+        "jours": 5
+      },
+      {
+        "libelle": "Vérification authenticité de l'attestation/LA/ACP",
+        "jours": 10
+      },
+      {
+        "libelle": "Vérification authenticité (acte d'hérédité; certificat non appel)",
+        "jours": 10
+      },
+      {
+        "libelle": "Etablissement de dossier technique",
+        "jours": 7
+      },
+      {
+        "libelle": "Demande d'ACD",
+        "jours": 3
+      },
+      {
+        "libelle": "Dépôt au guichet unique du foncier",
+        "jours": 1
+      },
+      {
+        "libelle": "Délivrance de l'attestation domaniale",
+        "jours": 90
+      },
+      {
+        "libelle": "Délivrance du BM",
+        "jours": 30
+      },
+      {
+        "libelle": "Transmission à la conservation foncière",
+        "jours": 14
+      },
+      {
+        "libelle": "Créaton de DM et transmssion au cadastre",
+        "jours": 14
+      },
+      {
+        "libelle": "Bornage contradictoire",
+        "jours": 7
+      },
+      {
+        "libelle": "Création du Titre foncier",
+        "jours": 21
+      },
+      {
+        "libelle": "Transmission du TF à la Direction du domaine urbain",
+        "jours": 14
+      },
+      {
+        "libelle": "Projet d'ACD",
+        "jours": 30
+      },
+      {
+        "libelle": "Retrait de la notification",
+        "jours": 30
+      },
+      {
+        "libelle": "Publicité à la conservation foncière",
+        "jours": 90
+      },
+      {
+        "libelle": "Retrait de l'ACD",
+        "jours": 1
+      }
+    ]
+  },
+  {
+    "classification": "Actes liés à la vente ou cession de biens immobiliers",
+    "libelle": "Régularisation de titre de propriété (avec titre foncier)",
+    "dateline_brut": "12 mois 4 jours",
+    "taches": [
+      {
+        "libelle": "Collecte d'informations",
+        "jours": 5
+      },
+      {
+        "libelle": "Vérification authenticité de LA/ACP",
+        "jours": 10
+      },
+      {
+        "libelle": "Vérification authenticité (acte d'hérédité; certificat non appel)",
+        "jours": 10
+      },
+      {
+        "libelle": "Demande d'ACD",
+        "jours": 3
+      },
+      {
+        "libelle": "Dépôt au guichet unique du foncier",
+        "jours": 1
+      },
+      {
+        "libelle": "Délivrance de l'attestation domaniale",
+        "jours": 90
+      },
+      {
+        "libelle": "Projet d'ACD",
+        "jours": 30
+      },
+      {
+        "libelle": "Retrait de la notification",
+        "jours": 30
+      },
+      {
+        "libelle": "Publicité à la conservation foncière",
+        "jours": 90
+      },
+      {
+        "libelle": "Retrait de l'ACD",
+        "jours": 1
+      }
+    ]
+  },
+  {
+    "classification": "Actes liés aux sociétés",
+    "libelle": "Acte lié à la création d'entreprise",
+    "dateline_brut": "1 mois 7 jours",
+    "taches": [
+      {
+        "libelle": "Collecte d'informations",
+        "jours": 3
+      },
+      {
+        "libelle": "Rédaction de l'acte",
+        "jours": 3
+      },
+      {
+        "libelle": "Signature de l'acte",
+        "jours": 1
+      },
+      {
+        "libelle": "Dépôt au CEPICI et Enregistrement des actes",
+        "jours": 7
+      },
+      {
+        "libelle": "Mis en ligne (www.225invest.ci)",
+        "jours": 1
+      },
+      {
+        "libelle": "Retrait de RCCM, IDU, Avis de constitution",
+        "jours": 14
+      },
+      {
+        "libelle": "Annonce légale fraternité matin",
+        "jours": 2
+      },
+      {
+        "libelle": "Légalisation des journaux",
+        "jours": 3
+      },
+      {
+        "libelle": "Délivrance expéditions des actes, journaux, RCCM, IDU",
+        "jours": 2
+      }
+    ]
+  },
+  {
+    "classification": "Actes liés aux sociétés",
+    "libelle": "Acte lié à la modification de sociétés",
+    "dateline_brut": "2 mois 10 jours",
+    "taches": [
+      {
+        "libelle": "Collecte d'informations",
+        "jours": 3
+      },
+      {
+        "libelle": "Rédaction de l'acte",
+        "jours": 3
+      },
+      {
+        "libelle": "Signature de l'acte",
+        "jours": 1
+      },
+      {
+        "libelle": "Dépôt au Greffe du Tribunal de commerce d'Abidjan",
+        "jours": 1
+      },
+      {
+        "libelle": "Enregistrement et retrait de la minute",
+        "jours": 14
+      },
+      {
+        "libelle": "Préparation du dossier TCA",
+        "jours": 2
+      },
+      {
+        "libelle": "Mis en ligne (etribcom.ci)",
+        "jours": 1
+      },
+      {
+        "libelle": "Dépôt et retrait au TCA",
+        "jours": 14
+      },
+      {
+        "libelle": "Annonce légale fraternité matin",
+        "jours": 2
+      },
+      {
+        "libelle": "Légalisation des journaux",
+        "jours": 3
+      },
+      {
+        "libelle": "Délivrance expéditions des actes, journaux, RCCM, IDU",
+        "jours": 2
+      }
+    ]
+  },
+  {
+    "classification": "Actes liés aux baux",
+    "libelle": "Acte lié au bail à construction",
+    "dateline_brut": "3 mois 1 jour",
+    "taches": [
+      {
+        "libelle": "Collecte d'informations",
+        "jours": 3
+      },
+      {
+        "libelle": "Réquisition",
+        "jours": 1
+      },
+      {
+        "libelle": "Retrait d'état foncier",
+        "jours": 7
+      },
+      {
+        "libelle": "Rédaction de l'acte",
+        "jours": 3
+      },
+      {
+        "libelle": "Signature de l'acte",
+        "jours": 2
+      },
+      {
+        "libelle": "Dépots à la conservation foncière",
+        "jours": 2
+      },
+      {
+        "libelle": "Enregistrement et retrait de minute",
+        "jours": 14
+      },
+      {
+        "libelle": "Délivrance d'expédition",
+        "jours": 7
+      },
+      {
+        "libelle": "Inscription au livre foncier",
+        "jours": 30
+      },
+      {
+        "libelle": "Délivrance d'état foncier",
+        "jours": 7
+      }
+    ]
+  },
+  {
+    "classification": "Actes liés aux baux",
+    "libelle": "Acte lié au bail à usage professionnel",
+    "dateline_brut": "1 mois 6 jours",
+    "taches": [
+      {
+        "libelle": "Collecte d'informations",
+        "jours": 3
+      },
+      {
+        "libelle": "Rédaction de l'acte",
+        "jours": 1
+      },
+      {
+        "libelle": "Signature de l'acte",
+        "jours": 7
+      },
+      {
+        "libelle": "Dépôt à la conservation foncière",
+        "jours": 3
+      },
+      {
+        "libelle": "Enregistrement et retrait de minute",
+        "jours": 14
+      },
+      {
+        "libelle": "Délivrance d'expédition",
+        "jours": 7
+      }
+    ]
+  },
+  {
+    "classification": "Actes liés aux baux",
+    "libelle": "Acte lié au bail rural",
+    "dateline_brut": "2 mois 10 jours",
+    "taches": [
+      {
+        "libelle": "Collecte d'informations",
+        "jours": 14
+      },
+      {
+        "libelle": "Rédaction de l'acte",
+        "jours": 1
+      },
+      {
+        "libelle": "Signature de l'acte",
+        "jours": 7
+      },
+      {
+        "libelle": "Dépôt à la conservation foncière",
+        "jours": 3
+      },
+      {
+        "libelle": "Enregistrement et retrait de minute",
+        "jours": 14
+      },
+      {
+        "libelle": "Délivrance d'expédition",
+        "jours": 7
+      }
+    ]
+  },
+  {
+    "classification": "Actes liés à la succession",
+    "libelle": "Déclaration de succession",
+    "dateline_brut": "2 mois 14 jours",
+    "taches": [
+      {
+        "libelle": "Collecte d'informations",
+        "jours": 14
+      },
+      {
+        "libelle": "Vérification authenticité (acte d'hérédité; certificat non appel)",
+        "jours": 14
+      },
+      {
+        "libelle": "Rédaction de l'acte",
+        "jours": 1
+      },
+      {
+        "libelle": "Signature de l'acte",
+        "jours": 3
+      },
+      {
+        "libelle": "Dépot à la conservation foncière",
+        "jours": 1
+      },
+      {
+        "libelle": "Enregistrement et retrait du CAD",
+        "jours": 14
+      }
+    ]
+  },
+  {
+    "classification": "Actes liés à la succession",
+    "libelle": "Mutation de biens immobiliers",
+    "dateline_brut": "3 mois 7 jours",
+    "taches": [
+      {
+        "libelle": "Rédaction de l'attestation immobilière",
+        "jours": 3
+      },
+      {
+        "libelle": "Signature de l'acte",
+        "jours": 3
+      },
+      {
+        "libelle": "Dépôt à la Conservation foncière",
+        "jours": 1
+      },
+      {
+        "libelle": "Enregistrement et retrait de la minute",
+        "jours": 14
+      },
+      {
+        "libelle": "Mutation au livre foncier",
+        "jours": 30
+      },
+      {
+        "libelle": "Délivrance du CMPF",
+        "jours": 30
+      }
+    ]
+  },
+  {
+    "classification": "Actes liés à la succession",
+    "libelle": "Partage de numéraire",
+    "dateline_brut": "1 mois 9 jours",
+    "taches": [
+      {
+        "libelle": "Rédaction de l'acte",
+        "jours": 5
+      },
+      {
+        "libelle": "Signature de l'acte",
+        "jours": 14
+      },
+      {
+        "libelle": "Dépôt à la Conservation foncière",
+        "jours": 1
+      },
+      {
+        "libelle": "Enregistrement et retrait de la minute",
+        "jours": 14
+      },
+      {
+        "libelle": "Délivrance d'expédition",
+        "jours": 7
+      }
+    ]
+  },
+  {
+    "classification": "Actes liés aux crédits",
+    "libelle": "Si bien immobilier",
+    "dateline_brut": "5 mois 4 jours",
+    "taches": [
+      {
+        "libelle": "Collecte d'informations",
+        "jours": 3
+      },
+      {
+        "libelle": "Réquisition",
+        "jours": 1
+      },
+      {
+        "libelle": "Retrait état foncier",
+        "jours": 14
+      },
+      {
+        "libelle": "Rédaction de l'acte",
+        "jours": 7
+      },
+      {
+        "libelle": "Signature de l'acte",
+        "jours": 10
+      },
+      {
+        "libelle": "Dépôt à la conservation foncière",
+        "jours": 2
+      },
+      {
+        "libelle": "Enregistrement et retrait de minute",
+        "jours": 14
+      },
+      {
+        "libelle": "Délivrance d'expédition et grosse",
+        "jours": 7
+      },
+      {
+        "libelle": "Inscription hypothécaire au livre foncier",
+        "jours": 30
+      },
+      {
+        "libelle": "Délivrance CIH",
+        "jours": 30
+      }
+    ]
+  },
+  {
+    "classification": "Actes liés aux crédits",
+    "libelle": "Si bien mobilier",
+    "dateline_brut": "3 mois 5 jours",
+    "taches": [
+      {
+        "libelle": "Collecte d'informations",
+        "jours": 3
+      },
+      {
+        "libelle": "Vérification authenticité du RCCM",
+        "jours": 2
+      },
+      {
+        "libelle": "Certificat de non faillite",
+        "jours": 14
+      },
+      {
+        "libelle": "Rédaction de l'acte",
+        "jours": 7
+      },
+      {
+        "libelle": "Signature de l'acte",
+        "jours": 7
+      },
+      {
+        "libelle": "Dépots à la conservation foncière",
+        "jours": 2
+      },
+      {
+        "libelle": "Enregistrement et retrait de la minute",
+        "jours": 14
+      },
+      {
+        "libelle": "Dépots au greffe",
+        "jours": 14
+      },
+      {
+        "libelle": "Délivrance du bordereau de nantissement",
+        "jours": 7
+      },
+      {
+        "libelle": "Délivrance d'expédition",
+        "jours": 7
+      }
+    ]
+  },
+  {
+    "classification": "Autres actes",
+    "libelle": "Reconnaissance de dette",
+    "dateline_brut": "2 mois 19 jours",
+    "taches": [
+      {
+        "libelle": "Collecte d'informations",
+        "jours": 5
+      },
+      {
+        "libelle": "Réquisition",
+        "jours": 1
+      },
+      {
+        "libelle": "Retrait d'état foncier",
+        "jours": 14
+      },
+      {
+        "libelle": "Rédaction de l'acte",
+        "jours": 3
+      },
+      {
+        "libelle": "Signature de l'acte",
+        "jours": 2
+      },
+      {
+        "libelle": "Dépots à la conservation foncière",
+        "jours": 2
+      },
+      {
+        "libelle": "Enregistrement et retrait de minute",
+        "jours": 14
+      },
+      {
+        "libelle": "Délivrance d'expédition",
+        "jours": 7
+      }
+    ]
+  },
+  {
+    "classification": "Autres actes",
+    "libelle": "Procuration",
+    "dateline_brut": "1 mois 5 jours",
+    "taches": [
+      {
+        "libelle": "Collecte d'informations",
+        "jours": 7
+      },
+      {
+        "libelle": "Rédaction de l'acte",
+        "jours": 3
+      },
+      {
+        "libelle": "Signature de l'acte",
+        "jours": 2
+      },
+      {
+        "libelle": "Dépot à la conservation foncière",
+        "jours": 2
+      },
+      {
+        "libelle": "Enregistrement et retrait de minute",
+        "jours": 14
+      },
+      {
+        "libelle": "Délivrance d'expédition",
+        "jours": 7
+      }
+    ]
+  },
+  {
+    "classification": "Autres actes",
+    "libelle": "Protocole d'accord",
+    "dateline_brut": "1 mois 5 jours",
+    "taches": [
+      {
+        "libelle": "Collecte d'informations",
+        "jours": 3
+      },
+      {
+        "libelle": "Rédaction de l'acte",
+        "jours": 3
+      },
+      {
+        "libelle": "Signature de l'acte",
+        "jours": 2
+      },
+      {
+        "libelle": "Dépot à la conservation foncière",
+        "jours": 2
+      },
+      {
+        "libelle": "Enregistrement et retrait de minute",
+        "jours": 14
+      },
+      {
+        "libelle": "Délivrance d'expédition",
+        "jours": 7
+      }
+    ]
+  },
+  {
+    "classification": "Autres actes",
+    "libelle": "Convention de lotissement",
+    "dateline_brut": "1 mois 5 jours",
+    "taches": [
+      {
+        "libelle": "Collecte d'informations",
+        "jours": 5
+      },
+      {
+        "libelle": "Rédaction de l'acte",
+        "jours": 3
+      },
+      {
+        "libelle": "Signature de l'acte",
+        "jours": 2
+      },
+      {
+        "libelle": "Dépot à la conservation foncière",
+        "jours": 2
+      },
+      {
+        "libelle": "Enregistrement et retrait de minute",
+        "jours": 14
+      },
+      {
+        "libelle": "Délivrance d'expédition",
+        "jours": 7
+      }
+    ]
+  },
+  {
+    "classification": "Autres actes",
+    "libelle": "Procès-verbal",
+    "dateline_brut": "1 mois 5 jours",
+    "taches": [
+      {
+        "libelle": "Collecte d'informations",
+        "jours": 5
+      },
+      {
+        "libelle": "Rédaction de l'acte",
+        "jours": 3
+      },
+      {
+        "libelle": "Signature de l'acte",
+        "jours": 2
+      },
+      {
+        "libelle": "Dépots à la conservation foncière",
+        "jours": 2
+      },
+      {
+        "libelle": "Enregistrement et retrait de minute",
+        "jours": 14
+      },
+      {
+        "libelle": "Délivrance d'expédition",
+        "jours": 7
+      }
+    ]
+  },
+  {
+    "classification": "Autres actes",
+    "libelle": "Déclaration de patrimoine",
+    "dateline_brut": "2 mois 19 jours",
+    "taches": [
+      {
+        "libelle": "Collecte d'informations",
+        "jours": 5
+      },
+      {
+        "libelle": "Réquisition",
+        "jours": 1
+      },
+      {
+        "libelle": "Retrait d'état foncier",
+        "jours": 14
+      },
+      {
+        "libelle": "Rédaction de l'acte",
+        "jours": 3
+      },
+      {
+        "libelle": "Signature de l'acte",
+        "jours": 2
+      },
+      {
+        "libelle": "Dépots à la conservation foncière",
+        "jours": 2
+      },
+      {
+        "libelle": "Enregistrement et retrait de minute",
+        "jours": 14
+      },
+      {
+        "libelle": "Délivrance d'expédition",
+        "jours": 7
+      }
+    ]
+  },
+  {
+    "classification": "Autres actes",
+    "libelle": "contrat de reservation",
+    "dateline_brut": "22 jours",
+    "taches": [
+      {
+        "libelle": "Collete d'information",
+        "jours": 5
+      },
+      {
+        "libelle": "Verifiaction de pieces",
+        "jours": 9
+      },
+      {
+        "libelle": "verification du lot et ilot",
+        "jours": 3
+      },
+      {
+        "libelle": "Redaction du contrat de reversation",
+        "jours": 3
+      },
+      {
+        "libelle": "Rdv de signature",
+        "jours": 2
+      }
+    ]
+  },
+  {
+    "classification": "Autres actes",
+    "libelle": "VENTE D'UNE PARCELLE FONCIER RURALE",
+    "dateline_brut": "31mois 12 jours",
+    "taches": [
+      {
+        "libelle": "Collecte d'information",
+        "jours": 1
+      },
+      {
+        "libelle": "Verification d'authenticité (pieces identité, extrait de naissance)",
+        "jours": 14
+      },
+      {
+        "libelle": "Verification de la parcelle",
+        "jours": 3
+      },
+      {
+        "libelle": "Retrait etat foncier",
+        "jours": 7
+      },
+      {
+        "libelle": "Redaction de l'acte",
+        "jours": 2
+      },
+      {
+        "libelle": "Signature de l'acte",
+        "jours": 1
+      },
+      {
+        "libelle": "Depot à la concervation foncier/formalité fussionée",
+        "jours": 1
+      },
+      {
+        "libelle": "Retrait de la munite enregistrée",
+        "jours": 7
+      },
+      {
+        "libelle": "Delivrance de l'expedition et copie",
+        "jours": 7
+      }
+    ]
+  },
+  {
+    "classification": "Autres actes",
+    "libelle": "CERTIFICATION DE SIGNATURE",
+    "dateline_brut": "09 jours",
+    "taches": [
+      {
+        "libelle": "Collecte d'information",
+        "jours": 3
+      },
+      {
+        "libelle": "Verification de pieces",
+        "jours": 5
+      },
+      {
+        "libelle": "Verification de la societe",
+        "jours": 2
+      },
+      {
+        "libelle": "Certification de signature",
+        "jours": 1
+      }
+    ]
+  },
+  {
+    "classification": "Autres actes",
+    "libelle": "Certification de passeport",
+    "dateline_brut": "07 jours",
+    "taches": [
+      {
+        "libelle": "Collecte d'information",
+        "jours": 3
+      },
+      {
+        "libelle": "Verification d'authenticité (pieces identité, extrait de naissances)",
+        "jours": 5
+      },
+      {
+        "libelle": "Certification de signature",
+        "jours": 1
+      }
+    ]
+  },
+  {
+    "classification": "Autres actes",
+    "libelle": "MAINLEVEE D'HYPOTHEQUE",
+    "dateline_brut": "1 mois 14 jours",
+    "taches": [
+      {
+        "libelle": "Collecte d'informations",
+        "jours": 3
+      },
+      {
+        "libelle": "Verification d'authenticité ( Etat civil, extrait d'acte de mariage)",
+        "jours": 14
+      },
+      {
+        "libelle": "Demande et Retrait Etat foncier",
+        "jours": 7
+      },
+      {
+        "libelle": "Redaction de l'acte",
+        "jours": 3
+      },
+      {
+        "libelle": "Signature de l'acte",
+        "jours": 7
+      },
+      {
+        "libelle": "Dépôt à la Conservation Foncier et demande de radiation",
+        "jours": 44
+      },
+      {
+        "libelle": "Transmission de pièces aux clients",
+        "jours": 3
+      }
+    ]
+  }
+]

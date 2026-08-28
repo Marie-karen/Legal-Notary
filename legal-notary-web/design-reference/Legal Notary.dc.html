@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
+  :root{
+    --color-bg:#0f172a; --color-surface:#182238; --color-surface-2:#1f2b47;
+    --color-text:#e7ecf5; --color-text-dim:#94a3b8;
+    --color-accent:#16a34a; --color-accent-600:#15803d; --color-accent-100:rgba(22,163,74,.14); --color-accent-800:#86efac;
+    --color-success:#16a34a; --color-success-100:rgba(22,163,74,.14); --color-success-800:#86efac;
+    --color-warning:#d97706; --color-warning-100:rgba(217,119,6,.16); --color-warning-800:#fcd34d;
+    --color-danger:#dc2626; --color-danger-100:rgba(220,38,38,.14); --color-danger-800:#fca5a5;
+    --color-divider:rgba(255,255,255,.09);
+    --font-heading:'Space Grotesk',system-ui,sans-serif; --font-body:'Inter',system-ui,sans-serif;
+    --radius:6px; --space-1:6px;--space-2:10px;--space-3:14px;--space-4:20px;--space-6:28px;--space-8:40px;
+    --shadow-sm:0 1px 3px rgba(0,0,0,.3); --shadow-md:0 4px 14px rgba(0,0,0,.35); --shadow-lg:0 16px 40px rgba(0,0,0,.45);
+  }
+  body{margin:0;background:var(--color-bg);color:var(--color-text);font-family:var(--font-body);font-size:15px;line-height:1.55}
+  h1,h2,h3,h4,h5,h6{font-family:var(--font-heading);font-weight:600;margin:0 0 var(--space-2);letter-spacing:-.01em}
+  h1{font-size:32px} h3{font-size:19px} h5{font-size:14px}
+  a{color:var(--color-accent-800)}
+  .text-muted{color:var(--color-text-dim)}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;font-family:var(--font-heading);font-weight:600;font-size:14px;padding:10px 18px;border-radius:var(--radius);border:1px solid transparent;color:var(--color-text)}
+  .btn:disabled{opacity:.4;cursor:not-allowed}
+  .btn-primary{background:var(--color-accent);color:#0f172a}
+  .btn-primary:hover{background:var(--color-accent-600)}
+  .btn-secondary{background:var(--color-surface-2);border-color:var(--color-divider)}
+  .btn-secondary:hover{background:#25335a}
+  .btn-ghost{color:var(--color-accent-800);padding-inline:4px;background:transparent}
+  .btn-ghost:hover{background:rgba(255,255,255,.06)}
+  .btn-block{width:100%}
+  .field label{display:block;font-size:12px;margin-bottom:6px;color:var(--color-text-dim)}
+  .input{width:100%;box-sizing:border-box;min-height:40px;padding:8px 12px;font:inherit;font-size:14px;color:var(--color-text);background:var(--color-surface-2);border:1px solid var(--color-divider);border-radius:var(--radius)}
+  .input:focus-visible{outline:2px solid var(--color-accent);outline-offset:1px}
+  textarea.input{min-height:90px;resize:vertical}
+  .card{display:flex;flex-direction:column;gap:var(--space-2);padding:var(--space-3);border-radius:var(--radius);background:var(--color-surface);border:1px solid var(--color-divider)}
+  .card-kicker{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-text-dim)}
+  .card-title{font-family:var(--font-heading);font-weight:600;font-size:16px}
+  .card-body{margin:0;font-size:13px;color:var(--color-text-dim);flex:1}
+  .card-meta{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--color-text-dim)}
+  .elev-sm{box-shadow:var(--shadow-sm)} .elev-md{box-shadow:var(--shadow-md)} .elev-lg{box-shadow:var(--shadow-lg)}
+  .tag{display:inline-flex;align-items:center;font-size:11px;font-weight:600;letter-spacing:.02em;padding:4px 10px;border-radius:999px}
+  .tag-accent{background:var(--color-warning-100);color:var(--color-warning-800)}
+  .tag-accent-2{background:var(--color-danger-100);color:var(--color-danger-800)}
+  .tag-neutral{background:var(--color-success-100);color:var(--color-success-800)}
+  .tag-outline{border:1px solid var(--color-divider);color:var(--color-text-dim);background:transparent}
+  .nav{display:flex;align-items:center;gap:var(--space-4);padding:var(--space-3) var(--space-4);background:var(--color-surface)}
+  .nav-brand{font-family:var(--font-heading);font-weight:700;font-size:17px;margin-right:auto}
+  .table{width:100%;border-collapse:collapse;font-size:14px}
+  .table th{text-align:left;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-text-dim);padding:var(--space-2);border-bottom:1px solid var(--color-divider)}
+  .table td{padding:var(--space-2);border-bottom:1px solid var(--color-divider)}
+  .table tbody tr:hover{background:rgba(255,255,255,.03)}
+  select.input{-webkit-appearance:none;appearance:none}
+  .lnk-item:hover{color:var(--color-accent-800)}
+  .toggle{display:flex;align-items:center;gap:10px;cursor:pointer;font-size:14px}
+  .toggle input{width:36px;height:20px;accent-color:var(--color-accent)}
+</style>
+</helmet>
+
+<sc-if value="{{ isLogin }}" hint-placeholder-val="{{ false }}">
+<div style="min-height:100vh;width:100%;display:flex;align-items:center;justify-content:center;padding:var(--space-4);background:var(--color-bg)">
+  <div class="card elev-md" style="width:380px;padding:var(--space-6) var(--space-4)">
+    <div style="font-family:var(--font-heading);font-weight:600;font-size:24px;margin-bottom:2px">Étude Notariale</div>
+    <div style="font-size:13px;color:var(--color-text);opacity:.6;margin-bottom:var(--space-6)">Legal Notary — Espace de gestion</div>
+    <div class="field" style="margin-bottom:var(--space-3)">
+      <label>Email</label>
+      <input class="input" type="email" value="{{ loginEmail }}" onChange="{{ onEmailChange }}" placeholder="notaire@etude.ci"/>
+    </div>
+    <div class="field" style="margin-bottom:var(--space-3)">
+      <label>Mot de passe</label>
+      <input class="input" type="password" value="{{ loginPw }}" onChange="{{ onPwChange }}" placeholder="••••••••"/>
+    </div>
+    <div class="field" style="margin-bottom:var(--space-4)">
+      <label>Rôle (aperçu)</label>
+      <select class="input" value="{{ loginRoleId }}" onChange="{{ onRoleChange }}">
+        <sc-for list="{{ roleOptions }}" as="r" hint-placeholder-count="6">
+          <option value="{{ r.id }}">{{ r.label }}</option>
+        </sc-for>
+      </select>
+    </div>
+    <button class="btn btn-primary btn-block" onClick="{{ doLogin }}">Se connecter</button>
+    <div style="margin-top:var(--space-4);font-size:12px;opacity:.55;text-align:center">Aperçu multi-rôles — données simulées</div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isApp }}" hint-placeholder-val="{{ false }}">
+<div style="height:100vh;width:100%;background:var(--color-bg);display:flex;flex-direction:column;overflow:hidden">
+
+  <div class="nav" style="border-bottom:1px solid var(--color-divider);flex:none">
+    <div class="nav-brand">Étude Notariale</div>
+    <div style="font-size:13px;opacity:.75">{{ notifSummary }}</div>
+    <span class="tag tag-outline">{{ unreadLabel }}</span>
+    <div style="width:1px;height:20px;background:var(--color-divider)"></div>
+    <div style="text-align:right">
+      <div style="font-family:var(--font-heading);font-weight:600;font-size:14px">{{ currentUser.nom }}</div>
+      <div style="font-size:11px;opacity:.55">{{ currentUser.label }}</div>
+    </div>
+  </div>
+
+  <div style="flex:1;display:flex;flex-wrap:wrap;overflow:hidden">
+    <div style="width:220px;flex:none;height:100%;overflow-y:auto;padding:var(--space-6) var(--space-3);display:flex;flex-direction:column;gap:var(--space-1)">
+      <sc-for list="{{ navItems }}" as="item" hint-placeholder-count="6">
+        <div class="lnk-item" onClick="{{ item.onClick }}" style="padding:var(--space-2) var(--space-2);font-family:var(--font-heading);font-weight:600;font-size:14px;cursor:pointer;color:{{ item.color }}">
+          {{ item.label }}
+        </div>
+      </sc-for>
+      <div style="flex:1"></div>
+      <div class="lnk-item" onClick="{{ doLogout }}" style="padding:var(--space-2);font-size:13px;opacity:.55;cursor:pointer">Se déconnecter</div>
+    </div>
+
+    <div style="flex:1;min-width:320px;height:100%;overflow-y:auto;padding:var(--space-6) var(--space-6) var(--space-8)">
+
+      <sc-if value="{{ isDashboard }}" hint-placeholder-val="{{ false }}">
+      <div>
+        <div style="position:sticky;top:calc(-1 * var(--space-6));background:var(--color-bg);z-index:2;padding-top:var(--space-1);margin-bottom:var(--space-3)">
+          <h1 style="margin-bottom:2px">Tableau de bord</h1>
+          <p style="opacity:.65;font-size:14px;margin:0">Bonjour, {{ currentUser.nom }} — voici l'état du cabinet aujourd'hui.</p>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:var(--space-4);padding:var(--space-4);margin-bottom:var(--space-8);background:var(--color-surface);border:1px solid var(--color-divider);border-radius:var(--radius);box-shadow:var(--shadow-md)">
+          <sc-for list="{{ kpis }}" as="kpi" hint-placeholder-count="4">
+            <div style="display:flex;flex-direction:column;gap:var(--space-1)">
+              <div class="card-kicker" style="font-size:11px">{{ kpi.label }}</div>
+              <div style="font-family:var(--font-heading);font-weight:700;font-size:44px;line-height:1;color:{{ kpi.valueColor }}">{{ kpi.value }}</div>
+              <div class="card-body" style="font-size:12px">{{ kpi.hint }}</div>
+            </div>
+          </sc-for>
+        </div>
+
+        <h3 style="margin-bottom:var(--space-3)">Centre d'alertes</h3>
+        <div style="display:flex;flex-direction:column;gap:var(--space-2);margin-bottom:var(--space-6)">
+          <sc-for list="{{ alertes }}" as="al" hint-placeholder-count="3">
+            <div class="card" style="flex-direction:row;align-items:center;justify-content:space-between;cursor:pointer;border-left:4px solid {{ al.borderColor }}" onClick="{{ al.onClick }}">
+              <div>
+                <div class="card-title" style="font-size:15px">{{ al.dossier }}</div>
+                <div class="card-body" style="opacity:.7">{{ al.message }}</div>
+              </div>
+              <span class="tag {{ al.tagClass }}" style="font-weight:800;letter-spacing:.03em;background:{{ al.tagBg }};color:{{ al.tagFg }}">{{ al.niveauLabel }}</span>
+            </div>
+          </sc-for>
+          <sc-if value="{{ alertes.length }}" hint-placeholder-val="{{ true }}"></sc-if>
+        </div>
+
+        <h3 style="margin-bottom:var(--space-3)">Équipe</h3>
+        <table class="table">
+          <thead><tr><th>Membre</th><th>Rôle</th><th>Dossiers actifs</th><th>En retard</th></tr></thead>
+          <tbody>
+            <sc-for list="{{ equipeApercu }}" as="mb" hint-placeholder-count="2">
+              <tr><td style="display:flex;align-items:center;gap:8px"><span style="width:9px;height:9px;border-radius:50%;background:{{ mb.couleur }};flex:none"></span>{{ mb.nom }}</td><td>{{ mb.role }}</td><td>{{ mb.actifs }}</td><td>{{ mb.retard }}</td></tr>
+            </sc-for>
+          </tbody>
+        </table>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isKanban }}" hint-placeholder-val="{{ false }}">
+      <div>
+        <div style="position:sticky;top:calc(-1 * var(--space-6));background:var(--color-bg);z-index:2;padding-top:var(--space-1);margin-bottom:var(--space-3)">
+          <h1 style="margin-bottom:2px">Circuit d'instruction</h1>
+          <p style="opacity:.65;font-size:14px;margin:0">Les 6 étapes du pipeline — cliquer une carte pour ouvrir la fiche dossier.</p>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:var(--space-4)">
+          <sc-for list="{{ kanbanColumns }}" as="col" hint-placeholder-count="6">
+            <div style="width:100%;display:flex;flex-direction:column;border-radius:var(--radius);background:{{ col.bg }};border-left:3px solid {{ col.accent }};overflow:hidden">
+              <div style="display:flex;align-items:baseline;justify-content:space-between;padding:var(--space-2) var(--space-3) var(--space-1)">
+                <h5 style="margin:0;color:{{ col.accent }};font-size:22px;font-weight:700;font-family:var(--font-heading)">{{ col.label }}</h5>
+                <span class="tag tag-neutral">{{ col.count }}</span>
+              </div>
+              <div style="display:flex;flex-wrap:wrap;gap:var(--space-2);padding:0 var(--space-3) var(--space-3)">
+                <sc-for list="{{ col.dossiers }}" as="d" hint-placeholder-count="1">
+                  <div class="card elev-sm" style="cursor:pointer;flex:0 0 260px;width:260px" onClick="{{ d.onClick }}">
+                    <div style="display:flex;align-items:center;justify-content:space-between">
+                      <div class="card-kicker">{{ d.numero }}</div>
+                      <span title="{{ d.clerc }}" style="width:9px;height:9px;border-radius:50%;background:{{ d.clercCouleur }};flex:none"></span>
+                    </div>
+                    <div class="card-title" style="font-size:15px">{{ d.type }}</div>
+                    <div class="card-body">{{ d.comparants }}</div>
+                    <div class="card-meta" style="justify-content:space-between">
+                      <span>{{ d.montantFmt }}</span>
+                      <span class="tag {{ d.tagClass }}" style="font-weight:700;letter-spacing:.02em">{{ d.niveauLabel }}</span>
+                    </div>
+                  </div>
+                </sc-for>
+                <sc-if value="{{ col.isEmpty }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:var(--space-3) var(--space-4);color:var(--color-text-dim);text-align:center;font-size:12px;border:1px dashed var(--color-divider);border-radius:var(--radius);flex:0 0 260px;width:260px">
+                    <span style="font-size:20px;opacity:.6">○</span>
+                    <span>Aucun dossier à cette étape</span>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ canAddDossier }}" hint-placeholder-val="{{ false }}">
+                  <div class="btn btn-ghost" style="font-size:12px;align-self:flex-end" onClick="{{ col.onAdd }}">+ Ajouter un dossier</div>
+                </sc-if>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isDossiersListe }}" hint-placeholder-val="{{ false }}">
+      <div>
+        <div style="position:sticky;top:calc(-1 * var(--space-6));background:var(--color-bg);z-index:2;padding-top:var(--space-1);margin-bottom:var(--space-3)">
+          <h1 style="margin-bottom:2px">Dossiers</h1>
+          <p style="opacity:.65;font-size:14px;margin:0">{{ dossiersListe.length }} dossiers actifs — recherche et filtre par étape.</p>
+        </div>
+        <div style="display:flex;gap:var(--space-3);margin-bottom:var(--space-4);flex-wrap:wrap">
+          <input class="input" style="max-width:320px" value="{{ dossiersSearch }}" onChange="{{ onDossiersSearchChange }}" placeholder="Rechercher un numéro, un type, un comparant…"/>
+          <select class="input" style="max-width:260px" value="{{ dossiersEtapeFilter }}" onChange="{{ onDossiersFilterChange }}">
+            <option value="all">Toutes les étapes</option>
+            <sc-for list="{{ etapeOptions }}" as="e" hint-placeholder-count="6">
+              <option value="{{ e.id }}">{{ e.label }}</option>
+            </sc-for>
+          </select>
+        </div>
+        <table class="table">
+          <thead><tr><th>Numéro</th><th>Type</th><th>Comparants</th><th>Étape</th><th>Clerc</th><th>Montant</th><th>Statut</th></tr></thead>
+          <tbody>
+            <sc-for list="{{ dossiersListe }}" as="d" hint-placeholder-count="4">
+              <tr style="cursor:pointer" onClick="{{ d.onClick }}">
+                <td>{{ d.numero }}</td><td>{{ d.type }}</td><td>{{ d.comparants }}</td><td>{{ d.etapeLabel }}</td><td>{{ d.clerc }}</td><td>{{ d.montantFmt }}</td>
+                <td><span class="tag {{ d.tagClass }}">{{ d.niveauLabel }}</span></td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+        <sc-if value="{{ dossiersListeEmpty }}" hint-placeholder-val="{{ false }}">
+          <div class="text-muted" style="padding:var(--space-4) 0">Aucun dossier ne correspond à cette recherche.</div>
+        </sc-if>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isArchives }}" hint-placeholder-val="{{ false }}">
+      <div>
+        <div style="position:sticky;top:calc(-1 * var(--space-6));background:var(--color-bg);z-index:2;padding-top:var(--space-1);margin-bottom:var(--space-3)">
+          <h1 style="margin-bottom:2px">Archives</h1>
+          <p style="opacity:.65;font-size:14px;margin:0">Dossiers clôturés et expédiés.</p>
+        </div>
+        <table class="table">
+          <thead><tr><th>Numéro</th><th>Type</th><th>Comparants</th><th>Montant</th><th>Clerc</th><th>Clôturé le</th></tr></thead>
+          <tbody>
+            <sc-for list="{{ archives }}" as="d" hint-placeholder-count="1">
+              <tr style="cursor:pointer" onClick="{{ d.onClick }}">
+                <td>{{ d.numero }}</td><td>{{ d.type }}</td><td>{{ d.comparants }}</td><td>{{ d.montantFmt }}</td><td>{{ d.clerc }}</td><td>{{ d.dateCloture }}</td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+        <sc-if value="{{ archivesEmpty }}" hint-placeholder-val="{{ false }}">
+          <div class="text-muted" style="padding:var(--space-4) 0">Aucun dossier archivé pour le moment.</div>
+        </sc-if>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isEquipe }}" hint-placeholder-val="{{ false }}">
+      <div>
+        <div style="position:sticky;top:calc(-1 * var(--space-6));background:var(--color-bg);z-index:2;padding-top:var(--space-1);margin-bottom:var(--space-3)">
+          <h1 style="margin-bottom:2px">Équipe</h1>
+          <p style="opacity:.65;font-size:14px;margin:0">L'ensemble des collaborateurs de l'étude.</p>
+        </div>
+        <table class="table">
+          <thead><tr><th>Membre</th><th>Rôle</th><th>Email</th><th>Dossiers actifs</th><th>En retard</th></tr></thead>
+          <tbody>
+            <sc-for list="{{ equipeComplete }}" as="mb" hint-placeholder-count="6">
+              <tr>
+                <td style="display:flex;align-items:center;gap:8px"><span style="width:9px;height:9px;border-radius:50%;background:{{ mb.couleur }};flex:none"></span>{{ mb.nom }}</td>
+                <td>{{ mb.role }}</td><td>{{ mb.email }}</td><td>{{ mb.actifs }}</td><td>{{ mb.retard }}</td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isParametres }}" hint-placeholder-val="{{ false }}">
+      <div>
+        <div style="position:sticky;top:calc(-1 * var(--space-6));background:var(--color-bg);z-index:2;padding-top:var(--space-1);margin-bottom:var(--space-3)">
+          <h1 style="margin-bottom:2px">Paramètres</h1>
+          <p style="opacity:.65;font-size:14px;margin:0">Profil et préférences de notification.</p>
+        </div>
+
+        <h3 style="margin-bottom:var(--space-3)">Profil</h3>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:var(--space-4);margin-bottom:var(--space-6);max-width:640px">
+          <div><div class="text-muted" style="font-size:11px;text-transform:uppercase;letter-spacing:.06em">Nom</div><div style="font-size:15px">{{ currentUser.nom }}</div></div>
+          <div><div class="text-muted" style="font-size:11px;text-transform:uppercase;letter-spacing:.06em">Rôle</div><div style="font-size:15px">{{ currentUser.label }}</div></div>
+          <div><div class="text-muted" style="font-size:11px;text-transform:uppercase;letter-spacing:.06em">Email</div><div style="font-size:15px">{{ currentUser.email }}</div></div>
+        </div>
+
+        <h3 style="margin-bottom:var(--space-3)">Notifications</h3>
+        <div style="display:flex;flex-direction:column;gap:var(--space-3);margin-bottom:var(--space-6)">
+          <label class="toggle"><input type="checkbox" checked="{{ settingsEmailNotif }}" onChange="{{ onToggleEmailNotif }}"/>Recevoir les alertes de dossier par email</label>
+          <label class="toggle"><input type="checkbox" checked="{{ settingsSmsNotif }}" onChange="{{ onToggleSmsNotif }}"/>Recevoir un SMS pour les urgences</label>
+        </div>
+
+        <sc-if value="{{ showAdvancedSettings }}" hint-placeholder-val="{{ false }}">
+        <div>
+          <h3 style="margin-bottom:var(--space-3)">Seuils d'alerte</h3>
+          <div class="field" style="max-width:280px">
+            <label>Délai avant alerte « Urgent » (jours)</label>
+            <input class="input" type="number" value="{{ settingsSeuilUrgence }}" onChange="{{ onSeuilChange }}"/>
+          </div>
+        </div>
+        </sc-if>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isDossier }}" hint-placeholder-val="{{ false }}">
+      <div>
+        <div class="btn btn-ghost" onClick="{{ backFromDossier }}" style="padding-left:0;margin-bottom:var(--space-3)">‹ {{ backLabel }}</div>
+        <div style="position:sticky;top:calc(-1 * var(--space-6));background:var(--color-bg);z-index:2;padding-top:var(--space-1);margin-bottom:var(--space-3)">
+          <div style="display:flex;align-items:baseline;gap:var(--space-3);flex-wrap:wrap;margin-bottom:2px">
+            <h1 style="margin:0">{{ dossier.numero }} — {{ dossier.type }}</h1>
+            <span class="tag {{ dossier.tagClass }}" style="font-weight:700;letter-spacing:.02em">{{ dossier.niveauLabel }}</span>
+          </div>
+          <p style="opacity:.65;font-size:14px;margin:0">{{ dossier.etapeLabel }}</p>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:var(--space-4);margin-bottom:var(--space-4)">
+          <div><div class="text-muted" style="font-size:11px;text-transform:uppercase;letter-spacing:.06em">Comparants</div><div style="font-size:15px">{{ dossier.comparants }}</div></div>
+          <div><div class="text-muted" style="font-size:11px;text-transform:uppercase;letter-spacing:.06em">Montant</div><div style="font-size:15px">{{ dossier.montantFmt }}</div></div>
+          <div><div class="text-muted" style="font-size:11px;text-transform:uppercase;letter-spacing:.06em">Clerc assigné</div><div style="font-size:15px">{{ dossier.clerc }}</div></div>
+          <div><div class="text-muted" style="font-size:11px;text-transform:uppercase;letter-spacing:.06em">Avancement</div><div style="font-size:15px">{{ dossier.progressFmt }}</div></div>
+        </div>
+
+        <sc-if value="{{ canManageEtape }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;gap:var(--space-2);margin-bottom:var(--space-6);flex-wrap:wrap">
+          <button class="btn btn-secondary" onClick="{{ dossier.nextEtapeAction }}" disabled="{{ dossier.nextEtapeDisabled }}">Passer à l'étape suivante</button>
+          <button class="btn btn-secondary" onClick="{{ showTaxToast }}">Établir la fiche de taxe</button>
+          <button class="btn btn-secondary" onClick="{{ dossier.closeAction }}" disabled="{{ dossier.closeDisabled }}">Clôturer le dossier</button>
+        </div>
+        </sc-if>
+        <sc-if value="{{ canManageEtape }}" hint-placeholder-val="{{ true }}"></sc-if>
+
+        <h3 style="margin-bottom:var(--space-3)">Checklist des tâches</h3>
+        <sc-for list="{{ dossier.groupedTasks }}" as="grp" hint-placeholder-count="2">
+          <div style="margin-bottom:var(--space-4)">
+            <h5 style="margin-bottom:var(--space-2);opacity:.7">{{ grp.label }}</h5>
+            <table class="table">
+              <thead><tr><th>Tâche</th><th>Durée standard</th><th>Statut</th><th>Avancement</th></tr></thead>
+              <tbody>
+                <sc-for list="{{ grp.tasks }}" as="t" hint-placeholder-count="2">
+                  <tr>
+                    <td>{{ t.label }}</td>
+                    <td>{{ t.dureeFmt }}</td>
+                    <td>
+                      <select class="input" style="min-height:30px;font-size:13px" value="{{ t.statut }}" onChange="{{ t.onStatusChange }}" disabled="{{ t.readOnly }}">
+                        <option value="non_demarree">Non démarrée</option>
+                        <option value="attente_client">Attente client</option>
+                        <option value="en_cours">En cours</option>
+                        <option value="depot_effectue">Dépôt effectué</option>
+                        <option value="effectuee">Effectuée</option>
+                      </select>
+                    </td>
+                    <td><span class="tag tag-neutral">{{ t.pctFmt }}</span></td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+        </sc-for>
+
+        <h3 style="margin-bottom:var(--space-3)">Compte client</h3>
+        <table class="table" style="margin-bottom:var(--space-3)">
+          <thead><tr><th>Type</th><th>Libellé</th><th>Date</th><th>Montant</th></tr></thead>
+          <tbody>
+            <sc-for list="{{ dossier.compte }}" as="c" hint-placeholder-count="2">
+              <tr><td><span class="tag {{ c.tagClass }}">{{ c.type }}</span></td><td>{{ c.libelle }}</td><td>{{ c.date }}</td><td>{{ c.montantFmt }}</td></tr>
+            </sc-for>
+          </tbody>
+        </table>
+        <sc-if value="{{ canManageCompte }}" hint-placeholder-val="{{ false }}">
+          <button class="btn btn-secondary" style="margin-bottom:var(--space-6)" onClick="{{ onAddEcriture }}">+ Ajouter une écriture</button>
+        </sc-if>
+        <sc-if value="{{ canManageCompte }}" hint-placeholder-val="{{ true }}"></sc-if>
+
+        <sc-if value="{{ dossier.hasProjet }}" hint-placeholder-val="{{ false }}">
+        <div>
+          <div style="display:flex;align-items:baseline;gap:var(--space-2);margin-bottom:var(--space-2)">
+            <h3 style="margin:0">Projet d'acte</h3>
+            <span class="tag {{ dossier.projet.statutTagClass }}">{{ dossier.projet.statutLabel }}</span>
+          </div>
+          <div class="text-muted" style="font-size:12px;margin-bottom:var(--space-2)">{{ dossier.projet.meta }}</div>
+          <textarea class="input" readonly="{{ true }}" style="min-height:160px;font-family:var(--font-body);font-size:14px;margin-bottom:var(--space-3)" value="{{ dossier.projet.contenu }}"></textarea>
+
+          <sc-if value="{{ dossier.projet.canDecide }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-bottom:var(--space-4)">
+            <div class="field" style="margin-bottom:var(--space-2);max-width:520px">
+              <label>Commentaire (obligatoire pour un renvoi)</label>
+              <input class="input" value="{{ dossier.projet.comment }}" onChange="{{ dossier.projet.onCommentChange }}" placeholder="Votre commentaire pour le clerc"/>
+            </div>
+            <sc-if value="{{ dossier.projet.commentError }}" hint-placeholder-val="{{ false }}">
+              <div style="color:var(--color-accent-2-700);font-size:12px;margin-bottom:var(--space-2)">Un commentaire est obligatoire pour renvoyer pour correction.</div>
+            </sc-if>
+            <div style="display:flex;gap:var(--space-2)">
+              <button class="btn btn-primary" onClick="{{ dossier.projet.onValider }}">Valider</button>
+              <button class="btn btn-secondary" onClick="{{ dossier.projet.onRenvoyer }}">Renvoyer pour correction</button>
+            </div>
+          </div>
+          </sc-if>
+
+          <h5 style="margin-bottom:var(--space-2);opacity:.7">Historique des versions</h5>
+          <div style="display:flex;flex-direction:column;gap:var(--space-2)">
+            <sc-for list="{{ dossier.projet.historique }}" as="h" hint-placeholder-count="2">
+              <div style="font-size:13px;display:flex;gap:var(--space-2)">
+                <span class="text-muted" style="flex:none;width:90px">{{ h.date }}</span>
+                <span style="flex:1"><strong>{{ h.auteur }}</strong> — {{ h.action }}<sc-if value="{{ h.hasComment }}" hint-placeholder-val="{{ false }}"><span style="opacity:.7"> · « {{ h.commentaire }} »</span></sc-if></span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        </sc-if>
+
+      </div>
+      </sc-if>
+
+    </div>
+  </div>
+
+  <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+    <div class="card elev-lg" style="position:fixed;bottom:var(--space-4);right:var(--space-4);max-width:340px">
+      <div class="card-body" style="opacity:1">{{ toast }}</div>
+    </div>
+  </sc-if>
+
+</div>
+</sc-if>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const ETAPES = [
+  {id:1,label:"Collecte & KYC"},
+  {id:2,label:"Réquisitions & états préalables"},
+  {id:3,label:"Rédaction du projet d'acte"},
+  {id:4,label:"Rendez-vous de signature"},
+  {id:5,label:"Formalités DGI & Conservation Foncière"},
+  {id:6,label:"Expéditions & clôture"}
+];
+const STATUT_PCT = {non_demarree:0, attente_client:25, en_cours:50, depot_effectue:75, effectuee:100};
+const ETAPE_COULEUR = ["#38bdf8","#818cf8","#a78bfa","#e879f9","#fb923c","#34d399"];
+
+const ROLES = [
+  {id:"notaire", label:"Notaire Titulaire", nom:"Me. Kouadio Aya", email:"kouadio.aya@etude.ci"},
+  {id:"premier_clerc", label:"Premier Clerc", nom:"Yao Sylvie", email:"yao.sylvie@etude.ci"},
+  {id:"clerc_redacteur", label:"Clerc Rédacteur", nom:"Traoré Fatou", email:"traore.fatou@etude.ci"},
+  {id:"clerc_formalites", label:"Clerc aux Formalités", nom:"Ouattara Boris", email:"ouattara.boris@etude.ci"},
+  {id:"comptable", label:"Comptable Taxateur", nom:"N'Dri Marc", email:"ndri.marc@etude.ci"},
+  {id:"assistante", label:"Assistante / Accueil", nom:"Coulibaly Awa", email:"coulibaly.awa@etude.ci"}
+];
+const MEMBRE_COULEUR = {
+  "Me. Kouadio Aya":"#16a34a", "Yao Sylvie":"#f472b6", "Traoré Fatou":"#38bdf8",
+  "Ouattara Boris":"#a78bfa", "N'Dri Marc":"#fb923c", "Coulibaly Awa":"#facc15"
+};
+const ROLE_PERMS = {
+  notaire: {addDossier:true, editTasks:true, decideProjet:true, closeDossier:true, manageCompte:false, settingsAdvanced:true},
+  premier_clerc: {addDossier:true, editTasks:true, decideProjet:true, closeDossier:true, manageCompte:false, settingsAdvanced:true},
+  clerc_redacteur: {addDossier:false, editTasks:true, decideProjet:false, closeDossier:false, manageCompte:false, settingsAdvanced:false},
+  clerc_formalites: {addDossier:false, editTasks:true, decideProjet:false, closeDossier:false, manageCompte:false, settingsAdvanced:false},
+  comptable: {addDossier:false, editTasks:false, decideProjet:false, closeDossier:false, manageCompte:true, settingsAdvanced:false},
+  assistante: {addDossier:true, editTasks:false, decideProjet:false, closeDossier:false, manageCompte:false, settingsAdvanced:false}
+};
+
+function fmtMontant(n){
+  return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ") + " FCFA";
+}
+
+function initialDossiers(){
+  return [
+    {id:1, numero:"2026/014", type:"Vente immobilière", comparants:"KOFFI Jean-Marc / DIALLO Aminata", montant:45000000, etape:3, clerc:"Traoré Fatou", niveau:"orange", archived:false,
+      tasks:[
+        {id:1,label:"Collecte des pièces KYC",etape:1,duree:3,statut:"effectuee"},
+        {id:2,label:"Réquisition Conservation Foncière",etape:2,duree:5,statut:"effectuee"},
+        {id:3,label:"Rédaction du projet d'acte",etape:3,duree:7,statut:"en_cours"},
+        {id:4,label:"Relecture par le Premier Clerc",etape:3,duree:2,statut:"non_demarree"},
+        {id:5,label:"Prise de rendez-vous de signature",etape:4,duree:2,statut:"non_demarree"}
+      ],
+      compte:[
+        {type:"Provision",libelle:"Provision initiale sur frais d'acte",date:"03/08/2026",montant:5000000},
+        {type:"Décaissement",libelle:"Frais de Conservation Foncière",date:"11/08/2026",montant:-380000}
+      ],
+      projet:{statut:"soumis", contenu:"PROJET D'ACTE DE VENTE\n\nPar-devant Maître Kouadio Aya, Notaire Titulaire à Abidjan...\n\nOnt comparu :\nM. KOFFI Jean-Marc, vendeur, et Mme DIALLO Aminata, acquéreur.\n\n[Corps de l'acte en cours de rédaction — clauses de propriété, garanties et modalités de paiement à finaliser]",
+        auteur:"Traoré Fatou (Clerc Rédacteur)", date:"22/08/2026", comment:"",
+        historique:[
+          {date:"18/08/2026",auteur:"Traoré Fatou",action:"a créé le brouillon",commentaire:""},
+          {date:"22/08/2026",auteur:"Traoré Fatou",action:"a soumis pour validation",commentaire:""}
+        ]}
+    },
+    {id:2, numero:"2026/015", type:"Donation-partage", comparants:"Famille BAMBA", montant:12000000, etape:1, clerc:"Traoré Fatou", niveau:"vert", archived:false,
+      tasks:[{id:1,label:"Collecte des pièces KYC",etape:1,duree:3,statut:"en_cours"}], compte:[], projet:null},
+    {id:3, numero:"2026/009", type:"Constitution de société (SARL)", comparants:"YAO Trading SARL", montant:5000000, etape:5, clerc:"Ouattara Boris", niveau:"rouge", archived:false,
+      tasks:[
+        {id:1,label:"Dépôt au Guichet Unique / RCCM",etape:5,duree:10,statut:"attente_client"},
+        {id:2,label:"Enregistrement DGI",etape:5,duree:5,statut:"non_demarree"}
+      ],
+      compte:[{type:"Provision",libelle:"Frais de constitution",date:"01/07/2026",montant:1500000}], projet:null},
+    {id:4, numero:"2026/016", type:"Vente de terrain", comparants:"ASSOUAN Michel / KONE Sarah", montant:22000000, etape:2, clerc:"Ouattara Boris", niveau:"vert", archived:false,
+      tasks:[{id:1,label:"Collecte des pièces KYC",etape:1,duree:3,statut:"effectuee"},{id:2,label:"État préalable Conservation Foncière",etape:2,duree:6,statut:"en_cours"}],
+      compte:[], projet:null},
+    {id:5, numero:"2026/003", type:"Bail commercial", comparants:"KOUASSI & Associés", montant:8000000, etape:6, clerc:"Traoré Fatou", niveau:"vert", archived:true, dateCloture:"20/08/2026",
+      tasks:[{id:1,label:"Expédition des copies authentiques",etape:6,duree:3,statut:"effectuee"}],
+      compte:[{type:"Décaissement",libelle:"Frais d'expédition",date:"20/08/2026",montant:-45000}], projet:null},
+    {id:6, numero:"2026/011", type:"Succession", comparants:"Héritiers N'GUESSAN", montant:31000000, etape:4, clerc:"Ouattara Boris", niveau:"orange", archived:false,
+      tasks:[{id:1,label:"Réquisitions notariales",etape:2,duree:5,statut:"effectuee"},{id:2,label:"Rendez-vous de signature",etape:4,duree:1,statut:"attente_client"}],
+      compte:[], projet:null}
+  ];
+}
+
+class Component extends DCLogic {
+  state = {
+    screen: "login", loginEmail: "", loginPw: "", loginRoleId: "notaire", roleId: "notaire",
+    dossiers: initialDossiers(), selectedId: null, previousScreen: "kanban", toast: null,
+    projetComment: {}, projetError: {}, dossiersSearch: "", dossiersEtapeFilter: "all",
+    settingsEmailNotif: true, settingsSmsNotif: false, settingsSeuilUrgence: 3
+  };
+
+  onEmailChange = (e) => this.setState({loginEmail: e.target.value});
+  onPwChange = (e) => this.setState({loginPw: e.target.value});
+  onRoleChange = (e) => this.setState({loginRoleId: e.target.value});
+  doLogin = () => this.setState({screen: "dashboard", roleId: this.state.loginRoleId});
+  doLogout = () => this.setState({screen: "login", loginEmail: "", loginPw: ""});
+  goScreen = (s) => this.setState({screen: s});
+  selectDossier = (id, from) => this.setState({screen: "dossier", selectedId: id, previousScreen: from || "kanban"});
+  backFromDossier = () => this.setState({screen: this.state.previousScreen});
+  showTaxToast = () => { this.setState({toast: "Fonctionnalité disponible à l'écran Fiche de taxe (à venir)."}); setTimeout(() => this.setState({toast: null}), 3000); };
+  onDossiersSearchChange = (e) => this.setState({dossiersSearch: e.target.value});
+  onDossiersFilterChange = (e) => this.setState({dossiersEtapeFilter: e.target.value});
+  onToggleEmailNotif = () => this.setState(s => ({settingsEmailNotif: !s.settingsEmailNotif}));
+  onToggleSmsNotif = () => this.setState(s => ({settingsSmsNotif: !s.settingsSmsNotif}));
+  onSeuilChange = (e) => this.setState({settingsSeuilUrgence: e.target.value});
+
+  setTaskStatus = (dossierId, taskId, statut) => {
+    this.setState(s => ({dossiers: s.dossiers.map(d => d.id !== dossierId ? d : {
+      ...d, tasks: d.tasks.map(t => t.id === taskId ? {...t, statut} : t)
+    })}));
+  };
+  nextEtape = (dossierId) => {
+    this.setState(s => ({dossiers: s.dossiers.map(d => d.id !== dossierId ? d : {...d, etape: Math.min(6, d.etape + 1)})}));
+  };
+  closeDossier = (dossierId) => {
+    this.setState(s => ({dossiers: s.dossiers.map(d => d.id !== dossierId ? d : {...d, archived:true, dateCloture:"25/08/2026"}), toast: "Dossier clôturé — transmis aux archives."}));
+    setTimeout(() => this.setState({toast: null}), 3000);
+  };
+  onAddEcriture = () => {
+    this.setState(s => ({dossiers: s.dossiers.map(d => d.id !== s.selectedId ? d : {
+      ...d, compte: [...d.compte, {type:"Provision", libelle:"Provision complémentaire", date:"25/08/2026", montant:1000000}]
+    }), toast: "Écriture ajoutée au compte client."}));
+    setTimeout(() => this.setState({toast: null}), 2500);
+  };
+  setProjetComment = (dossierId, val) => this.setState(s => ({projetComment: {...s.projetComment, [dossierId]: val}, projetError: {...s.projetError, [dossierId]: false}}));
+  validerProjet = (dossierId) => {
+    this.setState(s => ({dossiers: s.dossiers.map(d => d.id !== dossierId ? d : {
+      ...d, projet: {...d.projet, statut: "valide", historique: [...d.projet.historique, {date:"25/08/2026",auteur: ROLES.find(r=>r.id===s.roleId).nom,action:"a validé le projet",commentaire: (s.projetComment[dossierId]||"")}]}
+    })}));
+  };
+  renvoyerProjet = (dossierId) => {
+    const comment = (this.state.projetComment[dossierId] || "").trim();
+    if (!comment) { this.setState(s => ({projetError: {...s.projetError, [dossierId]: true}})); return; }
+    this.setState(s => ({dossiers: s.dossiers.map(d => d.id !== dossierId ? d : {
+      ...d, projet: {...d.projet, statut: "a_corriger", historique: [...d.projet.historique, {date:"25/08/2026",auteur: ROLES.find(r=>r.id===s.roleId).nom,action:"a renvoyé pour correction",commentaire: comment}]}
+    }), projetComment: {...s.projetComment, [dossierId]: ""}}));
+  };
+
+  buildDossierView(d, perms) {
+    const etapeInfo = ETAPES.find(e => e.id === d.etape);
+    const niveauMap = {rouge: {tag:"tag-accent-2", label:"Urgent"}, orange: {tag:"tag-accent", label:"À surveiller"}, vert: {tag:"tag-neutral", label:"Sous contrôle"}};
+    const nv = niveauMap[d.niveau];
+    const pcts = d.tasks.map(t => STATUT_PCT[t.statut]);
+    const avgPct = pcts.length ? Math.round(pcts.reduce((a,b)=>a+b,0)/pcts.length) : 0;
+    const groups = {};
+    d.tasks.forEach(t => { const key = t.etape; if (!groups[key]) groups[key] = []; groups[key].push(t); });
+    const groupedTasks = Object.keys(groups).sort((a,b)=>a-b).map(k => ({
+      label: ETAPES.find(e=>e.id===Number(k)).label,
+      tasks: groups[k].map(t => ({...t, dureeFmt: t.duree + " j", pctFmt: STATUT_PCT[t.statut] + " %", readOnly: !perms.editTasks, onStatusChange: (e) => this.setTaskStatus(d.id, t.id, e.target.value)}))
+    }));
+    const compte = d.compte.map(c => ({...c, tagClass: c.type === "Provision" ? "tag-accent" : "tag-neutral", montantFmt: (c.montant<0?"− ":"") + fmtMontant(Math.abs(c.montant))}));
+    let projet = null;
+    if (d.projet) {
+      const statutLabels = {soumis:"Soumis — en attente de validation", valide:"Validé", a_corriger:"Renvoyé pour correction"};
+      const statutTags = {soumis:"tag-outline", valide:"tag-accent", a_corriger:"tag-accent-2"};
+      projet = {
+        statutLabel: statutLabels[d.projet.statut], statutTagClass: statutTags[d.projet.statut],
+        meta: "Soumis par " + d.projet.auteur + " le " + d.projet.date,
+        contenu: d.projet.contenu,
+        canDecide: d.projet.statut === "soumis" && perms.decideProjet,
+        comment: this.state.projetComment[d.id] || "",
+        commentError: !!this.state.projetError[d.id],
+        onCommentChange: (e) => this.setProjetComment(d.id, e.target.value),
+        onValider: () => this.validerProjet(d.id),
+        onRenvoyer: () => this.renvoyerProjet(d.id),
+        historique: d.projet.historique.map(h => ({...h, hasComment: !!h.commentaire}))
+      };
+    }
+    return {
+      numero: d.numero, type: d.type, comparants: d.comparants, clerc: d.clerc,
+      montantFmt: fmtMontant(d.montant), tagClass: nv.tag, niveauLabel: nv.label,
+      etapeLabel: d.archived ? "Dossier archivé — clôturé le " + d.dateCloture : "Étape " + d.etape + " / 6 — " + etapeInfo.label,
+      progressFmt: avgPct + " %",
+      nextEtapeAction: () => this.nextEtape(d.id), nextEtapeDisabled: d.etape >= 6,
+      closeAction: () => this.closeDossier(d.id), closeDisabled: d.etape < 6 || d.archived,
+      groupedTasks, compte, hasProjet: !!projet, projet
+    };
+  }
+
+  renderVals() {
+    const s = this.state;
+    const screen = s.screen;
+    const currentUser = ROLES.find(r => r.id === s.roleId) || ROLES[0];
+    const perms = ROLE_PERMS[s.roleId] || ROLE_PERMS.notaire;
+
+    const navDefs = [
+      {key:"dashboard", label:"Tableau de bord"},
+      {key:"kanban", label:"Circuit d'instruction"},
+      {key:"dossiers", label:"Dossiers"},
+      {key:"archives", label:"Archives"},
+      {key:"equipe", label:"Équipe"},
+      {key:"parametres", label:"Paramètres"}
+    ];
+    const navItems = navDefs.map(n => ({
+      label: n.label,
+      color: (screen === n.key || (n.key==="kanban" && screen==="dossier")) ? "#38bdf8" : "var(--color-text)",
+      onClick: () => this.goScreen(n.key)
+    }));
+
+    const niveauMap = {rouge: {tag:"tag-accent-2", label:"Urgent"}, orange: {tag:"tag-accent", label:"À surveiller"}, vert: {tag:"tag-neutral", label:"Sous contrôle"}};
+    const actifs = s.dossiers.filter(d => !d.archived);
+    const archivedDossiers = s.dossiers.filter(d => d.archived);
+
+    const kanbanColumns = ETAPES.map((e, idx) => {
+      const ds = actifs.filter(d => d.etape === e.id);
+      const accent = ETAPE_COULEUR[idx % ETAPE_COULEUR.length];
+      return {
+        label: e.label, count: ds.length, isEmpty: ds.length === 0,
+        accent, bg: "color-mix(in srgb, " + accent + " 8%, var(--color-surface))",
+        onAdd: () => { this.setState({toast: "Création de dossier — écran à venir."}); setTimeout(() => this.setState({toast: null}), 2500); },
+        dossiers: ds.map(d => ({
+          numero: d.numero, type: d.type, comparants: d.comparants, montantFmt: fmtMontant(d.montant),
+          clerc: d.clerc, clercCouleur: MEMBRE_COULEUR[d.clerc] || "var(--color-text-dim)",
+          tagClass: niveauMap[d.niveau].tag, niveauLabel: niveauMap[d.niveau].label,
+          onClick: () => this.selectDossier(d.id, "kanban")
+        }))
+      };
+    });
+
+    const prioriteOrdre = {rouge:0, orange:1, vert:2};
+    const alertes = actifs.filter(d => d.niveau !== "vert")
+      .sort((a,b) => prioriteOrdre[a.niveau] - prioriteOrdre[b.niveau])
+      .map(d => {
+      const msg = d.niveau === "rouge"
+        ? "Délai de dépôt DGI dépassé — dossier " + d.numero
+        : "Échéance approche pour le rendez-vous de signature";
+      const urgent = d.niveau === "rouge";
+      return {
+        dossier: d.numero + " — " + d.type, message: msg, tagClass: niveauMap[d.niveau].tag, niveauLabel: niveauMap[d.niveau].label,
+        borderColor: urgent ? "var(--color-accent)" : "var(--color-warning)",
+        tagBg: urgent ? "var(--color-accent)" : "var(--color-warning-100)",
+        tagFg: urgent ? "#fff" : "var(--color-warning-800)",
+        onClick: () => this.selectDossier(d.id, "dashboard")
+      };
+    });
+
+    let kpis;
+    if (s.roleId === "clerc_redacteur") {
+      const aRediger = actifs.filter(d => d.projet && (d.projet.statut === "a_corriger" || d.tasks.some(t=>t.etape===3 && t.statut==="en_cours"))).length;
+      kpis = [
+        {label:"Dossiers actifs", value:String(actifs.filter(d=>d.clerc===currentUser.nom).length), hint:"Assignés à vous", valueColor:"var(--color-text)"},
+        {label:"Projets à rédiger", value:String(aRediger), hint:"En cours ou à corriger", valueColor: aRediger>0 ? "var(--color-accent)" : "var(--color-text)"},
+        {label:"Alertes actives", value:String(alertes.length), hint:"Nécessitent une attention", valueColor: alertes.length>0 ? "var(--color-accent)" : "var(--color-text)"},
+        {label:"Tâches en cours", value:String(actifs.flatMap(d=>d.tasks).filter(t=>t.statut==="en_cours").length), hint:"Tous dossiers confondus", valueColor:"var(--color-text)"}
+      ];
+    } else if (s.roleId === "clerc_formalites") {
+      const depots = actifs.flatMap(d=>d.tasks).filter(t=>t.etape===5 && t.statut==="attente_client").length;
+      kpis = [
+        {label:"Dossiers actifs", value:String(actifs.filter(d=>d.clerc===currentUser.nom).length), hint:"Assignés à vous", valueColor:"var(--color-text)"},
+        {label:"En formalités DGI", value:String(actifs.filter(d=>d.etape===5).length), hint:"Étape 5 du pipeline", valueColor:"var(--color-text)"},
+        {label:"Dépôts en attente", value:String(depots), hint:"Guichet unique / DGI", valueColor: depots>0 ? "var(--color-accent)" : "var(--color-text)"},
+        {label:"Alertes actives", value:String(alertes.length), hint:"Nécessitent une attention", valueColor: alertes.length>0 ? "var(--color-accent)" : "var(--color-text)"}
+      ];
+    } else if (s.roleId === "comptable") {
+      const ecritures = actifs.reduce((n,d)=>n+d.compte.length,0);
+      const provisions = actifs.reduce((n,d)=>n+d.compte.filter(c=>c.type==="Provision").length,0);
+      kpis = [
+        {label:"Dossiers actifs", value:String(actifs.length), hint:"Tous types d'actes confondus", valueColor:"var(--color-text)"},
+        {label:"Écritures ce mois", value:String(ecritures), hint:"Comptes clients", valueColor:"var(--color-text)"},
+        {label:"Provisions en cours", value:String(provisions), hint:"À suivre jusqu'à solde", valueColor:"var(--color-text)"},
+        {label:"Marge du mois", value:"18,4M FCFA", hint:"Estimation — voir Fiscalité", valueColor:"var(--color-success)"}
+      ];
+    } else if (s.roleId === "assistante") {
+      const rdv = actifs.filter(d=>d.etape===4).length;
+      const attenteClient = actifs.flatMap(d=>d.tasks).filter(t=>t.statut==="attente_client").length;
+      kpis = [
+        {label:"Dossiers actifs", value:String(actifs.length), hint:"Tous types d'actes confondus", valueColor:"var(--color-text)"},
+        {label:"RDV à planifier", value:String(rdv), hint:"Étape signature", valueColor: rdv>0 ? "var(--color-accent)" : "var(--color-text)"},
+        {label:"Alertes actives", value:String(alertes.length), hint:"Nécessitent une attention", valueColor: alertes.length>0 ? "var(--color-accent)" : "var(--color-text)"},
+        {label:"En attente client", value:String(attenteClient), hint:"Relances à effectuer", valueColor:"var(--color-text)"}
+      ];
+    } else {
+      kpis = [
+        {label:"Dossiers actifs", value:String(actifs.length), hint:"Tous types d'actes confondus", valueColor:"var(--color-text)"},
+        {label:"En formalités DGI", value:String(actifs.filter(d=>d.etape===5).length), hint:"Étape 5 du pipeline", valueColor:"var(--color-text)"},
+        {label:"Alertes actives", value:String(alertes.length), hint:"Nécessitent une attention", valueColor: alertes.length>0 ? "var(--color-accent)" : "var(--color-text)"},
+        {label:"Marge du mois", value:"18,4M FCFA", hint:"Estimation — voir Fiscalité", valueColor:"var(--color-success)"}
+      ];
+    }
+
+    const equipeComplete = ROLES.map(r => ({
+      nom: r.nom, role: r.label, email: r.email, couleur: MEMBRE_COULEUR[r.nom],
+      actifs: actifs.filter(d=>d.clerc===r.nom).length,
+      retard: actifs.filter(d=>d.clerc===r.nom && d.niveau!=="vert").length
+    }));
+    const equipeApercu = equipeComplete.filter(m => m.actifs > 0);
+
+    const selected = s.dossiers.find(d => d.id === s.selectedId);
+
+    const search = s.dossiersSearch.trim().toLowerCase();
+    const dossiersListe = actifs
+      .filter(d => s.dossiersEtapeFilter === "all" || d.etape === Number(s.dossiersEtapeFilter))
+      .filter(d => !search || (d.numero+" "+d.type+" "+d.comparants).toLowerCase().includes(search))
+      .map(d => ({
+        numero: d.numero, type: d.type, comparants: d.comparants, clerc: d.clerc, montantFmt: fmtMontant(d.montant),
+        etapeLabel: ETAPES.find(e=>e.id===d.etape).label, tagClass: niveauMap[d.niveau].tag, niveauLabel: niveauMap[d.niveau].label,
+        onClick: () => this.selectDossier(d.id, "dossiers")
+      }));
+
+    const archives = archivedDossiers.map(d => ({
+      numero: d.numero, type: d.type, comparants: d.comparants, clerc: d.clerc, montantFmt: fmtMontant(d.montant),
+      dateCloture: d.dateCloture, onClick: () => this.selectDossier(d.id, "archives")
+    }));
+
+    return {
+      isLogin: screen === "login", isApp: screen !== "login",
+      isDashboard: screen === "dashboard", isKanban: screen === "kanban", isDossier: screen === "dossier" && !!selected,
+      isDossiersListe: screen === "dossiers", isArchives: screen === "archives", isEquipe: screen === "equipe", isParametres: screen === "parametres",
+      loginEmail: s.loginEmail, loginPw: s.loginPw, loginRoleId: s.loginRoleId, roleOptions: ROLES,
+      onEmailChange: this.onEmailChange, onPwChange: this.onPwChange, onRoleChange: this.onRoleChange, doLogin: this.doLogin,
+      navItems, doLogout: this.doLogout, currentUser,
+      notifSummary: "3 événements aujourd'hui", unreadLabel: "2 non lues",
+      kpis, alertes, equipeApercu, equipeComplete, kanbanColumns, canAddDossier: perms.addDossier,
+      dossiersListe, dossiersListeEmpty: dossiersListe.length === 0, dossiersSearch: s.dossiersSearch, dossiersEtapeFilter: s.dossiersEtapeFilter,
+      onDossiersSearchChange: this.onDossiersSearchChange, onDossiersFilterChange: this.onDossiersFilterChange, etapeOptions: ETAPES,
+      archives, archivesEmpty: archives.length === 0,
+      settingsEmailNotif: s.settingsEmailNotif, settingsSmsNotif: s.settingsSmsNotif, settingsSeuilUrgence: s.settingsSeuilUrgence,
+      onToggleEmailNotif: this.onToggleEmailNotif, onToggleSmsNotif: this.onToggleSmsNotif, onSeuilChange: this.onSeuilChange,
+      showAdvancedSettings: perms.settingsAdvanced,
+      dossier: selected ? this.buildDossierView(selected, perms) : {},
+      canManageEtape: perms.closeDossier, canManageCompte: perms.manageCompte, onAddEcriture: this.onAddEcriture,
+      backFromDossier: this.backFromDossier,
+      backLabel: {kanban:"Retour au circuit", dossiers:"Retour aux dossiers", archives:"Retour aux archives", dashboard:"Retour au tableau de bord"}[s.previousScreen] || "Retour",
+      showTaxToast: this.showTaxToast,
+      toast: s.toast
+    };
+  }
+}
+
+</script>
+</body>
+</html>

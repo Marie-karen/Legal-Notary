@@ -1,0 +1,1 @@
+Legal Notary — design system is a custom dark theme (bg #0f172a, accent green #16a34a, Space Grotesk headings / Inter body). Never switch to a design-system preset (e.g. Modernist) without explicit confirmation from the user.

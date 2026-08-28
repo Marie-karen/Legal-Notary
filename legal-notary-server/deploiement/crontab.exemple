@@ -1,0 +1,12 @@
+# crontab.exemple — programme la sauvegarde quotidienne automatique.
+#
+# Installation (une fois, en tant qu'utilisateur legalnotary — voir
+# legalnotary.service) :
+#   crontab -e
+# puis coller la ligne ci-dessous en adaptant le chemin, et sauvegarder.
+#
+# Cette ligne lance la sauvegarde tous les jours à 2h du matin (heure
+# creuse, aucun utilisateur connecté) et note le résultat dans un journal
+# séparé pour pouvoir vérifier que ça a bien tourné.
+
+0 2 * * * /chemin/vers/legal-notary-server/deploiement/sauvegarder.sh >> /chemin/vers/sauvegardes-legalnotary/journal-sauvegardes.log 2>&1

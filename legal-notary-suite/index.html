@@ -1,0 +1,238 @@
+<!--
+  index.html — Legal Notary, application métier pour offices notariaux de Côte d'Ivoire
+
+  Structure sémantique complète : tableau de bord, kanban d'instruction,
+  liste des dossiers, fiche dossier (modal), fiche de taxe imprimable,
+  archives / répertoire des minutes, paramètres de l'étude.
+
+  100% local : cette page s'ouvre directement en file:// (double-clic ou
+  LANCER_LEGAL_NOTARY.command), sans serveur, pour garantir le secret
+  professionnel. Les scripts sont chargés en <script> classique (pas
+  type="module") car les navigateurs bloquent les imports de modules ES6
+  par CORS sur file://.
+-->
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Legal Notary — Office Notarial</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="entete">
+  <div class="entete-marque">
+    <span class="entete-sceau">⚖</span>
+    <div>
+      <h1>Legal Notary</h1>
+      <p>Gestion d'office notarial — Côte d'Ivoire</p>
+    </div>
+  </div>
+
+  <nav class="entete-nav">
+    <button class="nav-bouton" data-vue="dashboard">Tableau de bord</button>
+    <button class="nav-bouton" data-vue="kanban">Instruction</button>
+    <button class="nav-bouton" data-vue="liste">Dossiers</button>
+    <button class="nav-bouton" data-vue="archives">Archives</button>
+    <button class="nav-bouton" data-vue="parametres">Paramètres</button>
+  </nav>
+
+  <div class="entete-role">
+    <span id="role-actif-badge" class="badge-role">Notaire</span>
+    <select id="selecteur-role" title="Changer de profil actif">
+      <option value="notaire">Notaire Titulaire</option>
+      <option value="premier_clerc">Premier Clerc</option>
+      <option value="clerc_redacteur">Clerc Rédacteur</option>
+      <option value="clerc_formaliste">Clerc aux Formalités</option>
+      <option value="comptable_taxateur">Comptable Taxateur</option>
+      <option value="assistante">Assistante / Accueil</option>
+    </select>
+    <button id="bouton-nouveau-dossier" class="bouton bouton--or">+ Nouveau dossier</button>
+  </div>
+</header>
+
+<main class="contenu">
+
+  <!-- ============ TABLEAU DE BORD ============ -->
+  <section id="vue-dashboard" class="vue">
+    <h2 class="titre-vue">Tableau de bord</h2>
+    <div class="grille-kpi">
+      <div class="carte-kpi"><span class="carte-kpi-valeur" id="kpi-dossiers-actifs">0</span><span class="carte-kpi-libelle">Dossiers actifs</span></div>
+      <div class="carte-kpi carte-kpi--rouge"><span class="carte-kpi-valeur" id="kpi-alertes-rouge">0</span><span class="carte-kpi-libelle">Alertes en retard</span></div>
+      <div class="carte-kpi carte-kpi--ambre"><span class="carte-kpi-valeur" id="kpi-alertes-ambre">0</span><span class="carte-kpi-libelle">Échéances sous 48h</span></div>
+      <div class="carte-kpi"><span class="carte-kpi-valeur" id="kpi-stock-anterieur">0</span><span class="carte-kpi-libelle">Stock antérieur non apuré</span></div>
+      <div class="carte-kpi carte-kpi--large"><span class="carte-kpi-valeur" id="kpi-tva-mois">0 FCFA</span><span class="carte-kpi-libelle">TVA collectée à déclarer (avant le 15)</span></div>
+    </div>
+
+    <h3 class="titre-section">Centre d'alertes proactives</h3>
+    <div id="centre-alertes" class="centre-alertes"></div>
+  </section>
+
+  <!-- ============ KANBAN ============ -->
+  <section id="vue-kanban" class="vue">
+    <h2 class="titre-vue">Instruction des dossiers</h2>
+    <div id="kanban-colonnes" class="kanban-colonnes"></div>
+  </section>
+
+  <!-- ============ LISTE DES DOSSIERS ============ -->
+  <section id="vue-liste" class="vue">
+    <h2 class="titre-vue">Dossiers</h2>
+    <div class="barre-filtres">
+      <label class="champ champ--inline"><span>Période</span>
+        <select id="filtre-annee">
+          <option value="toutes">Toutes les années</option>
+          <option value="courante">Année en cours</option>
+          <option value="anterieur">Stock antérieur</option>
+        </select>
+      </label>
+      <label class="champ champ--inline"><span>Acte</span>
+        <select id="filtre-acte"></select>
+      </label>
+      <label class="champ champ--inline"><span>Statut</span>
+        <select id="filtre-statut">
+          <option value="tous">Tous statuts</option>
+          <option value="vert">Dans les temps</option>
+          <option value="ambre">Échéance proche</option>
+          <option value="rouge">En retard</option>
+          <option value="cloture">Clôturé</option>
+        </select>
+      </label>
+    </div>
+    <table class="table-donnees">
+      <thead>
+        <tr><th>N° dossier</th><th>Acte</th><th>Année</th><th>Étape</th><th>Ancienneté</th><th>Avancement</th><th>Montant</th><th></th></tr>
+      </thead>
+      <tbody id="corps-table-dossiers"></tbody>
+    </table>
+  </section>
+
+  <!-- ============ ARCHIVES / RÉPERTOIRE DES MINUTES ============ -->
+  <section id="vue-archives" class="vue">
+    <h2 class="titre-vue">Répertoire chronologique officiel des minutes</h2>
+    <table class="table-donnees">
+      <thead>
+        <tr><th>N° minute</th><th>Date de clôture</th><th>Nature de l'acte</th><th>Comparants</th><th>Montant</th><th>Emplacement physique</th><th>Scan</th></tr>
+      </thead>
+      <tbody id="corps-table-repertoire"></tbody>
+    </table>
+  </section>
+
+  <!-- ============ PARAMÈTRES DE L'ÉTUDE ============ -->
+  <section id="vue-parametres" class="vue">
+    <h2 class="titre-vue">Paramètres de l'étude</h2>
+    <form id="form-parametres" class="formulaire">
+
+      <fieldset>
+        <legend>Identité de l'office</legend>
+        <div class="grille-formulaire">
+          <label class="champ"><span>Nom de l'étude</span><input name="nomEtude" type="text"></label>
+          <label class="champ"><span>Titre du notaire</span><input name="titreNotaire" type="text"></label>
+          <label class="champ"><span>Adresse</span><input name="adresse" type="text"></label>
+          <label class="champ"><span>Téléphone</span><input name="telephone" type="text"></label>
+          <label class="champ"><span>Email</span><input name="email" type="email"></label>
+          <label class="champ"><span>Numéro CC (compte contribuable)</span><input name="numeroCC" type="text"></label>
+          <label class="champ"><span>Centre des impôts de rattachement</span><input name="centreImpots" type="text"></label>
+          <label class="champ"><span>Compte séquestre (CDC-CI)</span><input name="compteSequestreCDCI" type="text"></label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Taux fiscaux & seuils</legend>
+        <div class="grille-formulaire">
+          <label class="champ"><span>Taux de TVA (%)</span><input name="tauxTVA" type="number" step="0.01" min="0"></label>
+          <label class="champ"><span>Minimum légal de minute (FCFA)</span><input name="minimumLegalMinute" type="number" min="0"></label>
+          <label class="champ"><span>Tarif rôle de minute (FCFA)</span><input name="tarifRoleMinute" type="number" min="0"></label>
+          <label class="champ"><span>Seuil dossier stagnant (jours)</span><input name="seuilStagnationJours" type="number" min="1"></label>
+          <label class="champ"><span>Seuil alerte échéance proche (heures)</span><input name="seuilAlerteAmbreHeures" type="number" min="1"></label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Délais standards par étape</legend>
+        <div id="parametres-delais-etapes" class="grille-formulaire"></div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Barèmes d'émoluments dégressifs</legend>
+        <div id="parametres-baremes-emoluments" class="grille-baremes"></div>
+      </fieldset>
+
+      <button type="submit" class="bouton bouton--or">Enregistrer les paramètres</button>
+    </form>
+  </section>
+
+</main>
+
+<!-- ============ MODAL : FICHE DOSSIER ============ -->
+<div id="modal-dossier" class="modal">
+  <div class="modal-fenetre modal-fenetre--large">
+    <div class="modal-entete">
+      <h3 id="modal-dossier-titre">Dossier</h3>
+      <button class="bouton-fermer" data-fermer-modal="modal-dossier">✕</button>
+    </div>
+    <div class="modal-corps">
+      <div id="modal-dossier-infos" class="dossier-infos"></div>
+      <h4>Compte client</h4>
+      <div id="modal-dossier-compte" class="dossier-compte"></div>
+      <h4>Checklist de tâches</h4>
+      <div id="modal-dossier-checklist" class="dossier-checklist"></div>
+    </div>
+    <div id="modal-dossier-actions" class="modal-actions"></div>
+  </div>
+</div>
+
+<!-- ============ MODAL : FICHE DE TAXE ============ -->
+<div id="modal-fiche-taxe" class="modal">
+  <div class="modal-fenetre">
+    <div class="modal-entete no-print">
+      <h3>Fiche de taxe</h3>
+      <button class="bouton-fermer" data-fermer-modal="modal-fiche-taxe">✕</button>
+    </div>
+    <div class="modal-corps" id="fiche-taxe-corps"></div>
+  </div>
+</div>
+
+<!-- ============ MODAL : CLÔTURE & ATTRIBUTION DE MINUTE ============ -->
+<div id="modal-cloture" class="modal">
+  <div class="modal-fenetre">
+    <div class="modal-entete">
+      <h3>Clôturer le dossier & attribuer une minute</h3>
+      <button class="bouton-fermer" data-fermer-modal="modal-cloture">✕</button>
+    </div>
+    <form id="form-cloture-dossier" class="formulaire modal-corps">
+      <label class="champ"><span>N° de carton d'archives</span><input name="carton" type="text"></label>
+      <label class="champ"><span>Rayonnage</span><input name="rayonnage" type="text"></label>
+      <label class="champ"><span>Armoire</span><input name="armoire" type="text"></label>
+      <label class="champ"><span>Lien vers le scan PDF (optionnel)</span><input name="scanUrl" type="text" placeholder="ex. dossier local ou chemin partagé"></label>
+      <button type="submit" class="bouton bouton--or">Confirmer la clôture</button>
+    </form>
+  </div>
+</div>
+
+<!-- ============ MODAL : NOUVEAU DOSSIER ============ -->
+<div id="modal-nouveau-dossier" class="modal">
+  <div class="modal-fenetre">
+    <div class="modal-entete">
+      <h3>Nouveau dossier</h3>
+      <button class="bouton-fermer" data-fermer-modal="modal-nouveau-dossier">✕</button>
+    </div>
+    <form id="form-nouveau-dossier" class="formulaire modal-corps">
+      <label class="champ"><span>Nature de l'acte</span><select id="nouveau-dossier-acte" name="acteId" required></select></label>
+      <label class="champ"><span>Année d'ouverture</span><select id="nouveau-dossier-annee" name="anneeOuverture"></select></label>
+      <label class="champ"><span>Comparants (séparés par une virgule)</span><input name="comparants" type="text" placeholder="Ex. Koffi Yao, Diaby Fatoumata"></label>
+      <label class="champ"><span>Montant de l'acte (FCFA)</span><input name="montant" type="number" min="0" step="1"></label>
+      <label class="champ"><span>Clerc assigné</span><input name="clercAssigne" type="text"></label>
+      <button type="submit" class="bouton bouton--or">Créer le dossier</button>
+    </form>
+  </div>
+</div>
+
+<div id="zone-notification" class="notification"></div>
+
+<script src="js/data.js"></script>
+<script src="js/tax-engine.js"></script>
+<script src="js/sample-dossiers.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

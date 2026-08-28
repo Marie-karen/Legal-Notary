@@ -1,0 +1,34 @@
+<!--
+  tests.html — Suite de tests unitaires de Legal Notary (référentiel + moteur fiscal)
+
+  Page autonome, ouvrable directement en file:// comme index.html, qui
+  exécute js/test-suite.js et affiche le résultat. Ne touche jamais au
+  LocalStorage de l'application (tests sur fonctions pures uniquement).
+-->
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Legal Notary — Tests</title>
+<style>
+  body { font-family: -apple-system, "Segoe UI", sans-serif; background: #0A192F; color: #fff; padding: 30px; }
+  h1 { color: #D4AF37; }
+  .resume-tests { font-size: 1.1rem; font-weight: 700; padding: 10px 14px; border-radius: 8px; margin-bottom: 16px; display: inline-block; }
+  .resume-tests--ok { background: #064E3B; }
+  .resume-tests--echec { background: #7F1D1D; }
+  .ligne-test { padding: 4px 0; font-size: 0.9rem; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .ligne-test--ok { color: #A7F3D0; }
+  .ligne-test--echec { color: #FCA5A5; }
+  .detail-test { color: #FCD34D; }
+</style>
+</head>
+<body>
+  <h1>Legal Notary — Tests du référentiel et du moteur fiscal</h1>
+  <div id="resume-tests" class="resume-tests">Exécution…</div>
+  <div id="resultats-tests"></div>
+
+  <script src="js/data.js"></script>
+  <script src="js/tax-engine.js"></script>
+  <script src="js/test-suite.js"></script>
+</body>
+</html>

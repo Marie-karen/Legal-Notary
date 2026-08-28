@@ -1,0 +1,38 @@
+# legalnotary.service — garde le serveur Legal Notary actif en permanence
+# et le relance automatiquement en cas de plantage ou de redémarrage de
+# la machine (Linux avec systemd — la plupart des serveurs physiques et
+# VPS). Voir ../docs/DEPLOIEMENT.md pour l'installation complète.
+#
+# Installation (une fois) :
+#   1. Adapter WorkingDirectory et User ci-dessous à ce serveur.
+#   2. sudo cp legalnotary.service /etc/systemd/system/legalnotary.service
+#   3. sudo systemctl daemon-reload
+#   4. sudo systemctl enable --now legalnotary
+#
+# Vérifier ensuite : sudo systemctl status legalnotary
+# Voir les journaux : sudo journalctl -u legalnotary -f
+
+[Unit]
+Description=Legal Notary — serveur du cabinet (API + interface web)
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+# Remplacer par le chemin réel une fois copié sur le serveur du cabinet.
+WorkingDirectory=/chemin/vers/legal-notary-server
+ExecStart=/usr/bin/node src/server.js
+Restart=always
+RestartSec=5
+
+# Remplacer par un utilisateur système dédié, jamais root, créé sur ce
+# serveur (ex. `sudo adduser --system --group legalnotary`).
+User=legalnotary
+Group=legalnotary
+
+# Les secrets (mot de passe base de données, JWT_SECRET) vivent dans le
+# fichier .env du dossier ci-dessus (voir docs/DEPLOIEMENT.md) — jamais
+# dans ce fichier, qui n'est pas confidentiel.
+Environment=NODE_ENV=production
+
+[Install]
+WantedBy=multi-user.target

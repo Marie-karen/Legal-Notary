@@ -1,0 +1,175 @@
+<!--
+  index.html — Legal Notary, application web réelle.
+
+  Structure et design repris fidèlement de ../design-reference/Legal Notary.dc.html
+  (réalisé via Claude Design — thème sombre, accent vert, Space Grotesk +
+  Inter). Ce fichier remplace le moteur de gabarits interne à Claude Design
+  (sc-if/sc-for) par du JavaScript classique dans js/app.js, pour tourner
+  comme une vraie page web reliée à l'API réelle (legal-notary-server) —
+  aucune donnée simulée, tout vient du serveur.
+-->
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Legal Notary</title>
+<link rel="stylesheet" href="css/style.css?v=2.5.0">
+<script>
+  // Configuration automatique de l'URL API backend :
+  (function () {
+    var port = window.location.port;
+    var host = window.location.hostname;
+    if (port === "4000" || (host !== "localhost" && host !== "127.0.0.1" && host !== "" && !window.location.protocol.startsWith("file:"))) {
+      window.LEGAL_NOTARY_API_URL = window.location.origin;
+    } else {
+      window.LEGAL_NOTARY_API_URL = "http://localhost:4000";
+    }
+  })();
+</script>
+</head>
+<body>
+
+<!-- Avertissement si ouvert par double-clic (file://) au lieu de http://localhost:4000 -->
+<div id="avertissement-file-protocol" style="display:none;background:#dc2626;color:#ffffff;padding:14px;text-align:center;font-weight:700;font-size:14px;position:sticky;top:0;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,0.4)">
+  ⚠️ Mode fichier local détecté (Finder) : Le navigateur bloque les requêtes de sécurité.<br>
+  👉 Veuillez ouvrir votre navigateur et aller sur : <a href="http://localhost:4000/" target="_blank" style="color:#fef08a;text-decoration:underline;margin-left:4px">http://localhost:4000/</a>
+</div>
+<script>
+  if (window.location.protocol === "file:") {
+    document.getElementById("avertissement-file-protocol").style.display = "block";
+  }
+</script>
+
+<div id="chargement-initial" class="chargement" style="display:none">Chargement…</div>
+
+<!-- ============ ÉCRAN DE CONNEXION ============ -->
+<div id="ecran-login" class="ecran actif">
+  <div style="min-height:100vh;width:100%;display:flex;align-items:center;justify-content:center;padding:var(--space-4);background:var(--color-bg)">
+    <div class="card elev-md" style="width:420px;padding:var(--space-6) var(--space-5)">
+      <div style="font-family:var(--font-heading);font-weight:700;font-size:24px;margin-bottom:2px;color:var(--color-text)" id="login-titre-etude">Legal Notary</div>
+      <div style="font-size:13px;color:var(--color-text-dim);margin-bottom:var(--space-5)">Espace de gestion et pilotage de l'office notarial</div>
+
+      <!-- Bouton 1-clic Démo Accès Total -->
+      <button type="button" id="btn-login-demo-rapide" onclick="window.LegalNotaryConnexionRapide('notaire@notaire.ci', 'notaire123')" class="btn btn-primary btn-block" style="margin-bottom:var(--space-4);padding:12px;font-size:15px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 12px rgba(22,163,74,0.35);cursor:pointer">
+        <span>⚡</span> Connexion Démo (Accès Total Notaire)
+      </button>
+
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:var(--space-3);opacity:.85">
+        <div style="flex:1;height:1px;background:var(--color-divider)"></div>
+        <span style="font-size:11px;font-weight:700;color:var(--color-text-dim);text-transform:uppercase;letter-spacing:.5px">🏛️ Profils Étude Notariale</span>
+        <div style="flex:1;height:1px;background:var(--color-divider)"></div>
+      </div>
+
+      <div style="grid-template-columns:1fr 1fr;gap:6px;margin-bottom:var(--space-4);display:grid">
+        <button type="button" class="btn btn-secondary btn-demo-role" onclick="window.LegalNotaryConnexionRapide('notaire@notaire.ci', 'notaire123')" data-email="notaire@notaire.ci" data-mdp="notaire123" style="font-size:11px;padding:6px 8px;text-align:left;cursor:pointer">👑 Notaire Titulaire</button>
+        <button type="button" class="btn btn-secondary btn-demo-role" onclick="window.LegalNotaryConnexionRapide('premier.clerc@notaire.ci', 'notaire123')" data-email="premier.clerc@notaire.ci" data-mdp="notaire123" style="font-size:11px;padding:6px 8px;text-align:left;cursor:pointer">📋 Premier Clerc</button>
+        <button type="button" class="btn btn-secondary btn-demo-role" onclick="window.LegalNotaryConnexionRapide('clerc1@notaire.ci', 'notaire123')" data-email="clerc1@notaire.ci" data-mdp="notaire123" style="font-size:11px;padding:6px 8px;text-align:left;cursor:pointer">✍️ Clerc Rédacteur</button>
+        <button type="button" class="btn btn-secondary btn-demo-role" onclick="window.LegalNotaryConnexionRapide('formalites@notaire.ci', 'notaire123')" data-email="formalites@notaire.ci" data-mdp="notaire123" style="font-size:11px;padding:6px 8px;text-align:left;cursor:pointer">🏛️ Clerc Formaliste</button>
+        <button type="button" class="btn btn-secondary btn-demo-role" onclick="window.LegalNotaryConnexionRapide('comptable@notaire.ci', 'notaire123')" data-email="comptable@notaire.ci" data-mdp="notaire123" style="font-size:11px;padding:6px 8px;text-align:left;cursor:pointer">💰 Comptable Taxateur</button>
+        <button type="button" class="btn btn-secondary btn-demo-role" onclick="window.LegalNotaryConnexionRapide('accueil@notaire.ci', 'notaire123')" data-email="accueil@notaire.ci" data-mdp="notaire123" style="font-size:11px;padding:6px 8px;text-align:left;cursor:pointer">📞 Assistante Accueil</button>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:var(--space-3);opacity:.85">
+        <div style="flex:1;height:1px;background:var(--color-divider)"></div>
+        <span style="font-size:11px;font-weight:700;color:#38bdf8;text-transform:uppercase;letter-spacing:.5px">🛡️ Équipe Éditeur SaaS (Interne)</span>
+        <div style="flex:1;height:1px;background:var(--color-divider)"></div>
+      </div>
+
+      <div style="grid-template-columns:1fr 1fr;gap:6px;margin-bottom:var(--space-5);display:grid">
+        <button type="button" class="btn btn-secondary btn-demo-role" onclick="window.LegalNotaryConnexionRapide('admin@editeur-legal.ci', 'admin123')" data-email="admin@editeur-legal.ci" data-mdp="admin123" style="font-size:11px;padding:6px 8px;text-align:left;border-color:rgba(56,189,248,0.4);color:#38bdf8;grid-column:span 2;cursor:pointer">👑 Direction SaaS / SuperAdmin</button>
+        <button type="button" class="btn btn-secondary btn-demo-role" onclick="window.LegalNotaryConnexionRapide('dev@editeur-legal.ci', 'admin123')" data-email="dev@editeur-legal.ci" data-mdp="admin123" style="font-size:11px;padding:6px 8px;text-align:left;border-color:rgba(139,92,246,0.4);color:#a78bfa;cursor:pointer">💻 Développeur / DevOps</button>
+        <button type="button" class="btn btn-secondary btn-demo-role" onclick="window.LegalNotaryConnexionRapide('commercial@editeur-legal.ci', 'admin123')" data-email="commercial@editeur-legal.ci" data-mdp="admin123" style="font-size:11px;padding:6px 8px;text-align:left;border-color:rgba(16,185,129,0.4);color:#34d399;cursor:pointer">💼 Commercial & Sales</button>
+        <button type="button" class="btn btn-secondary btn-demo-role" onclick="window.LegalNotaryConnexionRapide('support@editeur-legal.ci', 'admin123')" data-email="support@editeur-legal.ci" data-mdp="admin123" style="font-size:11px;padding:6px 8px;text-align:left;border-color:rgba(245,158,11,0.4);color:#fbbf24;cursor:pointer">🎧 Support Client L1-L4</button>
+        <button type="button" class="btn btn-secondary btn-demo-role" onclick="window.LegalNotaryConnexionRapide('assistante.editeur@editeur-legal.ci', 'admin123')" data-email="assistante.editeur@editeur-legal.ci" data-mdp="admin123" style="font-size:11px;padding:6px 8px;text-align:left;border-color:rgba(236,72,153,0.4);color:#f472b6;cursor:pointer">📋 Assistante Éditeur</button>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:var(--space-4);opacity:.6">
+        <div style="flex:1;height:1px;background:var(--color-divider)"></div>
+        <span style="font-size:11px;text-transform:uppercase;letter-spacing:.5px">Ou saisie directe de compte</span>
+        <div style="flex:1;height:1px;background:var(--color-divider)"></div>
+      </div>
+
+      <form id="form-login">
+        <div class="field" style="margin-bottom:var(--space-3)">
+          <label>Email</label>
+          <input class="input" type="email" name="email" id="login-input-email" placeholder="demo@notaire.ci" required>
+        </div>
+        <div class="field" style="margin-bottom:var(--space-4)">
+          <label>Mot de passe</label>
+          <input class="input" type="password" name="motDePasse" id="login-input-mdp" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="btn btn-ghost btn-block" style="border:1px solid var(--color-divider)">Se connecter avec ces identifiants</button>
+        <div id="login-erreur" class="erreur-inline" style="display:none;margin-top:var(--space-3)"></div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APPLICATION ============ -->
+<div id="app">
+  <div style="height:100vh;width:100%;background:var(--color-bg);display:flex;flex-direction:column;overflow:hidden">
+
+    <div class="nav" style="border-bottom:1px solid var(--color-divider);flex:none;gap:var(--space-2)">
+      <div class="nav-brand" id="nav-nom-etude">Legal Notary</div>
+      <span class="tag tag-outline" id="notif-badge" style="cursor:pointer">0 non lue(s)</span>
+
+      <!-- Sélecteur rapide de rôle / vue immédiate -->
+      <div id="barre-selecteur-roles" style="display:flex;align-items:center;gap:4px;margin-left:var(--space-2);background:var(--color-surface-2);padding:3px 6px;border-radius:var(--radius);border:1px solid var(--color-border);overflow-x:auto">
+        <span style="font-size:10px;font-weight:700;color:var(--color-text-dim);text-transform:uppercase;padding:0 4px">Vue :</span>
+        <button type="button" class="btn-role-switch" data-role="notaire" title="Espace Notaire Titulaire">👑 Notaire</button>
+        <button type="button" class="btn-role-switch" data-role="premier_clerc" title="Espace Premier Clerc">📋 1er Clerc</button>
+        <button type="button" class="btn-role-switch" data-role="clerc_redacteur" title="Espace Clerc Rédacteur">✍️ Rédacteur</button>
+        <button type="button" class="btn-role-switch" data-role="clerc_formaliste" title="Espace Clerc Formaliste">🏛️ Formaliste</button>
+        <button type="button" class="btn-role-switch" data-role="comptable_taxateur" title="Espace Comptable Taxateur">💰 Comptable</button>
+        <button type="button" class="btn-role-switch" data-role="assistante" title="Espace Assistante Accueil">📞 Assistante</button>
+        <button type="button" class="btn-role-switch" data-role="superadmin" title="Console Super Admin SaaS Multi-Études" style="border-color:rgba(56,189,248,0.4);color:#38bdf8">🛡️ Super Admin</button>
+      </div>
+
+      <div style="flex:1"></div>
+      <div style="width:1px;height:20px;background:var(--color-divider)"></div>
+      <div style="text-align:right">
+        <div id="nav-utilisateur-nom" style="font-family:var(--font-heading);font-weight:600;font-size:14px"></div>
+        <div id="nav-utilisateur-role" style="font-size:11px;opacity:.55"></div>
+      </div>
+    </div>
+
+    <div style="flex:1;display:flex;flex-wrap:wrap;overflow:hidden">
+      <div class="barre-laterale" id="menu-navigation-laterale" style="width:220px;flex:none;height:100%;overflow-y:auto;padding:var(--space-6) var(--space-3);display:flex;flex-direction:column;gap:var(--space-1)">
+        <!-- Le menu de navigation s'adapte dynamiquement et fidèlement au rôle de l'utilisateur connecté via renderMenuNavigation(role) -->
+      </div>
+
+      <div class="zone-scroll" style="flex:1;min-width:320px;height:100%;overflow-y:auto;padding:var(--space-6) var(--space-6) var(--space-8)">
+        <div id="vue-dashboard" class="ecran"></div>
+        <div id="vue-kanban" class="ecran"></div>
+        <div id="vue-dossiers" class="ecran"></div>
+        <div id="vue-nouveau-dossier" class="ecran"></div>
+        <div id="vue-clients" class="ecran"></div>
+        <div id="vue-actes" class="ecran"></div>
+        <div id="vue-comptabilite" class="ecran"></div>
+        <div id="vue-archives" class="ecran"></div>
+        <div id="vue-equipe" class="ecran"></div>
+        <div id="vue-evolution" class="ecran"></div>
+        <div id="vue-parametres" class="ecran"></div>
+        <div id="vue-superadmin" class="ecran"></div>
+        <div id="vue-dossier" class="ecran"></div>
+        <div id="vue-notifications" class="ecran"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Conteneur d'impression officielle (fiche de taxe / décompte notarié) -->
+  <div id="print-container" class="print-only"></div>
+
+  <!-- Racine pour les boîtes de dialogue et modales -->
+  <div id="modal-racine" style="display:none"></div>
+
+  <div id="toast" class="card elev-lg" style="display:none; position:fixed; bottom:var(--space-4); right:var(--space-4); max-width:340px; z-index:400;">
+    <div class="card-body" style="opacity:1" id="toast-texte"></div>
+  </div>
+</div>
+
+<script src="js/api.js?v=2.5.2"></script>
+<script src="js/app.js?v=2.5.2"></script>
+</body>
+</html>
