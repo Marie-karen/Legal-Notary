@@ -4472,28 +4472,24 @@
         html += '<div class="card" style="background:var(--color-surface-2);border-color:var(--color-border);padding:var(--space-4)">';
         html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-3);flex-wrap:wrap;gap:var(--space-2)">';
         html += '<div><strong style="font-size:16px;color:var(--color-text)">🏛️ Parc des Offices Notariaux Déployés (Multi-Tenant)</strong>';
-        html += '<p style="font-size:12px;color:var(--color-text-dim);margin:2px 0 0">Supervision des instances, quotas, modes d\'infrastructure A/B/C, mise en ligne et noms de domaines.</p></div>';
+        html += '<p style="font-size:12px;color:var(--color-text-dim);margin:2px 0 0">Supervision du parc d\'études notariales, formules d\'abonnement, espaces de stockage GED et domaines.</p></div>';
         html += '</div>';
 
-        html += '<div class="table-wrap"><table class="table"><thead><tr><th>Code Étude</th><th>Office Notarial</th><th>Notaire Titulaire</th><th>Mode Infrastructure</th><th>Dossiers / Minutes</th><th>Collaborateurs</th><th>Santé Serveur</th><th>Actions</th></tr></thead><tbody>';
+        html += '<div class="table-wrap"><table class="table"><thead><tr><th>Code Tenant</th><th>Office Notarial</th><th>Notaire Titulaire</th><th>Hébergement</th><th>Dossiers / Minutes</th><th>Collaborateurs</th><th>Santé Serveur</th><th>Actions</th></tr></thead><tbody>';
         etudes.forEach(function (e, index) {
-          var modeBadge = "";
-          if (e.modeInfrastructure === "hybride") modeBadge = '<span class="tag" style="background:rgba(56,189,248,0.15);color:#38bdf8;border:1px solid rgba(56,189,248,0.3)">Mode C · Hybride</span>';
-          else if (e.modeInfrastructure === "cloud") modeBadge = '<span class="tag" style="background:rgba(34,197,94,0.15);color:#22c55e;border:1px solid rgba(34,197,94,0.3)">Mode B · Cloud</span>';
-          else modeBadge = '<span class="tag" style="background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3)">Mode A · Local</span>';
+          var modeBadge = '<span class="tag" style="background:rgba(56,189,248,0.15);color:#38bdf8;border:1px solid rgba(56,189,248,0.3)">☁️ Cloud Multi-Tenant</span>';
 
           html += '<tr>';
           html += '<td><strong style="font-family:monospace;color:var(--color-text);font-size:12px">' + (e.codeEtude || "ETUDE-001") + '</strong></td>';
-          html += '<td><strong style="color:var(--color-text);font-size:13px">' + e.nomEtude + '</strong><div style="font-size:11px;color:var(--color-text-dim)">v' + (e.versionDeployee || "2.4.0") + ' · ' + (e.ville || "Abidjan") + ' · Quota ' + (e.quotaStockageGo || 100) + ' Go</div></td>';
+          html += '<td><strong style="color:var(--color-text);font-size:13px">' + e.nomEtude + '</strong><div style="font-size:11px;color:var(--color-text-dim)">' + (e.ville || "Abidjan") + ' · Quota GED ' + (e.quotaStockageGo || 100) + ' Go</div></td>';
           html += '<td style="font-size:12px;font-weight:600">' + (e.titreNotaire || "Maître Notaire") + '</td>';
           html += '<td>' + modeBadge + '</td>';
           html += '<td><strong style="color:var(--color-accent)">' + (e.totalDossiers || 0) + '</strong> dossiers <span style="font-size:11px;color:var(--color-text-dim)">(' + (e.totalMinutes || 0) + ' min.)</span></td>';
-          html += '<td><span class="tag tag-outline">' + (e.totalUtilisateurs || 5) + ' utilisateurs</span></td>';
+          html += '<td><span class="tag tag-outline">' + (e.totalUtilisateurs || 5) + ' collaborateurs</span></td>';
           html += '<td><span style="font-size:12px;font-weight:bold;color:#22c55e">' + (e.statutSante || "🟢 En ligne") + '</span></td>';
           html += '<td><div style="display:flex;gap:4px;flex-wrap:wrap">';
-          html += '<button type="button" class="btn btn-primary btn-deploiement-etude" data-etude-id="' + e.id + '" data-nom="' + encodeURIComponent(e.nomEtude) + '" style="font-size:11px;padding:3px 8px;font-weight:700" title="Guide et mise en ligne">🚀 Mettre en ligne</button>';
+          html += '<button type="button" class="btn btn-primary btn-deploiement-etude" data-etude-id="' + e.id + '" data-nom="' + encodeURIComponent(e.nomEtude) + '" style="font-size:11px;padding:3px 8px;font-weight:700" title="Accès et mise en ligne">🚀 Mettre en ligne</button>';
           html += '<button type="button" class="btn btn-secondary btn-configurer-etude" data-etude-idx="' + index + '" style="font-size:11px;padding:3px 8px" title="Configurer l\'office">⚙️ Configurer</button>';
-          html += '<button type="button" class="btn btn-secondary btn-basculer-mode-etude" data-etude-id="' + e.id + '" data-nom="' + encodeURIComponent(e.nomEtude) + '" data-mode="' + e.modeInfrastructure + '" style="font-size:11px;padding:3px 8px" title="Changer le mode d\'infrastructure">⚡ Mode Infra</button>';
           html += '</div></td>';
           html += '</tr>';
         });
@@ -5141,6 +5137,9 @@
   // =========================================================================
   // MODALE : DÉPLOYER UN NOUVEL OFFICE NOTARIAL (PROVISIONING SAAS MULTI-TENANT)
   // =========================================================================
+  // =========================================================================
+  // MODALE : DÉPLOYER UN NOUVEL OFFICE NOTARIAL (PROVISIONING SAAS MULTI-TENANT)
+  // =========================================================================
   function modalDeployerNouvelleEtude() {
     var html = '<form id="form-deployer-etude" style="display:flex;flex-direction:column;gap:var(--space-3)">';
 
@@ -5157,16 +5156,17 @@
     html += '</div>';
 
     html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2)">';
-    html += '<div class="field"><label>Mode d\'infrastructure</label><select class="input" name="modeInfrastructure">';
-    html += '<option value="hybride" selected>Mode C — Hybride (Local + Cloud Vault) [Recommandé]</option>';
-    html += '<option value="cloud">Mode B — Cloud Dédié (Vault)</option>';
-    html += '<option value="serveur_physique">Mode A — Serveur Physique Local Exclusif</option>';
+    html += '<div class="field"><label>Formule d\'Abonnement SaaS</label><select class="input" name="modeInfrastructure">';
+    html += '<option value="cloud" selected>☁️ Formule Cloud Standard (100 Go)</option>';
+    html += '<option value="cloud_pro">☁️ Formule Cloud Professionnelle (250 Go)</option>';
+    html += '<option value="cloud_enterprise">☁️ Formule Cloud Entreprise (500 Go)</option>';
+    html += '<option value="cloud_illimite">☁️ Formule Grand Cabinet (1 To)</option>';
     html += '</select></div>';
-    html += '<div class="field"><label>Quota de Stockage Cloud/Local</label><select class="input" name="quotaStockageGo">';
-    html += '<option value="100" selected>100 Go (Standard)</option>';
-    html += '<option value="250">250 Go (Grand Cabinet)</option>';
-    html += '<option value="500">500 Go (Fonds Historique Lourd)</option>';
-    html += '<option value="1000">1 To (Multi-Notaires Associés)</option>';
+    html += '<div class="field"><label>Quota de Stockage GED Alloué</label><select class="input" name="quotaStockageGo">';
+    html += '<option value="100" selected>100 Go</option>';
+    html += '<option value="250">250 Go</option>';
+    html += '<option value="500">500 Go</option>';
+    html += '<option value="1000">1 000 Go (1 To)</option>';
     html += '</select></div>';
     html += '</div>';
 
@@ -5233,12 +5233,8 @@
     html += '</div>';
 
     html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2)">';
-    html += '<div class="field"><label>Mode d\'Infrastructure</label><select class="input" name="modeInfrastructure">';
-    html += '<option value="hybride"' + (etude.modeInfrastructure === "hybride" ? " selected" : "") + '>Mode C — Hybride (Local + Cloud Vault)</option>';
-    html += '<option value="cloud"' + (etude.modeInfrastructure === "cloud" ? " selected" : "") + '>Mode B — Cloud Dédié</option>';
-    html += '<option value="serveur_physique"' + (etude.modeInfrastructure === "serveur_physique" ? " selected" : "") + '>Mode A — Serveur Physique Local</option>';
-    html += '</select></div>';
-    html += '<div class="field"><label>Quota Alloué (Go)</label><input class="input" type="number" name="quotaStockageGo" value="' + (etude.quotaStockageGo || 100) + '" required></div>';
+    html += '<div class="field"><label>Plateforme d\'Hébergement</label><input class="input" value="☁️ Cloud Multi-Tenant Centralisé" readonly style="opacity:.8;cursor:not-allowed"></div>';
+    html += '<div class="field"><label>Quota de Stockage GED Alloué (Go)</label><input class="input" type="number" name="quotaStockageGo" value="' + (etude.quotaStockageGo || 100) + '" required></div>';
     html += '</div>';
 
     html += '<div class="field"><label>Domaine / Sous-domaine de l\'office</label><input class="input" name="domaine" value="' + (etude.domaine || "") + '"></div>';
@@ -5261,7 +5257,7 @@
             nomEtude: form.nomEtude.value.trim(),
             titreNotaire: form.titreNotaire.value.trim(),
             ville: form.ville.value.trim(),
-            modeInfrastructure: form.modeInfrastructure.value,
+            modeInfrastructure: "cloud",
             quotaStockageGo: parseInt(form.quotaStockageGo.value, 10) || 100,
             domaine: form.domaine.value.trim(),
           };
@@ -5273,50 +5269,6 @@
           }).catch(function (e) {
             document.getElementById("erreur-configurer-etude").textContent = e.message;
             document.getElementById("erreur-configurer-etude").style.display = "block";
-          });
-        });
-      },
-    });
-  }
-
-  // =========================================================================
-  // MODALE : BASCULER LE MODE D'INFRASTRUCTURE D'UNE ÉTUDE
-  // =========================================================================
-  function modalBasculerModeEtude(etudeId, nomEtude, modeActuel) {
-    var html = '<form id="form-basculer-mode" style="display:flex;flex-direction:column;gap:var(--space-3)">';
-    html += '<p style="font-size:13px;color:var(--color-text-dim)">Office : <strong style="color:var(--color-text)">' + nomEtude + '</strong></p>';
-
-    html += '<div class="field"><label>Nouveau mode d\'infrastructure</label><select class="input" name="modeInfrastructure">';
-    html += '<option value="hybride"' + (modeActuel === "hybride" ? " selected" : "") + '>Mode C — Hybride (Local + Cloud Vault Résilient) [Recommandé]</option>';
-    html += '<option value="cloud"' + (modeActuel === "cloud" ? " selected" : "") + '>Mode B — Cloud Dédié (Vault)</option>';
-    html += '<option value="serveur_physique"' + (modeActuel === "serveur_physique" ? " selected" : "") + '>Mode A — Serveur Physique Local Exclusif (On-Premise)</option>';
-    html += '</select></div>';
-
-    html += '<div style="font-size:11px;color:var(--color-text-dim);background:var(--color-surface-2);padding:8px 10px;border-radius:var(--radius);border:1px solid var(--color-border)">';
-    html += '🔄 Le moteur de synchronisation hybride réajustera automatiquement les files d\'attente de réplication sans interruption de service pour les clercs.';
-    html += '</div>';
-
-    html += '<div id="erreur-basculer-mode" class="erreur-inline" style="display:none"></div>';
-    html += '<div style="display:flex;justify-content:flex-end;gap:var(--space-2);margin-top:var(--space-2)"><button type="button" class="btn btn-ghost" id="btn-annuler-mode">Annuler</button><button type="submit" class="btn btn-primary">Appliquer le changement</button></div>';
-    html += '</form>';
-
-    ouvrirModal({
-      titre: '<span>⚙️</span> Configuration du Mode d\'Infrastructure',
-      corps: html,
-      boutonFermer: true,
-      largeur: "520px",
-      apresOuverture: function () {
-        document.getElementById("btn-annuler-mode").addEventListener("click", fermerModal);
-        document.getElementById("form-basculer-mode").addEventListener("submit", function (ev) {
-          ev.preventDefault();
-          var mode = ev.target.modeInfrastructure.value;
-          API.post("/api/superadmin/etudes/" + etudeId + "/basculer-mode", { modeInfrastructure: mode }).then(function () {
-            toast("Mode d'infrastructure mis à jour avec succès.");
-            fermerModal();
-            renderSuperAdmin();
-          }).catch(function (e) {
-            document.getElementById("erreur-basculer-mode").textContent = e.message;
-            document.getElementById("erreur-basculer-mode").style.display = "block";
           });
         });
       },
