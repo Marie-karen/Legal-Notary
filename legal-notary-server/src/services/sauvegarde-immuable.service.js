@@ -18,8 +18,11 @@ if (!fs.existsSync(BACKUP_DIR)) {
   fs.mkdirSync(BACKUP_DIR, { recursive: true });
 }
 
-// Clé secrète de chiffrement AES-256 dérivée
-const CLE_CHIFFREMENT_SNAPSHOT = crypto.createHash("sha256").update(process.env.JWT_SECRET || "legal_notary_backup_master_key_2026").digest();
+// Clé secrète de chiffrement AES-256 dérivée pour les sauvegardes WORM
+const CLE_CHIFFREMENT_SNAPSHOT = crypto
+  .createHash("sha256")
+  .update(process.env.BACKUP_ENCRYPTION_KEY || process.env.JWT_SECRET || "legal_notary_backup_master_key_2026")
+  .digest();
 
 /**
  * Générer un snapshot immuable chiffré AES-256-GCM
