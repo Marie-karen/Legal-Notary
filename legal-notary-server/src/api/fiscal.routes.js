@@ -63,4 +63,24 @@ router.get("/dossiers/:dossierId/historique", async (req, res, next) => {
   } catch (e) { next(e); }
 });
 
+router.get("/toutes-fiches", async (req, res, next) => {
+  try {
+    const { rows } = await pool.query(`
+      SELECT f.id, f.dossier_id, f.donnees, f.created_at,
+             d.numero_dossier, d.type_acte_id, d.montant_assiette,
+             u.nom_complet AS utilisateur_nom,
+             COALESCE((
+               SELECT string_agg(c.nom, ', ')
+               FROM dossier_comparants c
+               WHERE c.dossier_id = d.id
+             ), '') AS comparants_noms
+      FROM fiches_taxe f
+      JOIN dossiers d ON d.id = f.dossier_id
+      LEFT JOIN utilisateurs u ON u.id = f.utilisateur_id
+      ORDER BY f.created_at DESC
+    `);
+    res.json(rows);
+  } catch (e) { next(e); }
+});
+
 module.exports = router;
