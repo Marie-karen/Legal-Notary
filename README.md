@@ -16,9 +16,11 @@
    - Moteur fiscal automatisé : calcul au centime près des émoluments réglementés par tranches, droits d'enregistrement DGI, taxes foncières et séquestres CDCI.
    - Respect absolu de l'original papier : l'acte notarié est signé physiquement sur papier minute, puis numérisé et scellé numériquement avec calcul d'empreinte **SHA-256 immuable**.
 
-2. **⚡ Architecture Hybride Tri-Mode (Cloud, On-Premise & Mixte)** :
-   - **Mode 100% Cloud (Cas 1 & 2)** : Déploiement clé-en-main sur serveur central VPS Hostinger avec sous-domaine dédié (`etude.notaires.ci`) ou nom de domaine personnalisé (`notaire-kouame.ci`).
-   - **Mode Hybride Edge (Cas 3)** : Mini-serveur physique installé directement à l'office (Mac mini / Linux) avec buffer local offline-first et synchronisation Cloud Vault chiffrée.
+2. **⚡ Architecture SaaS Multi-Tenant Centralisée (1 Seul Serveur pour Tout le Parc)** :
+   - **Déploiement Centralisé Unique (VPS Hostinger)** : Un seul serveur Node.js et une seule base de données PostgreSQL gèrent l'intégralité de vos études notariales clientes sans multiplication de serveurs.
+   - **Onboarding Instantané en 2 Minutes** : Création d'une nouvelle étude depuis la Console SuperAdmin avec attribution immédiate d'un sous-domaine (`etude-nom.notaires.ci`) ou liaison transparente du nom de domaine personnalisé du notaire (`notaire-kouame.ci`).
+   - **Mises à jour Universelles en 1 Clic** : Une seule commande `git pull` met à jour 100% de vos études clientes sans intervention manuelle serveur par serveur.
+   - **Coût d'Exploitation Minimal & Rentabilité Maximale** : Facture d'infrastructure divisée par 20 comparé au modèle mono-serveur isolé.
 
 3. **🛡️ Console SuperAdmin SaaS & Isolation Étanche** :
    - Gestion du parc des offices notariaux clients, quotas de stockage et monitoring.

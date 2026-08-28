@@ -4974,53 +4974,31 @@
 
           html += '<div style="display:grid;grid-template-columns:1fr;gap:var(--space-3)">';
 
-          // CAS 1
+          // OPTION 1 : SOUS-DOMAINE CLOUD IMMÉDIAT
           html += '<div class="card" style="background:var(--color-surface);border:1px solid rgba(56,189,248,0.3);padding:var(--space-3)">';
-          html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:18px">☁️</span><strong style="color:#38bdf8;font-size:13.5px">Cas 1 : L\'étude n\'a aucun matériel (100% Cloud Clé-en-main)</strong></div>';
-          html += '<p style="font-size:12px;color:var(--color-text);margin:0 0 8px">L\'office est hébergé directement sur vos clusters Cloud Vault multi-tenants. Aucune installation matérielle requise.</p>';
+          html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:18px">🚀</span><strong style="color:#38bdf8;font-size:13.5px">Option 1 : Espace Cloud Instantané (Sous-domaine dédié)</strong></div>';
+          html += '<p style="font-size:12px;color:var(--color-text);margin:0 0 8px">L\'office est activé immédiatement sur votre serveur centralisé. Aucune installation technique requise.</p>';
           html += '<div style="background:var(--color-surface-2);padding:8px 10px;border-radius:var(--radius);font-size:12px;font-family:monospace;color:var(--color-text);display:flex;justify-content:space-between;align-items:center">';
           html += '<span>' + dep.urlCloudAutomatique + '</span>';
-          html += '<button type="button" class="btn btn-secondary" onclick="navigator.clipboard.writeText(\'' + dep.urlCloudAutomatique + '\');toast(\'Lien d\\\'accès copié !\')" style="font-size:10.5px;padding:2px 6px">📋 Copier</button>';
+          html += '<button type="button" class="btn btn-secondary" onclick="navigator.clipboard.writeText(\'' + dep.urlCloudAutomatique + '\');toast(\'Lien d\\\'accès copié !\')" style="font-size:10.5px;padding:2px 6px">📋 Copier l\'URL</button>';
           html += '</div>';
-          html += '<div style="font-size:11px;color:var(--color-text-dim);margin-top:6px">Transmettez cette URL avec l\'email administrateur du notaire titulaire. Accès immédiat SSL sécurisé.</div>';
+          html += '<div style="font-size:11px;color:var(--color-text-dim);margin-top:6px">Transmettez ce lien avec l\'email administrateur au notaire titulaire. Accès immédiat sécurisé HTTPS.</div>';
           html += '</div>';
 
-          // CAS 2
+          // OPTION 2 : NOM DE DOMAINE PERSONNALISÉ
           html += '<div class="card" style="background:var(--color-surface);border:1px solid rgba(34,197,94,0.3);padding:var(--space-3)">';
-          html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:18px">🌐</span><strong style="color:#22c55e;font-size:13.5px">Cas 2 : L\'étude dispose de son propre Nom de Domaine (ex. notaire-kouame.ci)</strong></div>';
-          html += '<p style="font-size:12px;color:var(--color-text);margin:0 0 8px">L\'office souhaite que ses clercs et clients accèdent à la plateforme via son adresse internet officielle.</p>';
+          html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:18px">🌐</span><strong style="color:#22c55e;font-size:13.5px">Option 2 : Nom de Domaine Personnalisé du Cabinet (ex. notaire-kouame.ci)</strong></div>';
+          html += '<p style="font-size:12px;color:var(--color-text);margin:0 0 8px">Le notaire conserve son adresse web officielle sur votre serveur central sans infrastructure séparée.</p>';
           html += '<div style="background:var(--color-surface-2);padding:8px 10px;border-radius:var(--radius);font-size:11.5px;line-height:1.5">';
-          html += '<div>1. Créez un enregistrement DNS chez le registraire du notaire :</div>';
-          html += '<div style="font-family:monospace;color:#38bdf8;margin:3px 0">Type CNAME : <code>' + dep.dnsRecommande.hote + '</code> ➜ Cible : <code>' + dep.dnsRecommande.cible + '</code> (ou A ➜ <code>' + dep.dnsRecommande.ipA + '</code>)</div>';
-          html += '<div>2. Certificat SSL : <strong style="color:#22c55e">Génération TLS 1.3 Let\'s Encrypt automatique</strong> dès la détection de la propagation DNS.</div>';
+          html += '<div>Configuration DNS chez le registraire du notaire (1 minute) :</div>';
+          html += '<div style="font-family:monospace;color:#38bdf8;margin:3px 0">Type CNAME : <code>' + dep.dnsRecommande.hote + '</code> ➜ Cible : <code>' + dep.dnsRecommande.cible + '</code></div>';
+          html += '<div>Certificat SSL : <strong style="color:#22c55e">Génération automatique TLS 1.3 Let\'s Encrypt</strong> par votre serveur central.</div>';
           html += '</div>';
-          html += '</div>';
-
-          // CAS 3
-          html += '<div class="card" style="background:var(--color-surface);border:1px solid rgba(245,158,11,0.3);padding:var(--space-3)">';
-          html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:18px">🖥️</span><strong style="color:#f59e0b;font-size:13.5px">Cas 3 : L\'étude dispose d\'un Serveur Physique Local (Mode A Local ou Mode C Hybride)</strong></div>';
-          html += '<p style="font-size:12px;color:var(--color-text);margin:0 0 8px">Pour installer l\'instance sur le mini-serveur ou NAS physique de l\'office (Mac Mini, Linux, Windows, Synology).</p>';
-          html += '<div style="background:var(--color-surface-2);padding:8px 10px;border-radius:var(--radius);font-size:11.5px">';
-          html += '<div style="margin-bottom:4px">Clé d\'appairage de l\'étude (Pair Token) : <code style="color:#f59e0b;font-weight:bold">' + dep.pairToken + '</code></div>';
-          html += '<div style="font-size:11px;color:var(--color-text-dim);margin-bottom:6px">Exécutez cette commande en 1 ligne sur le serveur physique de l\'office :</div>';
-          html += '<div style="background:#090d16;padding:6px 8px;border-radius:var(--radius);font-family:monospace;font-size:11px;color:#38bdf8;word-break:break-all;display:flex;justify-content:space-between;align-items:center">';
-          html += '<span>' + dep.commandeInstallServeurPhysique + '</span>';
-          html += '<button type="button" class="btn btn-secondary" onclick="navigator.clipboard.writeText(\'' + dep.commandeInstallServeurPhysique.replace(/'/g, "\\'") + '\');toast(\'Commande copiée !\')" style="font-size:10px;padding:2px 6px;margin-left:6px">📋 Copier</button>';
-          html += '</div>';
-          html += '<div style="font-size:11px;color:var(--color-text-dim);margin-top:6px">🔒 <em>Sécurité Réseau :</em> Le serveur physique local initie une connexion sortante sécurisée (WSS/HTTPS) vers votre SaaS. Aucun port à ouvrir sur la box internet du notaire.</div>';
-          html += '</div>';
-          html += '</div>';
-
-          // CAS 4
-          html += '<div class="card" style="background:var(--color-surface);border:1px solid var(--color-border);padding:var(--space-3)">';
-          html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:18px">🗄️</span><strong style="color:var(--color-text);font-size:13.5px">Cas 4 : L\'étude dispose de son propre Cloud Dédié (BYOS - Bucket S3 / MinIO privé)</strong></div>';
-          html += '<p style="font-size:12px;color:var(--color-text);margin:0 0 6px">Pour les grands cabinets exigeant un stockage scellé sur leur propre abonnement AWS ou Cloud privé.</p>';
-          html += '<div style="font-size:11.5px;color:var(--color-text-dim)">Les clés S3 d\'infrastructure peuvent être directement configurées dans l\'onglet <em>⚙️ Configurer l\'Office</em>.</div>';
           html += '</div>';
 
           html += '</div>';
 
-          html += '<div style="display:flex;justify-content:flex-end;margin-top:var(--space-2)"><button type="button" class="btn btn-primary" onclick="fermerModal()">Fermer le guide</button></div>';
+          html += '<div style="display:flex;justify-content:flex-end;margin-top:var(--space-2)"><button type="button" class="btn btn-primary" onclick="fermerModal()">Terminer</button></div>';
           html += '</div>';
 
           var corpsModale = document.querySelector("#modal-conteneur .modal-corps");
