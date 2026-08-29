@@ -343,17 +343,127 @@ select.input { -webkit-appearance: none; appearance: none; }
   border-color: var(--color-gold-border);
 }
 
+/* =========================================================================
+   CODES COULEURS FINTECH : PRIORITÉS DES DOSSIERS
+   ========================================================================= */
+.tag-prio-critique {
+  background: rgba(239, 68, 68, 0.16);
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.40);
+  font-weight: 700;
+}
+.tag-prio-haute, .tag-prio-vigilance {
+  background: rgba(245, 158, 11, 0.16);
+  color: #f59e0b;
+  border-color: rgba(245, 158, 11, 0.40);
+  font-weight: 700;
+}
+.tag-prio-normale {
+  background: rgba(99, 102, 241, 0.15);
+  color: #818cf8;
+  border-color: rgba(99, 102, 241, 0.35);
+  font-weight: 600;
+}
+.tag-prio-faible {
+  background: rgba(148, 163, 184, 0.14);
+  color: #94a3b8;
+  border-color: rgba(148, 163, 184, 0.28);
+  font-weight: 600;
+}
+
+[data-theme="light"] .tag-prio-critique {
+  background: #fef2f2;
+  color: #dc2626;
+  border-color: #fca5a5;
+}
+[data-theme="light"] .tag-prio-haute, [data-theme="light"] .tag-prio-vigilance {
+  background: #fffbeb;
+  color: #d97706;
+  border-color: #fde68a;
+}
+[data-theme="light"] .tag-prio-normale {
+  background: #eef2ff;
+  color: #4338ca;
+  border-color: #c7d2fe;
+}
+[data-theme="light"] .tag-prio-faible {
+  background: #f8fafc;
+  color: #475569;
+  border-color: #cbd5e1;
+}
+
+/* =========================================================================
+   CODES COULEURS FINTECH : ÉTAPES DU CIRCUIT JURIDIQUE & STATUTS
+   ========================================================================= */
+.tag-etape-1 {
+  background: rgba(2, 132, 199, 0.15);
+  color: #38bdf8;
+  border-color: rgba(2, 132, 199, 0.35);
+}
+.tag-etape-2 {
+  background: rgba(99, 102, 241, 0.15);
+  color: #818cf8;
+  border-color: rgba(99, 102, 241, 0.35);
+}
+.tag-etape-3 {
+  background: rgba(168, 85, 247, 0.15);
+  color: #c084fc;
+  border-color: rgba(168, 85, 247, 0.35);
+}
+.tag-etape-4 {
+  background: rgba(234, 179, 8, 0.15);
+  color: #facc15;
+  border-color: rgba(234, 179, 8, 0.40);
+}
+.tag-etape-5 {
+  background: rgba(249, 115, 22, 0.15);
+  color: #fb923c;
+  border-color: rgba(249, 115, 22, 0.35);
+}
+.tag-etape-6, .tag-statut-cloture {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border-color: rgba(16, 185, 129, 0.35);
+}
+.tag-statut-actif {
+  background: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+  border-color: rgba(16, 185, 129, 0.30);
+}
+.tag-statut-bloque {
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.30);
+}
+
+[data-theme="light"] .tag-etape-1 { background: #f0f9ff; color: #0284c7; border-color: #bae6fd; font-weight: 700; }
+[data-theme="light"] .tag-etape-2 { background: #eef2ff; color: #4338ca; border-color: #c7d2fe; font-weight: 700; }
+[data-theme="light"] .tag-etape-3 { background: #faf5ff; color: #7e22ce; border-color: #e9d5ff; font-weight: 700; }
+[data-theme="light"] .tag-etape-4 { background: #fefce8; color: #a16207; border-color: #fef08a; font-weight: 700; }
+[data-theme="light"] .tag-etape-5 { background: #fff7ed; color: #c2410c; border-color: #ffedd5; font-weight: 700; }
+[data-theme="light"] .tag-etape-6, [data-theme="light"] .tag-statut-cloture { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; font-weight: 700; }
+[data-theme="light"] .tag-statut-actif { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; font-weight: 700; }
+[data-theme="light"] .tag-statut-bloque { background: #fef2f2; color: #b91c1c; border-color: #fecaca; font-weight: 700; }
+
 /* Indicateurs de statut en pastilles rondes */
 .status-dot {
   width: 7px;
   height: 7px;
   border-radius: 50%;
   display: inline-block;
+  flex-shrink: 0;
 }
 .status-dot-signed { background: var(--color-signed); box-shadow: 0 0 6px var(--color-signed); }
 .status-dot-progress { background: var(--color-progress); box-shadow: 0 0 6px var(--color-progress); }
 .status-dot-missing { background: var(--color-missing); box-shadow: 0 0 6px var(--color-missing); }
 .status-dot-overdue { background: var(--color-overdue); box-shadow: 0 0 6px var(--color-overdue); }
+
+.status-dot-etape-1 { background: #38bdf8; box-shadow: 0 0 6px rgba(56, 189, 248, 0.6); }
+.status-dot-etape-2 { background: #818cf8; box-shadow: 0 0 6px rgba(129, 140, 248, 0.6); }
+.status-dot-etape-3 { background: #c084fc; box-shadow: 0 0 6px rgba(192, 132, 252, 0.6); }
+.status-dot-etape-4 { background: #facc15; box-shadow: 0 0 6px rgba(250, 204, 21, 0.6); }
+.status-dot-etape-5 { background: #fb923c; box-shadow: 0 0 6px rgba(251, 146, 60, 0.6); }
+.status-dot-etape-6 { background: #34d399; box-shadow: 0 0 6px rgba(52, 211, 153, 0.6); }
 
 /* Bouton sélecteur de thème ☀️ / 🌙 */
 .theme-switch-btn {

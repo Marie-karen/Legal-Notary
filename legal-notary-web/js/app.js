@@ -262,6 +262,28 @@
     return a ? NIVEAU[a.couleur] : NIVEAU.vert;
   }
 
+  function badgePrioriteDossier(dossierId) {
+    var alerte = cache.alertesParDossierId[dossierId];
+    if (alerte && alerte.couleur === "rouge") {
+      return '<span class="tag tag-prio-critique" title="Dossier en alerte critique"><span class="status-dot status-dot-overdue"></span> Critique</span>';
+    } else if (alerte && (alerte.couleur === "jaune" || alerte.couleur === "ambre")) {
+      return '<span class="tag tag-prio-vigilance" title="Dossier sous surveillance"><span class="status-dot status-dot-missing"></span> Vigilance</span>';
+    } else {
+      return '<span class="tag tag-prio-normale" title="Instruction normale dans les délais"><span class="status-dot status-dot-progress"></span> Normale</span>';
+    }
+  }
+
+  function badgeStatutDossier(d) {
+    if (!d) return '<span class="tag tag-outline">—</span>';
+    if (d.statut === "cloture" || d.etapeActuelle === 6 || d.estArchiveNumerique) {
+      return '<span class="tag tag-statut-cloture" title="Minute scellée et archivée"><span class="status-dot status-dot-signed"></span> Clôturé & Archivé</span>';
+    }
+    var etape = d.etapeActuelle || 1;
+    var classeEtape = "tag-etape-" + Math.min(Math.max(etape, 1), 6);
+    var classeDot = "status-dot-etape-" + Math.min(Math.max(etape, 1), 6);
+    return '<span class="tag ' + classeEtape + '" title="Étape ' + etape + ' du circuit"><span class="status-dot ' + classeDot + '"></span> ' + etape + '. ' + labelEtape(etape) + '</span>';
+  }
+
   // -----------------------------------------------------------------
   // Chargement des données de référence + dossiers (au login et sur
   // rafraîchissement après une action qui change l'état d'un dossier)
@@ -1572,12 +1594,36 @@
   }
 
   function renderPipelineDossiers() {
-    var html = '<div class="dashboard-panel">';
-    html += '<div class="panel-header"><div class="panel-title">Pipeline des dossiers</div><span class="tag tag-outline">' + cache.dossiers.length + ' dossier(s)</span></div>';
+    var html = '<div class="dashboard-panel" style="border:1px solid var(--color-border);box-shadow:var(--shadow-sm)">';
+    html += '<div class="panel-header" style="flex-wrap:wrap;gap:8px;padding-bottom:12px">';
+    html += '<div><div class="panel-title" style="font-size:16px;font-weight:700">Pipeline des dossiers & Circuit d\'instruction</div>';
+    html += '<div style="font-size:12px;color:var(--color-text-dim);margin-top:2px">Supervision en direct de l\'avancement des actes, des priorités et des alertes de délais</div></div>';
+    html += '<span class="tag tag-outline" style="font-weight:700">' + cache.dossiers.length + ' dossier(s)</span></div>';
     
     if (!cache.dossiers.length) {
-      html += '<div class="panel-body" style="text-align:center;padding:var(--space-4);color:var(--color-text-dim)">Aucun dossier dans le pipeline actuellement.</div>';
+      html += '<div class="panel-body" style="text-align:center;padding:var(--space-6);color:var(--color-text-dim)">Aucun dossier dans le pipeline actuellement.</div>';
     } else {
+      var nbCritique = cache.alertes.filter(function (a) { return a.couleur === "rouge"; }).length;
+      var nbVigilance = cache.alertes.filter(function (a) { return a.couleur === "jaune" || a.couleur === "ambre"; }).length;
+
+      // Bandeau de synthèse des étapes du circuit
+      html += '<div style="display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--color-surface-2);border-top:1px solid var(--color-border);border-bottom:1px solid var(--color-border);overflow-x:auto;flex-wrap:wrap">';
+      html += '<span style="font-size:11px;font-weight:700;color:var(--color-text-dim);text-transform:uppercase;letter-spacing:0.04em">Circuit :</span>';
+      
+      cache.etapesPipeline.forEach(function (et) {
+        var nb = cache.dossiers.filter(function (d) { return d.etapeActuelle === et.id; }).length;
+        var classeEtape = "tag-etape-" + et.id;
+        html += '<span class="tag ' + classeEtape + '" style="font-size:11px;padding:3px 8px"><span class="status-dot status-dot-etape-' + et.id + '"></span> ' + et.id + '. ' + et.libelle + ' <strong>(' + nb + ')</strong></span>';
+      });
+
+      if (nbCritique > 0) {
+        html += '<span class="tag tag-prio-critique" style="font-size:11px;padding:3px 8px;margin-left:auto"><span class="status-dot status-dot-overdue"></span> ' + nbCritique + ' Critique(s)</span>';
+      }
+      if (nbVigilance > 0) {
+        html += '<span class="tag tag-prio-vigilance" style="font-size:11px;padding:3px 8px"><span class="status-dot status-dot-missing"></span> ' + nbVigilance + ' Vigilance</span>';
+      }
+      html += '</div>';
+
       // Tri par priorité (rouge > jaune > vert) puis par date de création/ouverture
       var dossiersTries = cache.dossiers.slice().sort(function (a, b) {
         var alerteA = cache.alertesParDossierId[a.id];
@@ -1590,41 +1636,35 @@
         return dateA - dateB;
       });
 
-      html += '<div class="table-wrap"><table class="table"><thead><tr><th>Client</th><th>Type d\'acte</th><th>N° Dossier</th><th>Priorité</th><th>Statut</th><th>Date de création</th><th>Action</th></tr></thead><tbody>';
+      html += '<div class="table-wrap"><table class="table" style="margin:0"><thead><tr>';
+      html += '<th style="width:130px">N° Dossier</th>';
+      html += '<th>Client (Comparants)</th>';
+      html += '<th>Type d\'acte</th>';
+      html += '<th style="width:140px">Priorité</th>';
+      html += '<th style="width:190px">Statut & Étape</th>';
+      html += '<th>Assiette fiscale</th>';
+      html += '<th>Rédacteur</th>';
+      html += '<th style="width:90px;text-align:right">Action</th>';
+      html += '</tr></thead><tbody>';
       
       dossiersTries.forEach(function (d) {
         var alerte = cache.alertesParDossierId[d.id];
-        var prioriteLabel = "Normal";
-        var prioriteTag = "tag-outline";
-        var pastille = "";
-
-        if (alerte) {
-          if (alerte.couleur === "rouge") {
-            prioriteLabel = "Critique";
-            prioriteTag = "tag-danger";
-            pastille = "";
-          } else if (alerte.couleur === "jaune") {
-            prioriteLabel = "Vigilance";
-            prioriteTag = "tag-warning";
-            pastille = "";
-          }
-        }
+        var bordureCouleur = alerte && alerte.couleur === "rouge" 
+          ? "var(--color-danger)" 
+          : (alerte && (alerte.couleur === "jaune" || alerte.couleur === "ambre") ? "var(--color-warning)" : "var(--color-accent)");
 
         var clientAffiche = d.comparantsNoms && d.comparantsNoms.trim() ? d.comparantsNoms.trim() : "Comparant(s) en cours";
-        var dt = d.createdAt ? new Date(d.createdAt) : (d.dateOuverture ? new Date(d.dateOuverture) : null);
-        var dateAffichee = dt && !isNaN(dt.getTime()) ? dt.toLocaleDateString("fr-CI") : (d.dateOuverture || "—");
+        var clercAff = nomClerc(d.clercAssigneId);
 
-        var statutLabel = (d.statut === "cloture" || d.etapeActuelle === 6) ? "Clôturé & Archivé" : labelEtape(d.etapeActuelle);
-        var statutTag = (d.statut === "cloture" || d.etapeActuelle === 6) ? "tag-accent" : "tag-outline";
-
-        html += '<tr class="alerte-item" data-id="' + d.id + '" style="cursor:pointer">';
+        html += '<tr class="alerte-item" data-id="' + d.id + '" style="cursor:pointer;border-left:3.5px solid ' + bordureCouleur + ';transition:background .15s ease">';
+        html += '<td><code style="font-family:monospace;font-size:11.5px;font-weight:700;color:var(--color-accent);background:var(--color-accent-dim);padding:2px 6px;border-radius:4px;border:1px solid rgba(99,102,241,0.25)">' + d.numeroDossier + '</code></td>';
         html += '<td style="font-weight:600;color:var(--color-text)">' + clientAffiche + '</td>';
-        html += '<td>' + labelActe(d.typeActeId) + '</td>';
-        html += '<td><strong>' + d.numeroDossier + '</strong></td>';
-        html += '<td><span class="tag ' + prioriteTag + '" style="font-size:11px">' + pastille + ' ' + prioriteLabel + '</span></td>';
-        html += '<td><span class="tag ' + statutTag + '">' + statutLabel + '</span></td>';
-        html += '<td style="color:var(--color-text-dim);font-size:12px">' + dateAffichee + '</td>';
-        html += '<td><span class="btn btn-ghost" style="padding:0;font-size:12px">Consulter →</span></td>';
+        html += '<td style="font-size:13px;color:var(--color-text)">' + labelActe(d.typeActeId) + '</td>';
+        html += '<td>' + badgePrioriteDossier(d.id) + '</td>';
+        html += '<td>' + badgeStatutDossier(d) + '</td>';
+        html += '<td style="font-weight:600;font-size:13px">' + fmtFCFA(d.montantAssiette) + '</td>';
+        html += '<td style="font-size:12px;color:var(--color-text-dim)">' + clercAff + '</td>';
+        html += '<td style="text-align:right"><span class="btn btn-ghost" style="padding:2px 6px;font-size:11.5px">Consulter →</span></td>';
         html += '</tr>';
       });
 
@@ -1806,18 +1846,34 @@
     cache.etapesPipeline.forEach(function (e) { html += '<option value="' + e.id + '"' + (String(e.id) === etat.filtreEtape ? " selected" : "") + '>' + e.libelle + '</option>'; });
     html += '</select></div>';
 
-    html += '<div class="table-wrap"><table class="table"><thead><tr><th>Numéro</th><th>Client (Comparants)</th><th>Type d\'acte</th><th>Étape</th><th>Montant (Assiette)</th><th>Statut</th></tr></thead><tbody>';
-    if (!liste.length) html += '<tr><td colspan="6" class="text-muted" style="text-align:center;padding:var(--space-4)">Aucun dossier ne correspond à vos filtres.</td></tr>';
+    html += '<div class="table-wrap"><table class="table" style="margin:0"><thead><tr>';
+    html += '<th style="width:130px">N° Dossier</th>';
+    html += '<th>Client (Comparants)</th>';
+    html += '<th>Type d\'acte</th>';
+    html += '<th style="width:140px">Priorité</th>';
+    html += '<th style="width:190px">Statut & Étape</th>';
+    html += '<th>Montant (Assiette)</th>';
+    html += '<th>Rédacteur</th>';
+    html += '<th style="width:90px;text-align:right">Action</th>';
+    html += '</tr></thead><tbody>';
+    if (!liste.length) html += '<tr><td colspan="8" class="text-muted" style="text-align:center;padding:var(--space-6)">Aucun dossier ne correspond à vos critères de recherche.</td></tr>';
     liste.forEach(function (d) {
-      var nv = niveauDossier(d.id);
-      var clientAffiche = d.comparantsNoms && d.comparantsNoms.trim() ? d.comparantsNoms.trim() : "—";
-      html += '<tr class="ligne-dossier" data-id="' + d.id + '" style="cursor:pointer">';
-      html += '<td><strong>' + d.numeroDossier + '</strong></td>';
+      var alerte = cache.alertesParDossierId[d.id];
+      var bordureCouleur = alerte && alerte.couleur === "rouge" 
+        ? "var(--color-danger)" 
+        : (alerte && (alerte.couleur === "jaune" || alerte.couleur === "ambre") ? "var(--color-warning)" : "var(--color-accent)");
+      var clientAffiche = d.comparantsNoms && d.comparantsNoms.trim() ? d.comparantsNoms.trim() : "Comparant(s) en cours";
+      var clercAff = nomClerc(d.clercAssigneId);
+
+      html += '<tr class="ligne-dossier" data-id="' + d.id + '" style="cursor:pointer;border-left:3.5px solid ' + bordureCouleur + ';transition:background .15s ease">';
+      html += '<td><code style="font-family:monospace;font-size:11.5px;font-weight:700;color:var(--color-accent);background:var(--color-accent-dim);padding:2px 6px;border-radius:4px;border:1px solid rgba(99,102,241,0.25)">' + d.numeroDossier + '</code></td>';
       html += '<td style="font-weight:600;color:var(--color-text)">' + clientAffiche + '</td>';
-      html += '<td>' + labelActe(d.typeActeId) + '</td>';
-      html += '<td><span class="tag tag-outline">' + labelEtape(d.etapeActuelle) + '</span></td>';
-      html += '<td style="font-weight:600">' + fmtFCFA(d.montantAssiette) + '</td>';
-      html += '<td><span class="tag ' + nv.tag + '">' + nv.label + '</span></td>';
+      html += '<td style="font-size:13px;color:var(--color-text)">' + labelActe(d.typeActeId) + '</td>';
+      html += '<td>' + badgePrioriteDossier(d.id) + '</td>';
+      html += '<td>' + badgeStatutDossier(d) + '</td>';
+      html += '<td style="font-weight:600;font-size:13px">' + fmtFCFA(d.montantAssiette) + '</td>';
+      html += '<td style="font-size:12px;color:var(--color-text-dim)">' + clercAff + '</td>';
+      html += '<td style="text-align:right"><span class="btn btn-ghost" style="padding:2px 6px;font-size:11.5px">Ouvrir →</span></td>';
       html += '</tr>';
     });
     html += '</tbody></table></div>';
