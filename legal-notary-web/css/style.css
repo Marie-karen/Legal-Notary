@@ -504,6 +504,7 @@ select.input { -webkit-appearance: none; appearance: none; }
   box-shadow: var(--shadow-sm);
   position: relative;
   overflow: hidden;
+  cursor: pointer;
   transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
 }
 .kpi-card::before {
@@ -516,9 +517,38 @@ select.input { -webkit-appearance: none; appearance: none; }
   background: var(--kpi-accent, var(--color-accent));
 }
 .kpi-card:hover {
-  transform: translateY(-2px);
-  border-color: var(--color-border-hover);
+  transform: translateY(-3px);
+  border-color: var(--kpi-accent, var(--color-border-hover));
   box-shadow: var(--shadow-md);
+}
+
+/* Cartes et éléments interactifs du Dashboard */
+.card-interactive {
+  cursor: pointer;
+  transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease, background-color .18s ease;
+}
+.card-interactive:hover {
+  transform: translateY(-2px);
+  border-color: var(--color-accent) !important;
+  box-shadow: var(--shadow-md);
+}
+
+.circuit-chip-dash, .circuit-prio-dash {
+  cursor: pointer;
+  transition: transform .15s ease, opacity .15s ease, box-shadow .15s ease;
+}
+.circuit-chip-dash:hover, .circuit-prio-dash:hover {
+  transform: scale(1.04);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  opacity: 0.95;
+}
+
+.ligne-clerc-dash {
+  cursor: pointer;
+  transition: background-color .15s ease;
+}
+.ligne-clerc-dash:hover {
+  background-color: var(--color-surface-2) !important;
 }
 .kpi-label {
   font-size: 11.5px;
