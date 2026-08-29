@@ -944,12 +944,39 @@
     html += renderKpisGrid(kpis);
 
     // =========================================================================
-    // 1. PIPELINE DES DOSSIERS (Monté sous les KPIs)
+    // 1. VENTILATION DU PORTEFEUILLE PAR BRANCHE NOTARIALE (En tête sous les KPIs)
     // =========================================================================
-    html += renderPipelineDossiers();
+    html += '<div class="dashboard-panel">';
+    html += '<div class="panel-header"><div class="panel-title">Ventilation du portefeuille par branche notariale</div><span class="tag tag-outline">Chiffre d\'affaires & Volume</span></div>';
+    html += '<div class="panel-body">';
+    html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:var(--space-3)">';
+
+    var clesDomaines = ["immobilier", "banque", "societes", "famille"];
+    clesDomaines.forEach(function (cle) {
+      var dom = synthese.domaines[cle];
+      var pctVolume = synthese.totalAssiettes > 0 ? Math.round((dom.assiette / synthese.totalAssiettes) * 100) : 0;
+      var pctEmols = synthese.totalEmolumentsHT > 0 ? Math.round((dom.emoluments / synthese.totalEmolumentsHT) * 100) : 0;
+
+      html += '<div class="card card-branche-notariale card-interactive" data-branche="' + cle + '" style="border-color:var(--color-border);background:var(--color-surface-2);display:flex;flex-direction:column;gap:8px;padding:var(--space-3) var(--space-4);cursor:pointer" title="Cliquer pour filtrer les dossiers de la branche ' + dom.label + '">';
+      html += '<div style="display:flex;justify-content:space-between;align-items:center">';
+      html += '<div style="font-family:var(--font-heading);font-weight:700;font-size:14px;color:var(--color-text)">' + dom.label + '</div>';
+      html += '<span class="tag tag-outline" style="font-size:11px">' + dom.count + ' acte(s)</span>';
+      html += '</div>';
+
+      html += '<div style="font-size:12px;color:var(--color-text-dim)">' + dom.desc + '</div>';
+
+      html += '<div style="margin-top:auto;padding-top:var(--space-2);border-top:1px solid var(--color-divider)">';
+      html += '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>Assiette cumulée :</span><strong style="color:var(--color-text)">' + fmtFCFA(dom.assiette) + '</strong></div>';
+      html += '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px"><span>Émoluments prévisionnels :</span><strong style="color:var(--color-accent)">' + fmtFCFA(dom.emoluments) + '</strong></div>';
+      html += '<div style="height:6px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden"><div style="height:100%;width:' + Math.max(pctEmols, 4) + '%;background:var(--color-accent);border-radius:4px"></div></div>';
+      html += '<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--color-text-dim);margin-top:4px"><span>Part des honoraires</span><span>' + pctEmols + ' % · Voir dossiers →</span></div>';
+      html += '</div></div>';
+    });
+
+    html += '</div></div></div>';
 
     // =========================================================================
-    // 1.5. ACTIONS PRIORITAIRES & ACTES EN ATTENTE DE VISA (MES URGENCES DU JOUR)
+    // 2. ACTIONS PRIORITAIRES & ACTES EN ATTENTE DE VISA (MES URGENCES DU JOUR)
     // =========================================================================
     var actesPrioritaires = cache.dossiers.filter(function (d) {
       return (d.etapeActuelle === 4 || d.etapeActuelle === 3) && d.statut === "actif";
@@ -967,7 +994,7 @@
       html += '<div style="padding:var(--space-3);display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:var(--space-3)">';
       actesPrioritaires.forEach(function (d) {
         var clientAff = (d.comparantsNoms && d.comparantsNoms.trim()) ? d.comparantsNoms.trim() : "Comparants";
-        html += '<div class="card card-urgence-notaire card-interactive alerte-item" data-id="' + d.id + '" style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius);padding:12px;display:flex;flex-direction:column;gap:6px;box-shadow:var(--shadow-sm)">';
+        html += '<div class="card card-urgence-notaire card-interactive alerte-item" data-id="' + d.id + '" style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius);padding:12px;display:flex;flex-direction:column;gap:6px;box-shadow:var(--shadow-sm);cursor:pointer">';
         html += '<div style="display:flex;justify-content:space-between;align-items:center">';
         html += '<span style="font-family:monospace;font-size:11.5px;font-weight:700;color:var(--color-accent)">' + d.numeroDossier + '</span>';
         html += '<span class="tag tag-etape-' + d.etapeActuelle + '" style="font-size:10px;padding:2px 6px">Étape ' + d.etapeActuelle + ' · ' + labelEtape(d.etapeActuelle) + '</span>';
@@ -984,7 +1011,12 @@
     html += '</div>';
 
     // =========================================================================
-    // 2. INSTRUCTION DES ACTES PAR CLERC (Tableau complet style Pipeline)
+    // 3. PIPELINE DES DOSSIERS & CIRCUIT D'INSTRUCTION
+    // =========================================================================
+    html += renderPipelineDossiers();
+
+    // =========================================================================
+    // 4. INSTRUCTION DES ACTES PAR CLERC (Tableau complet style Pipeline)
     // =========================================================================
     var clercs = cache.equipeListe.filter(function (m) {
       return m.role !== "notaire" && m.role !== "comptable_taxateur";
@@ -1045,56 +1077,24 @@
     html += '</div>';
 
     // =========================================================================
-    // 3. RÉPARTITION PAR BRANCHE NOTARIALE
-    // =========================================================================
-    html += '<div class="dashboard-panel">';
-    html += '<div class="panel-header"><div class="panel-title">Ventilation du portefeuille par branche notariale</div><span class="tag tag-outline">Chiffre d\'affaires & Volume</span></div>';
-    html += '<div class="panel-body">';
-    html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:var(--space-3)">';
-
-    var clesDomaines = ["immobilier", "banque", "societes", "famille"];
-    clesDomaines.forEach(function (cle) {
-      var dom = synthese.domaines[cle];
-      var pctVolume = synthese.totalAssiettes > 0 ? Math.round((dom.assiette / synthese.totalAssiettes) * 100) : 0;
-      var pctEmols = synthese.totalEmolumentsHT > 0 ? Math.round((dom.emoluments / synthese.totalEmolumentsHT) * 100) : 0;
-
-      html += '<div class="card card-branche-notariale card-interactive" data-branche="' + cle + '" style="border-color:var(--color-border);background:var(--color-surface-2);display:flex;flex-direction:column;gap:8px;padding:var(--space-3) var(--space-4)" title="Cliquer pour filtrer les dossiers de la branche ' + dom.label + '">';
-      html += '<div style="display:flex;justify-content:space-between;align-items:center">';
-      html += '<div style="font-family:var(--font-heading);font-weight:700;font-size:14px;color:var(--color-text)">' + dom.label + '</div>';
-      html += '<span class="tag tag-outline" style="font-size:11px">' + dom.count + ' acte(s)</span>';
-      html += '</div>';
-
-      html += '<div style="font-size:12px;color:var(--color-text-dim)">' + dom.desc + '</div>';
-
-      html += '<div style="margin-top:auto;padding-top:var(--space-2);border-top:1px solid var(--color-divider)">';
-      html += '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>Assiette cumulée :</span><strong style="color:var(--color-text)">' + fmtFCFA(dom.assiette) + '</strong></div>';
-      html += '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px"><span>Émoluments prévisionnels :</span><strong style="color:var(--color-accent)">' + fmtFCFA(dom.emoluments) + '</strong></div>';
-      html += '<div style="height:6px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden"><div style="height:100%;width:' + Math.max(pctEmols, 4) + '%;background:var(--color-accent);border-radius:4px"></div></div>';
-      html += '<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--color-text-dim);margin-top:4px"><span>Part des honoraires</span><span>' + pctEmols + ' % · Voir dossiers →</span></div>';
-      html += '</div></div>';
-    });
-
-    html += '</div></div></div>';
-
-    // =========================================================================
-    // 4. TRÉSORERIE SÉQUESTRES (CDCI) & FISCALITÉ DGI EN INSTANCE
+    // 5. TRÉSORERIE SÉQUESTRES (CDCI) & FISCALITÉ DGI EN INSTANCE
     // =========================================================================
     html += '<div class="dashboard-panel">';
     html += '<div class="panel-header"><div class="panel-title">Trésorerie des comptes séquestres & Fiscalité DGI en instance</div><span class="tag tag-outline">Flux financiers</span></div>';
     html += '<div class="panel-body">';
     html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:var(--space-3)">';
 
-    html += '<div class="card card-tresorerie-dash card-interactive" data-cible="comptabilite" style="border-left:4px solid #38bdf8;background:var(--color-surface-2)" title="Cliquer pour accéder à la comptabilité">';
+    html += '<div class="card card-tresorerie-dash card-interactive" data-cible="comptabilite" style="border-left:4px solid #38bdf8;background:var(--color-surface-2);cursor:pointer" title="Cliquer pour accéder à la comptabilité">';
     html += '<div class="card-kicker">Comptes Séquestres (CDCI)</div>';
     html += '<div style="font-family:var(--font-heading);font-weight:700;font-size:22px;color:var(--color-text);margin:4px 0">' + fmtFCFA(synthese.sequestresCDCI) + '</div>';
     html += '<div style="font-size:12px;color:var(--color-text-dim)">Estimation des dépôts et acomptes sous mandat d\'authentification</div></div>';
 
-    html += '<div class="card card-tresorerie-dash card-interactive" data-cible="comptabilite" style="border-left:4px solid var(--color-warning);background:var(--color-surface-2)" title="Cliquer pour vérifier les droits DGI">';
+    html += '<div class="card card-tresorerie-dash card-interactive" data-cible="comptabilite" style="border-left:4px solid var(--color-warning);background:var(--color-surface-2);cursor:pointer" title="Cliquer pour vérifier les droits DGI">';
     html += '<div class="card-kicker">Droits DGI & Conservation Foncière</div>';
     html += '<div style="font-family:var(--font-heading);font-weight:700;font-size:22px;color:var(--color-text);margin:4px 0">' + fmtFCFA(synthese.totalDroitsDGI) + '</div>';
     html += '<div style="font-size:12px;color:var(--color-text-dim)">Droits d\'enregistrement et taxes foncières en cours de liquidation</div></div>';
 
-    html += '<div class="card card-tresorerie-dash card-interactive" data-cible="emoluments" style="border-left:4px solid var(--color-accent);background:var(--color-surface-2)" title="Cliquer pour simuler les émoluments">';
+    html += '<div class="card card-tresorerie-dash card-interactive" data-cible="emoluments" style="border-left:4px solid var(--color-accent);background:var(--color-surface-2);cursor:pointer" title="Cliquer pour simuler les émoluments">';
     html += '<div class="card-kicker">Chiffre d\'Affaires Prévisionnel (TTC)</div>';
     html += '<div style="font-family:var(--font-heading);font-weight:700;font-size:22px;color:var(--color-accent);margin:4px 0">' + fmtFCFA(synthese.totalEmolumentsTTC) + '</div>';
     html += '<div style="font-size:12px;color:var(--color-text-dim)">Émoluments HT + TVA légale 18 % reversée à l\'État</div></div>';
@@ -1598,43 +1598,75 @@
     return html;
   }
 
+  var etatPipelineDashboard = {
+    etape: "all",
+    prio: "all"
+  };
+
   function renderCentreAlertes() {
     return renderPipelineDossiers();
   }
 
   function renderPipelineDossiers() {
-    var html = '<div class="dashboard-panel" style="border:1px solid var(--color-border);box-shadow:var(--shadow-sm)">';
+    var html = '<div class="dashboard-panel" id="panel-pipeline-dashboard" style="border:1px solid var(--color-border);box-shadow:var(--shadow-sm)">';
     html += '<div class="panel-header" style="flex-wrap:wrap;gap:8px;padding-bottom:12px">';
     html += '<div><div class="panel-title" style="font-size:16px;font-weight:700">Pipeline des dossiers & Circuit d\'instruction</div>';
     html += '<div style="font-size:12px;color:var(--color-text-dim);margin-top:2px">Supervision en direct de l\'avancement des actes, des priorités et des alertes de délais</div></div>';
-    html += '<span class="tag tag-outline" style="font-weight:700">' + cache.dossiers.length + ' dossier(s)</span></div>';
+    
+    var nbCritiqueTotal = cache.alertes.filter(function (a) { return a.couleur === "rouge"; }).length;
+    var nbVigilanceTotal = cache.alertes.filter(function (a) { return a.couleur === "jaune" || a.couleur === "ambre"; }).length;
+
+    // Filtrage direct sur le tableau de bord en fonction du clic sur les étapes ou statuts
+    var dossiersFiltres = cache.dossiers.filter(function (d) {
+      if (etatPipelineDashboard.etape !== "all" && d.etapeActuelle !== Number(etatPipelineDashboard.etape)) return false;
+      if (etatPipelineDashboard.prio !== "all") {
+        var alerte = cache.alertesParDossierId[d.id];
+        if (etatPipelineDashboard.prio === "rouge" && (!alerte || alerte.couleur !== "rouge")) return false;
+        if (etatPipelineDashboard.prio === "jaune" && (!alerte || (alerte.couleur !== "jaune" && alerte.couleur !== "ambre"))) return false;
+        if (etatPipelineDashboard.prio === "alertes" && !alerte) return false;
+      }
+      return true;
+    });
+
+    var filtreEnCours = (etatPipelineDashboard.etape !== "all" || etatPipelineDashboard.prio !== "all");
+    var tagAffichage = filtreEnCours 
+      ? ('<span class="tag tag-gold" style="font-weight:700">' + dossiersFiltres.length + ' / ' + cache.dossiers.length + ' affiché(s)</span>')
+      : ('<span class="tag tag-outline" style="font-weight:700">' + cache.dossiers.length + ' dossier(s)</span>');
+
+    html += '<div style="display:flex;align-items:center;gap:8px">' + tagAffichage + '</div></div>';
     
     if (!cache.dossiers.length) {
       html += '<div class="panel-body" style="text-align:center;padding:var(--space-6);color:var(--color-text-dim)">Aucun dossier dans le pipeline actuellement.</div>';
     } else {
-      var nbCritique = cache.alertes.filter(function (a) { return a.couleur === "rouge"; }).length;
-      var nbVigilance = cache.alertes.filter(function (a) { return a.couleur === "jaune" || a.couleur === "ambre"; }).length;
-
-      // Bandeau de synthèse des étapes du circuit avec puces cliquables
+      // Bandeau de synthèse des étapes du circuit avec puces cliquables pour filtrer directement le tableau
       html += '<div style="display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--color-surface-2);border-top:1px solid var(--color-border);border-bottom:1px solid var(--color-border);overflow-x:auto;flex-wrap:wrap">';
-      html += '<span style="font-size:11px;font-weight:700;color:var(--color-text-dim);text-transform:uppercase;letter-spacing:0.04em">Circuit :</span>';
+      html += '<span style="font-size:11px;font-weight:700;color:var(--color-text-dim);text-transform:uppercase;letter-spacing:0.04em">Filtrer circuit :</span>';
       
+      var isTousActif = !filtreEnCours;
+      html += '<button type="button" class="tag circuit-chip-dash' + (isTousActif ? ' actif-circuit-filter' : '') + '" data-etape="all" data-prio="all" style="cursor:pointer;border:' + (isTousActif ? '1.5px solid var(--color-accent)' : '1px solid var(--color-border)') + ';background:' + (isTousActif ? 'var(--color-accent-dim)' : 'transparent') + ';color:' + (isTousActif ? 'var(--color-accent)' : 'var(--color-text)') + ';font-size:11px;padding:4px 8px;border-radius:4px" title="Afficher tous les dossiers du pipeline">Tous <strong>(' + cache.dossiers.length + ')</strong></button>';
+
       cache.etapesPipeline.forEach(function (et) {
         var nb = cache.dossiers.filter(function (d) { return d.etapeActuelle === et.id; }).length;
         var classeEtape = "tag-etape-" + et.id;
-        html += '<span class="tag ' + classeEtape + ' circuit-chip-dash" data-etape="' + et.id + '" style="font-size:11px;padding:3px 8px;cursor:pointer" title="Cliquer pour filtrer les dossiers à l\'étape ' + et.id + '"><span class="status-dot status-dot-etape-' + et.id + '"></span> ' + et.id + '. ' + et.libelle + ' <strong>(' + nb + ')</strong></span>';
+        var isEtapeActif = (etatPipelineDashboard.etape === String(et.id));
+        var styleActif = isEtapeActif ? 'box-shadow:0 0 0 2px var(--color-accent);font-weight:700;' : '';
+        html += '<span class="tag ' + classeEtape + ' circuit-chip-dash' + (isEtapeActif ? ' actif-circuit-filter' : '') + '" data-etape="' + et.id + '" style="font-size:11px;padding:4px 8px;cursor:pointer;' + styleActif + '" title="Filtrer uniquement l\'étape ' + et.id + '"><span class="status-dot status-dot-etape-' + et.id + '"></span> ' + et.id + '. ' + et.libelle + ' <strong>(' + nb + ')</strong></span>';
       });
 
-      if (nbCritique > 0) {
-        html += '<span class="tag tag-prio-critique circuit-prio-dash" data-prio="rouge" style="font-size:11px;padding:3px 8px;margin-left:auto;cursor:pointer" title="Cliquer pour afficher les dossiers critiques"><span class="status-dot status-dot-overdue"></span> ' + nbCritique + ' Critique(s)</span>';
+      if (nbCritiqueTotal > 0) {
+        var isCritiqueActif = (etatPipelineDashboard.prio === "rouge");
+        var styleCritique = isCritiqueActif ? 'box-shadow:0 0 0 2px var(--color-danger);font-weight:700;' : '';
+        html += '<span class="tag tag-prio-critique circuit-prio-dash' + (isCritiqueActif ? ' actif-circuit-filter' : '') + '" data-prio="rouge" style="font-size:11px;padding:4px 8px;margin-left:auto;cursor:pointer;' + styleCritique + '" title="Filtrer les dossiers critiques"><span class="status-dot status-dot-overdue"></span> ' + nbCritiqueTotal + ' Critique(s)</span>';
       }
-      if (nbVigilance > 0) {
-        html += '<span class="tag tag-prio-vigilance circuit-prio-dash" data-prio="jaune" style="font-size:11px;padding:3px 8px;cursor:pointer" title="Cliquer pour afficher les dossiers sous vigilance"><span class="status-dot status-dot-missing"></span> ' + nbVigilance + ' Vigilance</span>';
+      if (nbVigilanceTotal > 0) {
+        var isVigilanceActif = (etatPipelineDashboard.prio === "jaune");
+        var styleVigilance = isVigilanceActif ? 'box-shadow:0 0 0 2px var(--color-warning);font-weight:700;' : '';
+        html += '<span class="tag tag-prio-vigilance circuit-prio-dash' + (isVigilanceActif ? ' actif-circuit-filter' : '') + '" data-prio="jaune" style="font-size:11px;padding:4px 8px;cursor:pointer;' + styleVigilance + '" title="Filtrer les dossiers sous vigilance"><span class="status-dot status-dot-missing"></span> ' + nbVigilanceTotal + ' Vigilance</span>';
       }
       html += '</div>';
 
       // Tri par priorité (rouge > jaune > vert) puis par date de création/ouverture
-      var dossiersTries = cache.dossiers.slice().sort(function (a, b) {
+      var dossiersTries = dossiersFiltres.slice().sort(function (a, b) {
         var alerteA = cache.alertesParDossierId[a.id];
         var alerteB = cache.alertesParDossierId[b.id];
         var scoreA = alerteA ? (alerteA.couleur === "rouge" ? 3 : 2) : 1;
@@ -1645,39 +1677,43 @@
         return dateA - dateB;
       });
 
-      html += '<div class="table-wrap"><table class="table" style="margin:0"><thead><tr>';
-      html += '<th style="width:130px">N° Dossier</th>';
-      html += '<th>Client (Comparants)</th>';
-      html += '<th>Type d\'acte</th>';
-      html += '<th style="width:140px">Priorité</th>';
-      html += '<th style="width:190px">Statut & Étape</th>';
-      html += '<th>Assiette fiscale</th>';
-      html += '<th>Rédacteur</th>';
-      html += '<th style="width:90px;text-align:right">Action</th>';
-      html += '</tr></thead><tbody>';
-      
-      dossiersTries.forEach(function (d) {
-        var alerte = cache.alertesParDossierId[d.id];
-        var bordureCouleur = alerte && alerte.couleur === "rouge" 
-          ? "var(--color-danger)" 
-          : (alerte && (alerte.couleur === "jaune" || alerte.couleur === "ambre") ? "var(--color-warning)" : "var(--color-accent)");
+      if (!dossiersTries.length) {
+        html += '<div class="panel-body" style="text-align:center;padding:var(--space-5);color:var(--color-text-dim)">Aucun dossier ne correspond à ce filtre sur le tableau de bord. <button type="button" class="btn btn-ghost circuit-chip-dash" data-etape="all" data-prio="all" style="font-size:11.5px;padding:2px 8px;margin-left:6px;color:var(--color-accent)">Réinitialiser</button></div>';
+      } else {
+        html += '<div class="table-wrap"><table class="table" style="margin:0"><thead><tr>';
+        html += '<th style="width:130px">N° Dossier</th>';
+        html += '<th>Client (Comparants)</th>';
+        html += '<th>Type d\'acte</th>';
+        html += '<th style="width:140px">Priorité</th>';
+        html += '<th style="width:190px">Statut & Étape</th>';
+        html += '<th>Assiette fiscale</th>';
+        html += '<th>Rédacteur</th>';
+        html += '<th style="width:90px;text-align:right">Action</th>';
+        html += '</tr></thead><tbody>';
+        
+        dossiersTries.forEach(function (d) {
+          var alerte = cache.alertesParDossierId[d.id];
+          var bordureCouleur = alerte && alerte.couleur === "rouge" 
+            ? "var(--color-danger)" 
+            : (alerte && (alerte.couleur === "jaune" || alerte.couleur === "ambre") ? "var(--color-warning)" : "var(--color-accent)");
 
-        var clientAffiche = d.comparantsNoms && d.comparantsNoms.trim() ? d.comparantsNoms.trim() : "Comparant(s) en cours";
-        var clercAff = nomClerc(d.clercAssigneId);
+          var clientAffiche = d.comparantsNoms && d.comparantsNoms.trim() ? d.comparantsNoms.trim() : "Comparant(s) en cours";
+          var clercAff = nomClerc(d.clercAssigneId);
 
-        html += '<tr class="alerte-item" data-id="' + d.id + '" style="cursor:pointer;border-left:3.5px solid ' + bordureCouleur + ';transition:background .15s ease">';
-        html += '<td><code style="font-family:monospace;font-size:11.5px;font-weight:700;color:var(--color-accent);background:var(--color-accent-dim);padding:2px 6px;border-radius:4px;border:1px solid rgba(99,102,241,0.25)">' + d.numeroDossier + '</code></td>';
-        html += '<td style="font-weight:600;color:var(--color-text)">' + clientAffiche + '</td>';
-        html += '<td style="font-size:13px;color:var(--color-text)">' + labelActe(d.typeActeId) + '</td>';
-        html += '<td>' + badgePrioriteDossier(d.id) + '</td>';
-        html += '<td>' + badgeStatutDossier(d) + '</td>';
-        html += '<td style="font-weight:600;font-size:13px">' + fmtFCFA(d.montantAssiette) + '</td>';
-        html += '<td style="font-size:12px;color:var(--color-text-dim)">' + clercAff + '</td>';
-        html += '<td style="text-align:right"><span class="btn btn-ghost" style="padding:2px 6px;font-size:11.5px">Consulter →</span></td>';
-        html += '</tr>';
-      });
+          html += '<tr class="alerte-item" data-id="' + d.id + '" style="cursor:pointer;border-left:3.5px solid ' + bordureCouleur + ';transition:background .15s ease">';
+          html += '<td><code style="font-family:monospace;font-size:11.5px;font-weight:700;color:var(--color-accent);background:var(--color-accent-dim);padding:2px 6px;border-radius:4px;border:1px solid rgba(99,102,241,0.25)">' + d.numeroDossier + '</code></td>';
+          html += '<td style="font-weight:600;color:var(--color-text)">' + clientAffiche + '</td>';
+          html += '<td style="font-size:13px;color:var(--color-text)">' + labelActe(d.typeActeId) + '</td>';
+          html += '<td><span class="badge-filtre-dash" data-prio="' + (alerte ? alerte.couleur : "all") + '" title="Cliquer pour filtrer par priorité">' + badgePrioriteDossier(d.id) + '</span></td>';
+          html += '<td><span class="badge-filtre-dash" data-etape="' + d.etapeActuelle + '" title="Cliquer pour filtrer par cette étape">' + badgeStatutDossier(d) + '</span></td>';
+          html += '<td style="font-weight:600;font-size:13px">' + fmtFCFA(d.montantAssiette) + '</td>';
+          html += '<td style="font-size:12px;color:var(--color-text-dim)">' + clercAff + '</td>';
+          html += '<td style="text-align:right"><span class="btn btn-ghost" style="padding:2px 6px;font-size:11.5px">Consulter →</span></td>';
+          html += '</tr>';
+        });
 
-      html += '</tbody></table></div>';
+        html += '</tbody></table></div>';
+      }
     }
     html += '</div>';
     return html;
@@ -1714,7 +1750,7 @@
       });
     });
 
-    // 2. Clic sur dossiers urgents / alertes
+    // 2. Clic sur dossiers urgents / alertes (ouvre la fiche du dossier)
     conteneur.querySelectorAll(".card-urgence-notaire, .alerte-item").forEach(function (e) {
       e.addEventListener("click", function () {
         if (e.dataset.id) ouvrirDossier(e.dataset.id, "dashboard");
@@ -1723,9 +1759,10 @@
     conteneur.querySelectorAll(".btn-ouvrir-urgence").forEach(function (btn) {
       btn.addEventListener("click", function (ev) {
         ev.stopPropagation();
-        ouvrirDossier(btn.dataset.id, "dashboard");
+        if (btn.dataset.id) ouvrirDossier(btn.dataset.id, "dashboard");
       });
     });
+
     // 3. Instruction par collaborateur / Clerc rows & buttons
     conteneur.querySelectorAll(".ligne-clerc-dash, .btn-filtre-clerc").forEach(function (el) {
       el.addEventListener("click", function (ev) {
@@ -1755,24 +1792,54 @@
       });
     });
 
-    // 6. Circuit Étape chips in Pipeline header
+    // 6. Circuit Étape chips -> Filtre direct en place sur le tableau de bord
     conteneur.querySelectorAll(".circuit-chip-dash").forEach(function (chip) {
       chip.addEventListener("click", function (ev) {
         ev.stopPropagation();
         var etapeId = chip.dataset.etape;
-        if (etapeId) {
-          etat.filtreEtape = String(etapeId);
-          irVers("dossiers", "dashboard");
+        if (etapeId === "all") {
+          etatPipelineDashboard.etape = "all";
+          etatPipelineDashboard.prio = "all";
+        } else if (etatPipelineDashboard.etape === etapeId) {
+          etatPipelineDashboard.etape = "all";
+        } else {
+          etatPipelineDashboard.etape = etapeId;
+          etatPipelineDashboard.prio = "all";
         }
+        renderDashboard();
       });
     });
 
-    // 7. Circuit Priority chips in Pipeline header
+    // 7. Circuit Priority chips -> Filtre direct en place sur le tableau de bord
     conteneur.querySelectorAll(".circuit-prio-dash").forEach(function (chip) {
       chip.addEventListener("click", function (ev) {
         ev.stopPropagation();
-        etat.filtrePriorite = chip.dataset.prio || "alertes";
-        irVers("dossiers", "dashboard");
+        var prio = chip.dataset.prio;
+        if (etatPipelineDashboard.prio === prio) {
+          etatPipelineDashboard.prio = "all";
+        } else {
+          etatPipelineDashboard.prio = prio || "alertes";
+          etatPipelineDashboard.etape = "all";
+        }
+        renderDashboard();
+      });
+    });
+
+    // 7b. Badges Statut/Étape et Priorité cliquables dans les lignes du tableau pour filtrer en direct
+    conteneur.querySelectorAll(".badge-filtre-dash").forEach(function (badge) {
+      badge.addEventListener("click", function (ev) {
+        ev.stopPropagation();
+        var etape = badge.dataset.etape;
+        var prio = badge.dataset.prio;
+        if (etape) {
+          etatPipelineDashboard.etape = (etatPipelineDashboard.etape === String(etape)) ? "all" : String(etape);
+          etatPipelineDashboard.prio = "all";
+          renderDashboard();
+        } else if (prio && prio !== "all") {
+          etatPipelineDashboard.prio = (etatPipelineDashboard.prio === prio) ? "all" : prio;
+          etatPipelineDashboard.etape = "all";
+          renderDashboard();
+        }
       });
     });
 

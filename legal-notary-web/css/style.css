@@ -533,14 +533,20 @@ select.input { -webkit-appearance: none; appearance: none; }
   box-shadow: var(--shadow-md);
 }
 
-.circuit-chip-dash, .circuit-prio-dash {
+.circuit-chip-dash, .circuit-prio-dash, .badge-filtre-dash {
   cursor: pointer;
   transition: transform .15s ease, opacity .15s ease, box-shadow .15s ease;
+  user-select: none;
 }
-.circuit-chip-dash:hover, .circuit-prio-dash:hover {
-  transform: scale(1.04);
+.circuit-chip-dash:hover, .circuit-prio-dash:hover, .badge-filtre-dash:hover {
+  transform: scale(1.05);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
   opacity: 0.95;
+}
+.actif-circuit-filter {
+  outline: 2px solid var(--color-accent) !important;
+  outline-offset: 1px;
+  font-weight: 700 !important;
 }
 
 .ligne-clerc-dash {
