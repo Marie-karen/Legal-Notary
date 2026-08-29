@@ -14,8 +14,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Legal Notary</title>
-<link rel="stylesheet" href="css/style.css?v=2.5.0">
+<link rel="stylesheet" href="css/style.css?v=2.8.0">
 <script>
+  // Initialisation immédiate du thème pour éviter tout flash blanc/noir
+  (function () {
+    var theme = "dark";
+    try {
+      theme = localStorage.getItem("legal_notary_theme") || "dark";
+    } catch (e) {}
+    document.documentElement.setAttribute("data-theme", theme);
+  })();
+
   // Configuration automatique de l'URL API backend :
   (function () {
     var port = window.location.port;
@@ -46,8 +55,15 @@
 <!-- ============ ÉCRAN DE CONNEXION ============ -->
 <div id="ecran-login" class="ecran actif">
   <div style="min-height:100vh;width:100%;display:flex;align-items:center;justify-content:center;padding:var(--space-4);background:var(--color-bg)">
-    <div class="card elev-md" style="width:420px;padding:var(--space-6) var(--space-5)">
-      <div style="text-align:center;margin-bottom:var(--space-5)">
+    <div class="card elev-md" style="width:420px;padding:var(--space-6) var(--space-5);position:relative">
+      
+      <div style="position:absolute;top:14px;right:14px">
+        <button type="button" onclick="window.LegalNotaryBasculerTheme()" class="theme-switch-btn" title="Basculer Mode Clair / Sombre">
+          <span class="theme-switch-icon">🌙</span> <span class="theme-switch-label" style="font-size:11px">Mode Sombre</span>
+        </button>
+      </div>
+
+      <div style="text-align:center;margin-bottom:var(--space-5);margin-top:var(--space-2)">
         <div style="font-family:var(--font-heading);font-weight:700;font-size:26px;margin-bottom:4px;color:var(--color-text);letter-spacing:-0.5px" id="login-titre-etude">🏛️ Legal Notary</div>
         <div style="font-size:13px;color:var(--color-text-dim)">Espace de gestion et pilotage de l'office notarial</div>
       </div>
@@ -130,6 +146,12 @@
       </div>
 
       <div style="flex:1"></div>
+      
+      <!-- Sélecteur de Thème (Mode Sombre / Mode Clair) -->
+      <button type="button" id="btn-toggle-theme" onclick="window.LegalNotaryBasculerTheme()" class="theme-switch-btn" title="Basculer Mode Clair / Mode Sombre">
+        <span class="theme-switch-icon">🌙</span> <span class="theme-switch-label" style="font-size:11px">Mode Sombre</span>
+      </button>
+
       <div style="width:1px;height:20px;background:var(--color-divider)"></div>
       <div style="text-align:right">
         <div id="nav-utilisateur-nom" style="font-family:var(--font-heading);font-weight:600;font-size:14px"></div>
@@ -175,7 +197,7 @@
   </div>
 </div>
 
-<script src="js/api.js?v=2.7.9"></script>
-<script src="js/app.js?v=2.7.9"></script>
+<script src="js/api.js?v=2.8.0"></script>
+<script src="js/app.js?v=2.8.0"></script>
 </body>
 </html>

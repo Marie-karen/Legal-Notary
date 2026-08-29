@@ -401,6 +401,39 @@
 
   window.LegalNotaryDeconnexion = executerDeconnexion;
 
+  // -----------------------------------------------------------------
+  // GESTION DU THÈME DUAL (LIGHT MODE / DARK MODE FINTECH)
+  // -----------------------------------------------------------------
+  function actualiserAffichageBoutonTheme(theme) {
+    var icones = document.querySelectorAll(".theme-switch-icon");
+    var labels = document.querySelectorAll(".theme-switch-label");
+    var estClair = (theme === "light");
+    icones.forEach(function (ic) {
+      ic.textContent = estClair ? "☀️" : "🌙";
+    });
+    labels.forEach(function (lb) {
+      lb.textContent = estClair ? "Mode Clair" : "Mode Sombre";
+    });
+  }
+
+  function appliquerTheme(theme) {
+    document.documentElement.setAttribute("data-theme", theme);
+    try {
+      localStorage.setItem("legal_notary_theme", theme);
+    } catch (e) {}
+    actualiserAffichageBoutonTheme(theme);
+  }
+
+  function basculerTheme() {
+    var themeActuel = document.documentElement.getAttribute("data-theme") || "dark";
+    var nouveauTheme = (themeActuel === "light") ? "dark" : "light";
+    appliquerTheme(nouveauTheme);
+    toast("Thème appliqué : " + (nouveauTheme === "light" ? "☀️ Mode Clair (Fintech)" : "🌙 Mode Sombre (Anthracite)"));
+  }
+
+  window.LegalNotaryBasculerTheme = basculerTheme;
+  window.LegalNotaryAppliquerTheme = appliquerTheme;
+
   function effectuerConnexion(email, motDePasse) {
     var erreurZone = document.getElementById("login-erreur");
     if (erreurZone) erreurZone.style.display = "none";
@@ -738,12 +771,11 @@
 
     items.forEach(function (item) {
       var isActif = (etat.vue === item.nav) && (!item.sousOnglet || (item.nav === "superadmin" && item.sousOnglet === etatSuperadmin.onglet) || (item.nav === "archives" && item.sousOnglet === etatArchives.onglet));
-      var styleActif = isActif ? 'color:#38bdf8;background:rgba(56,189,248,0.12);font-weight:700' : 'color:var(--color-text);background:transparent;font-weight:600';
-      html += '<div class="lnk-item" data-nav="' + item.nav + '" ' + (item.sousOnglet ? 'data-sous-onglet="' + item.sousOnglet + '"' : '') + ' style="padding:var(--space-2);font-family:var(--font-heading);font-size:13.5px;cursor:pointer;border-radius:var(--radius);transition:all .15s ease;' + styleActif + '">' + item.label + '</div>';
+      html += '<div class="lnk-item ' + (isActif ? "actif" : "") + '" data-nav="' + item.nav + '" ' + (item.sousOnglet ? 'data-sous-onglet="' + item.sousOnglet + '"' : '') + '>' + item.label + '</div>';
     });
 
     html += '<div style="flex:1"></div>';
-    html += '<div class="lnk-item" id="bouton-deconnexion" style="padding:var(--space-2);font-size:13px;opacity:.65;cursor:pointer;border-top:1px solid var(--color-border)">🚪 Se déconnecter</div>';
+    html += '<div class="lnk-item" id="bouton-deconnexion" style="padding:var(--space-2);font-size:13px;opacity:.75;cursor:pointer;border-top:1px solid var(--color-border);color:#94a3b8">🚪 Se déconnecter</div>';
 
     conteneur.innerHTML = html;
 
@@ -788,13 +820,9 @@
       }
 
       if (isActif) {
-        b.style.color = "#38bdf8";
-        b.style.background = "rgba(56, 189, 248, 0.12)";
-        b.style.fontWeight = "700";
+        b.classList.add("actif");
       } else {
-        b.style.color = "var(--color-text)";
-        b.style.background = "transparent";
-        b.style.fontWeight = "600";
+        b.classList.remove("actif");
       }
     });
 
@@ -7213,6 +7241,8 @@
     if (badgeNotif) {
       badgeNotif.addEventListener("click", function () { irVers("notifications"); });
     }
+
+    actualiserAffichageBoutonTheme(document.documentElement.getAttribute("data-theme") || "dark");
 
     var chargement = document.getElementById("chargement-initial");
     if (chargement) chargement.style.display = "none";
