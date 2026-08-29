@@ -115,10 +115,10 @@
     var sequestresCDCI = 0;
 
     var domaines = {
-      immobilier: { label: "Immobilier & Foncier", icone: "🏢", count: 0, assiette: 0, emoluments: 0, desc: "Ventes, baux notariés, copropriété" },
-      banque: { label: "Banque, Crédits & Sûretés", icone: "🏦", count: 0, assiette: 0, emoluments: 0, desc: "Prêts bancaires, hypothèques, mainlevées" },
-      societes: { label: "Droit des Sociétés & Affaires", icone: "⚖️", count: 0, assiette: 0, emoluments: 0, desc: "Constitutions SARL/SAS, statuts, cessions" },
-      famille: { label: "Successions & Famille", icone: "👨‍👩‍👧", count: 0, assiette: 0, emoluments: 0, desc: "Notoriétés, partages, testaments, donations" },
+      immobilier: { label: "Immobilier & Foncier", icone: "", count: 0, assiette: 0, emoluments: 0, desc: "Ventes, baux notariés, copropriété" },
+      banque: { label: "Banque, Crédits & Sûretés", icone: "", count: 0, assiette: 0, emoluments: 0, desc: "Prêts bancaires, hypothèques, mainlevées" },
+      societes: { label: "Droit des Sociétés & Affaires", icone: "", count: 0, assiette: 0, emoluments: 0, desc: "Constitutions SARL/SAS, statuts, cessions" },
+      famille: { label: "Successions & Famille", icone: "", count: 0, assiette: 0, emoluments: 0, desc: "Notoriétés, partages, testaments, donations" },
     };
 
     dossiers.forEach(function (d) {
@@ -337,22 +337,22 @@
     var html = '<span style="font-size:10px;font-weight:700;color:var(--color-text-dim);text-transform:uppercase;padding:0 4px">Vue :</span>';
 
     if (estSaaS) {
-      html += '<button type="button" class="btn-role-switch' + (role === "superadmin" ? " actif" : "") + '" data-role="superadmin" title="Console Direction SaaS" style="border-color:rgba(56,189,248,0.4);color:#38bdf8">👑 Direction</button>';
-      html += '<button type="button" class="btn-role-switch' + (role === "dev" ? " actif" : "") + '" data-role="dev" title="Espace Développeur / DevOps" style="border-color:rgba(139,92,246,0.4);color:#a78bfa">💻 Dev</button>';
-      html += '<button type="button" class="btn-role-switch' + (role === "commercial" ? " actif" : "") + '" data-role="commercial" title="Espace Commercial & Onboarding" style="border-color:rgba(16,185,129,0.4);color:#34d399">💼 Commercial</button>';
-      html += '<button type="button" class="btn-role-switch' + (role === "support" ? " actif" : "") + '" data-role="support" title="Espace Support Client L1-L4" style="border-color:rgba(245,158,11,0.4);color:#fbbf24">🎧 Support</button>';
-      html += '<button type="button" class="btn-role-switch' + (role === "assistante_editeur" ? " actif" : "") + '" data-role="assistante_editeur" title="Espace Assistante Éditeur" style="border-color:rgba(236,72,153,0.4);color:#f472b6">📋 Assistante</button>';
-      html += '<button type="button" class="btn-role-switch" data-role="notaire" title="Basculer sur la vue Étude" style="margin-left:4px;border-color:rgba(34,197,94,0.4);color:#22c55e">🏛️ Vue Étude</button>';
+      html += '<button type="button" class="btn-role-switch' + (role === "superadmin" ? " actif" : "") + '" data-role="superadmin" title="Console Direction SaaS" style="border-color:rgba(56,189,248,0.4);color:#38bdf8">Direction</button>';
+      html += '<button type="button" class="btn-role-switch' + (role === "dev" ? " actif" : "") + '" data-role="dev" title="Espace Développeur / DevOps" style="border-color:rgba(139,92,246,0.4);color:#a78bfa">Dev</button>';
+      html += '<button type="button" class="btn-role-switch' + (role === "commercial" ? " actif" : "") + '" data-role="commercial" title="Espace Commercial & Onboarding" style="border-color:rgba(16,185,129,0.4);color:#34d399">Commercial</button>';
+      html += '<button type="button" class="btn-role-switch' + (role === "support" ? " actif" : "") + '" data-role="support" title="Espace Support Client L1-L4" style="border-color:rgba(245,158,11,0.4);color:#fbbf24">Support</button>';
+      html += '<button type="button" class="btn-role-switch' + (role === "assistante_editeur" ? " actif" : "") + '" data-role="assistante_editeur" title="Espace Assistante Éditeur" style="border-color:rgba(236,72,153,0.4);color:#f472b6">Assistante</button>';
+      html += '<button type="button" class="btn-role-switch" data-role="notaire" title="Basculer sur la vue Étude" style="margin-left:4px;border-color:rgba(34,197,94,0.4);color:#22c55e">Vue Étude</button>';
     } else {
       // Pour les membres d'une étude notariale : UNIQUEMENT les rôles de l'étude. AUCUN rôle SaaS / Superadmin visible !
-      html += '<button type="button" class="btn-role-switch' + (role === "notaire" ? " actif" : "") + '" data-role="notaire" title="Espace Notaire Titulaire">👑 Notaire</button>';
-      html += '<button type="button" class="btn-role-switch' + (role === "premier_clerc" ? " actif" : "") + '" data-role="premier_clerc" title="Espace Premier Clerc">📋 1er Clerc</button>';
-      html += '<button type="button" class="btn-role-switch' + (role === "clerc_redacteur" ? " actif" : "") + '" data-role="clerc_redacteur" title="Espace Clerc Rédacteur">✍️ Rédacteur</button>';
-      html += '<button type="button" class="btn-role-switch' + (role === "clerc_formaliste" ? " actif" : "") + '" data-role="clerc_formaliste" title="Espace Clerc Formaliste">🏛️ Formaliste</button>';
-      html += '<button type="button" class="btn-role-switch' + (role === "comptable_taxateur" ? " actif" : "") + '" data-role="comptable_taxateur" title="Espace Comptable Taxateur">💰 Comptable</button>';
-      html += '<button type="button" class="btn-role-switch' + (role === "assistante" ? " actif" : "") + '" data-role="assistante" title="Espace Assistante Accueil">📞 Assistante</button>';
+      html += '<button type="button" class="btn-role-switch' + (role === "notaire" ? " actif" : "") + '" data-role="notaire" title="Espace Notaire Titulaire">Notaire</button>';
+      html += '<button type="button" class="btn-role-switch' + (role === "premier_clerc" ? " actif" : "") + '" data-role="premier_clerc" title="Espace Premier Clerc">1er Clerc</button>';
+      html += '<button type="button" class="btn-role-switch' + (role === "clerc_redacteur" ? " actif" : "") + '" data-role="clerc_redacteur" title="Espace Clerc Rédacteur">Rédacteur</button>';
+      html += '<button type="button" class="btn-role-switch' + (role === "clerc_formaliste" ? " actif" : "") + '" data-role="clerc_formaliste" title="Espace Clerc Formaliste">Formaliste</button>';
+      html += '<button type="button" class="btn-role-switch' + (role === "comptable_taxateur" ? " actif" : "") + '" data-role="comptable_taxateur" title="Espace Comptable Taxateur">Comptable</button>';
+      html += '<button type="button" class="btn-role-switch' + (role === "assistante" ? " actif" : "") + '" data-role="assistante" title="Espace Assistante Accueil">Assistante</button>';
       if (!cache.parametres || cache.parametres.presenceArchiviste !== false) {
-        html += '<button type="button" class="btn-role-switch' + (role === "archiviste" ? " actif" : "") + '" data-role="archiviste" title="Espace Archiviste & Minutier">📦 Archiviste</button>';
+        html += '<button type="button" class="btn-role-switch' + (role === "archiviste" ? " actif" : "") + '" data-role="archiviste" title="Espace Archiviste & Minutier">Archiviste</button>';
       }
     }
 
@@ -428,7 +428,7 @@
     var themeActuel = document.documentElement.getAttribute("data-theme") || "dark";
     var nouveauTheme = (themeActuel === "light") ? "dark" : "light";
     appliquerTheme(nouveauTheme);
-    toast("Thème appliqué : " + (nouveauTheme === "light" ? "☀️ Mode Clair (Fintech)" : "🌙 Mode Sombre (Anthracite)"));
+    toast("Thème appliqué : " + (nouveauTheme === "light" ? "Mode Clair" : "Mode Sombre"));
   }
 
   window.LegalNotaryBasculerTheme = basculerTheme;
@@ -775,7 +775,7 @@
     });
 
     html += '<div style="flex:1"></div>';
-    html += '<div class="lnk-item" id="bouton-deconnexion" style="padding:var(--space-2);font-size:13px;opacity:.75;cursor:pointer;border-top:1px solid var(--color-border);color:#94a3b8">🚪 Se déconnecter</div>';
+    html += '<div class="lnk-item" id="bouton-deconnexion" style="padding:var(--space-2);font-size:13px;opacity:.75;cursor:pointer;border-top:1px solid var(--color-border);color:#94a3b8">Se déconnecter</div>';
 
     conteneur.innerHTML = html;
 
@@ -904,10 +904,10 @@
     var titreAffiche = nomNotaire ? ("Tableau de bord · " + prefixe + nomNotaire) : "Tableau de bord";
 
     var kpis = [
-      { label: "Volume d'affaires en portefeuille", valeur: fmtFCFA(synthese.totalAssiettes), indice: "", icon: "💼", sub: "Valeur cumulée des transactions en cours" },
-      { label: "Émoluments prévisionnels (HT)", valeur: fmtFCFA(synthese.totalEmolumentsHT), indice: "accent", icon: "💰", sub: "Honoraires légaux (Décret 2013-279)" },
-      { label: "Dossiers actifs au cabinet", valeur: String(cache.dossiers.length), indice: "", icon: "📁", sub: enRedaction.length + " en rédaction · " + enFormalites + " en formalités DGI" },
-      { label: "Alertes & Délais d'instruction", valeur: String(cache.alertes.length), indice: cache.alertes.length ? "danger" : "accent", icon: "🚨", sub: cache.alertes.length ? "Décisions ou dossiers à débloquer" : "Aucun retard critique" },
+      { label: "Volume d'affaires en portefeuille", valeur: fmtFCFA(synthese.totalAssiettes), indice: "", icon: "", sub: "Valeur cumulée des transactions en cours" },
+      { label: "Émoluments prévisionnels (HT)", valeur: fmtFCFA(synthese.totalEmolumentsHT), indice: "accent", icon: "", sub: "Honoraires légaux (Décret 2013-279)" },
+      { label: "Dossiers actifs au cabinet", valeur: String(cache.dossiers.length), indice: "", icon: "", sub: enRedaction.length + " en rédaction · " + enFormalites + " en formalités DGI" },
+      { label: "Alertes & Délais d'instruction", valeur: String(cache.alertes.length), indice: cache.alertes.length ? "danger" : "accent", icon: "", sub: cache.alertes.length ? "Décisions ou dossiers à débloquer" : "Aucun retard critique" },
     ];
 
     var html = '<div style="position:sticky;top:calc(-1 * var(--space-6));background:var(--color-bg);z-index:2;padding-top:var(--space-1);margin-bottom:var(--space-4)">';
@@ -916,7 +916,7 @@
     html += '<p style="opacity:.65;font-size:14px;margin:2px 0 0">Pilotage financier, flux d\'actes et gestion stratégique de l\'office.</p></div>';
     html += '<div style="display:flex;align-items:center;gap:var(--space-3);margin-left:auto">';
     html += '<div style="text-align:right"><div style="font-size:13px;font-weight:700;color:var(--color-text)">' + dateDuJour + '</div><div style="font-size:11px;color:var(--color-text-dim)">Exercice fiscal ' + anneeCourante + '</div></div>';
-    html += '<button class="btn btn-secondary" id="bouton-demander-push" style="padding:6px 12px;font-size:13px">🔔 Notifications</button></div></div></div>';
+    html += '<button class="btn btn-secondary" id="bouton-demander-push" style="padding:6px 12px;font-size:13px">Notifications</button></div></div></div>';
 
     // Grille de KPI exécutifs
     html += renderKpisGrid(kpis);
@@ -1001,8 +1001,8 @@
         html += '</div></td>';
         html += '<td><span style="font-size:11px;padding:3px 8px;border-radius:4px;background:' + pal.bg + ';color:' + pal.text + ';border:1px solid ' + pal.border + '">' + ROLE_LABEL[cl.role] + '</span></td>';
         html += '<td><strong>' + nbTotal + '</strong> dossier(s)</td>';
-        html += '<td><span style="color:#22c55e;font-weight:700">✅ ' + nbAcheves + ' (' + pctAcheve + ' %)</span></td>';
-        html += '<td><span style="color:' + pal.text + ';font-weight:600">⏳ ' + nbEnCours + '</span></td>';
+        html += '<td><span style="color:#22c55e;font-weight:700">' + nbAcheves + ' (' + pctAcheve + ' %)</span></td>';
+        html += '<td><span style="color:' + pal.text + ';font-weight:600">' + nbEnCours + '</span></td>';
         html += '<td style="min-width:140px">';
         html += '<div style="display:flex;height:8px;border-radius:4px;overflow:hidden;background:rgba(255,255,255,0.06);margin-bottom:3px">';
         if (nbTotal > 0) {
@@ -1026,7 +1026,7 @@
     // 3. RÉPARTITION PAR BRANCHE NOTARIALE
     // =========================================================================
     html += '<div class="dashboard-panel">';
-    html += '<div class="panel-header"><div class="panel-title"><span>📊</span> Ventilation du portefeuille par branche notariale</div><span class="tag tag-outline">Chiffre d\'affaires & Volume</span></div>';
+    html += '<div class="panel-header"><div class="panel-title">Ventilation du portefeuille par branche notariale</div><span class="tag tag-outline">Chiffre d\'affaires & Volume</span></div>';
     html += '<div class="panel-body">';
     html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:var(--space-3)">';
 
@@ -1038,7 +1038,7 @@
 
       html += '<div class="card" style="border-color:var(--color-border);background:var(--color-surface-2);display:flex;flex-direction:column;gap:8px;padding:var(--space-3) var(--space-4)">';
       html += '<div style="display:flex;justify-content:space-between;align-items:center">';
-      html += '<div style="display:flex;align-items:center;gap:6px"><span style="font-size:18px">' + dom.icone + '</span><span style="font-family:var(--font-heading);font-weight:700;font-size:14px;color:var(--color-text)">' + dom.label + '</span></div>';
+      html += '<div style="font-family:var(--font-heading);font-weight:700;font-size:14px;color:var(--color-text)">' + dom.label + '</div>';
       html += '<span class="tag tag-outline" style="font-size:11px">' + dom.count + ' acte(s)</span>';
       html += '</div>';
 
@@ -1058,7 +1058,7 @@
     // 4. TRÉSORERIE SÉQUESTRES (CDCI) & FISCALITÉ DGI EN INSTANCE
     // =========================================================================
     html += '<div class="dashboard-panel">';
-    html += '<div class="panel-header"><div class="panel-title"><span>🏛️</span> Trésorerie des comptes séquestres & Fiscalité DGI en instance</div><span class="tag tag-outline">Flux financiers</span></div>';
+    html += '<div class="panel-header"><div class="panel-title">Trésorerie des comptes séquestres & Fiscalité DGI en instance</div><span class="tag tag-outline">Flux financiers</span></div>';
     html += '<div class="panel-body">';
     html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:var(--space-3)">';
 
@@ -1092,10 +1092,10 @@
     var dateDuJour = new Date().toLocaleDateString("fr-CI", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
 
     var kpis = [
-      { label: "Dossiers en cours (cabinet)", valeur: String(cache.dossiers.length), indice: "", icon: "📋", sub: "Supervision globale" },
-      { label: "Alertes d'instruction", valeur: String(cache.alertes.length), indice: cache.alertes.length ? "warning" : "accent", icon: "⚠️", sub: cache.alertes.length ? "Dossiers à débloquer" : "Délais conformes" },
-      { label: "Projets en rédaction", valeur: String(enRedaction), indice: "", icon: "✍️", sub: "Étape 3 d'instruction" },
-      { label: "En formalités DGI", valeur: String(enFormalites), indice: "", icon: "🏛️", sub: "Étape 5 d'enregistrement" },
+      { label: "Dossiers en cours (cabinet)", valeur: String(cache.dossiers.length), indice: "", icon: "", sub: "Supervision globale" },
+      { label: "Alertes d'instruction", valeur: String(cache.alertes.length), indice: cache.alertes.length ? "warning" : "accent", icon: "", sub: cache.alertes.length ? "Dossiers à débloquer" : "Délais conformes" },
+      { label: "Projets en rédaction", valeur: String(enRedaction), indice: "", icon: "", sub: "Étape 3 d'instruction" },
+      { label: "En formalités DGI", valeur: String(enFormalites), indice: "", icon: "", sub: "Étape 5 d'enregistrement" },
     ];
 
     var html = '<div style="position:sticky;top:calc(-1 * var(--space-6));background:var(--color-bg);z-index:2;padding-top:var(--space-1);margin-bottom:var(--space-4)">';
@@ -1109,7 +1109,7 @@
 
     // Supervision du pipeline par étape dans un panneau stylisé
     html += '<div class="dashboard-panel">';
-    html += '<div class="panel-header"><div class="panel-title"><span>📊</span> Pipeline d\'instruction — Répartition par étape</div><span class="tag tag-outline">6 étapes</span></div>';
+    html += '<div class="panel-header"><div class="panel-title">Pipeline d\'instruction — Répartition par étape</div><span class="tag tag-outline">6 étapes</span></div>';
     html += '<div class="panel-body">';
     html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:var(--space-3)">';
     cache.etapesPipeline.forEach(function (e, idx) {
@@ -1139,10 +1139,10 @@
       var dateDuJour = new Date().toLocaleDateString("fr-CI", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
 
       var kpis = [
-        { label: "Mes dossiers actifs", valeur: String(mesDossiers.length), indice: "", icon: "📁", sub: "Assignés à mon nom" },
-        { label: "Alertes sur mes dossiers", valeur: String(cache.alertes.length), indice: cache.alertes.length ? "danger" : "accent", icon: "🚨", sub: cache.alertes.length ? "Dossiers à traiter" : "Aucun retard" },
-        { label: "Clôturés (30 derniers jours)", valeur: String(evo.dossiersClotures30Jours), indice: "accent", icon: "✅", sub: "Actes menés à terme" },
-        { label: "Mon avancement moyen", valeur: evo.avancementMoyenPourcent + " %", indice: "accent", icon: "📈", sub: "Progression des checklists" },
+        { label: "Mes dossiers actifs", valeur: String(mesDossiers.length), indice: "", icon: "", sub: "Assignés à mon nom" },
+        { label: "Alertes sur mes dossiers", valeur: String(cache.alertes.length), indice: cache.alertes.length ? "danger" : "accent", icon: "", sub: cache.alertes.length ? "Dossiers à traiter" : "Aucun retard" },
+        { label: "Clôturés (30 derniers jours)", valeur: String(evo.dossiersClotures30Jours), indice: "accent", icon: "", sub: "Actes menés à terme" },
+        { label: "Mon avancement moyen", valeur: evo.avancementMoyenPourcent + " %", indice: "accent", icon: "", sub: "Progression des checklists" },
       ];
 
       var html = '<div style="position:sticky;top:calc(-1 * var(--space-6));background:var(--color-bg);z-index:2;padding-top:var(--space-1);margin-bottom:var(--space-4)">';
@@ -1156,11 +1156,11 @@
       html += renderKpisGrid(kpis);
 
       html += '<div class="dashboard-panel">';
-      html += '<div class="panel-header"><div class="panel-title"><span>✍️</span> Mes projets d\'actes à rédiger (Étape 3)</div><span class="tag tag-outline">' + mesProjets.length + ' projet(s)</span></div>';
+      html += '<div class="panel-header"><div class="panel-title">Mes projets d\'actes à rédiger (Étape 3)</div><span class="tag tag-outline">' + mesProjets.length + ' projet(s)</span></div>';
       html += '<div class="panel-body">';
 
       if (!mesProjets.length) {
-        html += '<div style="text-align:center;padding:var(--space-4);color:var(--color-text-dim)"><div style="font-size:24px;margin-bottom:4px">📝</div>Aucun projet à rédiger immédiatement. Consultez la liste générale de vos dossiers.</div>';
+        html += '<div style="text-align:center;padding:var(--space-4);color:var(--color-text-dim)">Aucun projet à rédiger immédiatement. Consultez la liste générale de vos dossiers.</div>';
       } else {
         html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:var(--space-3)">';
         mesProjets.forEach(function (d) {
@@ -1194,10 +1194,10 @@
     var dateDuJour = new Date().toLocaleDateString("fr-CI", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
 
     var kpis = [
-      { label: "Formalités DGI & Foncier (Étape 5)", valeur: String(enFormalites.length), indice: enFormalites.length ? "accent" : "", icon: "🏛️", sub: "Enregistrement & Conservation" },
-      { label: "Réquisitions préalables (Étape 2)", valeur: String(enRequisitions.length), indice: "", icon: "📑", sub: "Urbanisme, banque, état civil" },
-      { label: "Expéditions & Clôture (Étape 6)", valeur: String(enExpeditions.length), indice: "", icon: "📬", sub: "Remise des copies authentiques" },
-      { label: "Alertes de délais formalités", valeur: String(cache.alertes.length), indice: cache.alertes.length ? "warning" : "accent", icon: "⚠️", sub: "Délais légaux de publicité" },
+      { label: "Formalités DGI & Foncier (Étape 5)", valeur: String(enFormalites.length), indice: enFormalites.length ? "accent" : "", icon: "", sub: "Enregistrement & Conservation" },
+      { label: "Réquisitions préalables (Étape 2)", valeur: String(enRequisitions.length), indice: "", icon: "", sub: "Urbanisme, banque, état civil" },
+      { label: "Expéditions & Clôture (Étape 6)", valeur: String(enExpeditions.length), indice: "", icon: "", sub: "Remise des copies authentiques" },
+      { label: "Alertes de délais formalités", valeur: String(cache.alertes.length), indice: cache.alertes.length ? "warning" : "accent", icon: "", sub: "Délais légaux de publicité" },
     ];
 
     var html = '<div style="position:sticky;top:calc(-1 * var(--space-6));background:var(--color-bg);z-index:2;padding-top:var(--space-1);margin-bottom:var(--space-4)">';
@@ -1211,7 +1211,7 @@
 
     // Panneau Étape 5
     html += '<div class="dashboard-panel">';
-    html += '<div class="panel-header"><div class="panel-title"><span>🏛️</span> Dossiers en cours de formalités DGI & Conservation Foncière (Étape 5)</div><span class="tag tag-outline">' + enFormalites.length + ' dossier(s)</span></div>';
+    html += '<div class="panel-header"><div class="panel-title">Dossiers en cours de formalités DGI & Conservation Foncière (Étape 5)</div><span class="tag tag-outline">' + enFormalites.length + ' dossier(s)</span></div>';
     if (!enFormalites.length) {
       html += '<div class="panel-body" style="text-align:center;color:var(--color-text-dim)">Aucun dossier en cours de formalités fiscales ou foncières.</div>';
     } else {
@@ -1225,7 +1225,7 @@
 
     // Panneau Étape 2
     html += '<div class="dashboard-panel">';
-    html += '<div class="panel-header"><div class="panel-title"><span>📑</span> Dossiers en réquisitions préalables (Étape 2)</div><span class="tag tag-outline">' + enRequisitions.length + ' dossier(s)</span></div>';
+    html += '<div class="panel-header"><div class="panel-title">Dossiers en réquisitions préalables (Étape 2)</div><span class="tag tag-outline">' + enRequisitions.length + ' dossier(s)</span></div>';
     html += '<div class="panel-body">';
     if (!enRequisitions.length) {
       html += '<p class="text-muted">Aucun dossier en réquisitions préalables.</p>';
@@ -1254,10 +1254,10 @@
     var dateDuJour = new Date().toLocaleDateString("fr-CI", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
 
     var kpis = [
-      { label: "Dossiers actifs (cabinet)", valeur: String(cache.dossiers.length), indice: "", icon: "💼", sub: "Assiette globale de l'étude" },
-      { label: "En formalités fiscales", valeur: String(enFormalites), indice: "", icon: "🏛️", sub: "Droits DGI & taxe foncière" },
-      { label: "Alertes financières / délais", valeur: String(cache.alertes.length), indice: cache.alertes.length ? "warning" : "accent", icon: "⚠️", sub: "Décomptes et provisions" },
-      { label: "Catalogue d'actes tarifés", valeur: String(cache.typesActesListe.length), indice: "", icon: "⚖️", sub: "Barème Décret 2013-279" },
+      { label: "Dossiers actifs (cabinet)", valeur: String(cache.dossiers.length), indice: "", icon: "", sub: "Assiette globale de l'étude" },
+      { label: "En formalités fiscales", valeur: String(enFormalites), indice: "", icon: "", sub: "Droits DGI & taxe foncière" },
+      { label: "Alertes financières / délais", valeur: String(cache.alertes.length), indice: cache.alertes.length ? "warning" : "accent", icon: "", sub: "Décomptes et provisions" },
+      { label: "Catalogue d'actes tarifés", valeur: String(cache.typesActesListe.length), indice: "", icon: "", sub: "Barème Décret 2013-279" },
     ];
 
     var html = '<div style="position:sticky;top:calc(-1 * var(--space-6));background:var(--color-bg);z-index:2;padding-top:var(--space-1);margin-bottom:var(--space-4)">';
@@ -1270,7 +1270,7 @@
     html += renderKpisGrid(kpis);
 
     html += '<div class="dashboard-panel">';
-    html += '<div class="panel-header"><div class="panel-title"><span>💰</span> Dossiers récents à taxer ou régulariser</div><span class="tag tag-outline">Dossiers actifs</span></div>';
+    html += '<div class="panel-header"><div class="panel-title">Dossiers récents à taxer ou régulariser</div><span class="tag tag-outline">Dossiers actifs</span></div>';
     html += '<div class="table-wrap"><table class="table"><thead><tr><th>N° Dossier</th><th>Type d\'acte</th><th>Étape</th><th>Montant d\'assiette</th><th>Clerc assigné</th><th>Action</th></tr></thead><tbody>';
     cache.dossiers.slice(0, 8).forEach(function (d) {
       html += '<tr class="alerte-item" data-id="' + d.id + '" style="cursor:pointer"><td><strong>' + d.numeroDossier + '</strong></td><td>' + labelActe(d.typeActeId) + '</td><td><span class="tag tag-outline">' + labelEtape(d.etapeActuelle) + '</span></td><td style="font-weight:600">' + fmtFCFA(d.montantAssiette) + '</td><td>' + nomClerc(d.clercAssigneId) + '</td><td><span class="btn btn-ghost" style="padding:0">Fiche de taxe →</span></td></tr>';
@@ -1291,10 +1291,10 @@
     var dateDuJour = new Date().toLocaleDateString("fr-CI", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
 
     var kpis = [
-      { label: "Dossiers en Collecte KYC", valeur: String(enCollecte.length), indice: enCollecte.length ? "accent" : "", icon: "📞", sub: "Étape 1 — Accueil" },
-      { label: "Pièces KYC bloquantes", valeur: String(kycAlertes.length), indice: kycAlertes.length ? "danger" : "accent", icon: "⚠️", sub: kycAlertes.length ? "Pièces d'identité manquantes" : "Aucun blocage" },
-      { label: "Total dossiers de l'étude", valeur: String(cache.dossiers.length), indice: "", icon: "📁", sub: "Volume général" },
-      { label: "Types d'actes ouverts", valeur: String(cache.typesActesListe.length), indice: "", icon: "⚖️", sub: "Catalogue du cabinet" },
+      { label: "Dossiers en Collecte KYC", valeur: String(enCollecte.length), indice: enCollecte.length ? "accent" : "", icon: "", sub: "Étape 1 — Accueil" },
+      { label: "Pièces KYC bloquantes", valeur: String(kycAlertes.length), indice: kycAlertes.length ? "danger" : "accent", icon: "", sub: kycAlertes.length ? "Pièces d'identité manquantes" : "Aucun blocage" },
+      { label: "Total dossiers de l'étude", valeur: String(cache.dossiers.length), indice: "", icon: "", sub: "Volume général" },
+      { label: "Types d'actes ouverts", valeur: String(cache.typesActesListe.length), indice: "", icon: "", sub: "Catalogue du cabinet" },
     ];
 
     var html = '<div style="position:sticky;top:calc(-1 * var(--space-6));background:var(--color-bg);z-index:2;padding-top:var(--space-1);margin-bottom:var(--space-4)">';
@@ -1308,20 +1308,20 @@
 
     // Raccourcis d'accueil dans un panneau moderne
     html += '<div class="dashboard-panel">';
-    html += '<div class="panel-header"><div class="panel-title"><span>⚡</span> Actions rapides d\'accueil</div></div>';
+    html += '<div class="panel-header"><div class="panel-title">Actions rapides d\'accueil</div></div>';
     html += '<div class="panel-body">';
     html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:var(--space-3)">';
     html += '<div class="card" id="card-action-nouveau" style="cursor:pointer;border-left:4px solid var(--color-accent);padding:var(--space-4)">';
-    html += '<div style="font-family:var(--font-heading);font-weight:700;font-size:16px;margin-bottom:4px">📁 Ouvrir un nouveau dossier</div>';
+    html += '<div style="font-family:var(--font-heading);font-weight:700;font-size:16px;margin-bottom:4px">Ouvrir un nouveau dossier</div>';
     html += '<div class="card-body">Saisir les comparants, le type d\'acte et générer la checklist légale.</div></div>';
     html += '<div class="card" id="card-action-clients" style="cursor:pointer;border-left:4px solid #38bdf8;padding:var(--space-4)">';
-    html += '<div style="font-family:var(--font-heading);font-weight:700;font-size:16px;margin-bottom:4px">👥 Annuaire des clients</div>';
+    html += '<div style="font-family:var(--font-heading);font-weight:700;font-size:16px;margin-bottom:4px">Annuaire des clients</div>';
     html += '<div class="card-body">Rechercher un comparant, vérifier les pièces d\'identité et coordonnées.</div></div>';
     html += '</div></div></div>';
 
     // Dossiers Étape 1
     html += '<div class="dashboard-panel">';
-    html += '<div class="panel-header"><div class="panel-title"><span>📑</span> Dossiers en cours de Collecte & KYC (Étape 1)</div><span class="tag tag-outline">' + enCollecte.length + ' dossier(s)</span></div>';
+    html += '<div class="panel-header"><div class="panel-title">Dossiers en cours de Collecte & KYC (Étape 1)</div><span class="tag tag-outline">' + enCollecte.length + ' dossier(s)</span></div>';
     html += '<div class="panel-body">';
     if (!enCollecte.length) {
       html += '<p class="text-muted">Aucun dossier en attente de collecte de pièces pour le moment.</p>';
@@ -1375,10 +1375,10 @@
       var totalDossiersEnCarton = cartons.reduce(function (acc, k) { return acc + (k.nombreDossiers || 0); }, 0);
 
       var kpis = [
-        { label: "Minutes Scellées & Numérisées", valeur: String(repertoire.length), indice: "accent", icon: "🏛️", sub: "Registre officiel" },
-        { label: "Demandes de Sortie en Attente", valeur: String(demandesEnAttente.length), indice: demandesEnAttente.length ? "warning" : "accent", icon: "⏳", sub: demandesEnAttente.length ? "À valider et remettre" : "Aucune demande en attente" },
-        { label: "Dossiers Physiques en Prêt", valeur: String(sortisActuels.length), indice: "", icon: "📤", sub: totalDossiersEnCarton + " classés en cartons" },
-        { label: "Alertes Retards de Restitution", valeur: String(dossiersEnRetard.length), indice: dossiersEnRetard.length ? "danger" : "accent", icon: "🚨", sub: dossiersEnRetard.length ? "Date retour dépassée !" : "Aucun retard constaté" },
+        { label: "Minutes Scellées & Numérisées", valeur: String(repertoire.length), indice: "accent", icon: "", sub: "Registre officiel" },
+        { label: "Demandes de Sortie en Attente", valeur: String(demandesEnAttente.length), indice: demandesEnAttente.length ? "warning" : "accent", icon: "", sub: demandesEnAttente.length ? "À valider et remettre" : "Aucune demande en attente" },
+        { label: "Dossiers Physiques en Prêt", valeur: String(sortisActuels.length), indice: "", icon: "", sub: totalDossiersEnCarton + " classés en cartons" },
+        { label: "Alertes Retards de Restitution", valeur: String(dossiersEnRetard.length), indice: dossiersEnRetard.length ? "danger" : "accent", icon: "", sub: dossiersEnRetard.length ? "Date retour dépassée !" : "Aucun retard constaté" },
       ];
 
       var html = '<div style="position:sticky;top:calc(-1 * var(--space-6));background:var(--color-bg);z-index:2;padding-top:var(--space-1);margin-bottom:var(--space-4)">';
@@ -1427,7 +1427,7 @@
       // Section 1 : Demandes de sorties physiques en attente d'approbation
       if (demandesEnAttente.length > 0) {
         html += '<div class="dashboard-panel" style="border:1.5px solid var(--color-warning);background:rgba(245,158,11,0.03)">';
-        html += '<div class="panel-header"><div class="panel-title" style="color:var(--color-warning)"><span>⏳</span> Demandes de sorties de dossiers à approuver (' + demandesEnAttente.length + ')</div></div>';
+        html += '<div class="panel-header"><div class="panel-title" style="color:var(--color-warning)">Demandes de sorties de dossiers à approuver (' + demandesEnAttente.length + ')</div></div>';
         html += '<div class="panel-body">';
         html += '<div class="table-container"><table class="table" style="font-size:13px"><thead><tr>';
         html += '<th>Dossier</th><th>Client</th><th>Demandeur</th><th>Bureau cible</th><th>Date sortie</th><th>Retour prévu</th><th>Action</th>';
@@ -1440,7 +1440,7 @@
           html += '<td><span style="color:#f59e0b;font-weight:600">' + m.destination_bureau + '</span></td>';
           html += '<td>' + fmtDate(m.date_sortie || m.date_mouvement) + '</td>';
           html += '<td>' + fmtDate(m.date_retour_prevue) + '</td>';
-          html += '<td><button type="button" class="btn btn-primary btn-approuver-sortie-dash" data-mouvement-id="' + m.id + '" style="font-size:11.5px;padding:3px 10px;font-weight:700">✅ Approuver & Remettre</button></td>';
+          html += '<td><button type="button" class="btn btn-primary btn-approuver-sortie-dash" data-mouvement-id="' + m.id + '" style="font-size:11.5px;padding:3px 10px;font-weight:700">Approuver & Remettre</button></td>';
           html += '</tr>';
         });
         html += '</tbody></table></div>';
@@ -1449,10 +1449,10 @@
 
       // Section 2 : File d'attente d'archivage
       html += '<div class="dashboard-panel">';
-      html += '<div class="panel-header"><div class="panel-title"><span>📥</span> Dossiers clôturés en attente de versement</div><span class="tag tag-outline">' + enAttente.length + ' en attente</span></div>';
+      html += '<div class="panel-header"><div class="panel-title">Dossiers clôturés en attente de versement</div><span class="tag tag-outline">' + enAttente.length + ' en attente</span></div>';
       html += '<div class="panel-body">';
       if (!enAttente.length) {
-        html += '<p class="text-muted" style="margin:0">🎉 Aucune minute en attente. Toutes les minutes clôturées ont été numérisées et versées.</p>';
+        html += '<p class="text-muted" style="margin:0">Aucune minute en attente. Toutes les minutes clôturées ont été numérisées et versées.</p>';
       } else {
         html += '<div class="table-container"><table class="table" style="font-size:13px"><thead><tr>';
         html += '<th>Dossier</th><th>Type d\'acte</th><th>Comparants</th><th>Clôturé le</th><th>Action</th>';
@@ -1463,7 +1463,7 @@
           html += '<td>' + labelActe(d.typeActeId) + '</td>';
           html += '<td>' + (d.comparantsNoms || d.premierComparantNom || "—") + '</td>';
           html += '<td>' + fmtDate(d.dateCloture || d.updatedAt) + '</td>';
-          html += '<td><button type="button" class="btn btn-primary btn-archiver-direct" data-id="' + d.id + '" style="font-size:11.5px;padding:3px 10px">📥 Archiver</button></td>';
+          html += '<td><button type="button" class="btn btn-primary btn-archiver-direct" data-id="' + d.id + '" style="font-size:11.5px;padding:3px 10px">Archiver</button></td>';
           html += '</tr>';
         });
         html += '</tbody></table></div>';
@@ -1472,7 +1472,7 @@
 
       // Section 3 : Dernières Minutes Scellées
       html += '<div class="dashboard-panel">';
-      html += '<div class="panel-header"><div class="panel-title"><span>🏛️</span> Dernières Minutes Scellées au Registre (Empreinte SHA-256)</div><button class="btn btn-ghost" id="btn-voir-tout-repertoire" style="font-size:12px">Consulter tout le Répertoire →</button></div>';
+      html += '<div class="panel-header"><div class="panel-title">Dernières Minutes Scellées au Registre (Empreinte SHA-256)</div><button class="btn btn-ghost" id="btn-voir-tout-repertoire" style="font-size:12px">Consulter tout le Répertoire →</button></div>';
       html += '<div class="panel-body">';
       if (!repertoire.length) {
         html += '<p class="text-muted" style="margin:0">Aucun acte scellé au minutier pour le moment.</p>';
@@ -1489,7 +1489,7 @@
           html += '<td>' + fmtDate(m.dateActe || m.createdAt) + '</td>';
           html += '<td><code style="font-size:11px;background:var(--color-surface-2);padding:2px 4px;border-radius:3px;color:var(--color-accent)">' + hashTronque + '</code></td>';
           html += '<td>' + (m.cartonCode ? '<span class="tag tag-outline">' + m.cartonCode + '</span>' : '<span style="opacity:.6">Non classé</span>') + '</td>';
-          html += '<td><button type="button" class="btn btn-secondary btn-jumeau-direct" data-id="' + m.dossierId + '" style="font-size:11px;padding:3px 8px">🏢 360° Jumeau</button></td>';
+          html += '<td><button type="button" class="btn btn-secondary btn-jumeau-direct" data-id="' + m.dossierId + '" style="font-size:11px;padding:3px 8px">Jumeau 360°</button></td>';
           html += '</tr>';
         });
         html += '</tbody></table></div>';
@@ -1556,9 +1556,9 @@
     var html = '<div class="kpi-grid">';
     kpis.forEach(function (k) {
       var accentColor = k.indice === "danger" ? "var(--color-danger)" : k.indice === "warning" ? "var(--color-warning)" : k.indice === "accent" ? "var(--color-accent)" : "#38bdf8";
-      var icon = k.icon || (k.indice === "danger" ? "🚨" : k.indice === "warning" ? "⚠️" : k.indice === "accent" ? "✨" : "📁");
+      var indicateur = k.indice ? ('<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:' + accentColor + '"></span>') : '';
       html += '<div class="kpi-card" style="--kpi-accent:' + accentColor + ';--kpi-color:' + (k.indice ? accentColor : "var(--color-text)") + '">';
-      html += '<div class="kpi-label"><span>' + k.label + '</span><span style="font-size:18px">' + icon + '</span></div>';
+      html += '<div class="kpi-label"><span>' + k.label + '</span>' + indicateur + '</div>';
       html += '<div class="kpi-valeur">' + k.valeur + '</div>';
       if (k.sub) html += '<div style="font-size:12px;color:var(--color-text-dim);margin-top:6px;opacity:.85">' + k.sub + '</div>';
       html += '</div>';
@@ -1573,7 +1573,7 @@
 
   function renderPipelineDossiers() {
     var html = '<div class="dashboard-panel">';
-    html += '<div class="panel-header"><div class="panel-title"><span>📊</span> Pipeline des dossiers</div><span class="tag tag-outline">' + cache.dossiers.length + ' dossier(s)</span></div>';
+    html += '<div class="panel-header"><div class="panel-title">Pipeline des dossiers</div><span class="tag tag-outline">' + cache.dossiers.length + ' dossier(s)</span></div>';
     
     if (!cache.dossiers.length) {
       html += '<div class="panel-body" style="text-align:center;padding:var(--space-4);color:var(--color-text-dim)">Aucun dossier dans le pipeline actuellement.</div>';
@@ -1596,17 +1596,17 @@
         var alerte = cache.alertesParDossierId[d.id];
         var prioriteLabel = "Normal";
         var prioriteTag = "tag-outline";
-        var pastille = "🟢";
+        var pastille = "";
 
         if (alerte) {
           if (alerte.couleur === "rouge") {
             prioriteLabel = "Critique";
             prioriteTag = "tag-danger";
-            pastille = "🔴";
+            pastille = "";
           } else if (alerte.couleur === "jaune") {
             prioriteLabel = "Vigilance";
             prioriteTag = "tag-warning";
-            pastille = "🟡";
+            pastille = "";
           }
         }
 
@@ -1672,8 +1672,8 @@
     
     // Barre de recherche rapide intégrée
     html += '<div style="display:flex;align-items:center;gap:var(--space-2);min-width:280px;position:relative">';
-    html += '<input type="search" id="filtre-kanban-recherche" class="input" placeholder="🔍 Filtrer par dossier, comparant, acte..." value="' + (etatKanban.recherche || "") + '" style="font-size:12.5px;padding:6px 12px 6px 32px;min-height:36px">';
-    html += '<span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);opacity:.5;font-size:12px">🔍</span>';
+    html += '<input type="search" id="filtre-kanban-recherche" class="input" placeholder="Filtrer par dossier, comparant, acte..." value="' + (etatKanban.recherche || "") + '" style="font-size:12.5px;padding:6px 12px 6px 32px;min-height:36px">';
+    html += '';
     if (etatKanban.recherche) {
       html += '<button type="button" id="btn-effacer-kanban" class="btn btn-ghost" style="font-size:11px;padding:4px 6px">Effacer</button>';
     }
@@ -1790,13 +1790,13 @@
     // Bandeau interactif Top 5 des actes
     html += '<div style="margin-bottom:var(--space-3)">';
     html += '<div style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;text-transform:uppercase;color:var(--color-text-dim);margin-bottom:8px">';
-    html += '<span style="font-size:14px;color:#38bdf8">📊</span> Top 5 des actes les plus fréquents de l\'étude :';
+    html += 'Top 5 des actes les plus fréquents de l\'étude :';
     html += '</div>';
     html += '<div class="top-actes-bar">';
-    html += '<button type="button" class="top-acte-chip' + (etat.filtreTypeActe === "all" ? " actif" : "") + '" data-type-id="all"><span>📚</span> Tous les actes <strong>(' + cache.dossiers.length + ')</strong></button>';
+    html += '<button type="button" class="top-acte-chip' + (etat.filtreTypeActe === "all" ? " actif" : "") + '" data-type-id="all">Tous les actes <strong>(' + cache.dossiers.length + ')</strong></button>';
     topActesListe.forEach(function (ta) {
       var isActif = etat.filtreTypeActe === ta.typeId;
-      html += '<button type="button" class="top-acte-chip' + (isActif ? " actif" : "") + '" data-type-id="' + ta.typeId + '"><span>📑</span> ' + ta.label + ' <strong>(' + ta.count + ')</strong></button>';
+      html += '<button type="button" class="top-acte-chip' + (isActif ? " actif" : "") + '" data-type-id="' + ta.typeId + '">' + ta.label + ' <strong>(' + ta.count + ')</strong></button>';
     });
     html += '</div></div>';
 
@@ -1970,7 +1970,7 @@
       html += '<div style="display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-4);flex-wrap:wrap">';
       html += '<input class="input" id="clients-recherche" style="max-width:320px" value="' + (etat.filtreClients || "") + '" placeholder="Rechercher un client, un acte, un numéro…">';
       html += '<button type="button" class="btn ' + (!etat.filtreClientsMulti ? "btn-primary" : "btn-secondary") + '" id="btn-filtre-tous-clients">Tous les clients (' + liste.length + ')</button>';
-      html += '<button type="button" class="btn ' + (etat.filtreClientsMulti ? "btn-primary" : "btn-secondary") + '" id="btn-filtre-multi-clients">📁 Clients multi-dossiers (' + multiCount + ')</button>';
+      html += '<button type="button" class="btn ' + (etat.filtreClientsMulti ? "btn-primary" : "btn-secondary") + '" id="btn-filtre-multi-clients">Clients multi-dossiers (' + multiCount + ')</button>';
       html += '</div>';
 
       if (!filtres.length) {
@@ -1990,7 +1990,7 @@
           html += '</div>';
 
           if (estMulti) {
-            html += '<span class="tag tag-accent" style="font-weight:700;font-size:12px">📁 Multi-dossiers (' + nbDossiers + ')</span>';
+            html += '<span class="tag tag-accent" style="font-weight:700;font-size:12px">Multi-dossiers (' + nbDossiers + ')</span>';
           } else {
             html += '<span class="tag tag-outline" style="font-size:11px">1 dossier</span>';
           }
@@ -2070,7 +2070,7 @@
 
       // Encadré pédagogique Décret 2013-279 & Droits d'enregistrement DGI
       html += '<div class="card" style="border-left:4px solid var(--color-accent);background:var(--color-surface-2);margin-bottom:var(--space-5);padding:var(--space-3) var(--space-4)">';
-      html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><span style="font-size:18px">⚖️</span><strong style="font-size:13px;color:var(--color-text)">Réglementation Notariale en Côte d\'Ivoire (Décret N° 2013-279)</strong></div>';
+      html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><span style="font-size:18px"></span><strong style="font-size:13px;color:var(--color-text)">Réglementation Notariale en Côte d\'Ivoire (Décret N° 2013-279)</strong></div>';
       html += '<div style="font-size:12px;color:var(--color-text-dim);line-height:1.5">';
       html += '• <strong>Droit d\'enregistrement DGI :</strong> Ventes d\'immeubles & cessions de fonds : <strong>4 %</strong> · Baux d\'immeubles : <strong>2,5 %</strong> · Prêts hypothécaires : <strong>1,5 %</strong> · Successions & partages : <strong>3 %</strong> · Mainlevées d\'hypothèques : <strong>18 000 FCFA fixe</strong>.<br>';
       html += '• <strong>Taxe foncière (Livre Foncier) :</strong> <strong>1,2 %</strong> proportionnel + <strong>3 000 FCFA fixe</strong> pour les actes immobiliers avec mutation/inscription.<br>';
@@ -2124,7 +2124,7 @@
     var estNotaire = cache.utilisateur.role === "notaire" || cache.permissions.referentielFixerDelais;
 
     ouvrirModal({
-      titre: '<span>📜</span> ' + typeActe.libelle,
+      titre: '' + typeActe.libelle,
       corps: '<p class="text-muted">Chargement des étapes et délais…</p>',
       boutonFermer: true,
       largeur: "640px",
@@ -2142,9 +2142,9 @@
 
       // Information sur la permission de modification des délais
       if (estNotaire) {
-        html += '<div style="font-size:12px;color:var(--color-accent);background:var(--color-accent-subtle);padding:6px 10px;border-radius:var(--radius);border:1px solid var(--color-accent)">👑 <strong>Accès Notaire Titulaire :</strong> Vous pouvez ajuster les délais en jours de chaque étape ci-dessous.</div>';
+        html += '<div style="font-size:12px;color:var(--color-accent);background:var(--color-accent-subtle);padding:6px 10px;border-radius:var(--radius);border:1px solid var(--color-accent)"><strong>Accès Notaire Titulaire :</strong> Vous pouvez ajuster les délais en jours de chaque étape ci-dessous.</div>';
       } else {
-        html += '<div style="font-size:12px;color:var(--color-text-dim);background:var(--color-surface-2);padding:6px 10px;border-radius:var(--radius);border:1px solid var(--color-border)">🔒 <strong>Information :</strong> Les délais légaux sont fixés et modifiables uniquement par le Notaire Titulaire.</div>';
+        html += '<div style="font-size:12px;color:var(--color-text-dim);background:var(--color-surface-2);padding:6px 10px;border-radius:var(--radius);border:1px solid var(--color-border)"><strong>Information :</strong> Les délais légaux sont fixés et modifiables uniquement par le Notaire Titulaire.</div>';
       }
 
       html += '<h4 style="margin:var(--space-2) 0 4px;color:var(--color-text)">Étapes & Checklist d\'instruction</h4>';
@@ -2171,7 +2171,7 @@
             html += '<button type="button" class="btn btn-secondary btn-sauver-delai" data-tache-id="' + t.id + '" style="padding:4px 8px;font-size:11px">Valider</button>';
             html += '</div>';
           } else {
-            html += '<span class="tag tag-outline" style="font-size:11px;font-weight:700">🔒 ' + t.dureeJours + ' jour(s)</span>';
+            html += '<span class="tag tag-outline" style="font-size:11px;font-weight:700">' + t.dureeJours + ' jour(s)</span>';
           }
           html += '</div>';
         });
@@ -2295,7 +2295,7 @@
     html += '</form>';
 
     ouvrirModal({
-      titre: '<span>➕</span> Enregistrer un nouveau type d\'acte',
+      titre: 'Enregistrer un nouveau type d\'acte',
       corps: html,
       boutonFermer: true,
       apresOuverture: function () {
@@ -2376,10 +2376,10 @@
 
       // Boutons d'action en en-tête
       html += '<div style="display:flex;gap:var(--space-2);flex-wrap:wrap">';
-      html += '<button type="button" class="btn btn-primary" id="btn-ouvrir-modal-numeriser">📥 + Numériser & Archiver</button>';
-      html += '<button type="button" class="btn btn-secondary" id="btn-ouvrir-modal-scan-ocr">📄 + Scanner & OCR</button>';
-      html += '<button type="button" class="btn btn-secondary" id="btn-ouvrir-modal-sortie">📤 + Sortie physique</button>';
-      html += '<button type="button" class="btn btn-secondary" id="btn-ouvrir-modal-carton">📦 + Nouveau carton</button>';
+      html += '<button type="button" class="btn btn-primary" id="btn-ouvrir-modal-numeriser">+ Numériser & Archiver</button>';
+      html += '<button type="button" class="btn btn-secondary" id="btn-ouvrir-modal-scan-ocr">+ Scanner & OCR</button>';
+      html += '<button type="button" class="btn btn-secondary" id="btn-ouvrir-modal-sortie">+ Sortie physique</button>';
+      html += '<button type="button" class="btn btn-secondary" id="btn-ouvrir-modal-carton">+ Nouveau carton</button>';
       html += '</div></div>';
 
       // =========================================================================
@@ -2414,7 +2414,7 @@
 
       html += '<div class="card" style="padding:10px 12px;background:var(--color-surface-2);border-left:3px solid #10b981">';
       html += '<div style="font-size:11px;color:var(--color-text-dim)">Synchronisation</div>';
-      html += '<div style="font-size:12px;font-weight:bold;color:#10b981;margin-top:4px">🟢 ' + (syncStatut && syncStatut.enAttente > 0 ? syncStatut.enAttente + " en attente" : "À jour") + '</div>';
+      html += '<div style="font-size:12px;font-weight:bold;color:#10b981;margin-top:4px">' + (syncStatut && syncStatut.enAttente > 0 ? syncStatut.enAttente + " en attente" : "À jour") + '</div>';
       html += '</div>';
 
       html += '</div>';
@@ -2423,13 +2423,13 @@
       // BANDEAU DES 7 ONGLETS OPÉRATIONNELS
       // =========================================================================
       html += '<div class="archive-nav-bar">';
-      html += '<button type="button" class="archive-nav-btn' + (etatArchives.onglet === "repertoire" ? " actif" : "") + '" data-onglet="repertoire">📜 Répertoire Minutier <strong>(' + repertoire.length + ')</strong></button>';
-      html += '<button type="button" class="archive-nav-btn' + (etatArchives.onglet === "jumeau" ? " actif" : "") + '" data-onglet="jumeau">🏢 Jumeau Numérique 360°</button>';
-      html += '<button type="button" class="archive-nav-btn' + (etatArchives.onglet === "mouvements" ? " actif" : "") + '" data-onglet="mouvements">📤 Mouvements & Sorties <strong>(' + sortisActuels.length + ')</strong></button>';
-      html += '<button type="button" class="archive-nav-btn' + (etatArchives.onglet === "cartons" ? " actif" : "") + '" data-onglet="cartons">📦 Cartons & Rayonnages <strong>(' + cartons.length + ')</strong></button>';
-      html += '<button type="button" class="archive-nav-btn' + (etatArchives.onglet === "campagnes" ? " actif" : "") + '" data-onglet="campagnes">📥 Campagnes Historiques <strong>(' + campagnes.length + ')</strong></button>';
-      html += '<button type="button" class="archive-nav-btn' + (etatArchives.onglet === "infrastructure" ? " actif" : "") + '" data-onglet="infrastructure">⚙️ Infra & Sauvegardes</button>';
-      html += '<button type="button" class="archive-nav-btn' + (etatArchives.onglet === "guide" ? " actif" : "") + '" data-onglet="guide">🏛️ Guide Légal</button>';
+      html += '<button type="button" class="archive-nav-btn' + (etatArchives.onglet === "repertoire" ? " actif" : "") + '" data-onglet="repertoire">Répertoire Minutier <strong>(' + repertoire.length + ')</strong></button>';
+      html += '<button type="button" class="archive-nav-btn' + (etatArchives.onglet === "jumeau" ? " actif" : "") + '" data-onglet="jumeau">Jumeau Numérique 360°</button>';
+      html += '<button type="button" class="archive-nav-btn' + (etatArchives.onglet === "mouvements" ? " actif" : "") + '" data-onglet="mouvements">Mouvements & Sorties <strong>(' + sortisActuels.length + ')</strong></button>';
+      html += '<button type="button" class="archive-nav-btn' + (etatArchives.onglet === "cartons" ? " actif" : "") + '" data-onglet="cartons">Cartons & Rayonnages <strong>(' + cartons.length + ')</strong></button>';
+      html += '<button type="button" class="archive-nav-btn' + (etatArchives.onglet === "campagnes" ? " actif" : "") + '" data-onglet="campagnes">Campagnes Historiques <strong>(' + campagnes.length + ')</strong></button>';
+      html += '<button type="button" class="archive-nav-btn' + (etatArchives.onglet === "infrastructure" ? " actif" : "") + '" data-onglet="infrastructure">Infra & Sauvegardes</button>';
+      html += '<button type="button" class="archive-nav-btn' + (etatArchives.onglet === "guide" ? " actif" : "") + '" data-onglet="guide">Guide Légal</button>';
       html += '</div>';
 
       // =========================================================================
@@ -2446,7 +2446,7 @@
         });
 
         html += '<div style="display:flex;justify-content:space-between;align-items:center;gap:var(--space-3);margin-bottom:var(--space-3);flex-wrap:wrap">';
-        html += '<input class="input" id="recherche-archives" style="max-width:380px" value="' + (etatArchives.recherche || "") + '" placeholder="🔍 Recherche plein texte, N° minute, N° dossier, client, carton…">';
+        html += '<input class="input" id="recherche-archives" style="max-width:380px" value="' + (etatArchives.recherche || "") + '" placeholder="Recherche plein texte, N° minute, N° dossier, client, carton…">';
         html += '<span style="font-size:12px;color:var(--color-text-dim)">' + repertoireFiltre.length + ' minute(s) enregistrée(s)</span>';
         html += '</div>';
 
@@ -2465,10 +2465,10 @@
             html += '<td style="font-weight:600;color:var(--color-text);font-size:12px">' + clientAff + '</td>';
             html += '<td style="font-size:12px">' + labelActe(m.type_acte_id) + '</td>';
             html += '<td><span class="tag tag-outline" style="font-size:11px">' + (m.code_emplacement || "En attente de carton") + '</span></td>';
-            html += '<td><span class="tag tag-accent" style="font-size:10px" title="Fichier numérisé 300 DPI certifié SHA-256">✅ ' + scanAff + '</span></td>';
+            html += '<td><span class="tag tag-accent" style="font-size:10px" title="Fichier numérisé 300 DPI certifié SHA-256">' + scanAff + '</span></td>';
             html += '<td><div style="display:flex;gap:4px">';
-            html += '<button type="button" class="btn btn-ghost btn-voir-jumeau-dossier" data-dossier-id="' + m.dossier_id + '" style="padding:3px 6px;font-size:11px" title="Voir le jumeau numérique et physique">🔍 360°</button>';
-            html += '<button type="button" class="btn btn-ghost btn-fiche-minute" data-minute-json="' + encodeURIComponent(JSON.stringify(m)) + '" style="padding:3px 6px;font-size:11px">📄 Fiche</button>';
+            html += '<button type="button" class="btn btn-ghost btn-voir-jumeau-dossier" data-dossier-id="' + m.dossier_id + '" style="padding:3px 6px;font-size:11px" title="Voir le jumeau numérique et physique">360°</button>';
+            html += '<button type="button" class="btn btn-ghost btn-fiche-minute" data-minute-json="' + encodeURIComponent(JSON.stringify(m)) + '" style="padding:3px 6px;font-size:11px">Fiche</button>';
             html += '</div></td>';
             html += '</tr>';
           });
@@ -2490,8 +2490,8 @@
         html += '</select></div>';
 
         html += '<div style="display:flex;gap:8px">';
-        html += '<button type="button" class="btn btn-secondary btn-jumeau-sortie" data-dossier-id="' + dossierIdCible + '" style="font-size:12px">📤 Sortir le dossier papier</button>';
-        html += '<button type="button" class="btn btn-secondary btn-jumeau-non-num" data-dossier-id="' + dossierIdCible + '" style="font-size:12px">🗺️ + Pièce non-numérisable</button>';
+        html += '<button type="button" class="btn btn-secondary btn-jumeau-sortie" data-dossier-id="' + dossierIdCible + '" style="font-size:12px">Sortir le dossier papier</button>';
+        html += '<button type="button" class="btn btn-secondary btn-jumeau-non-num" data-dossier-id="' + dossierIdCible + '" style="font-size:12px">+ Pièce non-numérisable</button>';
         html += '</div></div>';
 
         html += '<div id="zone-jumeau-details" style="display:flex;flex-direction:column;gap:var(--space-4)">';
@@ -2505,7 +2505,7 @@
 
         html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-3);flex-wrap:wrap;gap:var(--space-2)">';
         html += '<p style="font-size:13px;color:var(--color-text-dim);margin:0">Suivi rigoureux des demandes de sorties physiques de dossiers papier, validation et alertes de retards.</p>';
-        html += '<button type="button" class="btn btn-primary" id="btn-ouvrir-modal-sortie-tab" style="font-size:12px">📤 + Demande de sortie dossier papier</button>';
+        html += '<button type="button" class="btn btn-primary" id="btn-ouvrir-modal-sortie-tab" style="font-size:12px">+ Demande de sortie dossier papier</button>';
         html += '</div>';
 
         html += '<div class="table-wrap"><table class="table"><thead><tr><th>Dossier</th><th>Client (Comparants)</th><th>Demandeur</th><th>Bureau cible</th><th>Date sortie</th><th>Date retour prévue</th><th>Statut & Alertes</th><th>Action</th></tr></thead><tbody>';
@@ -2528,32 +2528,32 @@
             
             html += '<td>';
             if (estEnAttente) {
-              html += '<span class="tag tag-warning" style="font-weight:bold;font-size:11px">⏳ En attente d\'approbation</span>';
+              html += '<span class="tag tag-warning" style="font-weight:bold;font-size:11px">En attente d\'approbation</span>';
             } else if (estEnRetard) {
               var nbJ = mv.jours_retard || Math.max(1, Math.round((Date.now() - new Date(mv.date_retour_prevue).getTime()) / 86400000));
-              html += '<span class="tag tag-danger" style="font-weight:800;font-size:11px">🚨 EN RETARD (+ ' + nbJ + ' j)</span>';
+              html += '<span class="tag tag-danger" style="font-weight:800;font-size:11px">EN RETARD (+ ' + nbJ + ' j)</span>';
             } else if (estEnCours) {
-              html += '<span class="tag tag-neutral" style="font-size:11px">📍 En consultation au bureau</span>';
+              html += '<span class="tag tag-neutral" style="font-size:11px">En consultation au bureau</span>';
             } else {
-              html += '<span class="tag tag-accent" style="font-size:11px">✅ Restitué aux archives</span>';
+              html += '<span class="tag tag-accent" style="font-size:11px">Restitué aux archives</span>';
             }
             html += '</td>';
 
             html += '<td><div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">';
             if (estEnAttente) {
               if (estGestionnaireArchives) {
-                html += '<button type="button" class="btn btn-primary btn-approuver-sortie-direct" data-mouvement-id="' + mv.id + '" style="font-size:11px;padding:3px 8px;font-weight:700">✅ Approuver & Remettre</button>';
+                html += '<button type="button" class="btn btn-primary btn-approuver-sortie-direct" data-mouvement-id="' + mv.id + '" style="font-size:11px;padding:3px 8px;font-weight:700">Approuver & Remettre</button>';
               } else {
                 html += '<span style="font-size:11px;color:var(--color-text-dim)">En attente de validation</span>';
               }
             } else if (estEnCours) {
               if (estGestionnaireArchives) {
-                html += '<button type="button" class="btn btn-secondary btn-retourner-carton" data-mouvement-id="' + mv.id + '" data-dossier-id="' + mv.dossier_id + '" style="font-size:11px;padding:3px 8px">📥 Enregistrer restitution</button>';
+                html += '<button type="button" class="btn btn-secondary btn-retourner-carton" data-mouvement-id="' + mv.id + '" data-dossier-id="' + mv.dossier_id + '" style="font-size:11px;padding:3px 8px">Enregistrer restitution</button>';
               } else {
                 html += '<span style="font-size:11px;color:var(--color-text-dim)">Prêt en cours</span>';
               }
             } else {
-              html += '<button type="button" class="btn btn-ghost btn-voir-jumeau-dossier" data-dossier-id="' + mv.dossier_id + '" style="font-size:10.5px;padding:2px 6px">🔍 360° Jumeau</button>';
+              html += '<button type="button" class="btn btn-ghost btn-voir-jumeau-dossier" data-dossier-id="' + mv.dossier_id + '" style="font-size:10.5px;padding:2px 6px">360° Jumeau</button>';
             }
             html += '</div></td>';
             html += '</tr>';
@@ -2596,13 +2596,13 @@
         // En-tête de l'onglet avec barre de recherche dédiée
         html += '<div style="background:var(--color-surface-2);padding:14px 16px;border-radius:var(--radius);border:1px solid var(--color-border);margin-bottom:var(--space-4)">';
         html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:var(--space-2)">';
-        html += '<div><strong style="font-size:15px;color:var(--color-text)">🔍 Recherche & Localisation Physique des Dossiers en Carton</strong>';
+        html += '<div><strong style="font-size:15px;color:var(--color-text)">Recherche & Localisation Physique des Dossiers en Carton</strong>';
         html += '<p style="font-size:12px;color:var(--color-text-dim);margin:2px 0 0">Tapez un nom de client, un N° de dossier ou de minute pour localiser immédiatement son carton et sa position.</p></div>';
-        html += '<button type="button" class="btn btn-secondary" id="btn-ouvrir-modal-carton-tab" style="font-size:12px">📦 + Nouveau carton d\'archives</button>';
+        html += '<button type="button" class="btn btn-secondary" id="btn-ouvrir-modal-carton-tab" style="font-size:12px">+ Nouveau carton d\'archives</button>';
         html += '</div>';
 
         html += '<div style="display:flex;gap:var(--space-2);align-items:center;flex-wrap:wrap">';
-        html += '<input class="input" id="recherche-cartons-dossier" style="flex:1;min-width:280px;background:var(--color-surface);font-size:13px" value="' + (etatArchives.rechercheCarton || "") + '" placeholder="🔍 Tapez un nom de client (ex. KOUASSI, KOFFI), N° dossier (DOS-2026...), minute ou carton…">';
+        html += '<input class="input" id="recherche-cartons-dossier" style="flex:1;min-width:280px;background:var(--color-surface);font-size:13px" value="' + (etatArchives.rechercheCarton || "") + '" placeholder="Tapez un nom de client (ex. KOUASSI, KOFFI), N° dossier (DOS-2026...), minute ou carton…">';
         if (etatArchives.rechercheCarton) {
           html += '<button type="button" class="btn btn-ghost" id="btn-effacer-recherche-carton" style="font-size:12px">✕ Effacer</button>';
         }
@@ -2626,11 +2626,11 @@
             html += '<div style="display:flex;justify-content:space-between;align-items:flex-start">';
             html += '<div><strong style="font-size:16px;color:var(--color-text)">' + k.numeroCarton + '</strong>';
             html += '<div style="font-size:12px;color:var(--color-text-dim);margin-top:2px">Ouvert le ' + fmtDate(k.dateOuverture) + '</div></div>';
-            html += '<span class="tag ' + (estPlein ? "tag-neutral" : "tag-accent") + '" style="font-weight:700">' + (estPlein ? "📦 Plein" : "📂 Ouvert") + '</span>';
+            html += '<span class="tag ' + (estPlein ? "tag-neutral" : "tag-accent") + '" style="font-weight:700">' + (estPlein ? "Plein" : "Ouvert") + '</span>';
             html += '</div>';
 
             html += '<div style="background:var(--color-surface);padding:8px 10px;border-radius:var(--radius);border:1px solid var(--color-border);font-size:12px">';
-            html += '<div style="color:var(--color-text-dim);margin-bottom:2px">📍 Localisation physique :</div>';
+            html += '<div style="color:var(--color-text-dim);margin-bottom:2px">Localisation physique :</div>';
             html += '<strong style="color:var(--color-text)">' + (k.salle || "Salle principale") + ' · ' + (k.armoire || "Armoire A") + ' · ' + (k.rayonnage || "Rayon 1") + '</strong>';
             html += '</div>';
 
@@ -2642,7 +2642,7 @@
             // SECTION RÉSULTATS : DOSSIERS TROUVÉS DANS CE CARTON LORS D'UNE RECHERCHE
             if (matchDocs.length > 0) {
               html += '<div style="background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.3);padding:10px;border-radius:var(--radius);margin-top:4px">';
-              html += '<div style="font-size:11px;font-weight:bold;color:#38bdf8;margin-bottom:6px">🎯 Dossier(s) trouvé(s) dans ce carton (' + matchDocs.length + ') :</div>';
+              html += '<div style="font-size:11px;font-weight:bold;color:#38bdf8;margin-bottom:6px">Dossier(s) trouvé(s) dans ce carton (' + matchDocs.length + ') :</div>';
               html += '<div style="display:flex;flex-direction:column;gap:6px">';
               matchDocs.forEach(function (d) {
                 var clientNom = d.comparantsNoms && d.comparantsNoms.trim() ? d.comparantsNoms.trim() : "Comparants";
@@ -2652,7 +2652,7 @@
                 html += '<div style="color:var(--color-text-dim);font-size:10px;margin-top:2px">' + (d.numeroDossier || "Dossier") + ' · ' + (d.numeroMinute || "") + ' · ' + labelActe(d.typeActeId) + '</div>';
                 html += '</div>';
                 if (d.dossierId) {
-                  html += '<button type="button" class="btn btn-ghost btn-voir-jumeau-dossier" data-dossier-id="' + d.dossierId + '" style="font-size:10px;padding:2px 6px;white-space:nowrap" title="Voir le jumeau numérique et physique">🔍 360°</button>';
+                  html += '<button type="button" class="btn btn-ghost btn-voir-jumeau-dossier" data-dossier-id="' + d.dossierId + '" style="font-size:10px;padding:2px 6px;white-space:nowrap" title="Voir le jumeau numérique et physique">360°</button>';
                 }
                 html += '</div>';
               });
@@ -2663,7 +2663,7 @@
             if (docsCarton.length > 0) {
               html += '<div style="margin-top:4px">';
               html += '<button type="button" class="btn btn-ghost btn-toggle-carton-dossiers" data-carton-id="' + k.id + '" style="width:100%;font-size:11px;padding:5px;display:flex;justify-content:space-between;align-items:center;background:var(--color-surface);border:1px solid var(--color-border)">';
-              html += '<span>📂 ' + docsCarton.length + ' dossier(s) dans ce carton</span>';
+              html += '<span>' + docsCarton.length + ' dossier(s) dans ce carton</span>';
               html += '<span>' + (estDeplie ? "▲ Masquer" : "▼ Déplier") + '</span>';
               html += '</button>';
 
@@ -2677,7 +2677,7 @@
                   html += '<div style="font-size:10px;color:var(--color-text-dim);margin-top:1px">' + (d.numeroDossier || "") + ' · ' + (d.numeroMinute || "") + ' · ' + labelActe(d.typeActeId) + '</div>';
                   html += '</div>';
                   if (d.dossierId) {
-                    html += '<button type="button" class="btn btn-ghost btn-voir-jumeau-dossier" data-dossier-id="' + d.dossierId + '" style="font-size:10px;padding:2px 6px">🔍 360°</button>';
+                    html += '<button type="button" class="btn btn-ghost btn-voir-jumeau-dossier" data-dossier-id="' + d.dossierId + '" style="font-size:10px;padding:2px 6px">360°</button>';
                   }
                   html += '</div>';
                 });
@@ -2697,7 +2697,7 @@
         // --- ONGLET 5 : CAMPAGNES DE NUMÉRISATION (FONDS HISTORIQUE 1995-2025) ---
         html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-4);flex-wrap:wrap;gap:var(--space-2)">';
         html += '<p style="font-size:13px;color:var(--color-text-dim);margin:0">Suivi par lot et campagnes de numérisation haute définition du fonds documentaire ancien de l\'office.</p>';
-        html += '<button type="button" class="btn btn-primary" id="btn-ouvrir-modal-campagne" style="font-size:12px">📥 + Nouvelle campagne historique</button>';
+        html += '<button type="button" class="btn btn-primary" id="btn-ouvrir-modal-campagne" style="font-size:12px">+ Nouvelle campagne historique</button>';
         html += '</div>';
 
         if (!campagnes.length) {
@@ -2725,7 +2725,7 @@
             html += '</div>';
 
             html += '<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px">';
-            html += '<button type="button" class="btn btn-secondary btn-avancement-campagne" data-campagne-id="' + cp.id + '" style="font-size:11px;padding:4px 10px">⚡ Avancement par lot (+100)</button>';
+            html += '<button type="button" class="btn btn-secondary btn-avancement-campagne" data-campagne-id="' + cp.id + '" style="font-size:11px;padding:4px 10px">Avancement par lot (+100)</button>';
             html += '</div>';
 
             html += '</div>';
@@ -2752,24 +2752,24 @@
 
         // Carte 1 : État des Services Locaux & Cloud
         html += '<div class="card" style="background:var(--color-surface-2);border-color:var(--color-border);padding:var(--space-4)">';
-        html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span style="font-size:20px">🖥️</span><strong style="font-size:15px">Supervision du Serveur de l\'Étude</strong></div>';
+        html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span style="font-size:20px"></span><strong style="font-size:15px">Supervision du Serveur de l\'Étude</strong></div>';
         html += '<div style="display:flex;flex-direction:column;gap:8px;font-size:13px">';
-        html += '<div style="display:flex;justify-content:space-between"><span>Serveur Local (Node/Express) :</span><strong style="color:#22c55e">🟢 ' + sante.application + '</strong></div>';
-        html += '<div style="display:flex;justify-content:space-between"><span>Base de données PostgreSQL :</span><strong style="color:#22c55e">🟢 ' + sante.baseDeDonnees + '</strong></div>';
-        html += '<div style="display:flex;justify-content:space-between"><span>Stockage Documentaire Local :</span><strong style="color:#22c55e">🟢 ' + sante.stockage + ' (' + sante.espaceUtiliseMo + ' Mo / ' + Math.round(sante.espaceTotalMo / 1000) + ' Go)</strong></div>';
+        html += '<div style="display:flex;justify-content:space-between"><span>Serveur Local (Node/Express) :</span><strong style="color:#22c55e">' + sante.application + '</strong></div>';
+        html += '<div style="display:flex;justify-content:space-between"><span>Base de données PostgreSQL :</span><strong style="color:#22c55e">' + sante.baseDeDonnees + '</strong></div>';
+        html += '<div style="display:flex;justify-content:space-between"><span>Stockage Documentaire Local :</span><strong style="color:#22c55e">' + sante.stockage + ' (' + sante.espaceUtiliseMo + ' Mo / ' + Math.round(sante.espaceTotalMo / 1000) + ' Go)</strong></div>';
         html += '<div style="display:flex;justify-content:space-between"><span>Adresse IP Réseau de l\'étude :</span><strong style="font-family:monospace">' + sante.ipLocale + '</strong></div>';
         html += '<div style="display:flex;justify-content:space-between"><span>Version du logiciel :</span><strong>v' + sante.versionApp + '</strong></div>';
         html += '</div></div>';
 
         // Carte 2 : Synchronisation Hybride & Réplication Cloud
         html += '<div class="card" style="background:var(--color-surface-2);border-color:var(--color-border);padding:var(--space-4)">';
-        html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span style="font-size:20px">🔄</span><strong style="font-size:15px">Moteur de Synchronisation Hybride (Sync Engine)</strong></div>';
+        html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><strong style="font-size:15px">Moteur de Synchronisation Hybride (Sync Engine)</strong></div>';
         html += '<div style="display:flex;flex-direction:column;gap:8px;font-size:13px">';
         html += '<div style="display:flex;justify-content:space-between"><span>Mode de déploiement :</span><strong style="color:#38bdf8;text-transform:uppercase">' + sante.modeInfrastructure + '</strong></div>';
         html += '<div style="display:flex;justify-content:space-between"><span>Éléments en file d\'attente :</span><strong>' + (syncStatut ? syncStatut.enAttente : 0) + ' document(s)</strong></div>';
         html += '<div style="display:flex;justify-content:space-between"><span>Dernière réplication Cloud :</span><strong>' + fmtDate(sante.derniereSynchro) + '</strong></div>';
-        html += '<div style="display:flex;justify-content:space-between"><span>Dernière sauvegarde protégée :</span><strong style="color:#22c55e">🟢 Quotidienne 03:00</strong></div>';
-        html += '<div style="margin-top:8px"><button type="button" class="btn btn-primary" id="btn-forcer-sync" style="width:100%;font-size:12px">🔄 Forcer la synchronisation vers le Cloud Vault</button></div>';
+        html += '<div style="display:flex;justify-content:space-between"><span>Dernière sauvegarde protégée :</span><strong style="color:#22c55e">Quotidienne 03:00</strong></div>';
+        html += '<div style="margin-top:8px"><button type="button" class="btn btn-primary" id="btn-forcer-sync" style="width:100%;font-size:12px">Forcer la synchronisation vers le Cloud Vault</button></div>';
         html += '</div></div>';
 
         html += '</div>';
@@ -2777,17 +2777,17 @@
         // Carte 3 : Support Technique L1-L4 & Accès Temporaire Audité
         html += '<div class="card" style="background:var(--color-surface-2);border-color:var(--color-border);padding:var(--space-4)">';
         html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">';
-        html += '<div style="display:flex;align-items:center;gap:8px"><span style="font-size:20px">🎫</span><strong style="font-size:15px">Support Technique Éditeur (L1 - L4) & Télé-diagnostic</strong></div>';
+        html += '<div style="display:flex;align-items:center;gap:8px"><strong style="font-size:15px">Support Technique Éditeur (L1 - L4) & Télé-diagnostic</strong></div>';
         html += '<button type="button" class="btn btn-secondary" id="btn-ouvrir-modal-ticket" style="font-size:12px">Ouvrir un ticket d\'assistance</button>';
         html += '</div>';
         html += '<div style="font-size:12px;color:var(--color-text-dim);line-height:1.5;background:var(--color-surface);padding:10px 12px;border-radius:var(--radius);border:1px solid var(--color-border)">';
-        html += '🔒 <strong>Garantie de Sécurité & Secret Professionnel Notarial :</strong> Le personnel de support de l\'éditeur n\'a <strong>aucun accès par défaut</strong> aux dossiers et documents de l\'étude. En cas d\'incident technique, une demande d\'accès temporaire avec motif obligatoire doit être validée par le Notaire, limitée dans le temps et intégralement auditée.';
+        html += '<strong>Garantie de Sécurité & Secret Professionnel Notarial :</strong> Le personnel de support de l\'éditeur n\'a <strong>aucun accès par défaut</strong> aux dossiers et documents de l\'étude. En cas d\'incident technique, une demande d\'accès temporaire avec motif obligatoire doit être validée par le Notaire, limitée dans le temps et intégralement auditée.';
         html += '</div></div>';
 
       } else if (etatArchives.onglet === "guide") {
         // --- ONGLET 7 : GUIDE DES BONNES PRATIQUES D'ARCHIVAGE ---
         html += '<div class="card" style="border-left:4px solid #38bdf8;background:var(--color-surface-2);margin-bottom:var(--space-5);padding:var(--space-4)">';
-        html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:var(--space-3)"><span style="font-size:22px">🏛️</span><strong style="font-size:16px;color:var(--color-text)">Guide des Bonnes Pratiques d\'Archivage Numérique & Minutier Officiel</strong></div>';
+        html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:var(--space-3)"><span style="font-size:22px"></span><strong style="font-size:16px;color:var(--color-text)">Guide des Bonnes Pratiques d\'Archivage Numérique & Minutier Officiel</strong></div>';
 
         html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:var(--space-3);font-size:12px;line-height:1.5">';
 
@@ -2998,7 +2998,7 @@
       // COLONNE GAUCHE : JUMEAU NUMÉRIQUE (GED, Scans, OCR, Versions)
       html += '<div class="card" style="background:var(--color-surface-2);border-color:var(--color-border);padding:var(--space-4)">';
       html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">';
-      html += '<div style="display:flex;align-items:center;gap:8px"><span style="font-size:20px">💻</span><strong style="font-size:15px;color:var(--color-text)">Jumeau Numérique (Copie GED & OCR)</strong></div>';
+      html += '<div style="display:flex;align-items:center;gap:8px"><strong style="font-size:15px;color:var(--color-text)">Jumeau Numérique (Copie GED & OCR)</strong></div>';
       html += '<span class="tag tag-accent">' + d.statutNumerisation + '</span>';
       html += '</div>';
 
@@ -3015,7 +3015,7 @@
           html += '<div style="background:var(--color-surface);padding:8px 10px;border-radius:var(--radius);border:1px solid var(--color-border);display:flex;justify-content:space-between;align-items:center">';
           html += '<div><strong style="font-size:12px">' + doc.nom_fichier + '</strong>';
           html += '<div style="font-size:11px;color:var(--color-text-dim)">Type : ' + doc.type_document + ' · v' + doc.version + ' · ' + fmtDate(doc.created_at) + '</div></div>';
-          html += '<span class="tag tag-accent" style="font-size:10px">✅ OCR Traité</span>';
+          html += '<span class="tag tag-accent" style="font-size:10px">OCR Traité</span>';
           html += '</div>';
         });
         html += '</div>';
@@ -3026,8 +3026,8 @@
       // COLONNE DROITE : JUMEAU PHYSIQUE (Original Papier, Localisation, Sorties)
       html += '<div class="card" style="background:var(--color-surface-2);border-color:var(--color-border);padding:var(--space-4)">';
       html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">';
-      html += '<div style="display:flex;align-items:center;gap:8px"><span style="font-size:20px">📁</span><strong style="font-size:15px;color:var(--color-text)">Original Papier & Conservation</strong></div>';
-      html += '<span class="tag ' + (jp.estDisponibleEnCarton ? "tag-accent" : "tag-neutral") + '">' + (jp.estDisponibleEnCarton ? "✅ En archives" : "📍 Sorti au bureau") + '</span>';
+      html += '<div style="display:flex;align-items:center;gap:8px"><strong style="font-size:15px;color:var(--color-text)">Original Papier & Conservation</strong></div>';
+      html += '<span class="tag ' + (jp.estDisponibleEnCarton ? "tag-accent" : "tag-neutral") + '">' + (jp.estDisponibleEnCarton ? "En archives" : "Sorti au bureau") + '</span>';
       html += '</div>';
 
       html += '<div style="background:var(--color-surface);padding:10px 12px;border-radius:var(--radius);border:1px solid var(--color-border);margin-bottom:12px">';
@@ -3045,7 +3045,7 @@
           html += '<div style="background:var(--color-surface);padding:8px 10px;border-radius:var(--radius);border:1px solid var(--color-border)">';
           html += '<strong style="font-size:12px">' + p.titre_document + '</strong>';
           if (p.raison_non_numerisable) {
-            html += '<div style="font-size:11px;color:#f59e0b;margin-top:2px">⚠️ Original physique uniquement : ' + p.raison_non_numerisable + '</div>';
+            html += '<div style="font-size:11px;color:#f59e0b;margin-top:2px">Original physique uniquement : ' + p.raison_non_numerisable + '</div>';
           }
           html += '<div style="font-size:11px;color:var(--color-text-dim);margin-top:2px">Localisation : ' + (p.localisation_actuelle || jp.codeEmplacement) + '</div>';
           html += '</div>';
@@ -3081,12 +3081,12 @@
     html += '<div style="display:flex;justify-content:flex-end;gap:var(--space-2);margin-top:var(--space-2)">';
     html += '<button type="button" class="btn btn-ghost" id="btn-annuler-scan-ocr">Annuler</button>';
     html += '<button type="button" class="btn btn-secondary" id="btn-analyser-scan">Lancer la Reconnaissance OCR →</button>';
-    html += '<button type="submit" class="btn btn-primary" id="btn-valider-ocr-ia" style="display:none">✅ Valider & Classer dans le dossier</button>';
+    html += '<button type="submit" class="btn btn-primary" id="btn-valider-ocr-ia" style="display:none">Valider & Classer dans le dossier</button>';
     html += '</div>';
     html += '</form>';
 
     ouvrirModal({
-      titre: '<span>📄</span> Numérisation Haute Définition & Reconnaissance OCR',
+      titre: 'Numérisation Haute Définition & Reconnaissance OCR',
       corps: html,
       boutonFermer: true,
       largeur: "600px",
@@ -3226,7 +3226,7 @@
       html += '</div></form>';
 
       ouvrirModal({
-        titre: '<span>📤</span> Demande de sortie de dossier papier',
+        titre: 'Demande de sortie de dossier papier',
         corps: html,
         boutonFermer: true,
         largeur: "580px",
@@ -3284,7 +3284,7 @@
       html += '</div></form>';
 
       ouvrirModal({
-        titre: '<span>🗺️</span> Enregistrer un document physique non-numérisable',
+        titre: 'Enregistrer un document physique non-numérisable',
         corps: html,
         boutonFermer: true,
         largeur: "540px",
@@ -3338,7 +3338,7 @@
     html += '</div></form>';
 
     ouvrirModal({
-      titre: '<span>📥</span> Créer une campagne de numérisation du fonds ancien',
+      titre: 'Créer une campagne de numérisation du fonds ancien',
       corps: html,
       boutonFermer: true,
       largeur: "540px",
@@ -3393,7 +3393,7 @@
     html += '</div></form>';
 
     ouvrirModal({
-      titre: '<span>🎫</span> Ouvrir un ticket d\'assistance technique',
+      titre: 'Ouvrir un ticket d\'assistance technique',
       corps: html,
       boutonFermer: true,
       largeur: "540px",
@@ -3481,7 +3481,7 @@
       html += '</div>';
 
       html += '<div style="font-size:11px;color:var(--color-text-dim);background:var(--color-surface);padding:8px 10px;border-radius:var(--radius);border:1px solid var(--color-border);margin-bottom:8px">';
-      html += '⚖️ <strong>Mention légale :</strong> Acte authentique physique signé de façon normale en minute par les comparants et Maître Titulaire. Numérisé en haute définition 300 DPI au format pérenne PDF/A.';
+      html += '<strong>Mention légale :</strong> Acte authentique physique signé de façon normale en minute par les comparants et Maître Titulaire. Numérisé en haute définition 300 DPI au format pérenne PDF/A.';
       html += '</div>';
 
       html += '<div class="field"><label>Empreinte d\'intégrité (SHA-256 scellement)</label><input class="input" name="empreinteSha256" value="' + hashSimule + '" style="font-family:monospace;font-size:11px" readonly></div>';
@@ -3508,7 +3508,7 @@
       html += '</form>';
 
       ouvrirModal({
-        titre: '<span>📥</span> Numériser & Archiver un nouveau dossier en minute',
+        titre: 'Numériser & Archiver un nouveau dossier en minute',
         corps: html,
         boutonFermer: true,
         largeur: "640px",
@@ -3599,13 +3599,13 @@
     html += '</div>';
 
     html += '<div style="border:1px solid #cbd5e1;border-radius:4px;padding:12px;margin-bottom:16px;background:#f8fafc;font-size:12px">';
-    html += '<div style="font-weight:bold;color:#0f172a;margin-bottom:4px">📦 Localisation physique en carton :</div>';
+    html += '<div style="font-weight:bold;color:#0f172a;margin-bottom:4px">Localisation physique en carton :</div>';
     html += '<div><strong>Emplacement :</strong> ' + (min.code_emplacement || min.codeEmplacement || "Carton principal") + '</div>';
     html += '<div><strong>Carton N° :</strong> ' + (min.numero_carton || min.cartonNumero || "CARTON-001") + '</div>';
     html += '</div>';
 
     html += '<div style="border:1px solid #cbd5e1;border-radius:4px;padding:12px;background:#f8fafc;font-size:12px">';
-    html += '<div style="font-weight:bold;color:#0f172a;margin-bottom:4px">🔒 Certification numérique & Empreinte :</div>';
+    html += '<div style="font-weight:bold;color:#0f172a;margin-bottom:4px">Certification numérique & Empreinte :</div>';
     html += '<div><strong>Fichier :</strong> ' + (min.scan_url || min.scanUrl || "SCAN_MINUTE_OFFICIEL.pdf") + ' (Numérisation 300 DPI PDF/A)</div>';
     html += '<div style="word-break:break-all;font-family:monospace;font-size:10px;margin-top:4px"><strong>SHA-256 :</strong> ' + (min.empreinteSha256 || "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855") + '</div>';
     html += '</div>';
@@ -3618,14 +3618,14 @@
     html += '</div>';
 
     html += '<div style="display:flex;justify-content:flex-end;gap:var(--space-2);margin-top:var(--space-2)">';
-    html += '<button type="button" class="btn btn-secondary" id="btn-imprimer-fiche">🖨️ Imprimer la fiche / étiquette</button>';
+    html += '<button type="button" class="btn btn-secondary" id="btn-imprimer-fiche">Imprimer la fiche / étiquette</button>';
     html += '<button type="button" class="btn btn-primary" id="btn-fermer-fiche">Fermer</button>';
     html += '</div>';
 
     html += '</div>';
 
     ouvrirModal({
-      titre: '<span>📄</span> Fiche Officielle d\'Archivage & Bordereau de Versement',
+      titre: 'Fiche Officielle d\'Archivage & Bordereau de Versement',
       corps: html,
       boutonFermer: true,
       largeur: "640px",
@@ -3665,7 +3665,7 @@
     html += '</form>';
 
     ouvrirModal({
-      titre: '<span>📦</span> Ouvrir un nouveau carton d\'archives',
+      titre: 'Ouvrir un nouveau carton d\'archives',
       corps: html,
       boutonFermer: true,
       largeur: "500px",
@@ -3910,7 +3910,7 @@
 
         // --- LIGNE 1 : ATTRIBUÉ DIRECTEMENT AU NOTAIRE TITULAIRE ---
         html += '<div class="dashboard-panel" style="margin-bottom:var(--space-5);border-left:4px solid var(--color-accent)">';
-        html += '<div class="panel-header"><div class="panel-title"><span>👑</span> Ligne 1 : Attribué directement à ' + membreConcerne.nomComplet + ' (Visas, Signatures & Décisions)</div><span class="tag tag-accent">' + (enRelecture.length + enSignature.length) + ' acte(s) en attente</span></div>';
+        html += '<div class="panel-header"><div class="panel-title">Ligne 1 : Attribué directement à ' + membreConcerne.nomComplet + ' (Visas, Signatures & Décisions)</div><span class="tag tag-accent">' + (enRelecture.length + enSignature.length) + ' acte(s) en attente</span></div>';
         html += '<div class="panel-body">';
 
         html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--space-3);margin-bottom:var(--space-4)">';
@@ -3946,7 +3946,7 @@
         var pctGlobal = cache.dossiers.length ? Math.round((totalClotures / cache.dossiers.length) * 100) : 0;
 
         html += '<div class="dashboard-panel" style="border-left:4px solid #38bdf8">';
-        html += '<div class="panel-header"><div class="panel-title"><span>🏛️</span> Ligne 2 : Évolution générale & Performance globale de l\'office</div><span class="tag tag-outline">Exercice en cours</span></div>';
+        html += '<div class="panel-header"><div class="panel-title"><span></span> Ligne 2 : Évolution générale & Performance globale de l\'office</div><span class="tag tag-outline">Exercice en cours</span></div>';
         html += '<div class="panel-body">';
 
         html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--space-3);margin-bottom:var(--space-4)">';
@@ -3967,14 +3967,14 @@
         // VUE COLLABORATEUR (CLERC / ASSISTANTE)
         // =========================================================================
         var kpis = [
-          { label: "Dossiers actifs assignés", valeur: String(evo.dossiersActifs), indice: "", icon: "📁", sub: "Charge en cours" },
-          { label: "Dossiers clôturés (30 j)", valeur: String(evo.dossiersClotures30Jours), indice: "accent", icon: "✅", sub: "Performance mensuelle" },
-          { label: "Taux d'avancement moyen", valeur: evo.avancementMoyenPourcent + " %", indice: "accent", icon: "📈", sub: "Avancement des tâches" },
+          { label: "Dossiers actifs assignés", valeur: String(evo.dossiersActifs), indice: "", icon: "", sub: "Charge en cours" },
+          { label: "Dossiers clôturés (30 j)", valeur: String(evo.dossiersClotures30Jours), indice: "accent", icon: "", sub: "Performance mensuelle" },
+          { label: "Taux d'avancement moyen", valeur: evo.avancementMoyenPourcent + " %", indice: "accent", icon: "", sub: "Avancement des tâches" },
         ];
         html += renderKpisGrid(kpis);
 
         html += '<div class="dashboard-panel">';
-        html += '<div class="panel-header"><div class="panel-title"><span>📊</span> Dossiers assignés en cours d\'instruction</div><span class="tag tag-outline">' + dossiersMembre.length + ' dossier(s)</span></div>';
+        html += '<div class="panel-header"><div class="panel-title">Dossiers assignés en cours d\'instruction</div><span class="tag tag-outline">' + dossiersMembre.length + ' dossier(s)</span></div>';
         html += '<div class="panel-body">';
         if (!dossiersMembre.length) {
           html += '<p class="text-muted" style="text-align:center;padding:var(--space-4)">Aucun dossier actuellement assigné à ce collaborateur.</p>';
@@ -4071,10 +4071,10 @@
 
       // KPI Grid
       var kpis = [
-        { label: "Barèmes Actifs", valeur: String(baremes.length), indice: "accent", icon: "⚖️", sub: "Dégressifs par tranches" },
-        { label: "Types d'Actes Rattachés", valeur: String(tousLesActes.filter(function (a) { return a.baremeEmolumentsId; }).length) + " / " + tousLesActes.length, indice: "", icon: "📜", sub: "Au catalogue de l'étude" },
-        { label: "Référence Légale", valeur: "Décret 2013-279", indice: "", icon: "🏛️", sub: "Barème officiel notariat CI" },
-        { label: "Rôles Autorisés", valeur: "Notaire · 1er Clerc · Compta", indice: "accent", icon: "👥", sub: "Paramétrage & facturation" },
+        { label: "Barèmes Actifs", valeur: String(baremes.length), indice: "accent", icon: "", sub: "Dégressifs par tranches" },
+        { label: "Types d'Actes Rattachés", valeur: String(tousLesActes.filter(function (a) { return a.baremeEmolumentsId; }).length) + " / " + tousLesActes.length, indice: "", icon: "", sub: "Au catalogue de l'étude" },
+        { label: "Référence Légale", valeur: "Décret 2013-279", indice: "", icon: "", sub: "Barème officiel notariat CI" },
+        { label: "Rôles Autorisés", valeur: "Notaire · 1er Clerc · Compta", indice: "accent", icon: "", sub: "Paramétrage & facturation" },
       ];
       html += renderKpisGrid(kpis);
 
@@ -4087,8 +4087,8 @@
 
       html += '<div style="padding:var(--space-3) var(--space-4);background:var(--color-surface-2);border-bottom:1px solid var(--color-border);display:flex;align-items:center;gap:var(--space-3)">';
       html += '<div style="flex:1;position:relative">';
-      html += '<input type="search" id="filtre-recherche-baremes" class="input" placeholder="🔍 Rechercher un barème par nom, code ou type d\'acte associé..." value="' + (etatEmoluments.recherche || "") + '" style="background:var(--color-bg);font-size:13px;padding:8px 12px 8px 36px;width:100%">';
-      html += '<span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);opacity:.5">🔍</span>';
+      html += '<input type="search" id="filtre-recherche-baremes" class="input" placeholder="Rechercher un barème par nom, code ou type d\'acte associé..." value="' + (etatEmoluments.recherche || "") + '" style="background:var(--color-bg);font-size:13px;padding:8px 12px 8px 36px;width:100%">';
+      html += '';
       html += '</div>';
       if (etatEmoluments.recherche) {
         html += '<button type="button" id="btn-effacer-recherche-baremes" class="btn btn-ghost" style="font-size:12px;padding:6px 10px">Effacer</button>';
@@ -4170,7 +4170,7 @@
           } else {
             html += '<div style="display:flex;flex-wrap:wrap;gap:4px">';
             actesAssocies.forEach(function (act) {
-              html += '<span class="tag" style="background:var(--color-surface-2);border:1px solid var(--color-border);font-size:11px">📜 ' + act.libelle + '</span>';
+              html += '<span class="tag" style="background:var(--color-surface-2);border:1px solid var(--color-border);font-size:11px">' + act.libelle + '</span>';
             });
             html += '</div>';
           }
@@ -4563,17 +4563,17 @@
       var synthese = calculerSyntheseEtude(cache.dossiers);
 
       var kpis = [
-        { label: "Honoraires & Émoluments HT", valeur: fmtFCFA(synthese.totalEmolumentsHT), indice: "", icon: "💰", sub: "Décret N° 2013-279" },
-        { label: "Droits DGI & Conservation", valeur: fmtFCFA(synthese.totalDroitsDGI), indice: "accent", icon: "🏛️", sub: "Droits proportionnels & fixes" },
-        { label: "TVA légale (18 %)", valeur: fmtFCFA(Math.round(synthese.totalEmolumentsHT * 0.18)), indice: "", icon: "📊", sub: "Reversée au Trésor public" },
-        { label: "Provisions Séquestres (CDCI)", valeur: fmtFCFA(synthese.sequestresCDCI), indice: "accent", icon: "🏦", sub: "Acomptes clients sous séquestre" },
+        { label: "Honoraires & Émoluments HT", valeur: fmtFCFA(synthese.totalEmolumentsHT), indice: "", icon: "", sub: "Décret N° 2013-279" },
+        { label: "Droits DGI & Conservation", valeur: fmtFCFA(synthese.totalDroitsDGI), indice: "accent", icon: "", sub: "Droits proportionnels & fixes" },
+        { label: "TVA légale (18 %)", valeur: fmtFCFA(Math.round(synthese.totalEmolumentsHT * 0.18)), indice: "", icon: "", sub: "Reversée au Trésor public" },
+        { label: "Provisions Séquestres (CDCI)", valeur: fmtFCFA(synthese.sequestresCDCI), indice: "accent", icon: "", sub: "Acomptes clients sous séquestre" },
       ];
 
       var html = '<div style="position:sticky;top:calc(-1 * var(--space-6));background:var(--color-bg);z-index:2;padding-top:var(--space-1);margin-bottom:var(--space-4)">';
       html += '<div style="display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);flex-wrap:wrap">';
-      html += '<div><h1 style="margin:0">💰 Fiches de Taxe & Facturation Notariale</h1>';
+      html += '<div><h1 style="margin:0">Fiches de Taxe & Facturation Notariale</h1>';
       html += '<p style="opacity:.65;font-size:14px;margin:2px 0 0">Calcul des émoluments réglementés (Décret 2013-279), droits DGI, TVA 18%, débours et facturation.</p></div>';
-      html += '<button type="button" class="btn btn-primary" id="btn-nouvelle-fiche-taxe" style="font-size:13px;padding:8px 16px;font-weight:700;display:flex;align-items:center;gap:6px"><span>➕</span> Créer une Fiche de Taxe</button>';
+      html += '<button type="button" class="btn btn-primary" id="btn-nouvelle-fiche-taxe" style="font-size:13px;padding:8px 16px;font-weight:700;display:flex;align-items:center;gap:6px">Créer une Fiche de Taxe</button>';
       html += '</div></div>';
 
       html += renderKpisGrid(kpis);
@@ -4589,7 +4589,7 @@
       // Barre de recherche et filtres de dossiers/clients
       html += '<div class="dashboard-panel" style="margin-top:var(--space-4)">';
       html += '<div class="panel-header" style="flex-wrap:wrap;gap:var(--space-3);align-items:center">';
-      html += '<div class="panel-title" style="display:flex;align-items:center;gap:6px"><span>📑</span> Liste des Dossiers & Fiches de Taxe Client</div>';
+      html += '<div class="panel-title" style="display:flex;align-items:center;gap:6px">Liste des Dossiers & Fiches de Taxe Client</div>';
       html += '<div style="display:flex;gap:var(--space-2);align-items:center;flex-wrap:wrap;margin-left:auto">';
       html += '<div style="display:flex;background:var(--color-surface);padding:3px;border-radius:var(--radius);border:1px solid var(--color-border);gap:4px">';
       html += '<button type="button" class="btn-filtre-compta ' + (etatComptabilite.filtre === "tous" ? "actif" : "") + '" data-filtre="tous" style="font-size:11.5px;padding:4px 10px;border-radius:4px;border:none;background:' + (etatComptabilite.filtre === "tous" ? "var(--color-accent)" : "transparent") + ';color:' + (etatComptabilite.filtre === "tous" ? "#fff" : "var(--color-text-dim)") + ';cursor:pointer;font-weight:600">Tous (' + cache.dossiers.length + ')</button>';
@@ -4602,8 +4602,8 @@
       // Champ de recherche Client / Dossier
       html += '<div style="padding:var(--space-3) var(--space-4);background:var(--color-surface-2);border-bottom:1px solid var(--color-border);display:flex;align-items:center;gap:var(--space-3)">';
       html += '<div style="flex:1;position:relative">';
-      html += '<input type="search" id="filtre-client-compta" class="input" placeholder="🔍 Rechercher par nom de client, comparant, N° de dossier ou type d\'acte..." value="' + (etatComptabilite.rechercheClient || "") + '" style="background:var(--color-bg);font-size:13px;padding:8px 12px 8px 36px;width:100%">';
-      html += '<span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);opacity:.5">🔍</span>';
+      html += '<input type="search" id="filtre-client-compta" class="input" placeholder="Rechercher par nom de client, comparant, N° de dossier ou type d\'acte..." value="' + (etatComptabilite.rechercheClient || "") + '" style="background:var(--color-bg);font-size:13px;padding:8px 12px 8px 36px;width:100%">';
+      html += '';
       html += '</div>';
       if (etatComptabilite.rechercheClient) {
         html += '<button type="button" id="btn-effacer-recherche-compta" class="btn btn-ghost" style="font-size:12px;padding:6px 10px">Effacer le filtre</button>';
@@ -4627,7 +4627,7 @@
       if (!dossiersFiltres.length) {
         html += '<div class="panel-body" style="text-align:center;padding:var(--space-8);color:var(--color-text-dim)">';
         if (query) {
-          html += '<div style="font-size:28px;margin-bottom:8px">🔍</div>';
+          html += '<div style="font-size:28px;margin-bottom:8px"></div>';
           html += '<strong style="color:var(--color-text)">Aucun dossier trouvé pour le client ou la recherche « ' + escapeHtml(etatComptabilite.rechercheClient) + ' »</strong>';
           html += '<p style="font-size:12px;margin:6px 0 12px">Vérifiez l\'orthographe ou effacez le filtre.</p>';
           html += '<button type="button" class="btn btn-secondary" id="btn-reinit-recherche" style="font-size:12px">Afficher tous les dossiers</button>';
@@ -4670,7 +4670,7 @@
 
           html += '<tr class="ligne-compta-dossier" data-id="' + d.id + '">';
           html += '<td><strong style="font-family:monospace;color:var(--color-text)">' + d.numeroDossier + '</strong></td>';
-          html += '<td><div style="font-weight:700;color:var(--color-text);font-size:13px"><span style="margin-right:4px">👤</span>' + clientAff + '</div></td>';
+          html += '<td><div style="font-weight:700;color:var(--color-text);font-size:13px">' + clientAff + '</div></td>';
           html += '<td style="font-size:12px">' + labelActe(d.typeActeId) + '</td>';
           html += '<td style="font-weight:600">' + fmtFCFA(assiette) + '</td>';
           html += '<td style="font-weight:700;color:var(--color-accent)">' + fmtFCFA(emolumentsHT) + '</td>';
@@ -4678,15 +4678,15 @@
           html += '<td style="font-weight:700;color:var(--color-text);font-size:13px">' + fmtFCFA(totalTTC) + '</td>';
           html += '<td>';
           if (ficheRecente) {
-            html += '<span class="tag tag-accent" style="font-size:10.5px;padding:3px 6px">🟢 Enregistrée</span>';
+            html += '<span class="tag tag-accent" style="font-size:10.5px;padding:3px 6px">Enregistrée</span>';
           } else {
-            html += '<span class="tag tag-outline" style="font-size:10.5px;padding:3px 6px;opacity:.75">⏳ À établir</span>';
+            html += '<span class="tag tag-outline" style="font-size:10.5px;padding:3px 6px;opacity:.75">À établir</span>';
           }
           html += '</td>';
           html += '<td><div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">';
-          html += '<button type="button" class="btn btn-primary btn-ouvrir-modal-taxe" data-id="' + d.id + '" style="font-size:11px;padding:3px 8px;font-weight:700" title="Établir ou modifier la fiche de taxe">' + (ficheRecente ? '✏️ Fiche de taxe' : '➕ Fiche de taxe') + '</button>';
-          html += '<button type="button" class="btn btn-secondary btn-imprimer-taxe-direct" data-id="' + d.id + '" style="font-size:11px;padding:3px 8px" title="Imprimer la facture officielle de taxe">🖨️ Facture</button>';
-          html += '<button type="button" class="btn btn-ghost btn-voir-dossier-direct" data-id="' + d.id + '" style="font-size:11px;padding:3px 6px" title="Voir le dossier">📁</button>';
+          html += '<button type="button" class="btn btn-primary btn-ouvrir-modal-taxe" data-id="' + d.id + '" style="font-size:11px;padding:3px 8px;font-weight:700" title="Établir ou modifier la fiche de taxe">' + (ficheRecente ? 'Fiche de taxe' : '+ Fiche de taxe') + '</button>';
+          html += '<button type="button" class="btn btn-secondary btn-imprimer-taxe-direct" data-id="' + d.id + '" style="font-size:11px;padding:3px 8px" title="Imprimer la facture officielle de taxe">Facture</button>';
+          html += '<button type="button" class="btn btn-ghost btn-voir-dossier-direct" data-id="' + d.id + '" style="font-size:11px;padding:3px 6px" title="Voir le dossier"></button>';
           html += '</div></td>';
           html += '</tr>';
         });
@@ -4814,13 +4814,13 @@
       dossiers.forEach(function (d) {
         var clientAff = d.comparantsNoms && d.comparantsNoms.trim() ? d.comparantsNoms.trim() : "Comparant(s)";
         var isSel = (dossierInitial && d.id === dossierInitial.id) ? " selected" : "";
-        html += '<option value="' + d.id + '"' + isSel + '>📁 [' + d.numeroDossier + '] ' + clientAff + ' — ' + labelActe(d.typeActeId) + ' (' + fmtFCFA(d.montantAssiette) + ')</option>';
+        html += '<option value="' + d.id + '"' + isSel + '>[' + d.numeroDossier + '] ' + clientAff + ' — ' + labelActe(d.typeActeId) + ' (' + fmtFCFA(d.montantAssiette) + ')</option>';
       });
       html += '</select></div>';
 
       // 2. Type d'acte et montant de l'assiette avec espacement
       html += '<div style="display:grid;grid-template-columns:1.2fr 1fr;gap:var(--space-2)">';
-      html += '<div class="field"><div style="display:flex;justify-content:space-between;align-items:center"><label style="margin:0">Type d\'Acte Notarié (Barème)</label><button type="button" class="btn btn-ghost" id="btn-modal-taxe-voir-baremes" style="font-size:11px;padding:0 4px;color:var(--color-accent);text-decoration:underline;cursor:pointer" title="Consulter et gérer le référentiel des barèmes">⚖️ Barèmes →</button></div><select class="input" id="taxe-modal-type-acte" style="font-weight:600;margin-top:4px">';
+      html += '<div class="field"><div style="display:flex;justify-content:space-between;align-items:center"><label style="margin:0">Type d\'Acte Notarié (Barème)</label><button type="button" class="btn btn-ghost" id="btn-modal-taxe-voir-baremes" style="font-size:11px;padding:0 4px;color:var(--color-accent);text-decoration:underline;cursor:pointer" title="Consulter et gérer le référentiel des barèmes">Barèmes →</button></div><select class="input" id="taxe-modal-type-acte" style="font-weight:600;margin-top:4px">';
       typesActes.forEach(function (t) {
         var isActSel = (dossierInitial && t.id === dossierInitial.typeActeId) ? " selected" : "";
         var libelleAff = t.libelle || t.nom || labelActe(t.id);
@@ -4855,15 +4855,15 @@
       html += '<div style="display:flex;justify-content:space-between;align-items:center;gap:var(--space-2);margin-top:var(--space-2);flex-wrap:wrap">';
       html += '<button type="button" class="btn btn-ghost" id="btn-annuler-modal-taxe">Fermer</button>';
       html += '<div style="display:flex;gap:var(--space-2)">';
-      html += '<button type="button" class="btn btn-secondary" id="btn-imprimer-modal-taxe">🖨️ Imprimer Facture</button>';
-      html += '<button type="submit" class="btn btn-primary" id="btn-enregistrer-modal-taxe">💾 Enregistrer la Fiche de Taxe</button>';
+      html += '<button type="button" class="btn btn-secondary" id="btn-imprimer-modal-taxe">Imprimer Facture</button>';
+      html += '<button type="submit" class="btn btn-primary" id="btn-enregistrer-modal-taxe">Enregistrer la Fiche de Taxe</button>';
       html += '</div>';
       html += '</div>';
 
       html += '</form>';
 
       ouvrirModal({
-        titre: '<span>💰</span> Établissement & Calcul d\'une Fiche de Taxe (Décret N° 2013-279)',
+        titre: 'Établissement & Calcul d\'une Fiche de Taxe (Décret N° 2013-279)',
         corps: html,
         boutonFermer: true,
         largeur: "680px",
@@ -4920,8 +4920,8 @@
 
                 var h = '<div class="card" style="background:var(--color-surface);border-color:var(--color-border);padding:12px 14px">';
                 h += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:4px">';
-                h += '<div style="font-size:11.5px;font-weight:700;text-transform:uppercase;color:var(--color-accent)">📊 Décompte Fiscal Officiel en Temps Réel</div>';
-                h += '<span class="tag tag-accent" style="font-size:11px">📜 ' + (f.typeActe ? f.typeActe.libelle : "Acte notarié") + '</span>';
+                h += '<div style="font-size:11.5px;font-weight:700;text-transform:uppercase;color:var(--color-accent)">Décompte Fiscal Officiel en Temps Réel</div>';
+                h += '<span class="tag tag-accent" style="font-size:11px">' + (f.typeActe ? f.typeActe.libelle : "Acte notarié") + '</span>';
                 h += '</div>';
 
                 h += '<table class="table" style="font-size:12.5px;margin-bottom:0"><tbody>';
@@ -4930,7 +4930,7 @@
                 h += '<tr>';
                 h += '<td style="vertical-align:top">';
                 h += '<div style="font-weight:700;color:var(--color-text)">1. Émoluments Notaire HT</div>';
-                h += '<div style="font-size:11px;color:var(--color-accent);font-weight:600;margin-top:2px">⚖️ ' + nomRegle + '</div>';
+                h += '<div style="font-size:11px;color:var(--color-accent);font-weight:600;margin-top:2px">' + nomRegle + '</div>';
 
                 // Détail des tranches calculées
                 if (emo.detailTranches && emo.detailTranches.length > 0) {
@@ -4957,19 +4957,19 @@
                 var dgiInfo = f.droitEnregistrement.mode === 'fixe'
                   ? 'Droit fixe DGI de ' + fmtFCFA(f.droitEnregistrement.montant)
                   : (f.droitEnregistrement.valeur ? ((f.droitEnregistrement.valeur * 100) + ' % sur assiette de ' + fmtFCFA(f.montantAssiette)) : 'Selon assiette de l\'acte');
-                h += '<tr><td><strong>3. Droits d\'enregistrement DGI</strong><div style="font-size:11px;color:var(--color-text-dim)">🏛️ ' + dgiInfo + '</div></td><td style="text-align:right;font-weight:600">' + fmtFCFA(f.droitEnregistrement.montant) + '</td></tr>';
+                h += '<tr><td><strong>3. Droits d\'enregistrement DGI</strong><div style="font-size:11px;color:var(--color-text-dim)">' + dgiInfo + '</div></td><td style="text-align:right;font-weight:600">' + fmtFCFA(f.droitEnregistrement.montant) + '</td></tr>';
 
                 // 4. Taxe foncière
                 if (f.taxeFonciere && f.taxeFonciere.total > 0) {
-                  h += '<tr><td><strong>4. Taxe Foncière (Livre Foncier)</strong><div style="font-size:11px;color:var(--color-text-dim)">🗺️ 1,2 % proportionnel (' + fmtFCFA(f.taxeFonciere.proportionnel) + ') + 3 000 FCFA fixe</div></td><td style="text-align:right;font-weight:600">' + fmtFCFA(f.taxeFonciere.total) + '</td></tr>';
+                  h += '<tr><td><strong>4. Taxe Foncière (Livre Foncier)</strong><div style="font-size:11px;color:var(--color-text-dim)">1,2 % proportionnel (' + fmtFCFA(f.taxeFonciere.proportionnel) + ') + 3 000 FCFA fixe</div></td><td style="text-align:right;font-weight:600">' + fmtFCFA(f.taxeFonciere.total) + '</td></tr>';
                 }
 
                 // 5. Timbres et rôles
-                h += '<tr><td><strong>5. Timbres fiscaux & rôles</strong><div style="font-size:11px;color:var(--color-text-dim)">📄 Minute, expéditions et copies (500 FCFA / page)</div></td><td style="text-align:right;font-weight:600">' + fmtFCFA(f.timbres.total + f.roles.total) + '</td></tr>';
+                h += '<tr><td><strong>5. Timbres fiscaux & rôles</strong><div style="font-size:11px;color:var(--color-text-dim)">Minute, expéditions et copies (500 FCFA / page)</div></td><td style="text-align:right;font-weight:600">' + fmtFCFA(f.timbres.total + f.roles.total) + '</td></tr>';
 
                 // 6. Débours et divers
                 if (f.divers > 0 || f.vacations > 0) {
-                  h += '<tr><td><strong>6. Débours & Papeterie</strong><div style="font-size:11px;color:var(--color-text-dim)">📦 Débours administratifs et formalités</div></td><td style="text-align:right;font-weight:600">' + fmtFCFA(f.divers + f.vacations + f.totalFraisFormalites) + '</td></tr>';
+                  h += '<tr><td><strong>6. Débours & Papeterie</strong><div style="font-size:11px;color:var(--color-text-dim)">Débours administratifs et formalités</div></td><td style="text-align:right;font-weight:600">' + fmtFCFA(f.divers + f.vacations + f.totalFraisFormalites) + '</td></tr>';
                 }
 
                 // Total TTC
@@ -5130,7 +5130,7 @@
         html += '<div class="card" style="max-width:720px;margin-bottom:var(--space-4);background:rgba(56,189,248,0.03);border:1px solid var(--color-border);padding:14px 16px;border-radius:var(--radius)">';
         html += '<div class="toggle" style="display:flex;align-items:center;gap:10px">';
         html += '<input type="checkbox" id="param-presenceArchiviste"' + (paramsEtude.presenceArchiviste !== false ? ' checked' : '') + ' style="width:18px;height:18px;cursor:pointer">';
-        html += '<label for="param-presenceArchiviste" style="font-weight:700;font-size:14px;color:var(--color-text);cursor:pointer">📦 Présence d\'un Archiviste dédié dans l\'office</label>';
+        html += '<label for="param-presenceArchiviste" style="font-weight:700;font-size:14px;color:var(--color-text);cursor:pointer">Présence d\'un Archiviste dédié dans l\'office</label>';
         html += '</div>';
         html += '<p style="font-size:12px;color:var(--color-text-dim);margin:6px 0 0;line-height:1.4">';
         html += '• <strong>Activé (Archiviste dédié) :</strong> L\'étude dispose d\'un profil Archiviste qui gère le minutier, le scellement et les cartons d\'archives.<br>';
@@ -5441,7 +5441,7 @@
       html += '<table class="print-table" style="width:100%;border-collapse:collapse;margin-top:16px;margin-bottom:20px;font-size:10pt">';
       html += '<thead><tr style="background:#f3f4f6"><th style="border:1px solid #9ca3af;padding:6px 10px;text-align:left">RUBRIQUE TARIFAIRE</th><th style="border:1px solid #9ca3af;padding:6px 10px;text-align:right">MONTANT FCFA</th></tr></thead>';
       html += '<tbody>';
-      html += '<tr><td style="border:1px solid #d1d5db;padding:6px 10px">1. Émoluments proportionnels / fixes du Notaire (HT)<div style="font-size:8.5pt;color:#4b5563;margin-top:2px">⚖️ ' + (f.emoluments.libelleRegle || (f.emoluments.minimumApplique ? "Minimum légal de minute (Décret N° 2013-279)" : "Barème réglementé Décret N° 2013-279")) + '</div></td><td style="border:1px solid #d1d5db;padding:6px 10px;text-align:right;font-weight:600">' + fmtFCFA(f.emoluments.montantHT) + '</td></tr>';
+      html += '<tr><td style="border:1px solid #d1d5db;padding:6px 10px">1. Émoluments proportionnels / fixes du Notaire (HT)<div style="font-size:8.5pt;color:#4b5563;margin-top:2px">' + (f.emoluments.libelleRegle || (f.emoluments.minimumApplique ? "Minimum légal de minute (Décret N° 2013-279)" : "Barème réglementé Décret N° 2013-279")) + '</div></td><td style="border:1px solid #d1d5db;padding:6px 10px;text-align:right;font-weight:600">' + fmtFCFA(f.emoluments.montantHT) + '</td></tr>';
       html += '<tr><td style="border:1px solid #d1d5db;padding:6px 10px">2. Taxe sur la Valeur Ajoutée (TVA 18 %)</td><td style="border:1px solid #d1d5db;padding:6px 10px;text-align:right">' + fmtFCFA(f.tva) + '</td></tr>';
       html += '<tr><td style="border:1px solid #d1d5db;padding:6px 10px">3. Droits d\'enregistrement DGI' + (!f.droitEnregistrement.confirme ? " <em>(à confirmer)</em>" : "") + '</td><td style="border:1px solid #d1d5db;padding:6px 10px;text-align:right">' + fmtFCFA(f.droitEnregistrement.montant) + '</td></tr>';
       html += '<tr><td style="border:1px solid #d1d5db;padding:6px 10px">4. Taxe de publicité foncière (1,2 % + 3 000 FCFA)</td><td style="border:1px solid #d1d5db;padding:6px 10px;text-align:right">' + fmtFCFA(f.taxeFonciere.total) + '</td></tr>';
@@ -5602,7 +5602,7 @@
     if (!cache.fichesTaxeHistorique.length) html += '<tr><td colspan="4" class="text-muted">Aucune fiche de taxe enregistrée.</td></tr>';
     cache.fichesTaxeHistorique.forEach(function (f, idx) {
       html += '<tr><td>' + fmtDate(f.created_at) + '</td><td>' + nomClerc(f.utilisateur_id) + '</td><td style="font-weight:600">' + fmtFCFA(f.donnees.totaux.general) + '</td>';
-      html += '<td><button class="btn btn-secondary btn-imprimer-historique-taxe" data-idx="' + idx + '" style="padding:4px 8px;font-size:12px">🖨️ Imprimer</button></td></tr>';
+      html += '<td><button class="btn btn-secondary btn-imprimer-historique-taxe" data-idx="' + idx + '" style="padding:4px 8px;font-size:12px">Imprimer</button></td></tr>';
     });
     html += '</tbody></table>';
 
@@ -5844,7 +5844,7 @@
             totalUtilisateurs: 6,
             espaceUtiliseMo: 1450,
             versionDeployee: "v2.4.0",
-            statutSante: "🟢 En ligne (Sync OK)",
+            statutSante: "En ligne (Sync OK)",
           },
           {
             id: "a0000000-0000-0000-0000-000000000002",
@@ -5857,7 +5857,7 @@
             totalUtilisateurs: 8,
             espaceUtiliseMo: 2890,
             versionDeployee: "v2.4.0",
-            statutSante: "🟢 En ligne (Cloud Vault)",
+            statutSante: "En ligne (Cloud Vault)",
           },
         ];
       }),
@@ -5873,11 +5873,11 @@
       API.get("/api/superadmin/permissions-matrice").catch(function () {
         return {
           roles: {
-            superadmin: { label: "👑 Direction / SuperAdmin", permissions: { parc_etudes_vue: true, parc_etudes_deployer: true, parc_etudes_mise_en_ligne: true, infrastructure_clusters: true, sauvegardes_snapshots: true, sauvegardes_test_pra: true, support_tickets: true, support_acces_urgence: true, telemetrie_logs: true, equipe_editeur_gerer: true }, verrouille: true },
-            dev: { label: "💻 Développeur / DevOps", permissions: { parc_etudes_vue: true, parc_etudes_deployer: false, parc_etudes_mise_en_ligne: true, infrastructure_clusters: true, sauvegardes_snapshots: true, sauvegardes_test_pra: true, support_tickets: true, support_acces_urgence: false, telemetrie_logs: true, equipe_editeur_gerer: false }, verrouille: false },
-            commercial: { label: "💼 Commercial & Onboarding", permissions: { parc_etudes_vue: true, parc_etudes_deployer: true, parc_etudes_mise_en_ligne: true, infrastructure_clusters: false, sauvegardes_snapshots: false, sauvegardes_test_pra: false, support_tickets: false, support_acces_urgence: false, telemetrie_logs: false, equipe_editeur_gerer: false }, verrouille: false },
-            support: { label: "🎧 Support Client L1-L4", permissions: { parc_etudes_vue: true, parc_etudes_deployer: false, parc_etudes_mise_en_ligne: false, infrastructure_clusters: true, sauvegardes_snapshots: false, sauvegardes_test_pra: false, support_tickets: true, support_acces_urgence: true, telemetrie_logs: true, equipe_editeur_gerer: false }, verrouille: false },
-            assistante_editeur: { label: "📋 Assistante Éditeur", permissions: { parc_etudes_vue: true, parc_etudes_deployer: false, parc_etudes_mise_en_ligne: false, infrastructure_clusters: false, sauvegardes_snapshots: false, sauvegardes_test_pra: false, support_tickets: true, support_acces_urgence: false, telemetrie_logs: false, equipe_editeur_gerer: false }, verrouille: false }
+            superadmin: { label: "Direction / SuperAdmin", permissions: { parc_etudes_vue: true, parc_etudes_deployer: true, parc_etudes_mise_en_ligne: true, infrastructure_clusters: true, sauvegardes_snapshots: true, sauvegardes_test_pra: true, support_tickets: true, support_acces_urgence: true, telemetrie_logs: true, equipe_editeur_gerer: true }, verrouille: true },
+            dev: { label: "Développeur / DevOps", permissions: { parc_etudes_vue: true, parc_etudes_deployer: false, parc_etudes_mise_en_ligne: true, infrastructure_clusters: true, sauvegardes_snapshots: true, sauvegardes_test_pra: true, support_tickets: true, support_acces_urgence: false, telemetrie_logs: true, equipe_editeur_gerer: false }, verrouille: false },
+            commercial: { label: "Commercial & Onboarding", permissions: { parc_etudes_vue: true, parc_etudes_deployer: true, parc_etudes_mise_en_ligne: true, infrastructure_clusters: false, sauvegardes_snapshots: false, sauvegardes_test_pra: false, support_tickets: false, support_acces_urgence: false, telemetrie_logs: false, equipe_editeur_gerer: false }, verrouille: false },
+            support: { label: "Support Client L1-L4", permissions: { parc_etudes_vue: true, parc_etudes_deployer: false, parc_etudes_mise_en_ligne: false, infrastructure_clusters: true, sauvegardes_snapshots: false, sauvegardes_test_pra: false, support_tickets: true, support_acces_urgence: true, telemetrie_logs: true, equipe_editeur_gerer: false }, verrouille: false },
+            assistante_editeur: { label: "Assistante Éditeur", permissions: { parc_etudes_vue: true, parc_etudes_deployer: false, parc_etudes_mise_en_ligne: false, infrastructure_clusters: false, sauvegardes_snapshots: false, sauvegardes_test_pra: false, support_tickets: true, support_acces_urgence: false, telemetrie_logs: false, equipe_editeur_gerer: false }, verrouille: false }
           },
           definitions: [
             { code: "parc_etudes_vue", label: "Voir le parc des études", description: "Consulter la liste et les détails des offices" },
@@ -5896,25 +5896,25 @@
       API.get("/api/superadmin/infrastructure").catch(function () {
         return {
           noeudsServeurs: [
-            { nom: "Cluster PostgreSQL Primaire (Master PG-16)", role: "Base SQL Transactionnelle & Isolation Tenants", ip: "10.0.1.14", cpuPct: 18, ramPct: 42, disquePct: 35, latenceMs: 2.4, statut: "🟢 En ligne (Opérationnel)", mode: "Haute Disponibilité (Multi-AZ)" },
-            { nom: "Cloud Vault S3/MinIO (Object Storage)", role: "Copies Numériques & Minutes Scellées SHA-256", ip: "10.0.2.88", cpuPct: 12, ramPct: 28, disquePct: 48, latenceMs: 8.1, statut: "🟢 En ligne (WORM Immuable)", mode: "Chiffrement AES-256 + Géo-réplication" },
-            { nom: "Moteur de Synchronisation Hybride (Sync Engine)", role: "Files d'attente de réplication serveurs locaux", ip: "10.0.1.30", cpuPct: 15, ramPct: 31, disquePct: 22, latenceMs: 5.3, statut: "🟢 En ligne (Queue Active)", mode: "Offline-First & Auto-Reconnection" }
+            { nom: "Cluster PostgreSQL Primaire (Master PG-16)", role: "Base SQL Transactionnelle & Isolation Tenants", ip: "10.0.1.14", cpuPct: 18, ramPct: 42, disquePct: 35, latenceMs: 2.4, statut: "En ligne (Opérationnel)", mode: "Haute Disponibilité (Multi-AZ)" },
+            { nom: "Cloud Vault S3/MinIO (Object Storage)", role: "Copies Numériques & Minutes Scellées SHA-256", ip: "10.0.2.88", cpuPct: 12, ramPct: 28, disquePct: 48, latenceMs: 8.1, statut: "En ligne (WORM Immuable)", mode: "Chiffrement AES-256 + Géo-réplication" },
+            { nom: "Moteur de Synchronisation Hybride (Sync Engine)", role: "Files d'attente de réplication serveurs locaux", ip: "10.0.1.30", cpuPct: 15, ramPct: 31, disquePct: 22, latenceMs: 5.3, statut: "En ligne (Queue Active)", mode: "Offline-First & Auto-Reconnection" }
           ],
-          fileAttenteSync: { elementsEnAttente: 0, debitMoyenMoSec: 4.8, latenceMoyenneMs: 14, statutFile: "🟢 Synchronisée à 100%" },
-          certificatsSsl: { domainePrincipal: "*.notaires.ci", autorite: "Let's Encrypt / Sectigo EV", expiration: "2027-04-15", etat: "🟢 Valide (Renouvellement auto)" }
+          fileAttenteSync: { elementsEnAttente: 0, debitMoyenMoSec: 4.8, latenceMoyenneMs: 14, statutFile: "Synchronisée à 100%" },
+          certificatsSsl: { domainePrincipal: "*.notaires.ci", autorite: "Let's Encrypt / Sectigo EV", expiration: "2027-04-15", etat: "Valide (Renouvellement auto)" }
         };
       }),
       API.get("/api/superadmin/sauvegardes").catch(function () {
         return [
-          { id: "SNP-2026-08-27-0400", type: "Snapshot Quotidien Immuable", perimetre: "Intégralité du Parc SaaS", date: "2026-08-27 04:00", tailleGo: 14.8, checksumSha256: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", chiffrement: "AES-256-GCM", statutIntegrite: "🟢 100% Vérifié & Conforme", retentionJours: 365 },
-          { id: "SNP-2026-08-26-0400", type: "Snapshot Quotidien Immuable", perimetre: "Intégralité du Parc SaaS", date: "2026-08-26 04:00", tailleGo: 14.6, checksumSha256: "7d865e959b2466918c9863afca942d0fb89d7c9ac0c99bafc3749504ded97730", chiffrement: "AES-256-GCM", statutIntegrite: "🟢 100% Vérifié & Conforme", retentionJours: 365 },
+          { id: "SNP-2026-08-27-0400", type: "Snapshot Quotidien Immuable", perimetre: "Intégralité du Parc SaaS", date: "2026-08-27 04:00", tailleGo: 14.8, checksumSha256: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", chiffrement: "AES-256-GCM", statutIntegrite: "100% Vérifié & Conforme", retentionJours: 365 },
+          { id: "SNP-2026-08-26-0400", type: "Snapshot Quotidien Immuable", perimetre: "Intégralité du Parc SaaS", date: "2026-08-26 04:00", tailleGo: 14.6, checksumSha256: "7d865e959b2466918c9863afca942d0fb89d7c9ac0c99bafc3749504ded97730", chiffrement: "AES-256-GCM", statutIntegrite: "100% Vérifié & Conforme", retentionJours: 365 },
         ];
       }),
       API.get("/api/superadmin/tickets-support").catch(function () { return []; }),
       API.get("/api/superadmin/journal-securite").catch(function () {
         return [
-          { date: "2026-08-27 21:04:12", evenement: "Vérification cryptographique des scellements SHA-256", ip: "10.0.1.14 (Master)", statut: "🟢 100% Intact" },
-          { date: "2026-08-27 18:30:00", evenement: "Synchronisation Cloud Vault - Mode C Hybride (Office Plateau)", ip: "41.202.219.45", statut: "🟢 28 minutes répliquées" },
+          { date: "2026-08-27 21:04:12", evenement: "Vérification cryptographique des scellements SHA-256", ip: "10.0.1.14 (Master)", statut: "100% Intact" },
+          { date: "2026-08-27 18:30:00", evenement: "Synchronisation Cloud Vault - Mode C Hybride (Office Plateau)", ip: "41.202.219.45", statut: "28 minutes répliquées" },
         ];
       }),
       API.get("/api/telemetrie/erreurs").catch(function () { return []; }),
@@ -5929,8 +5929,8 @@
       html += '<p style="opacity:.65;font-size:14px;margin:0">Supervision multi-tenant du parc notarial, équipe interne éditeur, clusters serveurs, sauvegardes immuables et PRA.</p></div>';
 
       html += '<div style="display:flex;gap:var(--space-2);flex-wrap:wrap">';
-      html += '<button type="button" class="btn btn-primary" id="btn-deployer-etude">🏛️ + Déployer une nouvelle étude</button>';
-      html += '<button type="button" class="btn btn-secondary" id="btn-refresh-superadmin">🔄 Rafraîchir la télémétrie</button>';
+      html += '<button type="button" class="btn btn-primary" id="btn-deployer-etude">+ Déployer une nouvelle étude</button>';
+      html += '<button type="button" class="btn btn-secondary" id="btn-refresh-superadmin">Rafraîchir la télémétrie</button>';
       html += '</div></div>';
 
       // =========================================================================
@@ -5958,7 +5958,7 @@
 
       html += '<div class="card" style="background:var(--color-surface-2);border-left:4px solid #10b981;padding:var(--space-3)">';
       html += '<div style="font-size:11px;font-weight:700;color:var(--color-text-dim);text-transform:uppercase">Disponibilité SaaS</div>';
-      html += '<div style="font-size:24px;font-weight:bold;color:#10b981;margin:4px 0">99.98% 🟢</div>';
+      html += '<div style="font-size:24px;font-weight:bold;color:#10b981;margin:4px 0">99.98% </div>';
       html += '<div style="font-size:11px;color:var(--color-text-dim)">Télémétrie & Sync Engine actifs</div>';
       html += '</div>';
 
@@ -5974,12 +5974,12 @@
       // BARRE D'ONGLETS SUPER ADMIN
       // =========================================================================
       html += '<div class="tabs-nav" style="margin-bottom:var(--space-4);border-bottom:1px solid var(--color-border);display:flex;gap:4px;overflow-x:auto">';
-      html += '<button type="button" class="tab-btn btn-superadmin-tab" data-tab="etudes" style="cursor:pointer;padding:10px 16px;font-weight:600;font-size:13px;border-radius:var(--radius) var(--radius) 0 0;background:' + (ongletActif === "etudes" ? "var(--color-surface-2)" : "transparent") + ';color:' + (ongletActif === "etudes" ? "#38bdf8;border-bottom:2px solid #38bdf8" : "var(--color-text-dim)") + '">🏛️ Parc des Offices (' + etudes.length + ')</button>';
-      html += '<button type="button" class="tab-btn btn-superadmin-tab" data-tab="equipe" style="cursor:pointer;padding:10px 16px;font-weight:600;font-size:13px;border-radius:var(--radius) var(--radius) 0 0;background:' + (ongletActif === "equipe" ? "var(--color-surface-2)" : "transparent") + ';color:' + (ongletActif === "equipe" ? "#38bdf8;border-bottom:2px solid #38bdf8" : "var(--color-text-dim)") + '">👥 Équipe Éditeur SaaS (' + equipe.length + ')</button>';
-      html += '<button type="button" class="tab-btn btn-superadmin-tab" data-tab="infrastructure" style="cursor:pointer;padding:10px 16px;font-weight:600;font-size:13px;border-radius:var(--radius) var(--radius) 0 0;background:' + (ongletActif === "infrastructure" ? "var(--color-surface-2)" : "transparent") + ';color:' + (ongletActif === "infrastructure" ? "#38bdf8;border-bottom:2px solid #38bdf8" : "var(--color-text-dim)") + '">⚙️ Infrastructure & Clusters (' + (infra.noeudsServeurs ? infra.noeudsServeurs.length : 3) + ')</button>';
-      html += '<button type="button" class="tab-btn btn-superadmin-tab" data-tab="sauvegardes" style="cursor:pointer;padding:10px 16px;font-weight:600;font-size:13px;border-radius:var(--radius) var(--radius) 0 0;background:' + (ongletActif === "sauvegardes" ? "var(--color-surface-2)" : "transparent") + ';color:' + (ongletActif === "sauvegardes" ? "#38bdf8;border-bottom:2px solid #38bdf8" : "var(--color-text-dim)") + '">💾 Sauvegardes & PRA (' + sauvegardes.length + ')</button>';
-      html += '<button type="button" class="tab-btn btn-superadmin-tab" data-tab="support" style="cursor:pointer;padding:10px 16px;font-weight:600;font-size:13px;border-radius:var(--radius) var(--radius) 0 0;background:' + (ongletActif === "support" ? "var(--color-surface-2)" : "transparent") + ';color:' + (ongletActif === "support" ? "#38bdf8;border-bottom:2px solid #38bdf8" : "var(--color-text-dim)") + '">🎫 Support Éditeur (L1-L4)</button>';
-      html += '<button type="button" class="tab-btn btn-superadmin-tab" data-tab="telemetrie" style="cursor:pointer;padding:10px 16px;font-weight:600;font-size:13px;border-radius:var(--radius) var(--radius) 0 0;background:' + (ongletActif === "telemetrie" ? "var(--color-surface-2)" : "transparent") + ';color:' + (ongletActif === "telemetrie" ? "#38bdf8;border-bottom:2px solid #38bdf8" : "var(--color-text-dim)") + '">📊 Télémétrie & Logs (' + journal.length + ')</button>';
+      html += '<button type="button" class="tab-btn btn-superadmin-tab" data-tab="etudes" style="cursor:pointer;padding:10px 16px;font-weight:600;font-size:13px;border-radius:var(--radius) var(--radius) 0 0;background:' + (ongletActif === "etudes" ? "var(--color-surface-2)" : "transparent") + ';color:' + (ongletActif === "etudes" ? "#38bdf8;border-bottom:2px solid #38bdf8" : "var(--color-text-dim)") + '">Parc des Offices (' + etudes.length + ')</button>';
+      html += '<button type="button" class="tab-btn btn-superadmin-tab" data-tab="equipe" style="cursor:pointer;padding:10px 16px;font-weight:600;font-size:13px;border-radius:var(--radius) var(--radius) 0 0;background:' + (ongletActif === "equipe" ? "var(--color-surface-2)" : "transparent") + ';color:' + (ongletActif === "equipe" ? "#38bdf8;border-bottom:2px solid #38bdf8" : "var(--color-text-dim)") + '">Équipe Éditeur SaaS (' + equipe.length + ')</button>';
+      html += '<button type="button" class="tab-btn btn-superadmin-tab" data-tab="infrastructure" style="cursor:pointer;padding:10px 16px;font-weight:600;font-size:13px;border-radius:var(--radius) var(--radius) 0 0;background:' + (ongletActif === "infrastructure" ? "var(--color-surface-2)" : "transparent") + ';color:' + (ongletActif === "infrastructure" ? "#38bdf8;border-bottom:2px solid #38bdf8" : "var(--color-text-dim)") + '">Infrastructure & Clusters (' + (infra.noeudsServeurs ? infra.noeudsServeurs.length : 3) + ')</button>';
+      html += '<button type="button" class="tab-btn btn-superadmin-tab" data-tab="sauvegardes" style="cursor:pointer;padding:10px 16px;font-weight:600;font-size:13px;border-radius:var(--radius) var(--radius) 0 0;background:' + (ongletActif === "sauvegardes" ? "var(--color-surface-2)" : "transparent") + ';color:' + (ongletActif === "sauvegardes" ? "#38bdf8;border-bottom:2px solid #38bdf8" : "var(--color-text-dim)") + '">Sauvegardes & PRA (' + sauvegardes.length + ')</button>';
+      html += '<button type="button" class="tab-btn btn-superadmin-tab" data-tab="support" style="cursor:pointer;padding:10px 16px;font-weight:600;font-size:13px;border-radius:var(--radius) var(--radius) 0 0;background:' + (ongletActif === "support" ? "var(--color-surface-2)" : "transparent") + ';color:' + (ongletActif === "support" ? "#38bdf8;border-bottom:2px solid #38bdf8" : "var(--color-text-dim)") + '">Support Éditeur (L1-L4)</button>';
+      html += '<button type="button" class="tab-btn btn-superadmin-tab" data-tab="telemetrie" style="cursor:pointer;padding:10px 16px;font-weight:600;font-size:13px;border-radius:var(--radius) var(--radius) 0 0;background:' + (ongletActif === "telemetrie" ? "var(--color-surface-2)" : "transparent") + ';color:' + (ongletActif === "telemetrie" ? "#38bdf8;border-bottom:2px solid #38bdf8" : "var(--color-text-dim)") + '">Télémétrie & Logs (' + journal.length + ')</button>';
       html += '</div>';
 
       // =========================================================================
@@ -5990,13 +5990,13 @@
       if (ongletActif === "etudes") {
         html += '<div class="card" style="background:var(--color-surface-2);border-color:var(--color-border);padding:var(--space-4)">';
         html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-3);flex-wrap:wrap;gap:var(--space-2)">';
-        html += '<div><strong style="font-size:16px;color:var(--color-text)">🏛️ Parc des Offices Notariaux Déployés (Multi-Tenant)</strong>';
+        html += '<div><strong style="font-size:16px;color:var(--color-text)">Parc des Offices Notariaux Déployés (Multi-Tenant)</strong>';
         html += '<p style="font-size:12px;color:var(--color-text-dim);margin:2px 0 0">Supervision du parc d\'études notariales, formules d\'abonnement, espaces de stockage GED et domaines.</p></div>';
         html += '</div>';
 
         html += '<div class="table-wrap"><table class="table"><thead><tr><th>Code Tenant</th><th>Office Notarial</th><th>Notaire Titulaire</th><th>Hébergement</th><th>Dossiers / Minutes</th><th>Collaborateurs</th><th>Santé Serveur</th><th>Actions</th></tr></thead><tbody>';
         etudes.forEach(function (e, index) {
-          var modeBadge = '<span class="tag" style="background:rgba(56,189,248,0.15);color:#38bdf8;border:1px solid rgba(56,189,248,0.3)">☁️ Cloud Multi-Tenant</span>';
+          var modeBadge = '<span class="tag" style="background:rgba(56,189,248,0.15);color:#38bdf8;border:1px solid rgba(56,189,248,0.3)">Cloud Multi-Tenant</span>';
 
           html += '<tr>';
           html += '<td><strong style="font-family:monospace;color:var(--color-text);font-size:12px">' + (e.codeEtude || "ETUDE-001") + '</strong></td>';
@@ -6005,10 +6005,10 @@
           html += '<td>' + modeBadge + '</td>';
           html += '<td><strong style="color:var(--color-accent)">' + (e.totalDossiers || 0) + '</strong> dossiers <span style="font-size:11px;color:var(--color-text-dim)">(' + (e.totalMinutes || 0) + ' min.)</span></td>';
           html += '<td><span class="tag tag-outline">' + (e.totalUtilisateurs || 5) + ' collaborateurs</span></td>';
-          html += '<td><span style="font-size:12px;font-weight:bold;color:#22c55e">' + (e.statutSante || "🟢 En ligne") + '</span></td>';
+          html += '<td><span style="font-size:12px;font-weight:bold;color:#22c55e">' + (e.statutSante || "En ligne") + '</span></td>';
           html += '<td><div style="display:flex;gap:4px;flex-wrap:wrap">';
-          html += '<button type="button" class="btn btn-primary btn-deploiement-etude" data-etude-id="' + e.id + '" data-nom="' + encodeURIComponent(e.nomEtude) + '" style="font-size:11px;padding:3px 8px;font-weight:700" title="Accès et mise en ligne">🚀 Mettre en ligne</button>';
-          html += '<button type="button" class="btn btn-secondary btn-configurer-etude" data-etude-idx="' + index + '" style="font-size:11px;padding:3px 8px" title="Configurer l\'office">⚙️ Configurer</button>';
+          html += '<button type="button" class="btn btn-primary btn-deploiement-etude" data-etude-id="' + e.id + '" data-nom="' + encodeURIComponent(e.nomEtude) + '" style="font-size:11px;padding:3px 8px;font-weight:700" title="Accès et mise en ligne">Mettre en ligne</button>';
+          html += '<button type="button" class="btn btn-secondary btn-configurer-etude" data-etude-idx="' + index + '" style="font-size:11px;padding:3px 8px" title="Configurer l\'office">Configurer</button>';
           html += '</div></td>';
           html += '</tr>';
         });
@@ -6020,19 +6020,19 @@
       else if (ongletActif === "equipe") {
         html += '<div class="card" style="background:var(--color-surface-2);border-color:var(--color-border);padding:var(--space-4);margin-bottom:var(--space-4)">';
         html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-3);flex-wrap:wrap;gap:var(--space-2)">';
-        html += '<div><strong style="font-size:16px;color:var(--color-text)">👥 Gestion de l\'Équipe Interne Éditeur SaaS (Vos Collaborateurs)</strong>';
+        html += '<div><strong style="font-size:16px;color:var(--color-text)">Gestion de l\'Équipe Interne Éditeur SaaS (Vos Collaborateurs)</strong>';
         html += '<p style="font-size:12px;color:var(--color-text-dim);margin:2px 0 0">Administration des comptes et rôles internes : Développeurs, Commerciaux, Support L1-L4 et Assistantes.</p></div>';
-        html += '<button type="button" class="btn btn-primary" id="btn-ajouter-membre-editeur" style="font-size:12px">👥 + Ajouter un collaborateur SaaS</button>';
+        html += '<button type="button" class="btn btn-primary" id="btn-ajouter-membre-editeur" style="font-size:12px">+ Ajouter un collaborateur SaaS</button>';
         html += '</div>';
 
         html += '<div class="table-wrap"><table class="table"><thead><tr><th>Nom & Prénom</th><th>Email de Connexion</th><th>Téléphone</th><th>Rôle & Accès SaaS</th><th>Statut</th><th>Actions</th></tr></thead><tbody>';
         equipe.forEach(function (m) {
           var roleTag = "";
-          if (m.role === "superadmin") roleTag = '<span class="tag" style="background:#0284c7;color:#fff;font-weight:700">👑 Direction / SuperAdmin</span>';
-          else if (m.role === "dev") roleTag = '<span class="tag" style="background:#8b5cf6;color:#fff;font-weight:600">💻 Développeur / DevOps</span>';
-          else if (m.role === "commercial") roleTag = '<span class="tag" style="background:#10b981;color:#fff;font-weight:600">💼 Commercial & Onboarding</span>';
-          else if (m.role === "support") roleTag = '<span class="tag" style="background:#f59e0b;color:#fff;font-weight:600">🎧 Support Client L1-L4</span>';
-          else if (m.role === "assistante_editeur") roleTag = '<span class="tag" style="background:#ec4899;color:#fff;font-weight:600">📋 Assistante Éditeur</span>';
+          if (m.role === "superadmin") roleTag = '<span class="tag" style="background:#0284c7;color:#fff;font-weight:700">Direction / SuperAdmin</span>';
+          else if (m.role === "dev") roleTag = '<span class="tag" style="background:#8b5cf6;color:#fff;font-weight:600">Développeur / DevOps</span>';
+          else if (m.role === "commercial") roleTag = '<span class="tag" style="background:#10b981;color:#fff;font-weight:600">Commercial & Onboarding</span>';
+          else if (m.role === "support") roleTag = '<span class="tag" style="background:#f59e0b;color:#fff;font-weight:600">Support Client L1-L4</span>';
+          else if (m.role === "assistante_editeur") roleTag = '<span class="tag" style="background:#ec4899;color:#fff;font-weight:600">Assistante Éditeur</span>';
           else roleTag = '<span class="tag tag-outline">' + (m.role || "Membre") + '</span>';
 
           html += '<tr>';
@@ -6040,11 +6040,11 @@
           html += '<td><code>' + m.email + '</code></td>';
           html += '<td style="font-size:12px">' + (m.telephone || "—") + '</td>';
           html += '<td>' + roleTag + '</td>';
-          html += '<td>' + (m.actif !== false ? '<span style="color:#22c55e;font-weight:bold;font-size:12px">🟢 Actif</span>' : '<span style="color:#ef4444;font-weight:bold;font-size:12px">🔴 Suspendu</span>') + '</td>';
+          html += '<td>' + (m.actif !== false ? '<span style="color:#22c55e;font-weight:bold;font-size:12px">Actif</span>' : '<span style="color:#ef4444;font-weight:bold;font-size:12px">Suspendu</span>') + '</td>';
           html += '<td><div style="display:flex;gap:4px">';
-          html += '<button type="button" class="btn btn-secondary btn-modifier-membre" data-membre="' + encodeURIComponent(JSON.stringify(m)) + '" style="font-size:11px;padding:3px 8px">✏️ Modifier</button>';
+          html += '<button type="button" class="btn btn-secondary btn-modifier-membre" data-membre="' + encodeURIComponent(JSON.stringify(m)) + '" style="font-size:11px;padding:3px 8px">Modifier</button>';
           if (m.role !== "superadmin") {
-            html += '<button type="button" class="btn btn-ghost btn-supprimer-membre" data-id="' + m.id + '" data-nom="' + encodeURIComponent(m.nomComplet) + '" style="font-size:11px;padding:3px 8px;color:#ef4444">🗑️</button>';
+            html += '<button type="button" class="btn btn-ghost btn-supprimer-membre" data-id="' + m.id + '" data-nom="' + encodeURIComponent(m.nomComplet) + '" style="font-size:11px;padding:3px 8px;color:#ef4444">Supprimer</button>';
           }
           html += '</div></td>';
           html += '</tr>';
@@ -6059,21 +6059,21 @@
         html += '<div class="card" style="background:var(--color-surface-2);border-color:var(--color-border);padding:var(--space-4)">';
         html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-3);flex-wrap:wrap;gap:var(--space-2)">';
         html += '<div>';
-        html += '<div style="display:flex;align-items:center;gap:8px"><strong style="font-size:15px;color:var(--color-text)">🔒 Matrice Interactive des Permissions par Rôle</strong><span class="tag" style="background:#10b981;color:#fff;font-size:10.5px">Cochable en direct</span></div>';
+        html += '<div style="display:flex;align-items:center;gap:8px"><strong style="font-size:15px;color:var(--color-text)">Matrice Interactive des Permissions par Rôle</strong><span class="tag" style="background:#10b981;color:#fff;font-size:10.5px">Cochable en direct</span></div>';
         html += '<p style="font-size:12px;color:var(--color-text-dim);margin:2px 0 0">Cochez les accès pour chaque profil interne selon vos besoins.</p>';
         html += '</div>';
         html += '<div style="display:flex;gap:var(--space-2);flex-wrap:wrap">';
-        html += '<button type="button" class="btn btn-secondary" id="btn-reinitialiser-matrice-permissions" style="font-size:12px">🔄 Réinitialiser</button>';
-        html += '<button type="button" class="btn btn-primary" id="btn-sauvegarder-matrice-permissions" style="font-size:12px;font-weight:700;background:#0284c7">💾 Enregistrer la matrice</button>';
+        html += '<button type="button" class="btn btn-secondary" id="btn-reinitialiser-matrice-permissions" style="font-size:12px">Réinitialiser</button>';
+        html += '<button type="button" class="btn btn-primary" id="btn-sauvegarder-matrice-permissions" style="font-size:12px;font-weight:700;background:#0284c7">Enregistrer la matrice</button>';
         html += '</div></div>';
 
         html += '<div class="table-wrap"><table class="table" style="font-size:12px"><thead><tr>';
         html += '<th style="min-width:240px">Fonctionnalité SaaS</th>';
-        html += '<th style="text-align:center">👑 SuperAdmin</th>';
-        html += '<th style="text-align:center">💻 Dev</th>';
-        html += '<th style="text-align:center">💼 Comm.</th>';
-        html += '<th style="text-align:center">🎧 Supp.</th>';
-        html += '<th style="text-align:center">📋 Asst.</th>';
+        html += '<th style="text-align:center">SuperAdmin</th>';
+        html += '<th style="text-align:center">Dev</th>';
+        html += '<th style="text-align:center">Comm.</th>';
+        html += '<th style="text-align:center">Supp.</th>';
+        html += '<th style="text-align:center">Asst.</th>';
         html += '</tr></thead><tbody>';
 
         mDefs.forEach(function (def) {
@@ -6117,10 +6117,10 @@
         html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3)">';
 
         html += '<div class="card" style="background:var(--color-surface-2);border-color:var(--color-border);padding:var(--space-4)">';
-        html += '<strong style="font-size:14px;color:var(--color-text)">🔄 File d\'Attente de Réplication Hybride (Sync Queue)</strong>';
+        html += '<strong style="font-size:14px;color:var(--color-text)">File d\'Attente de Réplication Hybride (Sync Queue)</strong>';
         html += '<p style="font-size:12px;color:var(--color-text-dim);margin:2px 0 12px">Synchronisation continue entre les serveurs locaux des offices et le Cloud Vault.</p>';
         html += '<div style="background:var(--color-surface);padding:12px;border-radius:var(--radius);font-size:12px;line-height:1.6">';
-        html += '<div>État file : <strong>' + (infra.fileAttenteSync ? infra.fileAttenteSync.statutFile : "🟢 100% Synchronisée") + '</strong></div>';
+        html += '<div>État file : <strong>' + (infra.fileAttenteSync ? infra.fileAttenteSync.statutFile : "100% Synchronisée") + '</strong></div>';
         html += '<div>Éléments en attente : <strong>' + (infra.fileAttenteSync ? infra.fileAttenteSync.elementsEnAttente : 0) + ' paquet(s)</strong></div>';
         html += '<div>Débit moyen constaté : <strong style="color:#22c55e">' + (infra.fileAttenteSync ? infra.fileAttenteSync.debitMoyenMoSec : 4.8) + ' Mo/s</strong></div>';
         html += '<div>Latence moyenne inter-nœuds : <strong style="color:#38bdf8">' + (infra.fileAttenteSync ? infra.fileAttenteSync.latenceMoyenneMs : 14) + ' ms</strong></div>';
@@ -6128,13 +6128,13 @@
         html += '</div>';
 
         html += '<div class="card" style="background:var(--color-surface-2);border-color:var(--color-border);padding:var(--space-4)">';
-        html += '<strong style="font-size:14px;color:var(--color-text)">🔒 Certificats SSL / TLS & Sécurité Réseau</strong>';
+        html += '<strong style="font-size:14px;color:var(--color-text)">Certificats SSL / TLS & Sécurité Réseau</strong>';
         html += '<p style="font-size:12px;color:var(--color-text-dim);margin:2px 0 12px">Chiffrement de bout en bout de toutes les communications.</p>';
         html += '<div style="background:var(--color-surface);padding:12px;border-radius:var(--radius);font-size:12px;line-height:1.6">';
         html += '<div>Domaine Wildcard : <code>*.notaires.ci</code></div>';
         html += '<div>Autorité de certification : <strong>Sectigo EV / Let\'s Encrypt</strong></div>';
         html += '<div>Protocole de transport : <strong>TLS 1.3 Strict + HSTS</strong></div>';
-        html += '<div>Validité du certificat : <strong style="color:#22c55e">🟢 Valide jusqu\'en Avril 2027</strong></div>';
+        html += '<div>Validité du certificat : <strong style="color:#22c55e">Valide jusqu\'en Avril 2027</strong></div>';
         html += '</div>';
         html += '</div>';
 
@@ -6145,11 +6145,11 @@
       else if (ongletActif === "sauvegardes") {
         html += '<div class="card" style="background:var(--color-surface-2);border-color:var(--color-border);padding:var(--space-4);margin-bottom:var(--space-4)">';
         html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-3);flex-wrap:wrap;gap:var(--space-2)">';
-        html += '<div><strong style="font-size:16px;color:var(--color-text)">💾 Politique de Sauvegardes 3-2-1 & Plan de Reprise d\'Activité (PRA)</strong>';
+        html += '<div><strong style="font-size:16px;color:var(--color-text)">Politique de Sauvegardes 3-2-1 & Plan de Reprise d\'Activité (PRA)</strong>';
         html += '<p style="font-size:12px;color:var(--color-text-dim);margin:2px 0 0">Snapshots chiffrés AES-256-GCM, copies immuables (WORM) et bascule à chaud.</p></div>';
         html += '<div style="display:flex;gap:var(--space-2)">';
-        html += '<button type="button" class="btn btn-primary" id="btn-snapshot-urgence" style="font-size:12px">⚡ Déclencher un Snapshot d\'Urgence</button>';
-        html += '<button type="button" class="btn btn-secondary" id="btn-tester-pra" style="font-size:12px">🧪 Tester le Plan de Reprise (PRA)</button>';
+        html += '<button type="button" class="btn btn-primary" id="btn-snapshot-urgence" style="font-size:12px">Déclencher un Snapshot d\'Urgence</button>';
+        html += '<button type="button" class="btn btn-secondary" id="btn-tester-pra" style="font-size:12px">Tester le Plan de Reprise (PRA)</button>';
         html += '</div>';
         html += '</div>';
 
@@ -6175,19 +6175,19 @@
       else if (ongletActif === "support") {
         html += '<div class="card" style="background:var(--color-surface-2);border-color:var(--color-border);padding:var(--space-4)">';
         html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-3);flex-wrap:wrap;gap:var(--space-2)">';
-        html += '<div style="display:flex;align-items:center;gap:8px"><span style="font-size:22px">🎫</span><div><strong style="font-size:16px;color:var(--color-text)">Console de Support Éditeur (L1 - L4) & Accès Exceptionnels</strong>';
+        html += '<div style="display:flex;align-items:center;gap:8px"><div><strong style="font-size:16px;color:var(--color-text)">Console de Support Éditeur (L1 - L4) & Accès Exceptionnels</strong>';
         html += '<p style="font-size:12px;color:var(--color-text-dim);margin:2px 0 0">Traitement des demandes d\'assistance avec garantie stricte de secret professionnel notarial.</p></div></div>';
-        html += '<button type="button" class="btn btn-secondary" id="btn-demander-acces-audit" style="font-size:12px">🔒 Demander un accès temporaire d\'urgence</button>';
+        html += '<button type="button" class="btn btn-secondary" id="btn-demander-acces-audit" style="font-size:12px">Demander un accès temporaire d\'urgence</button>';
         html += '</div>';
 
         html += '<div style="background:var(--color-surface);padding:12px 14px;border-radius:var(--radius);border:1px solid var(--color-border);margin-bottom:var(--space-4);font-size:12px;line-height:1.5">';
-        html += '⚖️ <strong>Règle de Sécurité Fondamentale :</strong> Le support technique éditeur n\'a <strong>aucun accès direct aux données notariées</strong> des études clientes. Toute télé-assistance d\'urgence doit faire l\'objet d\'une <em>demande motivée</em>, être <em>validée explicitement par le Notaire Titulaire</em>, être <em>limitée à une durée stricte</em> (1h à 24h) et être <em>scellée dans le journal d\'audit</em>.';
+        html += '<strong>Règle de Sécurité Fondamentale :</strong> Le support technique éditeur n\'a <strong>aucun accès direct aux données notariées</strong> des études clientes. Toute télé-assistance d\'urgence doit faire l\'objet d\'une <em>demande motivée</em>, être <em>validée explicitement par le Notaire Titulaire</em>, être <em>limitée à une durée stricte</em> (1h à 24h) et être <em>scellée dans le journal d\'audit</em>.';
         html += '</div>';
 
         html += '<div class="table-wrap"><table class="table"><thead><tr><th>N° Ticket</th><th>Étude</th><th>Niveau Support</th><th>Titre / Incident</th><th>Priorité</th><th>Accès Données</th><th>Statut</th></tr></thead><tbody>';
         if (!tickets.length) {
-          html += '<tr><td><strong>TCK-2026-089</strong></td><td>Office Notarial — Legal Notary</td><td><span class="tag tag-accent">L2 Applicatif</span></td><td>Assistance configuration imprimante étiqueteuse code-barres cartons</td><td><span class="tag tag-outline">Normal</span></td><td><span style="color:#22c55e">🔒 Aucun accès (Non requis)</span></td><td><span class="tag tag-neutral">Ouvert</span></td></tr>';
-          html += '<tr><td><strong>TCK-2026-084</strong></td><td>Étude Notariale Maître Touré</td><td><span class="tag tag-outline">L3 Base SQL / Sync</span></td><td>Vérification de la réplication Cloud Vault après coupure fibre optique</td><td><span class="tag tag-accent">Haute</span></td><td><span style="color:#38bdf8">🔑 Accès temporaire validé (2h)</span></td><td><span class="tag tag-neutral">En cours</span></td></tr>';
+          html += '<tr><td><strong>TCK-2026-089</strong></td><td>Office Notarial — Legal Notary</td><td><span class="tag tag-accent">L2 Applicatif</span></td><td>Assistance configuration imprimante étiqueteuse code-barres cartons</td><td><span class="tag tag-outline">Normal</span></td><td><span style="color:#22c55e">Aucun accès (Non requis)</span></td><td><span class="tag tag-neutral">Ouvert</span></td></tr>';
+          html += '<tr><td><strong>TCK-2026-084</strong></td><td>Étude Notariale Maître Touré</td><td><span class="tag tag-outline">L3 Base SQL / Sync</span></td><td>Vérification de la réplication Cloud Vault après coupure fibre optique</td><td><span class="tag tag-accent">Haute</span></td><td><span style="color:#38bdf8">Accès temporaire validé (2h)</span></td><td><span class="tag tag-neutral">En cours</span></td></tr>';
         } else {
           tickets.forEach(function (tk) {
             html += '<tr>';
@@ -6196,7 +6196,7 @@
             html += '<td><span class="tag tag-accent">' + tk.niveau + '</span></td>';
             html += '<td><strong>' + tk.titre + '</strong><div style="font-size:11px;color:var(--color-text-dim)">' + (tk.description || "") + '</div></td>';
             html += '<td><span class="tag tag-outline">' + tk.priorite + '</span></td>';
-            html += '<td>' + (tk.acces_donnees_autorise ? '<span style="color:#38bdf8">🔑 Accès temporaire accordé</span>' : '<span style="color:#22c55e">🔒 Aucun accès</span>') + '</td>';
+            html += '<td>' + (tk.acces_donnees_autorise ? '<span style="color:#38bdf8">Accès temporaire accordé</span>' : '<span style="color:#22c55e">Aucun accès</span>') + '</td>';
             html += '<td><span class="tag tag-neutral">' + tk.statut + '</span></td>';
             html += '</tr>';
           });
@@ -6210,9 +6210,9 @@
         // 1. Panneau Surveillance Heartbeat des Serveurs Physiques Locaux (Cas 3)
         html += '<div class="card" style="background:var(--color-surface-2);border-color:var(--color-border);padding:var(--space-4);margin-bottom:var(--space-4)">';
         html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-3);flex-wrap:wrap;gap:var(--space-2)">';
-        html += '<div style="display:flex;align-items:center;gap:8px"><span style="font-size:22px">📡</span><div><strong style="font-size:16px;color:var(--color-text)">Watchdog Heartbeat des Serveurs Physiques Locaux (On-Premise & Hybride)</strong>';
+        html += '<div style="display:flex;align-items:center;gap:8px"><div><strong style="font-size:16px;color:var(--color-text)">Watchdog Heartbeat des Serveurs Physiques Locaux (On-Premise & Hybride)</strong>';
         html += '<p style="font-size:12px;color:var(--color-text-dim);margin:2px 0 0">Supervision proactive en temps réel des machines locales des offices (signal toutes les 30s). Détection automatique des pannes internet ou électriques locales.</p></div></div>';
-        html += '<button type="button" class="btn btn-secondary" id="btn-refresh-noeuds" style="font-size:12px">🔄 Vérifier les Nœuds</button>';
+        html += '<button type="button" class="btn btn-secondary" id="btn-refresh-noeuds" style="font-size:12px">Vérifier les Nœuds</button>';
         html += '</div>';
 
         if (!noeudsHeartbeat || !noeudsHeartbeat.length) {
@@ -6222,12 +6222,12 @@
         } else {
           html += '<div class="table-wrap"><table class="table" style="font-size:12px"><thead><tr><th>Office Notarial</th><th>Machine Locale & IP</th><th>CPU / RAM / Disque</th><th>Agent & Sync</th><th>Dernier Signal</th><th>État Proactif</th></tr></thead><tbody>';
           noeudsHeartbeat.forEach(function (nd) {
-            var badgeStatut = '<span style="color:#22c55e;font-weight:bold">🟢 En ligne (Opérationnel)</span>';
+            var badgeStatut = '<span style="color:#22c55e;font-weight:bold">En ligne (Opérationnel)</span>';
             var diffS = nd.secondesDepuisDernierSignal || 0;
             if (nd.statut === "hors_ligne" || diffS > 120) {
-              badgeStatut = '<span style="color:#ef4444;font-weight:bold">🔴 Déconnecté (' + diffS + 's sans signal)</span>';
+              badgeStatut = '<span style="color:#ef4444;font-weight:bold">Déconnecté (' + diffS + 's sans signal)</span>';
             } else if (nd.statut === "charge_elevee") {
-              badgeStatut = '<span style="color:#f59e0b;font-weight:bold">🟡 Charge Élevée</span>';
+              badgeStatut = '<span style="color:#f59e0b;font-weight:bold">Charge Élevée</span>';
             }
 
             html += '<tr>';
@@ -6246,22 +6246,22 @@
         // 2. Hub Centralisé de Remontée d'Erreurs Distribuées & Sentry
         html += '<div class="card" style="background:var(--color-surface-2);border-color:var(--color-border);padding:var(--space-4);margin-bottom:var(--space-4)">';
         html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-3);flex-wrap:wrap;gap:var(--space-2)">';
-        html += '<div style="display:flex;align-items:center;gap:8px"><span style="font-size:22px">🚨</span><div><strong style="font-size:16px;color:var(--color-text)">Hub Centralisé de Remontée d\'Erreurs en Production (Cloud + Serveurs Locaux)</strong>';
+        html += '<div style="display:flex;align-items:center;gap:8px"><div><strong style="font-size:16px;color:var(--color-text)">Hub Centralisé de Remontée d\'Erreurs en Production (Cloud + Serveurs Locaux)</strong>';
         html += '<p style="font-size:12px;color:var(--color-text-dim);margin:2px 0 0">Toutes les exceptions et avertissements système sont capturés, assainis et notifiés à l\'équipe DevOps.</p></div></div>';
-        html += '<button type="button" class="btn btn-primary" id="btn-test-alerte-critique" style="font-size:12px;background:#ef4444;border-color:#ef4444">🧪 Simuler une Alerte Critique DevOps</button>';
+        html += '<button type="button" class="btn btn-primary" id="btn-test-alerte-critique" style="font-size:12px;background:#ef4444;border-color:#ef4444">Simuler une Alerte Critique DevOps</button>';
         html += '</div>';
 
         html += '<div id="zone-rapport-test-alerte" style="display:none;margin-bottom:var(--space-3);padding:12px;border-radius:var(--radius);background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3)"></div>';
 
         if (!erreursParc || !erreursParc.length) {
-          html += '<div style="padding:var(--space-4);text-align:center;color:var(--color-text-dim);font-size:13px">🟢 Aucune erreur active signalée sur le parc. Tous les nœuds fonctionnent normalement.</div>';
+          html += '<div style="padding:var(--space-4);text-align:center;color:var(--color-text-dim);font-size:13px">Aucune erreur active signalée sur le parc. Tous les nœuds fonctionnent normalement.</div>';
         } else {
           html += '<div class="table-wrap"><table class="table" style="font-size:12px"><thead><tr><th>Niveau</th><th>Office / Source</th><th>Type d\'Erreur</th><th>Message & Contexte</th><th>Date</th><th>Statut</th><th>Actions</th></tr></thead><tbody>';
           erreursParc.forEach(function (err) {
             var badgeNiv = '<span class="tag" style="background:#8b5cf6;color:#fff">Info</span>';
-            if (err.niveau === "critique") badgeNiv = '<span class="tag" style="background:#ef4444;color:#fff;font-weight:700">🔴 CRITIQUE</span>';
-            else if (err.niveau === "error") badgeNiv = '<span class="tag" style="background:#f97316;color:#fff;font-weight:600">🟠 Erreur</span>';
-            else if (err.niveau === "warning") badgeNiv = '<span class="tag" style="background:#f59e0b;color:#fff">🟡 Warning</span>';
+            if (err.niveau === "critique") badgeNiv = '<span class="tag" style="background:#ef4444;color:#fff;font-weight:700">CRITIQUE</span>';
+            else if (err.niveau === "error") badgeNiv = '<span class="tag" style="background:#f97316;color:#fff;font-weight:600">Erreur</span>';
+            else if (err.niveau === "warning") badgeNiv = '<span class="tag" style="background:#f59e0b;color:#fff">Warning</span>';
 
             html += '<tr>';
             html += '<td>' + badgeNiv + '</td>';
@@ -6269,10 +6269,10 @@
             html += '<td><code style="color:#38bdf8;font-size:11px">' + err.type_erreur + '</code></td>';
             html += '<td><div style="max-width:340px;word-break:break-word">' + err.message + '</div></td>';
             html += '<td style="font-size:11px;color:var(--color-text-dim)">' + (err.created_at ? new Date(err.created_at).toLocaleTimeString("fr-CI", { hour: "2-digit", minute: "2-digit", second: "2-digit" }) : "Récemment") + '</td>';
-            html += '<td>' + (err.statut === "resolu" ? '<span style="color:#22c55e;font-weight:bold;font-size:11px">✅ Résolu</span>' : '<span style="color:#f59e0b;font-weight:bold;font-size:11px">⏳ Actif</span>') + '</td>';
+            html += '<td>' + (err.statut === "resolu" ? '<span style="color:#22c55e;font-weight:bold;font-size:11px">Résolu</span>' : '<span style="color:#f59e0b;font-weight:bold;font-size:11px">Actif</span>') + '</td>';
             html += '<td>';
             if (err.statut !== "resolu") {
-              html += '<button type="button" class="btn btn-secondary btn-resoudre-erreur" data-id="' + err.id + '" style="font-size:10.5px;padding:3px 7px">✅ Résoudre</button>';
+              html += '<button type="button" class="btn btn-secondary btn-resoudre-erreur" data-id="' + err.id + '" style="font-size:10.5px;padding:3px 7px">Résoudre</button>';
             }
             html += '</td>';
             html += '</tr>';
@@ -6283,7 +6283,7 @@
 
         // 3. Journal d'Audit de Sécurité Cryptographique
         html += '<div class="card" style="background:var(--color-surface-2);border-color:var(--color-border);padding:var(--space-4)">';
-        html += '<strong style="font-size:15px;color:var(--color-text)">📊 Journal d\'Audit de Sécurité & Scellements SHA-256</strong>';
+        html += '<strong style="font-size:15px;color:var(--color-text)">Journal d\'Audit de Sécurité & Scellements SHA-256</strong>';
         html += '<p style="font-size:12px;color:var(--color-text-dim);margin:2px 0 var(--space-3)">Traçabilité immuable des opérations de scellement et de synchronisation.</p>';
 
         html += '<div class="table-wrap"><table class="table" style="font-size:11.5px"><thead><tr><th>Horodatage</th><th>Événement Système</th><th>IP / Nœud Source</th><th>Statut Cryptographique</th></tr></thead><tbody>';
@@ -6316,11 +6316,11 @@
           var rapport = document.getElementById("zone-rapport-test-alerte");
           if (rapport) {
             rapport.style.display = "block";
-            rapport.innerHTML = "⏳ Déclenchement du test d'alerte instantanée (Sentry / Webhook / Mail)…";
+            rapport.innerHTML = "Déclenchement du test d'alerte instantanée (Sentry / Webhook / Mail)…";
           }
           API.post("/api/telemetrie/test-alerte", {}).then(function (res) {
             if (rapport) {
-              rapport.innerHTML = '<div style="color:#ef4444;font-weight:bold;font-size:13px">🚨 Alerte Critique Émise avec Succès !</div><div style="font-size:12px;color:var(--color-text);margin-top:4px">' + res.message + '<br>Réf incident généré : <code>' + (res.incident ? res.incident.id : "") + '</code></div>';
+              rapport.innerHTML = '<div style="color:#ef4444;font-weight:bold;font-size:13px">Alerte Critique Émise avec Succès !</div><div style="font-size:12px;color:var(--color-text);margin-top:4px">' + res.message + '<br>Réf incident généré : <code>' + (res.incident ? res.incident.id : "") + '</code></div>';
             }
             toast("Test d'alerte critique envoyé !");
             setTimeout(renderSuperAdmin, 1500);
@@ -6414,7 +6414,7 @@
           var rapportZone = document.getElementById("zone-rapport-pra");
           if (rapportZone) {
             rapportZone.style.display = "block";
-            rapportZone.innerHTML = '<p style="margin:0;color:var(--color-text)">⏳ Simulation du PRA en cours sur les clusters miroirs…</p>';
+            rapportZone.innerHTML = '<p style="margin:0;color:var(--color-text)">Simulation du PRA en cours sur les clusters miroirs…</p>';
           }
           API.post("/api/superadmin/sauvegardes/test-pra", {}).then(function (res) {
             if (rapportZone) {
@@ -6479,7 +6479,7 @@
   // =========================================================================
   function modalDeploiementEtude(etudeId, nomEtude) {
     ouvrirModal({
-      titre: '<span>🚀</span> Mise en Ligne & Déploiement — ' + nomEtude,
+      titre: 'Mise en Ligne & Déploiement — ' + nomEtude,
       corps: '<p class="text-muted">Chargement des paramètres techniques et clés de déploiement…</p>',
       boutonFermer: true,
       largeur: "720px",
@@ -6497,22 +6497,22 @@
 
           // OPTION 1 : SOUS-DOMAINE CLOUD IMMÉDIAT
           html += '<div class="card" style="background:var(--color-surface);border:1px solid rgba(56,189,248,0.3);padding:var(--space-3)">';
-          html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:18px">🚀</span><strong style="color:#38bdf8;font-size:13.5px">Option 1 : Espace Cloud Instantané (Sous-domaine dédié)</strong></div>';
+          html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><strong style="color:#38bdf8;font-size:13.5px">Option 1 : Espace Cloud Instantané (Sous-domaine dédié)</strong></div>';
           html += '<p style="font-size:12px;color:var(--color-text);margin:0 0 8px">L\'office est activé immédiatement sur votre serveur centralisé. Aucune installation technique requise.</p>';
           html += '<div style="background:var(--color-surface-2);padding:8px 10px;border-radius:var(--radius);font-size:12px;font-family:monospace;color:var(--color-text);display:flex;justify-content:space-between;align-items:center">';
           html += '<span>' + dep.urlCloudAutomatique + '</span>';
-          html += '<button type="button" class="btn btn-secondary" onclick="navigator.clipboard.writeText(\'' + dep.urlCloudAutomatique + '\');toast(\'Lien d\\\'accès copié !\')" style="font-size:10.5px;padding:2px 6px">📋 Copier l\'URL</button>';
+          html += '<button type="button" class="btn btn-secondary" onclick="navigator.clipboard.writeText(\'' + dep.urlCloudAutomatique + '\');toast(\'Lien d\\\'accès copié !\')" style="font-size:10.5px;padding:2px 6px">Copier l\'URL</button>';
           html += '</div>';
           html += '<div style="font-size:11px;color:var(--color-text-dim);margin-top:6px">Transmettez ce lien avec l\'email administrateur au notaire titulaire. Accès immédiat sécurisé HTTPS.</div>';
           html += '</div>';
 
           // OPTION 2 : NOM DE DOMAINE PERSONNALISÉ
           html += '<div class="card" style="background:var(--color-surface);border:1px solid rgba(34,197,94,0.3);padding:var(--space-3)">';
-          html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:18px">🌐</span><strong style="color:#22c55e;font-size:13.5px">Option 2 : Nom de Domaine Personnalisé du Cabinet (ex. notaire-kouame.ci)</strong></div>';
+          html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><strong style="color:#22c55e;font-size:13.5px">Option 2 : Nom de Domaine Personnalisé du Cabinet (ex. notaire-kouame.ci)</strong></div>';
           html += '<p style="font-size:12px;color:var(--color-text);margin:0 0 8px">Le notaire conserve son adresse web officielle sur votre serveur central sans infrastructure séparée.</p>';
           html += '<div style="background:var(--color-surface-2);padding:8px 10px;border-radius:var(--radius);font-size:11.5px;line-height:1.5">';
           html += '<div>Configuration DNS chez le registraire du notaire (1 minute) :</div>';
-          html += '<div style="font-family:monospace;color:#38bdf8;margin:3px 0">Type CNAME : <code>' + dep.dnsRecommande.hote + '</code> ➜ Cible : <code>' + dep.dnsRecommande.cible + '</code></div>';
+          html += '<div style="font-family:monospace;color:#38bdf8;margin:3px 0">Type CNAME : <code>' + dep.dnsRecommande.hote + '</code> -> Cible : <code>' + dep.dnsRecommande.cible + '</code></div>';
           html += '<div>Certificat SSL : <strong style="color:#22c55e">Génération automatique TLS 1.3 Let\'s Encrypt</strong> par votre serveur central.</div>';
           html += '</div>';
           html += '</div>';
@@ -6547,11 +6547,11 @@
 
     html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2)">';
     html += '<div class="field"><label>Rôle & Habilitation SaaS</label><select class="input" name="role">';
-    html += '<option value="dev">💻 Développeur / DevOps (Clusters, Infra, Télémétrie)</option>';
-    html += '<option value="commercial">💼 Commercial & Onboarding (Parc des Études, Démos)</option>';
-    html += '<option value="support" selected>🎧 Support Client L1-L4 (Tickets, Assistance)</option>';
-    html += '<option value="assistante_editeur">📋 Assistante Éditeur (Gestion & Facturation)</option>';
-    html += '<option value="superadmin">👑 Direction / SuperAdmin (Accès Absolu)</option>';
+    html += '<option value="dev">Développeur / DevOps (Clusters, Infra, Télémétrie)</option>';
+    html += '<option value="commercial">Commercial & Onboarding (Parc des Études, Démos)</option>';
+    html += '<option value="support" selected>Support Client L1-L4 (Tickets, Assistance)</option>';
+    html += '<option value="assistante_editeur">Assistante Éditeur (Gestion & Facturation)</option>';
+    html += '<option value="superadmin">Direction / SuperAdmin (Accès Absolu)</option>';
     html += '</select></div>';
     html += '<div class="field"><label>Mot de passe initial</label><input class="input" type="text" name="motDePasse" value="saas123" required></div>';
     html += '</div>';
@@ -6561,7 +6561,7 @@
     html += '</form>';
 
     ouvrirModal({
-      titre: '<span>👥</span> Ajouter un Collaborateur à l\'Équipe Éditeur SaaS',
+      titre: 'Ajouter un Collaborateur à l\'Équipe Éditeur SaaS',
       corps: html,
       boutonFermer: true,
       largeur: "560px",
@@ -6606,15 +6606,15 @@
 
     html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2)">';
     html += '<div class="field"><label>Rôle & Habilitation SaaS</label><select class="input" name="role">';
-    html += '<option value="dev"' + (m.role === "dev" ? " selected" : "") + '>💻 Développeur / DevOps</option>';
-    html += '<option value="commercial"' + (m.role === "commercial" ? " selected" : "") + '>💼 Commercial & Onboarding</option>';
-    html += '<option value="support"' + (m.role === "support" ? " selected" : "") + '>🎧 Support Client L1-L4</option>';
-    html += '<option value="assistante_editeur"' + (m.role === "assistante_editeur" ? " selected" : "") + '>📋 Assistante Éditeur</option>';
-    html += '<option value="superadmin"' + (m.role === "superadmin" ? " selected" : "") + '>👑 Direction / SuperAdmin</option>';
+    html += '<option value="dev"' + (m.role === "dev" ? " selected" : "") + '>Développeur / DevOps</option>';
+    html += '<option value="commercial"' + (m.role === "commercial" ? " selected" : "") + '>Commercial & Onboarding</option>';
+    html += '<option value="support"' + (m.role === "support" ? " selected" : "") + '>Support Client L1-L4</option>';
+    html += '<option value="assistante_editeur"' + (m.role === "assistante_editeur" ? " selected" : "") + '>Assistante Éditeur</option>';
+    html += '<option value="superadmin"' + (m.role === "superadmin" ? " selected" : "") + '>Direction / SuperAdmin</option>';
     html += '</select></div>';
     html += '<div class="field"><label>Statut du compte</label><select class="input" name="actif">';
-    html += '<option value="true"' + (m.actif !== false ? " selected" : "") + '>🟢 Actif</option>';
-    html += '<option value="false"' + (m.actif === false ? " selected" : "") + '>🔴 Suspendu</option>';
+    html += '<option value="true"' + (m.actif !== false ? " selected" : "") + '>Actif</option>';
+    html += '<option value="false"' + (m.actif === false ? " selected" : "") + '>Suspendu</option>';
     html += '</select></div>';
     html += '</div>';
 
@@ -6623,7 +6623,7 @@
     html += '</form>';
 
     ouvrirModal({
-      titre: '<span>✏️</span> Modifier un Collaborateur SaaS',
+      titre: 'Modifier un Collaborateur SaaS',
       corps: html,
       boutonFermer: true,
       largeur: "560px",
@@ -6676,10 +6676,10 @@
 
     html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2)">';
     html += '<div class="field"><label>Formule d\'Abonnement SaaS</label><select class="input" name="modeInfrastructure">';
-    html += '<option value="cloud" selected>☁️ Formule Cloud Standard (100 Go)</option>';
-    html += '<option value="cloud_pro">☁️ Formule Cloud Professionnelle (250 Go)</option>';
-    html += '<option value="cloud_enterprise">☁️ Formule Cloud Entreprise (500 Go)</option>';
-    html += '<option value="cloud_illimite">☁️ Formule Grand Cabinet (1 To)</option>';
+    html += '<option value="cloud" selected>Formule Cloud Standard (100 Go)</option>';
+    html += '<option value="cloud_pro">Formule Cloud Professionnelle (250 Go)</option>';
+    html += '<option value="cloud_enterprise">Formule Cloud Entreprise (500 Go)</option>';
+    html += '<option value="cloud_illimite">Formule Grand Cabinet (1 To)</option>';
     html += '</select></div>';
     html += '<div class="field"><label>Quota de Stockage GED Alloué</label><select class="input" name="quotaStockageGo">';
     html += '<option value="100" selected>100 Go</option>';
@@ -6690,15 +6690,15 @@
     html += '</div>';
 
     html += '<div style="font-size:11px;color:var(--color-text-dim);background:var(--color-surface-2);padding:8px 10px;border-radius:var(--radius);border:1px solid var(--color-border)">';
-    html += '🔒 <strong>Isolation Stricte :</strong> L\'office bénéficiera immédiatement d\'un tenant PostgreSQL partitionné (`etude_id`), d\'un compte administrateur Notaire prêt à l\'emploi, et d\'un chiffrement AES-256 des secrets conforme au secret professionnel.';
+    html += '<strong>Isolation Stricte :</strong> L\'office bénéficiera immédiatement d\'un tenant PostgreSQL partitionné (`etude_id`), d\'un compte administrateur Notaire prêt à l\'emploi, et d\'un chiffrement AES-256 des secrets conforme au secret professionnel.';
     html += '</div>';
 
     html += '<div id="erreur-deployer-etude" class="erreur-inline" style="display:none"></div>';
-    html += '<div style="display:flex;justify-content:flex-end;gap:var(--space-2);margin-top:var(--space-2)"><button type="button" class="btn btn-ghost" id="btn-annuler-deploy">Annuler</button><button type="submit" class="btn btn-primary">🏛️ Déployer & Initialiser l\'Office</button></div>';
+    html += '<div style="display:flex;justify-content:flex-end;gap:var(--space-2);margin-top:var(--space-2)"><button type="button" class="btn btn-ghost" id="btn-annuler-deploy">Annuler</button><button type="submit" class="btn btn-primary">Déployer & Initialiser l\'Office</button></div>';
     html += '</form>';
 
     ouvrirModal({
-      titre: '<span>🏛️</span> Déploiement d\'un Nouvel Office Notarial (Multi-Tenant SaaS)',
+      titre: 'Déploiement d\'un Nouvel Office Notarial (Multi-Tenant SaaS)',
       corps: html,
       boutonFermer: true,
       largeur: "580px",
@@ -6741,7 +6741,7 @@
 
     html += '<div style="display:flex;justify-content:space-between;align-items:center;background:var(--color-surface-2);padding:8px 12px;border-radius:var(--radius);border:1px solid var(--color-border)">';
     html += '<div><strong style="font-size:13px;color:var(--color-text)">Code Tenant : <code>' + (etude.codeEtude || "ETUDE-001") + '</code></strong></div>';
-    html += '<span class="tag tag-accent">' + (etude.statutSante || "🟢 En ligne") + '</span>';
+    html += '<span class="tag tag-accent">' + (etude.statutSante || "En ligne") + '</span>';
     html += '</div>';
 
     html += '<div class="field"><label>Nom de l\'office notarial</label><input class="input" name="nomEtude" value="' + (etude.nomEtude || "") + '" required></div>';
@@ -6752,7 +6752,7 @@
     html += '</div>';
 
     html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2)">';
-    html += '<div class="field"><label>Plateforme d\'Hébergement</label><input class="input" value="☁️ Cloud Multi-Tenant Centralisé" readonly style="opacity:.8;cursor:not-allowed"></div>';
+    html += '<div class="field"><label>Plateforme d\'Hébergement</label><input class="input" value="Cloud Multi-Tenant Centralisé" readonly style="opacity:.8;cursor:not-allowed"></div>';
     html += '<div class="field"><label>Quota de Stockage GED Alloué (Go)</label><input class="input" type="number" name="quotaStockageGo" value="' + (etude.quotaStockageGo || 100) + '" required></div>';
     html += '</div>';
 
@@ -6763,7 +6763,7 @@
     html += '</form>';
 
     ouvrirModal({
-      titre: '<span>⚙️</span> Configuration de l\'Office Notarial',
+      titre: 'Configuration de l\'Office Notarial',
       corps: html,
       boutonFermer: true,
       largeur: "560px",
@@ -6814,7 +6814,7 @@
     html += '</select></div>';
 
     html += '<div style="font-size:11px;color:var(--color-text-dim);background:var(--color-surface-2);padding:8px 10px;border-radius:var(--radius);border:1px solid var(--color-border)">';
-    html += '📜 <strong>Journal d\'audit cryptographique :</strong> Toutes les actions réalisées durant cette session seront tracées avec horodatage certifié et transmises au Notaire Titulaire.';
+    html += '<strong>Journal d\'audit cryptographique :</strong> Toutes les actions réalisées durant cette session seront tracées avec horodatage certifié et transmises au Notaire Titulaire.';
     html += '</div>';
 
     html += '<div id="erreur-acces-audit" class="erreur-inline" style="display:none"></div>';
@@ -6822,7 +6822,7 @@
     html += '</form>';
 
     ouvrirModal({
-      titre: '<span>🔒</span> Demande d\'Accès Temporaire d\'Urgence Audité',
+      titre: 'Demande d\'Accès Temporaire d\'Urgence Audité',
       corps: html,
       boutonFermer: true,
       largeur: "540px",
@@ -6893,18 +6893,18 @@
     }
 
     var kpis = [
-      { label: "Ponctualité de l'Équipe", valeur: (kpisGlobaux.tauxPonctualite || 100) + "%", indice: "accent", icon: "⏱️", sub: (kpisGlobaux.enRetard || 0) + " rapport(s) en retard" },
-      { label: "Total Rapports Soumis", valeur: String(kpisGlobaux.totalRapports || 0), indice: "", icon: "📊", sub: (kpisGlobaux.enAttenteLecture || 0) + " en attente de validation" },
-      { label: "Performance Commerciale", valeur: fmtFCFA(kpisCom.totalMrrGenere || 0) + " MRR", indice: "accent", icon: "💼", sub: (kpisCom.totalContratsSignes || 0) + " contrat(s) · " + (kpisCom.totalDemosRealisees || 0) + " démos" },
-      { label: "Qualité Support & CSAT", valeur: kpisSup.moyenneCsat || "98.5%", indice: "", icon: "🎧", sub: (kpisSup.totalTicketsResolus || 0) + " tickets résolus · Rép: " + (kpisSup.tempsMoyenResolution || "1h 35m") },
+      { label: "Ponctualité de l'Équipe", valeur: (kpisGlobaux.tauxPonctualite || 100) + "%", indice: "accent", icon: "", sub: (kpisGlobaux.enRetard || 0) + " rapport(s) en retard" },
+      { label: "Total Rapports Soumis", valeur: String(kpisGlobaux.totalRapports || 0), indice: "", icon: "", sub: (kpisGlobaux.enAttenteLecture || 0) + " en attente de validation" },
+      { label: "Performance Commerciale", valeur: fmtFCFA(kpisCom.totalMrrGenere || 0) + " MRR", indice: "accent", icon: "", sub: (kpisCom.totalContratsSignes || 0) + " contrat(s) · " + (kpisCom.totalDemosRealisees || 0) + " démos" },
+      { label: "Qualité Support & CSAT", valeur: kpisSup.moyenneCsat || "98.5%", indice: "", icon: "", sub: (kpisSup.totalTicketsResolus || 0) + " tickets résolus · Rép: " + (kpisSup.tempsMoyenResolution || "1h 35m") },
     ];
 
     var html = '<div style="margin-bottom:var(--space-4)">';
     html += '<div style="display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);padding-bottom:var(--space-2);border-bottom:1px solid var(--color-border)">';
-    html += '<div><h1 style="margin:0;font-size:22px;color:var(--color-text)">📊 Direction Générale · Rapports & Échéances Équipe</h1>';
+    html += '<div><h1 style="margin:0;font-size:22px;color:var(--color-text)">Direction Générale · Rapports & Échéances Équipe</h1>';
     html += '<p style="opacity:.65;font-size:13px;margin:2px 0 0">Supervision de l\'activité hebdomadaire, contrôle des performances et configuration des délais de soumission.</p></div>';
     html += '<div style="display:flex;gap:var(--space-2)">';
-    html += '<button type="button" class="btn btn-secondary" id="btn-refresh-rapports" style="padding:6px 12px;font-size:12px">🔄 Actualiser</button>';
+    html += '<button type="button" class="btn btn-secondary" id="btn-refresh-rapports" style="padding:6px 12px;font-size:12px">Actualiser</button>';
     html += '</div>';
     html += '</div></div>';
 
@@ -6915,9 +6915,9 @@
     // =========================================================================
     html += '<div class="card elev-sm" style="margin-bottom:var(--space-5);border-color:rgba(56,189,248,0.25)">';
     html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-3)">';
-    html += '<div><strong style="font-size:15px;color:#38bdf8">⚙️ Configuration des Échéances & Délais de Soumission</strong>';
+    html += '<div><strong style="font-size:15px;color:#38bdf8">Configuration des Échéances & Délais de Soumission</strong>';
     html += '<p style="font-size:12px;color:var(--color-text-dim);margin:2px 0 0">Définissez quand chaque collaborateur doit impérativement vous remettre son compte-rendu d\'activité.</p></div>';
-    html += '<span class="tag tag-accent">👑 Contrôle Direction</span>';
+    html += '<span class="tag tag-accent">Contrôle Direction</span>';
     html += '</div>';
 
     html += '<div style="overflow-x:auto">';
@@ -6926,15 +6926,15 @@
     html += '<tbody>';
 
     params.forEach(function (p) {
-      var iconRole = p.roleCible === "commercial" ? "💼" : p.roleCible === "support" ? "🎧" : p.roleCible === "dev" ? "💻" : "📋";
+      var iconRole = p.roleCible === "commercial" ? "" : p.roleCible === "support" ? "" : p.roleCible === "dev" ? "" : "";
       var libelleRole = ROLE_LABEL[p.roleCible] || p.roleCible;
       html += '<tr>';
       html += '<td><strong>' + iconRole + ' ' + libelleRole + '</strong></td>';
       html += '<td><span class="tag tag-outline" style="text-transform:capitalize">' + p.frequence + '</span></td>';
       html += '<td><strong style="color:var(--color-text)">Chaque ' + p.jourLimite + '</strong> avant <code style="color:#38bdf8">' + p.heureLimite + '</code></td>';
       html += '<td style="max-width:320px;font-size:11.5px;color:var(--color-text-dim)">' + (p.descriptionAttendus || "—") + '</td>';
-      html += '<td>' + (p.actif ? '<span class="tag tag-accent">🟢 Actif</span>' : '<span class="tag tag-outline">Désactivé</span>') + '</td>';
-      html += '<td><button type="button" class="btn btn-secondary btn-modifier-echeance" data-role="' + p.roleCible + '" style="font-size:11px;padding:3px 8px">⚙️ Modifier</button></td>';
+      html += '<td>' + (p.actif ? '<span class="tag tag-accent">Actif</span>' : '<span class="tag tag-outline">Désactivé</span>') + '</td>';
+      html += '<td><button type="button" class="btn btn-secondary btn-modifier-echeance" data-role="' + p.roleCible + '" style="font-size:11px;padding:3px 8px">Modifier</button></td>';
       html += '</tr>';
     });
 
@@ -6944,16 +6944,16 @@
     // 2. SECTION : FLUX DES RAPPORTS DE L'ÉQUIPE (AVEC FILTRES & VALIDATION)
     // =========================================================================
     html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-3)">';
-    html += '<div><h2 style="margin:0;font-size:16px;color:var(--color-text)">📋 Derniers Rapports d\'Activité Soumis</h2>';
+    html += '<div><h2 style="margin:0;font-size:16px;color:var(--color-text)">Derniers Rapports d\'Activité Soumis</h2>';
     html += '<p style="font-size:12px;color:var(--color-text-dim);margin:2px 0 0">Consultez les bilans détaillés, validez les rapports ou demandez des directives spécifiques.</p></div>';
 
     // Filtres par rôle
     html += '<div style="display:flex;gap:4px;background:var(--color-surface-2);padding:3px;border-radius:var(--radius);border:1px solid var(--color-border)">';
     var filtres = [
       { id: "tous", label: "Tous (" + tousRapports.length + ")" },
-      { id: "commercial", label: "💼 Commercial (" + tousRapports.filter(function (r) { return r.role === "commercial"; }).length + ")" },
-      { id: "support", label: "🎧 Support (" + tousRapports.filter(function (r) { return r.role === "support"; }).length + ")" },
-      { id: "dev", label: "💻 DevOps (" + tousRapports.filter(function (r) { return r.role === "dev"; }).length + ")" },
+      { id: "commercial", label: "Commercial (" + tousRapports.filter(function (r) { return r.role === "commercial"; }).length + ")" },
+      { id: "support", label: "Support (" + tousRapports.filter(function (r) { return r.role === "support"; }).length + ")" },
+      { id: "dev", label: "DevOps (" + tousRapports.filter(function (r) { return r.role === "dev"; }).length + ")" },
     ];
     filtres.forEach(function (f) {
       var actif = etatRapports.filtreRole === f.id;
@@ -6966,14 +6966,14 @@
     } else {
       html += '<div style="display:grid;grid-template-columns:1fr;gap:var(--space-4)">';
       rapportsFiltres.forEach(function (r) {
-        var icon = r.role === "commercial" ? "💼" : r.role === "support" ? "🎧" : r.role === "dev" ? "💻" : "📋";
+        var icon = r.role === "commercial" ? "" : r.role === "support" ? "" : r.role === "dev" ? "" : "";
         var badgeStatut = r.statut === "valide_direction"
-          ? '<span class="tag tag-accent">✅ Validé par la Direction</span>'
+          ? '<span class="tag tag-accent">Validé par la Direction</span>'
           : r.statut === "demande_precision"
-          ? '<span class="tag tag-danger">⚠️ Précisions demandées</span>'
-          : '<span class="tag tag-outline" style="border-color:#38bdf8;color:#38bdf8">⏳ En attente d\'évaluation</span>';
+          ? '<span class="tag tag-danger">Précisions demandées</span>'
+          : '<span class="tag tag-outline" style="border-color:#38bdf8;color:#38bdf8">En attente d\'évaluation</span>';
 
-        var badgeRetard = r.enRetard ? '<span class="tag tag-danger">🔴 Soumis en retard</span>' : '<span class="tag tag-outline" style="color:#22c55e;border-color:#22c55e">🟢 À temps</span>';
+        var badgeRetard = r.enRetard ? '<span class="tag tag-danger">Soumis en retard</span>' : '<span class="tag tag-outline" style="color:#22c55e;border-color:#22c55e">À temps</span>';
 
         html += '<div class="card elev-sm" style="background:var(--color-surface);border:1px solid var(--color-border);padding:var(--space-4)">';
         html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:var(--space-3)">';
@@ -6991,7 +6991,7 @@
 
         // Bouton d'action Direction
         html += '<div style="display:flex;gap:var(--space-2)">';
-        html += '<button type="button" class="btn btn-secondary btn-evaluer-rapport" data-id="' + r.id + '" data-titre="' + r.titre + '" style="font-size:11.5px;padding:4px 10px">💬 Évaluer / Directives</button>';
+        html += '<button type="button" class="btn btn-secondary btn-evaluer-rapport" data-id="' + r.id + '" data-titre="' + r.titre + '" style="font-size:11.5px;padding:4px 10px">Évaluer / Directives</button>';
         html += '</div>';
         html += '</div>';
 
@@ -7007,7 +7007,7 @@
           html += '<div><span style="font-size:11px;color:var(--color-text-dim)">MRR Récurrent</span><div style="font-size:16px;font-weight:700;color:#22c55e">' + fmtFCFA(d.mrrGenereFCFA || 0) + '</div></div>';
           html += '</div>';
           if (d.etudesEnClosing && d.etudesEnClosing.length) {
-            html += '<div style="font-size:12px;margin-bottom:6px"><strong>🎯 Études en phase de signature / closing :</strong> <span style="color:#38bdf8">' + (Array.isArray(d.etudesEnClosing) ? d.etudesEnClosing.join(", ") : d.etudesEnClosing) + '</span></div>';
+            html += '<div style="font-size:12px;margin-bottom:6px"><strong>Études en phase de signature / closing :</strong> <span style="color:#38bdf8">' + (Array.isArray(d.etudesEnClosing) ? d.etudesEnClosing.join(", ") : d.etudesEnClosing) + '</span></div>';
           }
         } else if (r.role === "support") {
           html += '<div style="display:grid;grid-template-columns:repeat(4, 1fr);gap:10px;margin-bottom:10px">';
@@ -7017,10 +7017,10 @@
           html += '<div><span style="font-size:11px;color:var(--color-text-dim)">Délai Réponse</span><div style="font-size:16px;font-weight:700;color:var(--color-text)">' + (d.tempsReponseMinutes || 12) + ' min</div></div>';
           html += '</div>';
           if (d.topProblemes) {
-            html += '<div style="font-size:12px;margin-bottom:6px"><strong>🔧 Problèmes récurrents :</strong> <span style="color:var(--color-text)">' + d.topProblemes + '</span></div>';
+            html += '<div style="font-size:12px;margin-bottom:6px"><strong>Problèmes récurrents :</strong> <span style="color:var(--color-text)">' + d.topProblemes + '</span></div>';
           }
           if (d.etudesSousSurveillance) {
-            html += '<div style="font-size:12px;margin-bottom:6px"><strong>⚠️ Études nécessitant accompagnement :</strong> <span style="color:#f59e0b">' + d.etudesSousSurveillance + '</span></div>';
+            html += '<div style="font-size:12px;margin-bottom:6px"><strong>Études nécessitant accompagnement :</strong> <span style="color:#f59e0b">' + d.etudesSousSurveillance + '</span></div>';
           }
         } else if (r.role === "dev") {
           html += '<div style="display:grid;grid-template-columns:repeat(4, 1fr);gap:10px;margin-bottom:10px">';
@@ -7030,18 +7030,18 @@
           html += '<div><span style="font-size:11px;color:var(--color-text-dim)">Conformité PRA</span><div style="font-size:16px;font-weight:700;color:#22c55e">' + (d.testPraConformite || "100% OK") + '</div></div>';
           html += '</div>';
           if (d.misesEnProduction) {
-            html += '<div style="font-size:12px;margin-bottom:6px"><strong>🚀 Mises en production :</strong> <span style="color:var(--color-text)">' + d.misesEnProduction + '</span></div>';
+            html += '<div style="font-size:12px;margin-bottom:6px"><strong>Mises en production :</strong> <span style="color:var(--color-text)">' + d.misesEnProduction + '</span></div>';
           }
         }
 
         if (d.faitsMarquants) {
-          html += '<div style="font-size:12px;margin-top:6px"><strong>💡 Faits marquants :</strong> <span style="color:var(--color-text)">' + d.faitsMarquants + '</span></div>';
+          html += '<div style="font-size:12px;margin-top:6px"><strong>Faits marquants :</strong> <span style="color:var(--color-text)">' + d.faitsMarquants + '</span></div>';
         }
         if (d.pointsBloquants) {
-          html += '<div style="font-size:12px;margin-top:4px"><strong>🚧 Points bloquants :</strong> <span style="color:#f43f5e">' + d.pointsBloquants + '</span></div>';
+          html += '<div style="font-size:12px;margin-top:4px"><strong>Points bloquants :</strong> <span style="color:#f43f5e">' + d.pointsBloquants + '</span></div>';
         }
         if (d.prioritesSemaineProchaine || d.prioritesTechniques) {
-          html += '<div style="font-size:12px;margin-top:4px"><strong>🎯 Priorités semaine prochaine :</strong> <span style="color:#38bdf8">' + (d.prioritesSemaineProchaine || d.prioritesTechniques) + '</span></div>';
+          html += '<div style="font-size:12px;margin-top:4px"><strong>Priorités semaine prochaine :</strong> <span style="color:#38bdf8">' + (d.prioritesSemaineProchaine || d.prioritesTechniques) + '</span></div>';
         }
 
         html += '</div>';
@@ -7049,7 +7049,7 @@
         // Commentaire existant de la Direction
         if (r.commentaireDirection) {
           html += '<div style="background:rgba(56,189,248,0.08);border-left:3px solid #38bdf8;padding:8px 12px;border-radius:4px;font-size:12px;margin-top:6px">';
-          html += '<strong style="color:#38bdf8">👑 Directive de la Direction :</strong> ' + r.commentaireDirection;
+          html += '<strong style="color:#38bdf8">Directive de la Direction :</strong> ' + r.commentaireDirection;
           html += '</div>';
         }
 
@@ -7090,13 +7090,13 @@
   // --- B. VUE COLLABORATEUR SAAS (COMMERCIAL, SUPPORT, DEV, ASSISTANTE) ---
   function renderRapportsCollaborateur(c, role, mesRapports, params) {
     var param = params.find(function (p) { return p.roleCible === role; }) || { frequence: "hebdomadaire", jourLimite: "vendredi", heureLimite: "17:00", descriptionAttendus: "" };
-    var icon = role === "commercial" ? "💼" : role === "support" ? "🎧" : role === "dev" ? "💻" : "📋";
+    var icon = role === "commercial" ? "" : role === "support" ? "" : role === "dev" ? "" : "";
 
     var html = '<div style="margin-bottom:var(--space-4)">';
     html += '<div style="display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);padding-bottom:var(--space-2);border-bottom:1px solid var(--color-border)">';
     html += '<div><h1 style="margin:0;font-size:22px;color:var(--color-text)">' + icon + ' Mes Rapports d\'Activité · ' + (ROLE_LABEL[role] || role) + '</h1>';
     html += '<p style="opacity:.65;font-size:13px;margin:2px 0 0">Rédigez et soumettez vos comptes-rendus périodiques à la Direction Générale.</p></div>';
-    html += '<button type="button" class="btn btn-primary" id="btn-nouveau-rapport-collab" style="font-size:13px;padding:8px 14px">📝 + Rédiger mon Rapport</button>';
+    html += '<button type="button" class="btn btn-primary" id="btn-nouveau-rapport-collab" style="font-size:13px;padding:8px 14px">+ Rédiger mon Rapport</button>';
     html += '</div></div>';
 
     // Bandeau d'information sur l'échéance fixée par la Direction
@@ -7104,11 +7104,11 @@
     html += '<div><strong style="color:#38bdf8;font-size:13.5px">⏰ Échéance fixée par la Direction :</strong>';
     html += '<span style="font-size:13px;color:var(--color-text);margin-left:6px">Votre rapport est attendu chaque <strong>' + param.jourLimite + '</strong> avant <code style="color:#38bdf8">' + param.heureLimite + '</code> (' + param.frequence + ').</span>';
     html += '<div style="font-size:11.5px;color:var(--color-text-dim);margin-top:2px">Attendus clés : ' + (param.descriptionAttendus || "Compte-rendu complet de l'activité.") + '</div></div>';
-    html += '<span class="tag tag-accent">👑 Directive Direction</span>';
+    html += '<span class="tag tag-accent">Directive Direction</span>';
     html += '</div>';
 
     // Historique des rapports soumis par ce collaborateur
-    html += '<div style="margin-bottom:var(--space-3)"><h2 style="margin:0;font-size:16px;color:var(--color-text)">📚 Historique de mes Rapports Soumis</h2></div>';
+    html += '<div style="margin-bottom:var(--space-3)"><h2 style="margin:0;font-size:16px;color:var(--color-text)">Historique de mes Rapports Soumis</h2></div>';
 
     if (mesRapports.length === 0) {
       html += '<div class="card" style="text-align:center;padding:var(--space-6);color:var(--color-text-dim)">Vous n\'avez pas encore soumis de rapport d\'activité. Cliquez sur "+ Rédiger mon Rapport" pour démarrer.</div>';
@@ -7116,10 +7116,10 @@
       html += '<div style="display:grid;grid-template-columns:1fr;gap:var(--space-3)">';
       mesRapports.forEach(function (r) {
         var badgeStatut = r.statut === "valide_direction"
-          ? '<span class="tag tag-accent">✅ Validé par la Direction</span>'
+          ? '<span class="tag tag-accent">Validé par la Direction</span>'
           : r.statut === "demande_precision"
-          ? '<span class="tag tag-danger">⚠️ Précisions demandées</span>'
-          : '<span class="tag tag-outline" style="border-color:#38bdf8;color:#38bdf8">⏳ En cours de lecture</span>';
+          ? '<span class="tag tag-danger">Précisions demandées</span>'
+          : '<span class="tag tag-outline" style="border-color:#38bdf8;color:#38bdf8">En cours de lecture</span>';
 
         html += '<div class="card elev-sm" style="background:var(--color-surface);border:1px solid var(--color-border);padding:var(--space-3)">';
         html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-2)">';
@@ -7133,7 +7133,7 @@
         // Directive retour
         if (r.commentaireDirection) {
           html += '<div style="background:rgba(56,189,248,0.08);border-left:3px solid #38bdf8;padding:6px 10px;border-radius:4px;font-size:12px;margin-top:6px">';
-          html += '<strong style="color:#38bdf8">👑 Retour de la Direction :</strong> ' + r.commentaireDirection;
+          html += '<strong style="color:#38bdf8">Retour de la Direction :</strong> ' + r.commentaireDirection;
           html += '</div>';
         }
 
@@ -7151,7 +7151,7 @@
 
   // --- C. MODALE : RÉDACTION DE RAPPORT ADAPTÉE AU RÔLE ---
   function modalRedigerRapport(role) {
-    var icon = role === "commercial" ? "💼" : role === "support" ? "🎧" : role === "dev" ? "💻" : "📋";
+    var icon = role === "commercial" ? "" : role === "support" ? "" : role === "dev" ? "" : "";
     var aujourdhui = new Date().toISOString().split("T")[0];
 
     var html = '<form id="form-soumettre-rapport" style="display:flex;flex-direction:column;gap:var(--space-3)">';
@@ -7289,8 +7289,8 @@
     html += '<div class="field"><label>Objectifs & Attendus précis de la Direction</label><textarea class="input" name="descriptionAttendus" rows="3" required>' + (p.descriptionAttendus || "") + '</textarea></div>';
 
     html += '<div class="field"><label>Activer cette exigence de rapport</label><select class="input" name="actif">';
-    html += '<option value="true"' + (p.actif !== false ? " selected" : "") + '>🟢 Oui (Obligatoire)</option>';
-    html += '<option value="false"' + (p.actif === false ? " selected" : "") + '>🔴 Non (Optionnel)</option>';
+    html += '<option value="true"' + (p.actif !== false ? " selected" : "") + '>Oui (Obligatoire)</option>';
+    html += '<option value="false"' + (p.actif === false ? " selected" : "") + '>Non (Optionnel)</option>';
     html += '</select></div>';
 
     html += '<div id="erreur-modifier-frequence" class="erreur-inline" style="display:none"></div>';
@@ -7298,7 +7298,7 @@
     html += '</form>';
 
     ouvrirModal({
-      titre: '<span>⚙️</span> Configurer l\'Échéance de Rapport · ' + libelleRole,
+      titre: 'Configurer l\'Échéance de Rapport · ' + libelleRole,
       corps: html,
       boutonFermer: true,
       largeur: "560px",
@@ -7337,8 +7337,8 @@
     html += '</div>';
 
     html += '<div class="field"><label>Décision de la Direction</label><select class="input" name="statut">';
-    html += '<option value="valide_direction" selected>✅ Valider & Approuver le compte-rendu</option>';
-    html += '<option value="demande_precision">⚠️ Demander des précisions / Actions correctives</option>';
+    html += '<option value="valide_direction" selected>Valider & Approuver le compte-rendu</option>';
+    html += '<option value="demande_precision">Demander des précisions / Actions correctives</option>';
     html += '</select></div>';
 
     html += '<div class="field"><label>Commentaires & Directives de la Direction</label><textarea class="input" name="commentaireDirection" rows="3" placeholder="Ex. Excellent travail sur les signatures. Pour la semaine prochaine, prioriser le closing sur Me Touré..."></textarea></div>';
@@ -7348,7 +7348,7 @@
     html += '</form>';
 
     ouvrirModal({
-      titre: '<span>👑</span> Évaluation Direction · Rapport d\'Activité',
+      titre: 'Évaluation Direction · Rapport d\'Activité',
       corps: html,
       boutonFermer: true,
       largeur: "540px",
