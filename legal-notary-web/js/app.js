@@ -935,25 +935,25 @@
 
     html += '<div class="dashboard-panel" style="border-left:4px solid var(--color-gold)">';
     html += '<div class="panel-header" style="background:var(--color-surface-2)">';
-    html += '<div class="panel-title" style="color:var(--color-text)"><span>👑</span> Actions Prioritaires & Actes en Attente de Visa Notarié</div>';
-    html += '<span class="tag tag-gold" style="font-size:11px;font-weight:700">⚡ ' + actesPrioritaires.length + ' acte(s) à viser</span>';
+    html += '<div class="panel-title" style="color:var(--color-text)">Actions Prioritaires & Actes en Attente de Visa Notarié</div>';
+    html += '<span class="tag tag-gold" style="font-size:11px;font-weight:700">' + actesPrioritaires.length + ' acte(s) à viser</span>';
     html += '</div>';
 
     if (!actesPrioritaires.length) {
-      html += '<div style="padding:var(--space-3) var(--space-4);color:var(--color-text-dim);font-size:13px;display:flex;align-items:center;gap:8px"><span>✅</span> Tous les projets d\'actes sont à jour. Aucun visa en souffrance.</div>';
+      html += '<div style="padding:var(--space-3) var(--space-4);color:var(--color-text-dim);font-size:13px">Tous les projets d\'actes sont à jour. Aucun visa en souffrance.</div>';
     } else {
       html += '<div style="padding:var(--space-3);display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:var(--space-3)">';
       actesPrioritaires.forEach(function (d) {
         var clientAff = (d.comparantsNoms && d.comparantsNoms.trim()) ? d.comparantsNoms.trim() : "Comparants";
         html += '<div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius);padding:12px;display:flex;flex-direction:column;gap:6px;box-shadow:var(--shadow-sm)">';
         html += '<div style="display:flex;justify-content:space-between;align-items:center">';
-        html += '<span style="font-family:monospace;font-size:11.5px;font-weight:700;color:var(--color-accent)">📁 ' + d.numeroDossier + '</span>';
+        html += '<span style="font-family:monospace;font-size:11.5px;font-weight:700;color:var(--color-accent)">' + d.numeroDossier + '</span>';
         html += '<span class="tag tag-missing" style="font-size:10px;padding:2px 6px">Étape ' + d.etapeActuelle + ' · ' + labelEtape(d.etapeActuelle) + '</span>';
         html += '</div>';
         html += '<div style="font-family:var(--font-heading);font-weight:700;font-size:14px;color:var(--color-text)">' + labelActe(d.typeActeId) + '</div>';
-        html += '<div style="font-size:12px;color:var(--color-text-dim)">👤 ' + clientAff + ' · <strong>' + fmtFCFA(d.montantAssiette) + '</strong></div>';
+        html += '<div style="font-size:12px;color:var(--color-text-dim)">' + clientAff + ' · <strong>' + fmtFCFA(d.montantAssiette) + '</strong></div>';
         html += '<div style="display:flex;gap:6px;margin-top:4px">';
-        html += '<button type="button" class="btn btn-primary btn-ouvrir-urgence" data-id="' + d.id + '" style="font-size:11.5px;padding:4px 10px;flex:1">👁️ Examiner & Viser →</button>';
+        html += '<button type="button" class="btn btn-primary btn-ouvrir-urgence" data-id="' + d.id + '" style="font-size:11.5px;padding:5px 12px;flex:1">Examiner le projet →</button>';
         html += '</div>';
         html += '</div>';
       });
@@ -978,7 +978,7 @@
     ];
 
     html += '<div class="dashboard-panel">';
-    html += '<div class="panel-header"><div class="panel-title"><span>👥</span> Instruction des actes par collaborateur</div><span class="tag tag-outline">' + clercs.length + ' clerc(s) instructeur(s)</span></div>';
+    html += '<div class="panel-header"><div class="panel-title">Instruction des actes par collaborateur</div><span class="tag tag-outline">' + clercs.length + ' clerc(s) instructeur(s)</span></div>';
 
     if (!clercs.length) {
       html += '<div class="panel-body" style="text-align:center;padding:var(--space-4);color:var(--color-text-dim)">Aucun clerc assigné à l\'instruction pour le moment.</div>';
@@ -1390,10 +1390,9 @@
 
       // Alerte visuelle prioritaire si des dossiers sont en retard
       if (dossiersEnRetard.length > 0) {
-        html += '<div class="card" style="background:rgba(239,68,68,0.1);border:1.5px solid var(--color-danger);margin-bottom:var(--space-4);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">';
+        html += '<div class="card" style="background:rgba(239,68,68,0.08);border:1.5px solid var(--color-danger);margin-bottom:var(--space-4);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">';
         html += '<div style="display:flex;align-items:center;gap:10px">';
-        html += '<span style="font-size:24px">🚨</span>';
-        html += '<div><strong style="color:var(--color-danger);font-size:14px">Alerte non-respect des délais : ' + dossiersEnRetard.length + ' dossier(s) papier en retard de restitution !</strong>';
+        html += '<div><strong style="color:var(--color-danger);font-size:14px">Alerte Délais : ' + dossiersEnRetard.length + ' dossier(s) papier en retard de restitution</strong>';
         html += '<div style="font-size:12px;color:var(--color-text-dim)">Veuillez relancer les collaborateurs concernés ou enregistrer le retour du dossier.</div></div></div>';
         html += '<button type="button" class="btn btn-secondary btn-aller-mouvements" style="font-size:11.5px;padding:4px 10px">Voir les retards →</button>';
         html += '</div>';
@@ -1403,24 +1402,24 @@
 
       // Panneau Raccourcis Métier de l'archiviste
       html += '<div class="dashboard-panel">';
-      html += '<div class="panel-header"><div class="panel-title"><span>⚡</span> Actions rapides d\'archivage & gestion des sorties</div></div>';
+      html += '<div class="panel-header"><div class="panel-title">Actions rapides d\'archivage & gestion des sorties</div></div>';
       html += '<div class="panel-body">';
       html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:var(--space-3)">';
       
       html += '<div class="card" id="card-action-scan-ocr" style="cursor:pointer;border-left:4px solid var(--color-accent);padding:var(--space-4)">';
-      html += '<div style="font-family:var(--font-heading);font-weight:700;font-size:15px;margin-bottom:4px">📄 Numériser & Scanner (OCR)</div>';
+      html += '<div style="font-family:var(--font-heading);font-weight:700;font-size:15px;margin-bottom:4px">Numériser & Scanner (OCR)</div>';
       html += '<div class="card-body">Reconnaissance de texte OCR et indexation automatique sur le dossier.</div></div>';
 
       html += '<div class="card" id="card-action-verser-minute" style="cursor:pointer;border-left:4px solid #10b981;padding:var(--space-4)">';
-      html += '<div style="font-family:var(--font-heading);font-weight:700;font-size:15px;margin-bottom:4px">📥 Verser au Minutier & Sceller</div>';
+      html += '<div style="font-family:var(--font-heading);font-weight:700;font-size:15px;margin-bottom:4px">Verser au Minutier & Sceller</div>';
       html += '<div class="card-body">Attribuer un numéro d\'ordre, sceller l\'empreinte SHA-256 et archiver.</div></div>';
 
       html += '<div class="card" id="card-action-nouveau-carton" style="cursor:pointer;border-left:4px solid #f59e0b;padding:var(--space-4)">';
-      html += '<div style="font-family:var(--font-heading);font-weight:700;font-size:15px;margin-bottom:4px">📦 Nouveau Carton physique</div>';
+      html += '<div style="font-family:var(--font-heading);font-weight:700;font-size:15px;margin-bottom:4px">Nouveau Carton physique</div>';
       html += '<div class="card-body">Créer un nouveau carton, définir sa cote, son rayonnage et sa capacité.</div></div>';
 
       html += '<div class="card" id="card-action-sortie-physique" style="cursor:pointer;border-left:4px solid #ec4899;padding:var(--space-4)">';
-      html += '<div style="font-family:var(--font-heading);font-weight:700;font-size:15px;margin-bottom:4px">📤 Demande de sortie physique</div>';
+      html += '<div style="font-family:var(--font-heading);font-weight:700;font-size:15px;margin-bottom:4px">Demande de sortie physique</div>';
       html += '<div class="card-body">Enregistrer une demande de prêt de dossier papier pour consultation au bureau.</div></div>';
 
       html += '</div></div></div>';
@@ -1711,7 +1710,7 @@
         
         // En-tête de la carte
         html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">';
-        html += '<span style="font-family:monospace;font-size:11.5px;font-weight:700;color:var(--color-accent)">📁 ' + d.numeroDossier + '</span>';
+        html += '<span style="font-family:monospace;font-size:11.5px;font-weight:700;color:var(--color-accent)">' + d.numeroDossier + '</span>';
         html += '<span class="tag ' + nv.tag + '" style="font-size:10px;padding:2px 6px;font-weight:700">' + nv.label + '</span>';
         html += '</div>';
 
@@ -1719,12 +1718,12 @@
         html += '<div style="font-family:var(--font-heading);font-weight:700;font-size:14px;color:var(--color-text);margin-bottom:4px">' + labelActe(d.typeActeId) + '</div>';
 
         // Comparants
-        html += '<div style="font-size:12px;color:var(--color-text-dim);margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">👤 ' + clientAff + '</div>';
+        html += '<div style="font-size:12px;color:var(--color-text-dim);margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + clientAff + '</div>';
 
         // Pied de carte : Assiette & Clerc
         html += '<div style="display:flex;align-items:center;justify-content:space-between;padding-top:6px;border-top:1px solid var(--color-border-subtle);font-size:11.5px">';
         html += '<span style="font-weight:700;color:var(--color-text)">' + fmtFCFA(d.montantAssiette) + '</span>';
-        html += '<span style="color:var(--color-text-dim)">✍️ ' + nomClerc(d.clercAssigneId) + '</span>';
+        html += '<span style="color:var(--color-text-dim)">' + nomClerc(d.clercAssigneId) + '</span>';
         html += '</div>';
 
         html += '</div>';
@@ -4060,13 +4059,13 @@
 
       var html = '<div style="position:sticky;top:calc(-1 * var(--space-6));background:var(--color-bg);z-index:2;padding-top:var(--space-1);margin-bottom:var(--space-4)">';
       html += '<div style="display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);flex-wrap:wrap">';
-      html += '<div><h1 style="margin:0">⚖️ Référentiel des Barèmes d\'Émoluments</h1>';
+      html += '<div><h1 style="margin:0">Référentiel des Barèmes d\'Émoluments</h1>';
       html += '<p style="opacity:.65;font-size:14px;margin:2px 0 0">Barèmes officiels réglementés (Décret N° 2013-279 du 24/04/2013) et barèmes d\'étude dégressifs par tranches.</p></div>';
       
       html += '<div style="display:flex;gap:var(--space-2);align-items:center">';
-      html += '<button type="button" class="btn btn-secondary" id="btn-exporter-baremes" style="font-size:13px;padding:8px 12px;font-weight:600;display:flex;align-items:center;gap:6px"><span>📥</span> Exporter (JSON)</button>';
-      html += '<button type="button" class="btn btn-secondary" id="btn-emoluments-ouvrir-taxe" style="font-size:13px;padding:8px 14px;font-weight:600;display:flex;align-items:center;gap:6px"><span>💰</span> Établir une Fiche de Taxe</button>';
-      html += '<button type="button" class="btn btn-primary" id="btn-creer-nouveau-bareme" style="font-size:13px;padding:8px 16px;font-weight:700;display:flex;align-items:center;gap:6px"><span>➕</span> Nouveau Barème d\'Émoluments</button>';
+      html += '<button type="button" class="btn btn-secondary" id="btn-exporter-baremes" style="font-size:13px;padding:8px 14px;font-weight:600">Exporter le référentiel (JSON)</button>';
+      html += '<button type="button" class="btn btn-secondary" id="btn-emoluments-ouvrir-taxe" style="font-size:13px;padding:8px 14px;font-weight:600">Établir une fiche de taxe</button>';
+      html += '<button type="button" class="btn btn-primary" id="btn-creer-nouveau-bareme" style="font-size:13px;padding:8px 16px;font-weight:700">+ Nouveau Barème d\'Émoluments</button>';
       html += '</div>';
       html += '</div></div>';
 
@@ -4082,7 +4081,7 @@
       // Barre de recherche
       html += '<div class="dashboard-panel" style="margin-top:var(--space-4)">';
       html += '<div class="panel-header" style="flex-wrap:wrap;gap:var(--space-3);align-items:center">';
-      html += '<div class="panel-title" style="display:flex;align-items:center;gap:6px"><span>📚</span> Catalogue des Barèmes d\'Émoluments & Dégressivité</div>';
+      html += '<div class="panel-title">Catalogue des Barèmes d\'Émoluments & Dégressivité</div>';
       html += '<div style="font-size:12px;font-weight:600;color:var(--color-text-dim)">' + baremesFiltres.length + ' barème(s) listé(s)</div>';
       html += '</div>';
 
@@ -4099,9 +4098,8 @@
       // Grille des cartes de barèmes
       if (!baremesFiltres.length) {
         html += '<div style="padding:40px 20px;text-align:center;color:var(--color-text-dim)">';
-        html += '<div style="font-size:32px;margin-bottom:8px">⚖️</div>';
         html += '<div style="font-size:15px;font-weight:600">Aucun barème d\'émoluments trouvé.</div>';
-        html += '<div style="font-size:12px;margin-top:4px">Cliquez sur le bouton "➕ Nouveau Barème d\'Émoluments" pour en créer un.</div>';
+        html += '<div style="font-size:12px;margin-top:4px">Cliquez sur le bouton "+ Nouveau Barème d\'Émoluments" pour en créer un.</div>';
         html += '</div>';
       } else {
         html += '<div style="padding:var(--space-4);display:grid;grid-template-columns:repeat(auto-fit, minmax(420px, 1fr));gap:var(--space-4)">';
@@ -4115,7 +4113,7 @@
           // Titre et code du barème
           html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">';
           html += '<div>';
-          html += '<div style="font-size:16px;font-weight:700;color:var(--color-text);display:flex;align-items:center;gap:6px"><span>⚖️</span> ' + b.libelle + '</div>';
+          html += '<div style="font-size:16px;font-weight:700;color:var(--color-text)">' + b.libelle + '</div>';
           html += '<div style="display:flex;align-items:center;gap:6px;margin-top:4px">';
           html += '<span class="tag tag-outline" style="font-family:monospace;font-size:11px">code: ' + b.code + '</span>';
           if (estBaremeSysteme) {
@@ -4128,10 +4126,10 @@
 
           // Actions Modifier / Associer / Supprimer
           html += '<div style="display:flex;gap:4px">';
-          html += '<button type="button" class="btn btn-secondary btn-modifier-bareme" data-id="' + b.id + '" style="font-size:11.5px;padding:4px 8px;font-weight:600" title="Modifier le barème et ses tranches">✏️ Modifier</button>';
-          html += '<button type="button" class="btn btn-ghost btn-associer-bareme" data-id="' + b.id + '" style="font-size:11.5px;padding:4px 8px;font-weight:600" title="Associer des types d\'actes">🔗 Actes (' + actesAssocies.length + ')</button>';
+          html += '<button type="button" class="btn btn-secondary btn-modifier-bareme" data-id="' + b.id + '" style="font-size:11.5px;padding:5px 10px;font-weight:600" title="Modifier le barème et ses tranches">Modifier</button>';
+          html += '<button type="button" class="btn btn-ghost btn-associer-bareme" data-id="' + b.id + '" style="font-size:11.5px;padding:5px 10px;font-weight:600" title="Associer des types d\'actes">Actes associés (' + actesAssocies.length + ')</button>';
           if (!estBaremeSysteme) {
-            html += '<button type="button" class="btn btn-ghost btn-supprimer-bareme" data-id="' + b.id + '" style="font-size:11.5px;padding:4px 8px;color:#ef4444" title="Supprimer ce barème">🗑️</button>';
+            html += '<button type="button" class="btn btn-ghost btn-supprimer-bareme" data-id="' + b.id + '" style="font-size:11.5px;padding:5px 8px;color:#ef4444" title="Supprimer ce barème">Supprimer</button>';
           }
           html += '</div>';
           html += '</div>';
@@ -4287,8 +4285,8 @@
   function modalCreerModifierBareme(baremeExistant, tousLesActes) {
     var estEdition = !!baremeExistant;
     var titreModal = estEdition 
-      ? "✏️ Modifier le Barème : " + baremeExistant.libelle 
-      : "➕ Nouveau Barème d'Émoluments (Décret N° 2013-279)";
+      ? "Modifier le Barème : " + baremeExistant.libelle 
+      : "Nouveau Barème d'Émoluments (Décret N° 2013-279)";
 
     var tranchesInitiales = (baremeExistant && baremeExistant.tranches && baremeExistant.tranches.length > 0)
       ? baremeExistant.tranches.slice()
@@ -4312,11 +4310,11 @@
     html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:4px">';
     html += '<div style="font-size:11.5px;font-weight:700;text-transform:uppercase;color:var(--color-text-dim)">Tranches Dégressives (En Pourcentage)</div>';
     html += '<div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap">';
-    html += '<span style="font-size:11px;color:var(--color-text-dim)">⚡ Modèle :</span>';
+    html += '<span style="font-size:11px;color:var(--color-text-dim)">Modèles :</span>';
     html += '<button type="button" class="btn btn-ghost btn-modele-tranche" data-modele="vente" style="font-size:10.5px;padding:2px 6px">Ventes (4%)</button>';
     html += '<button type="button" class="btn btn-ghost btn-modele-tranche" data-modele="societe" style="font-size:10.5px;padding:2px 6px">Sociétés (1.5%)</button>';
     html += '<button type="button" class="btn btn-ghost btn-modele-tranche" data-modele="pret" style="font-size:10.5px;padding:2px 6px">Prêts (1.5%)</button>';
-    html += '<button type="button" class="btn btn-secondary" id="btn-ajouter-tranche" style="font-size:11px;padding:3px 8px;font-weight:700">➕ Ajouter</button>';
+    html += '<button type="button" class="btn btn-secondary" id="btn-ajouter-tranche" style="font-size:11px;padding:3px 8px;font-weight:700">+ Ajouter</button>';
     html += '</div>';
     html += '</div>';
 
@@ -4328,7 +4326,7 @@
 
     html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:var(--space-2)">';
     html += '<button type="button" class="btn btn-ghost" id="btn-annuler-modal-bareme">Annuler</button>';
-    html += '<button type="submit" class="btn btn-primary" id="btn-sauvegarder-bareme">💾 ' + (estEdition ? "Enregistrer les modifications" : "Créer le Barème") + '</button>';
+    html += '<button type="submit" class="btn btn-primary" id="btn-sauvegarder-bareme">' + (estEdition ? "Enregistrer les modifications" : "Créer le Barème") + '</button>';
     html += '</div>';
 
     html += '</form>';
@@ -4496,13 +4494,13 @@
 
     html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:var(--space-2)">';
     html += '<button type="button" class="btn btn-ghost" id="btn-annuler-assoc-actes">Fermer</button>';
-    html += '<button type="submit" class="btn btn-primary">💾 Enregistrer les associations</button>';
+    html += '<button type="submit" class="btn btn-primary">Enregistrer les associations</button>';
     html += '</div>';
 
     html += '</form>';
 
     ouvrirModal({
-      titre: "🔗 Associer des Actes — " + bareme.libelle,
+      titre: "Association des Actes — " + bareme.libelle,
       corps: html,
       boutonFermer: true,
       largeur: "560px",
@@ -5547,7 +5545,7 @@
       var styleBox = estActuel 
         ? 'border:1.5px solid var(--color-accent);background:var(--color-accent-dim);color:var(--color-text);font-weight:700' 
         : (estPasse ? 'border:1px solid rgba(16,185,129,0.3);background:var(--color-signed-bg);color:var(--color-signed)' : 'border:1px solid var(--color-border);background:var(--color-surface-2);color:var(--color-text-dim)');
-      var icone = estPasse ? "✓ " : (estActuel ? "▶ " : (et.id + ". "));
+      var icone = estPasse ? "✓ " : (et.id + ". ");
       html += '<div style="padding:6px 8px;border-radius:var(--radius);font-size:11px;text-align:center;' + styleBox + '">' + icone + et.libelle + '</div>';
     });
     html += '</div>';
