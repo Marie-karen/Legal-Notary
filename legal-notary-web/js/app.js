@@ -927,6 +927,41 @@
     html += renderPipelineDossiers();
 
     // =========================================================================
+    // 1.5. ACTIONS PRIORITAIRES & ACTES EN ATTENTE DE VISA (MES URGENCES DU JOUR)
+    // =========================================================================
+    var actesPrioritaires = cache.dossiers.filter(function (d) {
+      return (d.etapeActuelle === 4 || d.etapeActuelle === 3) && d.statut === "actif";
+    }).slice(0, 4);
+
+    html += '<div class="dashboard-panel" style="border-left:4px solid var(--color-gold)">';
+    html += '<div class="panel-header" style="background:var(--color-surface-2)">';
+    html += '<div class="panel-title" style="color:var(--color-text)"><span>👑</span> Actions Prioritaires & Actes en Attente de Visa Notarié</div>';
+    html += '<span class="tag tag-gold" style="font-size:11px;font-weight:700">⚡ ' + actesPrioritaires.length + ' acte(s) à viser</span>';
+    html += '</div>';
+
+    if (!actesPrioritaires.length) {
+      html += '<div style="padding:var(--space-3) var(--space-4);color:var(--color-text-dim);font-size:13px;display:flex;align-items:center;gap:8px"><span>✅</span> Tous les projets d\'actes sont à jour. Aucun visa en souffrance.</div>';
+    } else {
+      html += '<div style="padding:var(--space-3);display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:var(--space-3)">';
+      actesPrioritaires.forEach(function (d) {
+        var clientAff = (d.comparantsNoms && d.comparantsNoms.trim()) ? d.comparantsNoms.trim() : "Comparants";
+        html += '<div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius);padding:12px;display:flex;flex-direction:column;gap:6px;box-shadow:var(--shadow-sm)">';
+        html += '<div style="display:flex;justify-content:space-between;align-items:center">';
+        html += '<span style="font-family:monospace;font-size:11.5px;font-weight:700;color:var(--color-accent)">📁 ' + d.numeroDossier + '</span>';
+        html += '<span class="tag tag-missing" style="font-size:10px;padding:2px 6px">Étape ' + d.etapeActuelle + ' · ' + labelEtape(d.etapeActuelle) + '</span>';
+        html += '</div>';
+        html += '<div style="font-family:var(--font-heading);font-weight:700;font-size:14px;color:var(--color-text)">' + labelActe(d.typeActeId) + '</div>';
+        html += '<div style="font-size:12px;color:var(--color-text-dim)">👤 ' + clientAff + ' · <strong>' + fmtFCFA(d.montantAssiette) + '</strong></div>';
+        html += '<div style="display:flex;gap:6px;margin-top:4px">';
+        html += '<button type="button" class="btn btn-primary btn-ouvrir-urgence" data-id="' + d.id + '" style="font-size:11.5px;padding:4px 10px;flex:1">👁️ Examiner & Viser →</button>';
+        html += '</div>';
+        html += '</div>';
+      });
+      html += '</div>';
+    }
+    html += '</div>';
+
+    // =========================================================================
     // 2. INSTRUCTION DES ACTES PAR CLERC (Tableau complet style Pipeline)
     // =========================================================================
     var clercs = cache.equipeListe.filter(function (m) {
@@ -1604,39 +1639,117 @@
     conteneur.querySelectorAll(".alerte-item").forEach(function (e) {
       e.addEventListener("click", function () { ouvrirDossier(e.dataset.id, "dashboard"); });
     });
+    conteneur.querySelectorAll(".btn-ouvrir-urgence").forEach(function (btn) {
+      btn.addEventListener("click", function (ev) {
+        ev.stopPropagation();
+        ouvrirDossier(btn.dataset.id, "dashboard");
+      });
+    });
     var btnPush = conteneur.querySelector("#bouton-demander-push");
     if (btnPush) btnPush.addEventListener("click", proposerWebPushMoment);
   }
 
   // -----------------------------------------------------------------
-  // Kanban
+  // Kanban (Circuit d'instruction interactif 6 étapes)
   // -----------------------------------------------------------------
+  var etatKanban = {
+    recherche: "",
+  };
+
   function renderKanban() {
     var c = document.getElementById("vue-kanban");
+    var q = (etatKanban.recherche || "").toLowerCase().trim();
+
+    var dossiersFiltres = cache.dossiers.filter(function (d) {
+      if (!q) return true;
+      var texte = (d.numeroDossier + " " + labelActe(d.typeActeId) + " " + (d.comparantsNoms || "") + " " + nomClerc(d.clercAssigneId)).toLowerCase();
+      return texte.indexOf(q) !== -1;
+    });
+
     var html = '<div style="position:sticky;top:calc(-1 * var(--space-6));background:var(--color-bg);z-index:2;padding-top:var(--space-1);margin-bottom:var(--space-3)">';
-    html += '<h1 style="margin-bottom:2px">Circuit d\'instruction</h1><p style="opacity:.65;font-size:14px;margin:0">Les 6 étapes du pipeline — cliquer une carte pour ouvrir la fiche dossier.</p></div>';
+    html += '<div style="display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);flex-wrap:wrap">';
+    html += '<div><h1 style="margin-bottom:2px">Circuit d\'instruction Notarial</h1>';
+    html += '<p style="opacity:.65;font-size:14px;margin:0">Pipeline d\'avancement des 6 étapes juridiques — ' + dossiersFiltres.length + ' dossier(s) affiché(s).</p></div>';
+    
+    // Barre de recherche rapide intégrée
+    html += '<div style="display:flex;align-items:center;gap:var(--space-2);min-width:280px;position:relative">';
+    html += '<input type="search" id="filtre-kanban-recherche" class="input" placeholder="🔍 Filtrer par dossier, comparant, acte..." value="' + (etatKanban.recherche || "") + '" style="font-size:12.5px;padding:6px 12px 6px 32px;min-height:36px">';
+    html += '<span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);opacity:.5;font-size:12px">🔍</span>';
+    if (etatKanban.recherche) {
+      html += '<button type="button" id="btn-effacer-kanban" class="btn btn-ghost" style="font-size:11px;padding:4px 6px">Effacer</button>';
+    }
+    html += '</div>';
+    html += '</div></div>';
+
     html += '<div style="display:flex;flex-direction:column;gap:var(--space-4)">';
 
     cache.etapesPipeline.forEach(function (etape, idx) {
-      var ds = cache.dossiers.filter(function (d) { return d.etapeActuelle === etape.id; });
+      var ds = dossiersFiltres.filter(function (d) { return d.etapeActuelle === etape.id; });
       var accent = ETAPE_COULEUR[idx % ETAPE_COULEUR.length];
-      html += '<div style="width:100%;display:flex;flex-direction:column;border-radius:var(--radius);background:color-mix(in srgb, ' + accent + ' 8%, var(--color-surface));border-left:3px solid ' + accent + ';overflow:hidden">';
-      html += '<div style="display:flex;align-items:baseline;justify-content:space-between;padding:var(--space-2) var(--space-3) var(--space-1)"><h5 style="margin:0;color:' + accent + ';font-size:22px;font-weight:700;font-family:var(--font-heading)">' + etape.libelle + '</h5><span class="tag tag-neutral">' + ds.length + '</span></div>';
-      html += '<div style="display:flex;flex-wrap:wrap;gap:var(--space-2);padding:0 var(--space-3) var(--space-3)">';
+      
+      html += '<div style="width:100%;display:flex;flex-direction:column;border-radius:var(--radius-lg);background:var(--color-surface);border:1px solid var(--color-border);border-left:4px solid ' + accent + ';overflow:hidden;box-shadow:var(--shadow-sm)">';
+      
+      // En-tête de l'étape
+      html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:var(--space-2) var(--space-4);background:var(--color-surface-2);border-bottom:1px solid var(--color-border)">';
+      html += '<div style="display:flex;align-items:center;gap:8px">';
+      html += '<span style="font-size:12px;font-weight:700;padding:2px 8px;border-radius:999px;background:' + accent + ';color:#fff">Étape ' + etape.id + '</span>';
+      html += '<h5 style="margin:0;font-size:15px;font-weight:700;font-family:var(--font-heading);color:var(--color-text)">' + etape.libelle + '</h5>';
+      html += '</div>';
+      html += '<span class="tag tag-outline" style="font-size:11px;font-weight:700">' + ds.length + ' dossier(s)</span>';
+      html += '</div>';
+
+      // Grille des cartes dossiers
+      html += '<div style="display:flex;flex-wrap:wrap;gap:var(--space-3);padding:var(--space-3)">';
       if (!ds.length) {
-        html += '<div style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:var(--space-3) var(--space-4);color:var(--color-text-dim);text-align:center;font-size:12px;border:1px dashed var(--color-divider);border-radius:var(--radius);flex:0 0 260px;width:260px"><span style="font-size:20px;opacity:.6">○</span><span>Aucun dossier à cette étape</span></div>';
+        html += '<div style="display:flex;align-items:center;justify-content:center;gap:8px;padding:var(--space-3);color:var(--color-text-dim);font-size:12px;border:1px dashed var(--color-border);border-radius:var(--radius);width:100%"><span style="opacity:.6">○</span><span>Aucun dossier à cette étape' + (q ? " correspondant au filtre" : "") + '</span></div>';
       }
       ds.forEach(function (d) {
         var nv = niveauDossier(d.id);
-        html += '<div class="card elev-sm carte-dossier" data-id="' + d.id + '" style="cursor:pointer;flex:0 0 260px;width:260px">';
-        html += '<div style="display:flex;align-items:center;justify-content:space-between"><div class="card-kicker">' + d.numeroDossier + '</div></div>';
-        html += '<div class="card-title" style="font-size:15px">' + labelActe(d.typeActeId) + '</div>';
-        html += '<div class="card-meta" style="justify-content:space-between"><span>' + fmtFCFA(d.montantAssiette) + '</span><span class="tag ' + nv.tag + '" style="font-weight:700">' + nv.label + '</span></div></div>';
+        var clientAff = (d.comparantsNoms && d.comparantsNoms.trim()) ? d.comparantsNoms.trim() : "Comparant(s)";
+
+        html += '<div class="card elev-sm carte-dossier" data-id="' + d.id + '" style="cursor:pointer;flex:0 0 280px;width:280px;background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius);padding:12px;transition:all .15s ease">';
+        
+        // En-tête de la carte
+        html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">';
+        html += '<span style="font-family:monospace;font-size:11.5px;font-weight:700;color:var(--color-accent)">📁 ' + d.numeroDossier + '</span>';
+        html += '<span class="tag ' + nv.tag + '" style="font-size:10px;padding:2px 6px;font-weight:700">' + nv.label + '</span>';
+        html += '</div>';
+
+        // Titre de l'acte
+        html += '<div style="font-family:var(--font-heading);font-weight:700;font-size:14px;color:var(--color-text);margin-bottom:4px">' + labelActe(d.typeActeId) + '</div>';
+
+        // Comparants
+        html += '<div style="font-size:12px;color:var(--color-text-dim);margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">👤 ' + clientAff + '</div>';
+
+        // Pied de carte : Assiette & Clerc
+        html += '<div style="display:flex;align-items:center;justify-content:space-between;padding-top:6px;border-top:1px solid var(--color-border-subtle);font-size:11.5px">';
+        html += '<span style="font-weight:700;color:var(--color-text)">' + fmtFCFA(d.montantAssiette) + '</span>';
+        html += '<span style="color:var(--color-text-dim)">✍️ ' + nomClerc(d.clercAssigneId) + '</span>';
+        html += '</div>';
+
+        html += '</div>';
       });
       html += '</div></div>';
     });
     html += '</div>';
     c.innerHTML = html;
+
+    // Écouteur de recherche Kanban
+    var inputRecherche = document.getElementById("filtre-kanban-recherche");
+    if (inputRecherche) {
+      inputRecherche.addEventListener("input", function () {
+        etatKanban.recherche = inputRecherche.value;
+        renderKanban();
+      });
+    }
+    var btnEffacer = document.getElementById("btn-effacer-kanban");
+    if (btnEffacer) {
+      btnEffacer.addEventListener("click", function () {
+        etatKanban.recherche = "";
+        renderKanban();
+      });
+    }
+
     c.querySelectorAll(".carte-dossier").forEach(function (e) {
       e.addEventListener("click", function () { ouvrirDossier(e.dataset.id, "kanban"); });
     });
@@ -3951,6 +4064,7 @@
       html += '<p style="opacity:.65;font-size:14px;margin:2px 0 0">Barèmes officiels réglementés (Décret N° 2013-279 du 24/04/2013) et barèmes d\'étude dégressifs par tranches.</p></div>';
       
       html += '<div style="display:flex;gap:var(--space-2);align-items:center">';
+      html += '<button type="button" class="btn btn-secondary" id="btn-exporter-baremes" style="font-size:13px;padding:8px 12px;font-weight:600;display:flex;align-items:center;gap:6px"><span>📥</span> Exporter (JSON)</button>';
       html += '<button type="button" class="btn btn-secondary" id="btn-emoluments-ouvrir-taxe" style="font-size:13px;padding:8px 14px;font-weight:600;display:flex;align-items:center;gap:6px"><span>💰</span> Établir une Fiche de Taxe</button>';
       html += '<button type="button" class="btn btn-primary" id="btn-creer-nouveau-bareme" style="font-size:13px;padding:8px 16px;font-weight:700;display:flex;align-items:center;gap:6px"><span>➕</span> Nouveau Barème d\'Émoluments</button>';
       html += '</div>';
@@ -4090,6 +4204,30 @@
         });
       }
 
+      // Bouton Exporter Barèmes
+      var btnExport = document.getElementById("btn-exporter-baremes");
+      if (btnExport) {
+        btnExport.addEventListener("click", function () {
+          var exportData = {
+            office: (cache.parametres && cache.parametres.nomEtude) || "Office Notarial",
+            dateExport: new Date().toISOString(),
+            decretReference: "Décret N° 2013-279 du 24 Avril 2013",
+            baremes: baremes,
+            typesActes: tousLesActes,
+          };
+          var blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
+          var url = URL.createObjectURL(blob);
+          var a = document.createElement("a");
+          a.href = url;
+          a.download = "Referentiel_Baremes_Emoluments_" + new Date().toISOString().slice(0, 10) + ".json";
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          toast("Référentiel des barèmes exporté avec succès !");
+        });
+      }
+
       // Bouton Nouveau Barème
       var btnCreer = document.getElementById("btn-creer-nouveau-bareme");
       if (btnCreer) {
@@ -4169,11 +4307,17 @@
     html += '<div class="field"><label>Code unique</label><input class="input" id="bareme-modal-code" value="' + (baremeExistant ? baremeExistant.code : "") + '" placeholder="Ex: baux_commerciaux" ' + (estEdition ? "readonly" : "required") + ' style="font-family:monospace"></div>';
     html += '</div>';
 
-    // Section des tranches dynamiques
+    // Section des tranches dynamiques avec modèles rapides
     html += '<div style="background:var(--color-surface-2);border-radius:var(--radius);border:1px solid var(--color-border);padding:12px">';
-    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:4px">';
     html += '<div style="font-size:11.5px;font-weight:700;text-transform:uppercase;color:var(--color-text-dim)">Tranches Dégressives (En Pourcentage)</div>';
-    html += '<button type="button" class="btn btn-secondary" id="btn-ajouter-tranche" style="font-size:11px;padding:3px 8px;font-weight:700">➕ Ajouter une tranche</button>';
+    html += '<div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap">';
+    html += '<span style="font-size:11px;color:var(--color-text-dim)">⚡ Modèle :</span>';
+    html += '<button type="button" class="btn btn-ghost btn-modele-tranche" data-modele="vente" style="font-size:10.5px;padding:2px 6px">Ventes (4%)</button>';
+    html += '<button type="button" class="btn btn-ghost btn-modele-tranche" data-modele="societe" style="font-size:10.5px;padding:2px 6px">Sociétés (1.5%)</button>';
+    html += '<button type="button" class="btn btn-ghost btn-modele-tranche" data-modele="pret" style="font-size:10.5px;padding:2px 6px">Prêts (1.5%)</button>';
+    html += '<button type="button" class="btn btn-secondary" id="btn-ajouter-tranche" style="font-size:11px;padding:3px 8px;font-weight:700">➕ Ajouter</button>';
+    html += '</div>';
     html += '</div>';
 
     html += '<div id="conteneur-tranches-dynamiques" style="display:flex;flex-direction:column;gap:6px">';
@@ -4251,6 +4395,35 @@
         }
 
         renderTranchesLignes();
+
+        document.querySelectorAll(".btn-modele-tranche").forEach(function (btnMod) {
+          btnMod.addEventListener("click", function () {
+            var mod = btnMod.dataset.modele;
+            if (mod === "vente") {
+              tranchesLocales = [
+                { ordre: 1, jusqua: 10000000, taux: 0.04 },
+                { ordre: 2, jusqua: 30000000, taux: 0.025 },
+                { ordre: 3, jusqua: 90000000, taux: 0.015 },
+                { ordre: 4, jusqua: null, taux: 0.0075 },
+              ];
+            } else if (mod === "societe") {
+              tranchesLocales = [
+                { ordre: 1, jusqua: 10000000, taux: 0.015 },
+                { ordre: 2, jusqua: 50000000, taux: 0.01 },
+                { ordre: 3, jusqua: 100000000, taux: 0.0075 },
+                { ordre: 4, jusqua: null, taux: 0.005 },
+              ];
+            } else if (mod === "pret") {
+              tranchesLocales = [
+                { ordre: 1, jusqua: 10000000, taux: 0.015 },
+                { ordre: 2, jusqua: 50000000, taux: 0.0075 },
+                { ordre: 3, jusqua: null, taux: 0.005 },
+              ];
+            }
+            renderTranchesLignes();
+            toast("Modèle de tranches '" + mod + "' appliqué !");
+          });
+        });
 
         document.getElementById("btn-ajouter-tranche").addEventListener("click", function () {
           var dernierJusqua = tranchesLocales.length > 0 ? (tranchesLocales[tranchesLocales.length - 1].jusqua || 50000000) : 10000000;
@@ -5354,7 +5527,31 @@
     html += '<div><div class="text-muted" style="font-size:11px;text-transform:uppercase">Comparants</div><div style="font-size:15px">' + d.comparants.map(function (c2) { return c2.nom + " (" + c2.qualite + ")"; }).join(", ") + '</div></div>';
     html += '<div><div class="text-muted" style="font-size:11px;text-transform:uppercase">Montant</div><div style="font-size:15px">' + fmtFCFA(d.montantAssiette) + '</div></div>';
     html += '<div><div class="text-muted" style="font-size:11px;text-transform:uppercase">Clerc assigné</div><div style="font-size:15px">' + nomClerc(d.clercAssigneId) + '</div></div>';
-    html += '<div><div class="text-muted" style="font-size:11px;text-transform:uppercase">Avancement</div><div style="font-size:15px">' + avgPct + ' %</div></div></div>';
+    html += '<div><div class="text-muted" style="font-size:11px;text-transform:uppercase">Avancement Tâches</div><div style="font-size:15px">' + avgPct + ' %</div></div></div>';
+
+    // Stepper Visuel 6 Étapes Notariales
+    html += '<div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:var(--space-4);margin-bottom:var(--space-4);box-shadow:var(--shadow-sm)">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">';
+    html += '<div style="font-size:12px;font-weight:700;text-transform:uppercase;color:var(--color-text-dim);letter-spacing:0.05em">Circuit d\'instruction juridique de l\'office</div>';
+    html += '<span class="tag tag-progress" style="font-size:11px;font-weight:700">Étape ' + d.etapeActuelle + ' / 6 (' + Math.round((d.etapeActuelle / 6) * 100) + ' % complet)</span>';
+    html += '</div>';
+
+    html += '<div style="height:6px;background:var(--color-surface-2);border-radius:3px;overflow:hidden;margin-bottom:14px">';
+    html += '<div style="height:100%;width:' + ((d.etapeActuelle / 6) * 100) + '%;background:linear-gradient(90deg, #4f46e5, #38bdf8);border-radius:3px;transition:width .3s ease"></div>';
+    html += '</div>';
+
+    html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:6px">';
+    cache.etapesPipeline.forEach(function (et) {
+      var estPasse = et.id < d.etapeActuelle;
+      var estActuel = et.id === d.etapeActuelle;
+      var styleBox = estActuel 
+        ? 'border:1.5px solid var(--color-accent);background:var(--color-accent-dim);color:var(--color-text);font-weight:700' 
+        : (estPasse ? 'border:1px solid rgba(16,185,129,0.3);background:var(--color-signed-bg);color:var(--color-signed)' : 'border:1px solid var(--color-border);background:var(--color-surface-2);color:var(--color-text-dim)');
+      var icone = estPasse ? "✓ " : (estActuel ? "▶ " : (et.id + ". "));
+      html += '<div style="padding:6px 8px;border-radius:var(--radius);font-size:11px;text-align:center;' + styleBox + '">' + icone + et.libelle + '</div>';
+    });
+    html += '</div>';
+    html += '</div>';
 
     if ((cache.permissions.closeDossier) && d.statut === "actif") {
       html += '<div style="display:flex;gap:var(--space-2);margin-bottom:var(--space-6);flex-wrap:wrap">';
@@ -7243,6 +7440,20 @@
     }
 
     actualiserAffichageBoutonTheme(document.documentElement.getAttribute("data-theme") || "dark");
+
+    // Raccourci Clavier Universel : Touche Échap (Escape) pour fermer les modales et panneaux latéraux
+    window.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" || e.keyCode === 27) {
+        var racineModal = document.getElementById("modal-racine");
+        if (racineModal && racineModal.style.display !== "none") {
+          fermerModal();
+        }
+        var tiroir = document.querySelector(".tiroir-overlay");
+        if (tiroir) {
+          tiroir.remove();
+        }
+      }
+    });
 
     var chargement = document.getElementById("chargement-initial");
     if (chargement) chargement.style.display = "none";
