@@ -570,9 +570,13 @@
   function ouvrirModal(options) {
     var racine = document.getElementById("modal-racine");
     if (!racine) return;
+    var styleConteneur = options.style || "";
+    if (options.largeur) {
+      styleConteneur = "max-width:" + options.largeur + ";width:96%;" + styleConteneur;
+    }
     racine.innerHTML =
       '<div class="modal-backdrop" id="modal-bg">' +
-        '<div class="modal-conteneur" style="' + (options.style || "") + '">' +
+        '<div class="modal-conteneur" style="' + styleConteneur + '">' +
           '<div class="modal-header">' +
             '<div style="font-family:var(--font-heading);font-weight:700;font-size:16px">' + (options.titre || "") + '</div>' +
             '<button type="button" class="btn btn-ghost" id="modal-fermer" style="padding:4px 8px;font-size:16px">✕</button>' +
@@ -4881,9 +4885,11 @@
       var html = '<div style="position:sticky;top:calc(-1 * var(--space-6));background:var(--color-bg);z-index:2;padding-top:var(--space-1);margin-bottom:var(--space-4)">';
       html += '<div style="display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);flex-wrap:wrap">';
       html += '<div><h1 style="margin:0">Fiches de Taxe & Facturation Notariale</h1>';
-      html += '<p style="opacity:.65;font-size:14px;margin:2px 0 0">Workflow de validation (Comptable ↔ Notaire), Décret 2013-279, droits DGI, TVA 18%, débours et facturation.</p></div>';
+      html += '<p style="opacity:.65;font-size:14px;margin:2px 0 0">Workflow de validation (Comptable ↔ Notaire), Décret 2013-279, droits DGI, TVA 18%, débours et matrices Excel d\'étude.</p></div>';
+      html += '<div style="display:flex;gap:8px;align-items:center">';
+      html += '<button type="button" class="btn btn-secondary" id="btn-gerer-modeles-excel" style="font-size:13px;padding:8px 14px;font-weight:600">📂 Modèles Excel d\'Étude</button>';
       html += '<button type="button" class="btn btn-primary" id="btn-nouvelle-fiche-taxe" style="font-size:13px;padding:8px 16px;font-weight:700;display:flex;align-items:center;gap:6px">+ Établir une Fiche de Taxe</button>';
-      html += '</div></div>';
+      html += '</div></div></div>';
 
       html += renderKpisGrid(kpis);
 
@@ -4906,42 +4912,35 @@
         }
       });
 
-      // Barre de recherche et filtres par statut déontologique
-      html += '<div class="dashboard-panel" style="margin-top:var(--space-4)">';
-      html += '<div class="panel-header" style="flex-wrap:wrap;gap:var(--space-3);align-items:center">';
-      html += '<div class="panel-title" style="display:flex;align-items:center;gap:6px">📋 Circuit de Liquidation des Taxes & Factures</div>';
-      html += '<div style="display:flex;gap:var(--space-2);align-items:center;flex-wrap:wrap;margin-left:auto">';
-      html += '<div style="display:flex;background:var(--color-surface);padding:3px;border-radius:var(--radius);border:1px solid var(--color-border);gap:4px;flex-wrap:wrap">';
-      
-      function renderBtnFiltre(cle, label, count, colorClass) {
-        var isActif = etatComptabilite.filtre === cle;
-        var styleBg = isActif ? "var(--color-accent)" : "transparent";
-        var styleCol = isActif ? "#fff" : "var(--color-text-dim)";
-        return '<button type="button" class="btn-filtre-compta" data-filtre="' + cle + '" style="font-size:11.5px;padding:4px 10px;border-radius:4px;border:none;background:' + styleBg + ';color:' + styleCol + ';cursor:pointer;font-weight:600">' + label + ' (' + count + ')</button>';
-      }
+      // Filtres déontologiques
+      html += '<div style="display:flex;gap:var(--space-2);margin-bottom:var(--space-4);flex-wrap:wrap;border-bottom:1px solid var(--color-border);padding-bottom:var(--space-2)">';
+      var tabs = [
+        { id: "tous", label: "Tous les dossiers", count: cache.dossiers.length },
+        { id: "soumis", label: "⏳ En attente Visa Notaire", count: nbSoumis, color: "#d97706" },
+        { id: "valide", label: "✅ Validées", count: nbValides, color: "#059669" },
+        { id: "a_corriger", label: "⚠️ À Corriger", count: nbACorriger, color: "#dc2626" },
+        { id: "brouillon", label: "📝 Brouillons / À Établir", count: nbBrouillons },
+      ];
 
-      html += renderBtnFiltre("tous", "Tous", cache.dossiers.length);
-      html += renderBtnFiltre("soumis", "⏳ En attente Visa Notaire", nbSoumis);
-      html += renderBtnFiltre("valide", "✅ Validées", nbValides);
-      html += renderBtnFiltre("a_corriger", "⚠️ À Corriger", nbACorriger);
-      html += renderBtnFiltre("brouillon", "📝 À Établir / Brouillon", nbBrouillons);
-
-      html += '</div>';
-      html += '</div>';
+      tabs.forEach(function (t) {
+        var estActif = (etatComptabilite.filtre === t.id);
+        var badgeStyle = t.color ? 'background:' + t.color + ';color:#fff;font-weight:700' : 'background:var(--color-surface-2);color:var(--color-text-dim)';
+        var btnStyle = estActif ? 'border-bottom:2px solid var(--color-accent);font-weight:700;color:var(--color-accent)' : 'color:var(--color-text-dim)';
+        html += '<button type="button" class="btn btn-ghost btn-filtre-compta" data-filtre="' + t.id + '" style="font-size:13px;padding:6px 12px;border-radius:0;' + btnStyle + '">';
+        html += t.label + ' <span style="font-size:11px;padding:2px 6px;border-radius:10px;margin-left:4px;' + badgeStyle + '">' + t.count + '</span>';
+        html += '</button>';
+      });
       html += '</div>';
 
-      // Champ de recherche Client / Dossier
-      html += '<div style="padding:var(--space-3) var(--space-4);background:var(--color-surface-2);border-bottom:1px solid var(--color-border);display:flex;align-items:center;gap:var(--space-3)">';
-      html += '<div style="flex:1;position:relative">';
-      html += '<input type="search" id="filtre-client-compta" class="input" placeholder="Rechercher par nom de client, comparant, N° de dossier ou type d\'acte..." value="' + (etatComptabilite.rechercheClient || "") + '" style="background:var(--color-bg);font-size:13px;padding:8px 12px 8px 36px;width:100%">';
-      html += '</div>';
+      // Barre de recherche client
+      html += '<div style="display:flex;gap:var(--space-2);margin-bottom:var(--space-3);align-items:center">';
+      html += '<input type="text" id="filtre-client-compta" class="input" placeholder="🔍 Rechercher par client, affaire ou numéro de dossier…" value="' + escapeHtml(etatComptabilite.rechercheClient) + '" style="max-width:380px;font-size:13px">';
       if (etatComptabilite.rechercheClient) {
-        html += '<button type="button" id="btn-effacer-recherche-compta" class="btn btn-ghost" style="font-size:12px;padding:6px 10px">Effacer le filtre</button>';
+        html += '<button type="button" class="btn btn-ghost" id="btn-effacer-recherche-compta" style="font-size:12px">Effacer</button>';
       }
       html += '</div>';
 
-      // Filtrage des dossiers
-      var query = (etatComptabilite.rechercheClient || "").toLowerCase().trim();
+      // Liste filtrée des dossiers
       var dossiersFiltres = cache.dossiers.filter(function (d) {
         var f = fichesParDossier[d.id];
         var st = f ? (f.statut || "valide") : "brouillon";
@@ -4949,70 +4948,47 @@
         if (etatComptabilite.filtre === "soumis" && st !== "soumis") return false;
         if (etatComptabilite.filtre === "valide" && (st !== "valide" && st !== "valide_corrige")) return false;
         if (etatComptabilite.filtre === "a_corriger" && st !== "a_corriger") return false;
-        if (etatComptabilite.filtre === "brouillon" && f && st !== "brouillon") return false;
+        if (etatComptabilite.filtre === "brouillon" && st !== "brouillon") return false;
 
-        if (!query) return true;
-        var client = (d.comparantsNoms || "").toLowerCase();
-        var num = (d.numeroDossier || "").toLowerCase();
-        var acte = (labelActe(d.typeActeId) || "").toLowerCase();
-        return client.indexOf(query) !== -1 || num.indexOf(query) !== -1 || acte.indexOf(query) !== -1;
+        if (etatComptabilite.rechercheClient) {
+          var q = etatComptabilite.rechercheClient.toLowerCase();
+          var matchClient = (d.clientNom || "").toLowerCase().indexOf(q) !== -1;
+          var matchComp = (d.comparantsNoms || "").toLowerCase().indexOf(q) !== -1;
+          var matchNum = (d.numeroDossier || "").toLowerCase().indexOf(q) !== -1;
+          var matchActe = (d.typeActeId || "").toLowerCase().indexOf(q) !== -1;
+          if (!matchClient && !matchComp && !matchNum && !matchActe) return false;
+        }
+        return true;
       });
 
+      html += '<div class="dashboard-panel">';
+      html += '<div class="panel-header"><div class="panel-title">Portefeuille d\'actes & Tableaux de Liquidation</div><span class="tag tag-outline">' + dossiersFiltres.length + ' dossier(s)</span></div>';
+
       if (!dossiersFiltres.length) {
-        html += '<div class="panel-body" style="text-align:center;padding:var(--space-8);color:var(--color-text-dim)">';
-        if (query) {
-          html += '<div style="font-size:28px;margin-bottom:8px">🔍</div>';
-          html += '<strong style="color:var(--color-text)">Aucun dossier trouvé pour la recherche « ' + escapeHtml(etatComptabilite.rechercheClient) + ' »</strong>';
-          html += '<p style="font-size:12px;margin:6px 0 12px">Vérifiez l\'orthographe ou effacez le filtre.</p>';
-          html += '<button type="button" class="btn btn-secondary" id="btn-reinit-recherche" style="font-size:12px">Afficher tous les dossiers</button>';
-        } else {
-          html += '<p>Aucun dossier dans cette catégorie de liquidation pour le moment.</p>';
-        }
-        html += '</div>';
+        html += '<div class="panel-body" style="text-align:center;padding:var(--space-6);color:var(--color-text-dim)">Aucun dossier ne correspond aux critères sélectionnés.</div>';
       } else {
-        html += '<div class="table-wrap"><table class="table"><thead><tr><th>N° Dossier</th><th>Client (Comparants)</th><th>Type d\'acte</th><th>Assiette Fiscale</th><th>Émoluments HT</th><th>DGI & Droits</th><th>Total TTC</th><th>Statut de Validation</th><th>Actions</th></tr></thead><tbody>';
+        html += '<div class="table-wrap"><table class="table" style="font-size:12.5px"><thead><tr>';
+        html += '<th>Dossier</th><th>Client / Comparants</th><th>Acte</th><th style="text-align:right">Assiette (Base)</th><th style="text-align:right">CA Émoluments HT</th><th style="text-align:right">Total TTC</th><th>Statut Visa</th><th>Actions Rapides</th>';
+        html += '</tr></thead><tbody>';
 
         dossiersFiltres.forEach(function (d) {
-          var clientAff = d.comparantsNoms && d.comparantsNoms.trim() ? d.comparantsNoms.trim() : "Comparant(s)";
-          var typeActe = cache.typesActesParId[d.typeActeId] || {};
-          var assiette = Number(d.montantAssiette) || 0;
           var ficheRecente = fichesParDossier[d.id];
-
-          var emolumentsHT = 75000;
-          var tva = 13500;
-          var droitsDGI = 18000;
-          var debours = 24000;
-          var totalTTC = 130500;
           var statutFiche = ficheRecente ? (ficheRecente.statut || "valide") : "a_etablir";
-
-          if (ficheRecente && ficheRecente.donnees && ficheRecente.donnees.totaux) {
-            var dt = ficheRecente.donnees;
-            emolumentsHT = (dt.emoluments && dt.emoluments.montantHT) || 0;
-            tva = dt.tva || 0;
-            droitsDGI = (dt.droitEnregistrement && dt.droitEnregistrement.montant) || 0;
-            totalTTC = (dt.totaux && dt.totaux.general) || 0;
-          } else {
-            if (assiette > 0) {
-              if (assiette <= 5000000) emolumentsHT = assiette * 0.04;
-              else if (assiette <= 20000000) emolumentsHT = 200000 + (assiette - 5000000) * 0.025;
-              else emolumentsHT = 575000 + (assiette - 20000000) * 0.015;
-            }
-            emolumentsHT = Math.max(Math.round(emolumentsHT), 75000);
-            tva = Math.round(emolumentsHT * 0.18);
-            droitsDGI = typeActe.droitEnregistrementMode === "fixe" ? (typeActe.droitEnregistrementValeur || 18000) : Math.round(assiette * (typeActe.droitEnregistrementValeur || 0.04));
-            totalTTC = emolumentsHT + tva + droitsDGI + debours;
-          }
-
-          html += '<tr class="ligne-compta-dossier" data-id="' + d.id + '">';
-          html += '<td><strong style="font-family:monospace;color:var(--color-text)">' + d.numeroDossier + '</strong></td>';
-          html += '<td><div style="font-weight:700;color:var(--color-text);font-size:13px">' + clientAff + '</div></td>';
-          html += '<td style="font-size:12px">' + labelActe(d.typeActeId) + '</td>';
-          html += '<td style="font-weight:600">' + fmtFCFA(assiette) + '</td>';
-          html += '<td style="font-weight:700;color:var(--color-accent)">' + fmtFCFA(emolumentsHT) + '</td>';
-          html += '<td style="font-weight:600">' + fmtFCFA(droitsDGI) + '</td>';
-          html += '<td style="font-weight:700;color:var(--color-text);font-size:13px">' + fmtFCFA(totalTTC) + '</td>';
+          var montantAssiette = Number(d.montantAssiette) || 0;
           
-          // Colonne Statut Déontologique
+          var totaux = (ficheRecente && ficheRecente.donnees && ficheRecente.donnees.totaux) ? ficheRecente.donnees.totaux : null;
+          var emoHT = totaux ? (totaux.emolumentsHT || totaux.general) : 0;
+          var totalGen = totaux ? totaux.general : 0;
+
+          html += '<tr>';
+          html += '<td><strong style="color:var(--color-text)">' + d.numeroDossier + '</strong></td>';
+          html += '<td><div>' + escapeHtml(d.comparantsNoms || d.clientNom || "Client") + '</div></td>';
+          html += '<td><span class="tag tag-outline">' + labelActe(d.typeActeId) + '</span></td>';
+          html += '<td style="text-align:right;font-weight:600">' + fmtFCFA(montantAssiette) + '</td>';
+          html += '<td style="text-align:right;color:var(--color-accent);font-weight:700">' + (totaux ? fmtFCFA(emoHT) : '<span style="color:var(--color-text-dim)">—</span>') + '</td>';
+          html += '<td style="text-align:right;font-weight:800;color:var(--color-text)">' + (totaux ? fmtFCFA(totalGen) : '<span style="color:var(--color-text-dim)">—</span>') + '</td>';
+
+          // Statut Déontologique
           html += '<td>';
           if (statutFiche === "soumis") {
             html += '<span class="tag" style="background:rgba(245,158,11,0.15);color:#d97706;font-weight:700;font-size:10.5px;padding:3px 6px;border:1px solid rgba(245,158,11,0.3)">⏳ Soumis Notaire</span>';
@@ -5036,9 +5012,10 @@
           var classeBtnAction = (statutFiche === 'soumis' && estNotaire) ? 'btn btn-primary' : (ficheRecente ? 'btn btn-secondary' : 'btn btn-primary');
 
           html += '<button type="button" class="' + classeBtnAction + ' btn-ouvrir-modal-taxe" data-id="' + d.id + '" style="font-size:11px;padding:3px 7px;font-weight:700">' + libelleBtnAction + '</button>';
-          html += '<button type="button" class="btn btn-secondary btn-imprimer-fiche-taxe-row" data-id="' + d.id + '" style="font-size:11px;padding:3px 6px" title="Imprimer la Fiche de Taxe interne en 4 colonnes">🖨️ Taxe</button>';
-          html += '<button type="button" class="btn btn-secondary btn-imprimer-note-frais-row" data-id="' + d.id + '" style="font-size:11px;padding:3px 6px" title="Imprimer la Note de Frais client">📄 Note Frais</button>';
-          html += '<button type="button" class="btn btn-secondary btn-imprimer-facture-row" data-id="' + d.id + '" style="font-size:11px;padding:3px 6px" title="Imprimer la Facture Normalisée avec TVA 18%">🧾 Facture</button>';
+          html += '<button type="button" class="btn btn-secondary btn-imprimer-fiche-taxe-row" data-id="' + d.id + '" style="font-size:11px;padding:3px 6px" title="Consulter et imprimer la Fiche de Taxe Interne">🖨️ Taxe</button>';
+          html += '<button type="button" class="btn btn-secondary btn-imprimer-note-frais-row" data-id="' + d.id + '" style="font-size:11px;padding:3px 6px" title="Consulter et imprimer la Note de Frais client">📄 Note Frais</button>';
+          html += '<button type="button" class="btn btn-secondary btn-imprimer-facture-row" data-id="' + d.id + '" style="font-size:11px;padding:3px 6px" title="Consulter et imprimer la Facture Normalisée avec TVA 18%">🧾 Facture</button>';
+          html += '<button type="button" class="btn btn-secondary btn-export-excel-row" data-id="' + d.id + '" style="font-size:11px;padding:3px 6px;background:rgba(16,185,129,0.1);color:#059669;border-color:rgba(16,185,129,0.3);font-weight:700" title="Télécharger le fichier Excel officiel (.xlsx) complété">📊 Excel</button>';
           html += '<button type="button" class="btn btn-ghost btn-voir-dossier-direct" data-id="' + d.id + '" style="font-size:11px;padding:3px 6px" title="Voir le dossier">Dossier →</button>';
           html += '</div></td>';
           html += '</tr>';
@@ -5051,6 +5028,13 @@
       c.innerHTML = html;
 
       // Écouteurs d'événements
+      var btnModelesExcel = document.getElementById("btn-gerer-modeles-excel");
+      if (btnModelesExcel) {
+        btnModelesExcel.addEventListener("click", function () {
+          modalGererModelesExcel();
+        });
+      }
+
       var inputRecherche = document.getElementById("filtre-client-compta");
       if (inputRecherche) {
         inputRecherche.addEventListener("input", function (ev) {
@@ -5094,10 +5078,9 @@
       });
 
       function imprimerDepuisLigne(dId, formatDoc) {
-        var dos = cache.dossiers.find(function (it) { return it.id === dId; });
-        if (!dos) return;
+        var dos = (cache.dossiers || []).find(function (it) { return String(it.id) === String(dId); });
         var ficheRec = fichesParDossier[dId];
-        if (ficheRec && ficheRec.donnees) {
+        if (dos && ficheRec && ficheRec.donnees) {
           imprimerDecompteOfficiel(dos, ficheRec.donnees, formatDoc);
         } else {
           API.post("/api/fiscal/calculer", { typeActeId: dos.typeActeId, montant: dos.montantAssiette, saisies: {} })
@@ -5348,10 +5331,11 @@
       html += '<button type="button" class="btn btn-ghost" id="btn-annuler-modal-taxe">Fermer</button>';
       html += '<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">';
       
-      // Boutons d'impression des 3 formats normés
+      // Boutons d'impression des 3 formats normés & Export Excel
       html += '<button type="button" class="btn btn-secondary" id="btn-imprimer-fiche-taxe" title="Consulter et imprimer la Fiche de Taxe Interne de liquidation">🖨️ Fiche de Taxe</button>';
       html += '<button type="button" class="btn btn-secondary" id="btn-imprimer-note-frais" title="Consulter et imprimer la Note de Frais Prévisionnelle Client">📄 Note de Frais</button>';
       html += '<button type="button" class="btn btn-secondary" id="btn-imprimer-facture" title="Consulter et imprimer la Facture Normalisée TTC avec TVA 18%">🧾 Facture</button>';
+      html += '<button type="button" class="btn btn-secondary" id="btn-modal-taxe-export-excel" style="background:rgba(16,185,129,0.12);color:#059669;border-color:rgba(16,185,129,0.35);font-weight:700" title="Télécharger le fichier Excel officiel (.xlsx) complété">📊 Excel (.xlsx)</button>';
 
       if (estNotaire) {
         // Actions Notaire
@@ -5668,6 +5652,28 @@
               toast("Veuillez patienter pendant le calcul de la taxe.");
             }
           });
+
+          var btnModalExcel = document.getElementById("btn-modal-taxe-export-excel");
+          if (btnModalExcel) {
+            btnModalExcel.addEventListener("click", function () {
+              var dId = selectDossier.value;
+              var curDossier = (cache.dossiers || []).find(function (d) { return d.id === dId; }) || { id: dId };
+              var nomFichier = "Liquidation_" + (curDossier.numeroDossier || "Notaire") + ".xlsx";
+              var saisies = construireSaisies();
+              toast("Génération et remplissage de la matrice Excel (.xlsx)...");
+              var payload = {
+                dossierId: dId,
+                typeActeId: selectTypeActe.value,
+                montant: extraireNombre(inputMontant.value),
+                saisies: saisies,
+                clientNom: curDossier.comparantsNoms || curDossier.clientNom,
+                numeroDossier: curDossier.numeroDossier,
+              };
+              API.telechargerFichier("/api/fiscal/export-excel", payload, nomFichier)
+                .then(function () { toast("Classeur Excel (.xlsx) téléchargé avec succès !"); })
+                .catch(function (e) { toast("Erreur export Excel : " + e.message); });
+            });
+          }
 
           // Fonctions de soumission déontologique
           function enregistrerTaxeAvecStatut(statutCible, commentaireCustom) {
@@ -6363,10 +6369,17 @@
   }
 
   // -----------------------------------------------------------------
-  // Modale de Visualisation & Impression A4 Immédiate
+  // Modale de Visualisation & Impression A4 Immédiate & Export Excel
   // -----------------------------------------------------------------
   function modalApercuDocument(dossier, donneesFiche, formatInitial) {
     var formatActuel = formatInitial || "fiche_taxe";
+
+    if (typeof dossier === "string") {
+      var dTrouve = (cache.dossiers || []).find(function (d) { return String(d.id) === String(dossier); });
+      dossier = dTrouve || { id: dossier, numeroDossier: dossier };
+    }
+    dossier = dossier || {};
+    donneesFiche = donneesFiche || {};
 
     function titreModal(fmt) {
       if (fmt === "fiche_taxe") return "🖨️ Fiche de Taxe (Document Interne de Liquidation)";
@@ -6374,15 +6387,37 @@
       return "🧾 Facture Normalisée Notariée (Document Fiscal TTC)";
     }
 
-    API.get("/api/parametres").then(function (params) {
+    Promise.all([
+      API.get("/api/parametres").catch(function () { return {}; }),
+      API.get("/api/fiscal/modeles-excel").catch(function () { return []; }),
+    ]).then(function (res) {
+      var params = res[0] || {};
+      var modelesExcel = res[1] || [];
+
       function construireCorps(fmt) {
         var html = '<div style="display:flex;flex-direction:column;gap:12px">';
         
-        // Barre de bascule rapide d'onglets
-        html += '<div style="display:flex;gap:6px;background:var(--color-surface-2);padding:6px;border-radius:var(--radius);border:1px solid var(--color-border);flex-wrap:wrap">';
+        // Barre d'onglets et actions Excel
+        html += '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--color-surface-2);padding:8px 12px;border-radius:var(--radius);border:1px solid var(--color-border);flex-wrap:wrap">';
+        
+        // Onglets
+        html += '<div style="display:flex;gap:6px;flex-wrap:wrap">';
         html += '<button type="button" class="btn ' + (fmt === "fiche_taxe" ? "btn-primary" : "btn-ghost") + ' btn-switch-doc-fmt" data-fmt="fiche_taxe" style="font-size:12px;padding:4px 10px">🖨️ Fiche de Taxe (Interne)</button>';
         html += '<button type="button" class="btn ' + (fmt === "note_frais" ? "btn-primary" : "btn-ghost") + ' btn-switch-doc-fmt" data-fmt="note_frais" style="font-size:12px;padding:4px 10px">📄 Note de Frais (Client)</button>';
         html += '<button type="button" class="btn ' + (fmt === "facture" ? "btn-primary" : "btn-ghost") + ' btn-switch-doc-fmt" data-fmt="facture" style="font-size:12px;padding:4px 10px">🧾 Facture Normalisée (TTC)</button>';
+        html += '</div>';
+
+        // Sélecteur & Export Excel
+        html += '<div style="display:flex;align-items:center;gap:6px;margin-left:auto;flex-wrap:wrap">';
+        html += '<span style="font-size:11.5px;color:var(--color-text-dim)">Matrice :</span>';
+        html += '<select id="modal-select-modele-excel" class="input" style="font-size:12px;padding:3px 6px;height:auto;min-height:30px;width:auto;max-width:200px">';
+        modelesExcel.forEach(function (m) {
+          html += '<option value="' + m.id + '"' + (m.parDefaut ? ' selected' : '') + '>' + escapeHtml(m.nom) + '</option>';
+        });
+        html += '</select>';
+        html += '<button type="button" class="btn btn-secondary" id="modal-btn-export-excel" style="font-size:12px;padding:4px 10px;background:rgba(16,185,129,0.12);color:#059669;border-color:rgba(16,185,129,0.35);font-weight:700" title="Télécharger le classeur Excel (.xlsx) pré-rempli">📊 Télécharger Excel (.xlsx)</button>';
+        html += '</div>';
+
         html += '</div>';
 
         // Zone d'aperçu papier A4
@@ -6405,12 +6440,38 @@
         }
       }
 
+      function executerExportExcel() {
+        var sel = document.getElementById("modal-select-modele-excel");
+        var modeleChoisi = sel ? sel.value : "TEST";
+        var nomFichier = "Liquidation_" + ((dossier && (dossier.numeroDossier || dossier.numero_dossier)) || "Notaire") + ".xlsx";
+
+        toast("Génération du fichier Excel (.xlsx) en cours...");
+        var payload = {
+          dossierId: dossier.id,
+          typeActeId: dossier.typeActeId || dossier.type_acte_id,
+          montant: dossier.montantAssiette !== undefined ? dossier.montantAssiette : dossier.montant_assiette,
+          saisies: (donneesFiche && donneesFiche.saisies) || {},
+          modeleId: modeleChoisi,
+          clientNom: dossier.comparantsNoms || dossier.clientNom,
+          numeroDossier: dossier.numeroDossier || dossier.numero_dossier,
+        };
+
+        API.telechargerFichier("/api/fiscal/export-excel", payload, nomFichier)
+          .then(function () {
+            toast("Classeur Excel (.xlsx) téléchargé avec succès !");
+          })
+          .catch(function (e) {
+            toast("Erreur export Excel : " + e.message);
+          });
+      }
+
       ouvrirModal({
         titre: titreModal(formatActuel),
-        largeur: "900px",
+        largeur: "940px",
         corps: construireCorps(formatActuel),
         footer: 
           '<button class="btn btn-secondary" id="modal-doc-fermer">Fermer</button>' +
+          '<button class="btn btn-secondary" id="modal-doc-footer-excel" style="background:rgba(16,185,129,0.12);color:#059669;border-color:rgba(16,185,129,0.35);font-weight:700">📊 Télécharger Excel (.xlsx)</button>' +
           '<button class="btn btn-primary" id="modal-doc-imprimer" style="background:#059669;border-color:#059669;font-weight:700">🖨️ Imprimer / Télécharger en PDF (A4)</button>',
         apresOuverture: function () {
           var modalDom = document.getElementById("modal-racine");
@@ -6421,6 +6482,12 @@
           modalDom.querySelector("#modal-doc-imprimer").addEventListener("click", function () {
             executerImpression(formatActuel);
           });
+
+          var btnTopExcel = modalDom.querySelector("#modal-btn-export-excel");
+          if (btnTopExcel) btnTopExcel.addEventListener("click", executerExportExcel);
+
+          var btnFootExcel = modalDom.querySelector("#modal-doc-footer-excel");
+          if (btnFootExcel) btnFootExcel.addEventListener("click", executerExportExcel);
 
           modalDom.querySelectorAll(".btn-switch-doc-fmt").forEach(function (btn) {
             btn.addEventListener("click", function () {
@@ -6436,7 +6503,7 @@
                   b.className = "btn btn-ghost btn-switch-doc-fmt";
                 }
               });
-              var titreEl = modalDom.querySelector(".modal-title") || modalDom.querySelector("h2") || modalDom.querySelector("h3");
+              var titreEl = modalDom.querySelector(".modal-title") || modalDom.querySelector("h2") || modalDom.querySelector("h3") || modalDom.querySelector("#modal-header-titre");
               if (titreEl) titreEl.textContent = titreModal(formatActuel);
             });
           });
@@ -6643,6 +6710,15 @@
     html += '<button type="button" class="btn btn-secondary btn-dossier-print-facture" data-id="' + d.id + '" style="font-size:11.5px;padding:4px 8px;width:100%">🧾 Facture Normalisée (TTC)</button>';
     html += '</div>';
 
+    // 4. Matrice Excel (.xlsx)
+    html += '<div style="background:rgba(5,150,105,0.06);border:1px solid rgba(5,150,105,0.25);border-radius:var(--radius);padding:12px;display:flex;flex-direction:column;justify-content:space-between;gap:8px">';
+    html += '<div>';
+    html += '<div style="font-size:11px;font-weight:700;color:#059669;text-transform:uppercase">4️⃣ Matrice Excel (.xlsx)</div>';
+    html += '<div style="font-size:12px;color:var(--color-text);margin-top:3px">Télécharger le classeur officiel Excel avec cellules et formules remplies.</div>';
+    html += '</div>';
+    html += '<button type="button" class="btn btn-secondary btn-dossier-download-excel" data-id="' + d.id + '" style="font-size:11.5px;padding:4px 8px;width:100%;background:rgba(16,185,129,0.12);color:#059669;border-color:rgba(16,185,129,0.35);font-weight:700">📊 Télécharger Excel (.xlsx)</button>';
+    html += '</div>';
+
     html += '</div>';
 
     // Historique des fiches enregistrées
@@ -6793,6 +6869,18 @@
 
     var btnDossierFacture = c.querySelector(".btn-dossier-print-facture");
     if (btnDossierFacture) btnDossierFacture.addEventListener("click", function () { imprimerPourDossier("facture"); });
+
+    var btnDossierExcel = c.querySelector(".btn-dossier-download-excel");
+    if (btnDossierExcel) {
+      btnDossierExcel.addEventListener("click", function () {
+        var numDos = (cache.dossierDetail && cache.dossierDetail.numeroDossier) || "Dossier";
+        var nomFichier = "Liquidation_" + numDos + ".xlsx";
+        toast("Téléchargement du fichier Excel de l'étude (.xlsx)...");
+        API.telechargerFichier("/api/fiscal/dossiers/" + dossierId + "/export-excel", null, nomFichier)
+          .then(function () { toast("Classeur Excel (.xlsx) téléchargé avec succès !"); })
+          .catch(function (e) { toast("Erreur export Excel : " + e.message); });
+      });
+    }
 
     c.querySelectorAll(".btn-ouvrir-modal-taxe").forEach(function (btn) {
       btn.addEventListener("click", function () { modalCreerFicheTaxe(dossierId); });

@@ -101,6 +101,48 @@ window.LegalNotaryAPI = (function () {
     getUtilisateur: getUtilisateur,
     estConnecte: function () { return !!getJeton(); },
     surNonAutorise: surNonAutorise,
+    telechargerFichier: function (chemin, corps, nomFichierDefaut) {
+      var options = {
+        method: corps ? "POST" : "GET",
+        headers: {},
+      };
+      var jeton = getJeton();
+      if (jeton) options.headers.Authorization = "Bearer " + jeton;
+      if (corps) {
+        options.headers["Content-Type"] = "application/json";
+        options.body = JSON.stringify(corps);
+      }
+
+      return fetch(getBaseUrl() + chemin, options).then(function (reponse) {
+        if (!reponse.ok) {
+          return reponse.json().then(function (err) {
+            throw new Error((err && err.erreur) || "Erreur de téléchargement");
+          }).catch(function (e) {
+            throw new Error(e.message || "Erreur de téléchargement");
+          });
+        }
+        var disposition = reponse.headers.get("Content-Disposition");
+        var nomFichier = nomFichierDefaut || "Export_Notaire.xlsx";
+        if (disposition && disposition.indexOf("filename=") !== -1) {
+          var match = disposition.match(/filename="?([^"]+)"?/);
+          if (match && match[1]) nomFichier = match[1];
+        }
+
+        return reponse.blob().then(function (blob) {
+          var url = window.URL.createObjectURL(blob);
+          var a = document.createElement("a");
+          a.style.display = "none";
+          a.href = url;
+          a.download = nomFichier;
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(function () {
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+          }, 200);
+        });
+      });
+    },
   };
 })();
 var LegalNotaryAPI = window.LegalNotaryAPI;

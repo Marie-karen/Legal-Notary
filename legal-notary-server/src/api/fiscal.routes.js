@@ -15,6 +15,7 @@ const { pool } = require("../db/pool");
 const fiscalService = require("../services/fiscal.service");
 const referentielService = require("../services/referentiel.service");
 const parametresService = require("../services/parametres.service");
+const excelService = require("../services/excel.service");
 
 const router = express.Router();
 
@@ -355,6 +356,129 @@ router.get("/toutes-fiches", async (req, res, next) => {
       ORDER BY f.created_at DESC
     `);
     res.json(rows);
+  } catch (e) { next(e); }
+});
+
+// =========================================================================
+// GESTION ET EXPORTS DES FICHIERS EXCEL D'ÉTUDE (.XLSX)
+// =========================================================================
+
+// Liste des modèles Excel disponibles
+router.get("/modeles-excel", async (req, res, next) => {
+  try {
+    const modeles = excelService.listerModelesExcel();
+    res.json(modeles);
+  } catch (e) { next(e); }
+});
+
+// Téléverser un modèle Excel personnalisé pour l'étude
+router.post("/importer-modele-excel", exigerPermission("parametres:modifier"), express.json({ limit: "25mb" }), async (req, res, next) => {
+  try {
+    const { nomFichier, contenuBase64 } = req.body || {};
+    if (!nomFichier || !contenuBase64) {
+      return res.status(400).json({ erreur: "Nom de fichier et contenu base64 requis." });
+    }
+    const buffer = Buffer.from(contenuBase64, "base64");
+    const resultat = excelService.enregistrerModelePersonnalise(nomFichier, buffer);
+    res.json({ message: "Modèle Excel enregistré avec succès.", modele: resultat });
+  } catch (e) { next(e); }
+});
+
+// Exporter la liquidation complète dans le modèle Excel de l'étude (.xlsx)
+router.post("/export-excel", async (req, res, next) => {
+  try {
+    const { dossierId, typeActeId, montant, saisies, modeleId } = req.body || {};
+    
+    let dossier = {};
+    if (dossierId) {
+      const { rows } = await pool.query(
+        `SELECT d.*, 
+                COALESCE((SELECT string_agg(c.nom, ', ') FROM dossier_comparants c WHERE c.dossier_id = d.id), '') AS comparants_noms,
+                t.libelle AS type_acte_libelle
+         FROM dossiers d
+         LEFT JOIN types_actes t ON t.id = d.type_acte_id
+         WHERE d.id = $1`,
+        [dossierId]
+      );
+      if (rows.length) dossier = rows[0];
+    }
+
+    const tActeId = typeActeId || dossier.type_acte_id || "vente_immobiliere";
+    const mAssiette = montant !== undefined ? Number(montant) : (Number(dossier.montant_assiette) || 0);
+
+    const [typeActe, parametres, tranches] = await Promise.all([
+      referentielService.obtenirTypeActe(tActeId),
+      parametresService.obtenir(),
+      referentielService.obtenirTranchesBareme(typeActeId ? (await referentielService.obtenirTypeActe(tActeId))?.baremeEmolumentsId : undefined),
+    ]);
+
+    const ficheCalculee = fiscalService.calculerFicheDeTaxe(typeActe || {}, mAssiette, parametres, tranches || [], saisies || {});
+
+    const bufferExcel = excelService.genererFichierExcelLiquidation(
+      {
+        montantAssiette: mAssiette,
+        comparantsNoms: dossier.comparants_noms || req.body.clientNom || "CLIENT DU DOSSIER",
+        numeroDossier: dossier.numero_dossier || req.body.numeroDossier || "DOSSIER",
+        typeActeLibelle: (typeActe && typeActe.libelle) || dossier.type_acte_libelle || "ACTE NOTARIÉ",
+      },
+      ficheCalculee,
+      parametres,
+      modeleId
+    );
+
+    const nomFichierSortie = `Liquidation_${(dossier.numero_dossier || "Notaire").replace(/[^a-zA-Z0-9_-]/g, "_")}.xlsx`;
+
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    res.setHeader("Content-Disposition", `attachment; filename="${nomFichierSortie}"`);
+    res.send(bufferExcel);
+  } catch (e) { next(e); }
+});
+
+// Télécharger directement le fichier Excel d'un dossier
+router.get("/dossiers/:dossierId/export-excel", async (req, res, next) => {
+  try {
+    const { rows } = await pool.query(
+      `SELECT d.*, 
+              COALESCE((SELECT string_agg(c.nom, ', ') FROM dossier_comparants c WHERE c.dossier_id = d.id), '') AS comparants_noms,
+              t.libelle AS type_acte_libelle
+       FROM dossiers d
+       LEFT JOIN types_actes t ON t.id = d.type_acte_id
+       WHERE d.id = $1`,
+      [req.params.dossierId]
+    );
+    if (!rows.length) return res.status(404).json({ erreur: "Dossier introuvable." });
+    const dossier = rows[0];
+
+    const { rows: fiches } = await pool.query(
+      "SELECT * FROM fiches_taxe WHERE dossier_id = $1 ORDER BY created_at DESC LIMIT 1",
+      [dossier.id]
+    );
+
+    const parametres = await parametresService.obtenir();
+    let ficheDonnees = fiches.length ? fiches[0].donnees : null;
+
+    if (!ficheDonnees) {
+      const typeActe = await referentielService.obtenirTypeActe(dossier.type_acte_id);
+      const tranches = await referentielService.obtenirTranchesBareme(typeActe?.baremeEmolumentsId);
+      ficheDonnees = fiscalService.calculerFicheDeTaxe(typeActe || {}, Number(dossier.montant_assiette) || 0, parametres, tranches || [], {});
+    }
+
+    const bufferExcel = excelService.genererFichierExcelLiquidation(
+      {
+        montantAssiette: Number(dossier.montant_assiette) || 0,
+        comparantsNoms: dossier.comparants_noms || "CLIENT DU DOSSIER",
+        numeroDossier: dossier.numero_dossier || "DOSSIER",
+        typeActeLibelle: dossier.type_acte_libelle || "ACTE NOTARIÉ",
+      },
+      ficheDonnees,
+      parametres,
+      req.query.modeleId
+    );
+
+    const nomFichierSortie = `Liquidation_${(dossier.numero_dossier || "Notaire").replace(/[^a-zA-Z0-9_-]/g, "_")}.xlsx`;
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    res.setHeader("Content-Disposition", `attachment; filename="${nomFichierSortie}"`);
+    res.send(bufferExcel);
   } catch (e) { next(e); }
 });
 
