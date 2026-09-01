@@ -4853,7 +4853,7 @@
   // =========================================================================
   var etatComptabilite = {
     rechercheClient: "",
-    filtre: "tous", // "tous", "avec_fiche", "a_etablir"
+    filtre: "tous", // "tous", "soumis", "valide", "a_corriger", "brouillon"
   };
 
   function renderComptabilite() {
@@ -4869,6 +4869,7 @@
       });
 
       var synthese = calculerSyntheseEtude(cache.dossiers);
+      var estNotaire = cache.utilisateur && (cache.utilisateur.role === "notaire" || cache.utilisateur.role === "premier_clerc" || cache.utilisateur.role === "superadmin");
 
       var kpis = [
         { label: "Honoraires & Émoluments HT", valeur: fmtFCFA(synthese.totalEmolumentsHT), indice: "", icon: "", sub: "Décret N° 2013-279" },
@@ -4880,29 +4881,51 @@
       var html = '<div style="position:sticky;top:calc(-1 * var(--space-6));background:var(--color-bg);z-index:2;padding-top:var(--space-1);margin-bottom:var(--space-4)">';
       html += '<div style="display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);flex-wrap:wrap">';
       html += '<div><h1 style="margin:0">Fiches de Taxe & Facturation Notariale</h1>';
-      html += '<p style="opacity:.65;font-size:14px;margin:2px 0 0">Calcul des émoluments réglementés (Décret 2013-279), droits DGI, TVA 18%, débours et facturation.</p></div>';
-      html += '<button type="button" class="btn btn-primary" id="btn-nouvelle-fiche-taxe" style="font-size:13px;padding:8px 16px;font-weight:700;display:flex;align-items:center;gap:6px">Créer une Fiche de Taxe</button>';
+      html += '<p style="opacity:.65;font-size:14px;margin:2px 0 0">Workflow de validation (Comptable ↔ Notaire), Décret 2013-279, droits DGI, TVA 18%, débours et facturation.</p></div>';
+      html += '<button type="button" class="btn btn-primary" id="btn-nouvelle-fiche-taxe" style="font-size:13px;padding:8px 16px;font-weight:700;display:flex;align-items:center;gap:6px">+ Établir une Fiche de Taxe</button>';
       html += '</div></div>';
 
       html += renderKpisGrid(kpis);
 
-      // Calcul des compteurs
-      var nbAvecFiche = 0;
-      var nbAetablir = 0;
+      // Calcul des compteurs par statut
+      var nbSoumis = 0;
+      var nbValides = 0;
+      var nbACorriger = 0;
+      var nbBrouillons = 0;
+
       cache.dossiers.forEach(function (d) {
-        if (fichesParDossier[d.id]) nbAvecFiche++;
-        else nbAetablir++;
+        var f = fichesParDossier[d.id];
+        if (!f) {
+          nbBrouillons++;
+        } else {
+          var st = f.statut || "valide";
+          if (st === "soumis") nbSoumis++;
+          else if (st === "valide" || st === "valide_corrige") nbValides++;
+          else if (st === "a_corriger") nbACorriger++;
+          else nbBrouillons++;
+        }
       });
 
-      // Barre de recherche et filtres de dossiers/clients
+      // Barre de recherche et filtres par statut déontologique
       html += '<div class="dashboard-panel" style="margin-top:var(--space-4)">';
       html += '<div class="panel-header" style="flex-wrap:wrap;gap:var(--space-3);align-items:center">';
-      html += '<div class="panel-title" style="display:flex;align-items:center;gap:6px">Liste des Dossiers & Fiches de Taxe Client</div>';
+      html += '<div class="panel-title" style="display:flex;align-items:center;gap:6px">📋 Circuit de Liquidation des Taxes & Factures</div>';
       html += '<div style="display:flex;gap:var(--space-2);align-items:center;flex-wrap:wrap;margin-left:auto">';
-      html += '<div style="display:flex;background:var(--color-surface);padding:3px;border-radius:var(--radius);border:1px solid var(--color-border);gap:4px">';
-      html += '<button type="button" class="btn-filtre-compta ' + (etatComptabilite.filtre === "tous" ? "actif" : "") + '" data-filtre="tous" style="font-size:11.5px;padding:4px 10px;border-radius:4px;border:none;background:' + (etatComptabilite.filtre === "tous" ? "var(--color-accent)" : "transparent") + ';color:' + (etatComptabilite.filtre === "tous" ? "#fff" : "var(--color-text-dim)") + ';cursor:pointer;font-weight:600">Tous (' + cache.dossiers.length + ')</button>';
-      html += '<button type="button" class="btn-filtre-compta ' + (etatComptabilite.filtre === "avec_fiche" ? "actif" : "") + '" data-filtre="avec_fiche" style="font-size:11.5px;padding:4px 10px;border-radius:4px;border:none;background:' + (etatComptabilite.filtre === "avec_fiche" ? "var(--color-accent)" : "transparent") + ';color:' + (etatComptabilite.filtre === "avec_fiche" ? "#fff" : "var(--color-text-dim)") + ';cursor:pointer;font-weight:600">Avec Fiche (' + nbAvecFiche + ')</button>';
-      html += '<button type="button" class="btn-filtre-compta ' + (etatComptabilite.filtre === "a_etablir" ? "actif" : "") + '" data-filtre="a_etablir" style="font-size:11.5px;padding:4px 10px;border-radius:4px;border:none;background:' + (etatComptabilite.filtre === "a_etablir" ? "var(--color-accent)" : "transparent") + ';color:' + (etatComptabilite.filtre === "a_etablir" ? "#fff" : "var(--color-text-dim)") + ';cursor:pointer;font-weight:600">À Établir (' + nbAetablir + ')</button>';
+      html += '<div style="display:flex;background:var(--color-surface);padding:3px;border-radius:var(--radius);border:1px solid var(--color-border);gap:4px;flex-wrap:wrap">';
+      
+      function renderBtnFiltre(cle, label, count, colorClass) {
+        var isActif = etatComptabilite.filtre === cle;
+        var styleBg = isActif ? "var(--color-accent)" : "transparent";
+        var styleCol = isActif ? "#fff" : "var(--color-text-dim)";
+        return '<button type="button" class="btn-filtre-compta" data-filtre="' + cle + '" style="font-size:11.5px;padding:4px 10px;border-radius:4px;border:none;background:' + styleBg + ';color:' + styleCol + ';cursor:pointer;font-weight:600">' + label + ' (' + count + ')</button>';
+      }
+
+      html += renderBtnFiltre("tous", "Tous", cache.dossiers.length);
+      html += renderBtnFiltre("soumis", "⏳ En attente Visa Notaire", nbSoumis);
+      html += renderBtnFiltre("valide", "✅ Validées", nbValides);
+      html += renderBtnFiltre("a_corriger", "⚠️ À Corriger", nbACorriger);
+      html += renderBtnFiltre("brouillon", "📝 À Établir / Brouillon", nbBrouillons);
+
       html += '</div>';
       html += '</div>';
       html += '</div>';
@@ -4911,7 +4934,6 @@
       html += '<div style="padding:var(--space-3) var(--space-4);background:var(--color-surface-2);border-bottom:1px solid var(--color-border);display:flex;align-items:center;gap:var(--space-3)">';
       html += '<div style="flex:1;position:relative">';
       html += '<input type="search" id="filtre-client-compta" class="input" placeholder="Rechercher par nom de client, comparant, N° de dossier ou type d\'acte..." value="' + (etatComptabilite.rechercheClient || "") + '" style="background:var(--color-bg);font-size:13px;padding:8px 12px 8px 36px;width:100%">';
-      html += '';
       html += '</div>';
       if (etatComptabilite.rechercheClient) {
         html += '<button type="button" id="btn-effacer-recherche-compta" class="btn btn-ghost" style="font-size:12px;padding:6px 10px">Effacer le filtre</button>';
@@ -4921,9 +4943,13 @@
       // Filtrage des dossiers
       var query = (etatComptabilite.rechercheClient || "").toLowerCase().trim();
       var dossiersFiltres = cache.dossiers.filter(function (d) {
-        var aFiche = !!fichesParDossier[d.id];
-        if (etatComptabilite.filtre === "avec_fiche" && !aFiche) return false;
-        if (etatComptabilite.filtre === "a_etablir" && aFiche) return false;
+        var f = fichesParDossier[d.id];
+        var st = f ? (f.statut || "valide") : "brouillon";
+
+        if (etatComptabilite.filtre === "soumis" && st !== "soumis") return false;
+        if (etatComptabilite.filtre === "valide" && (st !== "valide" && st !== "valide_corrige")) return false;
+        if (etatComptabilite.filtre === "a_corriger" && st !== "a_corriger") return false;
+        if (etatComptabilite.filtre === "brouillon" && f && st !== "brouillon") return false;
 
         if (!query) return true;
         var client = (d.comparantsNoms || "").toLowerCase();
@@ -4935,16 +4961,16 @@
       if (!dossiersFiltres.length) {
         html += '<div class="panel-body" style="text-align:center;padding:var(--space-8);color:var(--color-text-dim)">';
         if (query) {
-          html += '<div style="font-size:28px;margin-bottom:8px"></div>';
-          html += '<strong style="color:var(--color-text)">Aucun dossier trouvé pour le client ou la recherche « ' + escapeHtml(etatComptabilite.rechercheClient) + ' »</strong>';
+          html += '<div style="font-size:28px;margin-bottom:8px">🔍</div>';
+          html += '<strong style="color:var(--color-text)">Aucun dossier trouvé pour la recherche « ' + escapeHtml(etatComptabilite.rechercheClient) + ' »</strong>';
           html += '<p style="font-size:12px;margin:6px 0 12px">Vérifiez l\'orthographe ou effacez le filtre.</p>';
           html += '<button type="button" class="btn btn-secondary" id="btn-reinit-recherche" style="font-size:12px">Afficher tous les dossiers</button>';
         } else {
-          html += '<p>Aucun dossier dans cette catégorie pour le moment.</p>';
+          html += '<p>Aucun dossier dans cette catégorie de liquidation pour le moment.</p>';
         }
         html += '</div>';
       } else {
-        html += '<div class="table-wrap"><table class="table"><thead><tr><th>N° Dossier</th><th>Client (Comparants)</th><th>Type d\'acte</th><th>Assiette Fiscale</th><th>Émoluments HT</th><th>DGI & Droits</th><th>Total TTC</th><th>Statut Fiche</th><th>Actions</th></tr></thead><tbody>';
+        html += '<div class="table-wrap"><table class="table"><thead><tr><th>N° Dossier</th><th>Client (Comparants)</th><th>Type d\'acte</th><th>Assiette Fiscale</th><th>Émoluments HT</th><th>DGI & Droits</th><th>Total TTC</th><th>Statut de Validation</th><th>Actions</th></tr></thead><tbody>';
 
         dossiersFiltres.forEach(function (d) {
           var clientAff = d.comparantsNoms && d.comparantsNoms.trim() ? d.comparantsNoms.trim() : "Comparant(s)";
@@ -4957,6 +4983,7 @@
           var droitsDGI = 18000;
           var debours = 24000;
           var totalTTC = 130500;
+          var statutFiche = ficheRecente ? (ficheRecente.statut || "valide") : "a_etablir";
 
           if (ficheRecente && ficheRecente.donnees && ficheRecente.donnees.totaux) {
             var dt = ficheRecente.donnees;
@@ -4984,15 +5011,31 @@
           html += '<td style="font-weight:700;color:var(--color-accent)">' + fmtFCFA(emolumentsHT) + '</td>';
           html += '<td style="font-weight:600">' + fmtFCFA(droitsDGI) + '</td>';
           html += '<td style="font-weight:700;color:var(--color-text);font-size:13px">' + fmtFCFA(totalTTC) + '</td>';
+          
+          // Colonne Statut Déontologique
           html += '<td>';
-          if (ficheRecente) {
-            html += '<span class="tag tag-accent" style="font-size:10.5px;padding:3px 6px">Enregistrée</span>';
+          if (statutFiche === "soumis") {
+            html += '<span class="tag" style="background:rgba(245,158,11,0.15);color:#d97706;font-weight:700;font-size:10.5px;padding:3px 6px;border:1px solid rgba(245,158,11,0.3)">⏳ Soumis Notaire</span>';
+          } else if (statutFiche === "valide") {
+            html += '<span class="tag" style="background:rgba(16,185,129,0.15);color:#059669;font-weight:700;font-size:10.5px;padding:3px 6px;border:1px solid rgba(16,185,129,0.3)">✅ Validée</span>';
+          } else if (statutFiche === "valide_corrige") {
+            html += '<span class="tag" style="background:rgba(6,182,212,0.15);color:#0891b2;font-weight:700;font-size:10.5px;padding:3px 6px;border:1px solid rgba(6,182,212,0.3)">✏️ Validée (Corrigée)</span>';
+          } else if (statutFiche === "a_corriger") {
+            var commTooltip = ficheRecente && ficheRecente.commentaire_notaire ? escapeHtml(ficheRecente.commentaire_notaire) : "À corriger selon directives du Notaire";
+            html += '<span class="tag" style="background:rgba(239,68,68,0.15);color:#dc2626;font-weight:700;font-size:10.5px;padding:3px 6px;border:1px solid rgba(239,68,68,0.3);cursor:help" title="' + commTooltip + '">⚠️ À corriger</span>';
+          } else if (statutFiche === "brouillon") {
+            html += '<span class="tag tag-outline" style="font-size:10.5px;padding:3px 6px">Brouillon</span>';
           } else {
             html += '<span class="tag tag-outline" style="font-size:10.5px;padding:3px 6px;opacity:.75">À établir</span>';
           }
           html += '</td>';
+
+          // Actions
           html += '<td><div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">';
-          html += '<button type="button" class="btn btn-primary btn-ouvrir-modal-taxe" data-id="' + d.id + '" style="font-size:11px;padding:3px 7px;font-weight:700" title="Établir ou modifier la fiche de taxe">' + (ficheRecente ? 'Modifier Taxe' : '+ Établir Taxe') + '</button>';
+          var libelleBtnAction = !ficheRecente ? '+ Établir Taxe' : (statutFiche === 'soumis' && estNotaire ? '⚖️ Examiner / Valider' : 'Modifier Taxe');
+          var classeBtnAction = (statutFiche === 'soumis' && estNotaire) ? 'btn btn-primary' : (ficheRecente ? 'btn btn-secondary' : 'btn btn-primary');
+
+          html += '<button type="button" class="' + classeBtnAction + ' btn-ouvrir-modal-taxe" data-id="' + d.id + '" style="font-size:11px;padding:3px 7px;font-weight:700">' + libelleBtnAction + '</button>';
           html += '<button type="button" class="btn btn-secondary btn-imprimer-fiche-taxe-row" data-id="' + d.id + '" style="font-size:11px;padding:3px 6px" title="Imprimer la Fiche de Taxe interne en 4 colonnes">🖨️ Taxe</button>';
           html += '<button type="button" class="btn btn-secondary btn-imprimer-note-frais-row" data-id="' + d.id + '" style="font-size:11px;padding:3px 6px" title="Imprimer la Note de Frais client">📄 Note Frais</button>';
           html += '<button type="button" class="btn btn-secondary btn-imprimer-facture-row" data-id="' + d.id + '" style="font-size:11px;padding:3px 6px" title="Imprimer la Facture Normalisée avec TVA 18%">🧾 Facture</button>';
@@ -5094,6 +5137,7 @@
   }
 
   // =========================================================================
+  // =========================================================================
   // MODALE INTERACTIVE : CRÉER / ÉTABLIR UNE FICHE DE TAXE
   // =========================================================================
   function modalCreerFicheTaxe(dossierIdSelectionne) {
@@ -5108,6 +5152,8 @@
       var net = String(str).replace(/\s/g, "").replace(/[^0-9]/g, "");
       return parseFloat(net) || 0;
     }
+
+    var estNotaire = cache.utilisateur && (cache.utilisateur.role === "notaire" || cache.utilisateur.role === "premier_clerc" || cache.utilisateur.role === "superadmin");
 
     var chargerTypes = (cache.typesActesListe && cache.typesActesListe.length > 0)
       ? Promise.resolve(cache.typesActesListe)
@@ -5126,10 +5172,16 @@
 
     var chargerCatalogue = API.get("/api/fiscal/catalogue-lignes").catch(function () { return []; });
 
-    Promise.all([chargerTypes, chargerDossiers, chargerCatalogue]).then(function (res) {
+    var chargerHistoriqueDossier = dossierIdSelectionne
+      ? API.get("/api/fiscal/dossiers/" + dossierIdSelectionne + "/historique").catch(function () { return []; })
+      : Promise.resolve([]);
+
+    Promise.all([chargerTypes, chargerDossiers, chargerCatalogue, chargerHistoriqueDossier]).then(function (res) {
       var typesActes = res[0] || [];
       var dossiers = res[1] || [];
       var catalogueLignes = res[2] || [];
+      var historiqueFiches = res[3] || [];
+      var derniereFiche = historiqueFiches.length > 0 ? historiqueFiches[0] : null;
 
       var dossierInitial = dossierIdSelectionne 
         ? dossiers.find(function (d) { return d.id === dossierIdSelectionne; })
@@ -5138,6 +5190,34 @@
       var montantInitialVal = dossierInitial ? (Number(dossierInitial.montantAssiette) || 10000000) : 10000000;
 
       var html = '<form id="form-modal-creer-taxe" style="display:flex;flex-direction:column;gap:var(--space-3)">';
+
+      // Bandeau d'état déontologique (si fiche existante)
+      if (derniereFiche) {
+        var st = derniereFiche.statut || "valide";
+        if (st === "a_corriger") {
+          html += '<div style="background:rgba(239,68,68,0.08);border:1.5px solid rgba(239,68,68,0.4);border-radius:6px;padding:10px 14px;display:flex;align-items:flex-start;gap:10px">';
+          html += '<span style="font-size:22px">⚠️</span>';
+          html += '<div style="flex:1">';
+          html += '<div style="font-weight:800;color:#dc2626;font-size:12.5px;text-transform:uppercase">Fiche Renvoyée pour Correction par le Notaire</div>';
+          html += '<div style="font-size:12px;color:var(--color-text);margin-top:3px;background:var(--color-bg);padding:6px 10px;border-radius:4px;border:1px solid rgba(239,68,68,0.3)"><strong>Observations de Maître :</strong> « ' + escapeHtml(derniereFiche.commentaire_notaire || "Veuillez ajuster les formalités et ré-adresser pour visa.") + ' »</div>';
+          html += '<div style="font-size:11px;color:var(--color-text-dim);margin-top:4px">Ajustez les éléments ci-dessous puis cliquez sur <strong>« 📤 Re-soumettre au Notaire »</strong>.</div>';
+          html += '</div></div>';
+        } else if (st === "soumis") {
+          html += '<div style="background:rgba(245,158,11,0.08);border:1.5px solid rgba(245,158,11,0.4);border-radius:6px;padding:10px 14px;display:flex;align-items:center;gap:10px">';
+          html += '<span style="font-size:22px">⏳</span>';
+          html += '<div style="flex:1">';
+          html += '<div style="font-weight:800;color:#d97706;font-size:12.5px;text-transform:uppercase">Fiche en Attente de Visa du Notaire</div>';
+          html += '<div style="font-size:11.5px;color:var(--color-text);margin-top:2px">Transmise pour contrôle et visa officiel. ' + (estNotaire ? 'Vous pouvez valider ou corriger ci-dessous.' : 'En attente de validation par Maître.') + '</div>';
+          html += '</div></div>';
+        } else if (st === "valide" || st === "valide_corrige") {
+          html += '<div style="background:rgba(16,185,129,0.08);border:1.5px solid rgba(16,185,129,0.4);border-radius:6px;padding:10px 14px;display:flex;align-items:center;gap:10px">';
+          html += '<span style="font-size:22px">✅</span>';
+          html += '<div style="flex:1">';
+          html += '<div style="font-weight:800;color:#059669;font-size:12.5px;text-transform:uppercase">Fiche Certifiée & Validée par le Notaire ' + (st === "valide_corrige" ? '(avec corrections)' : '') + '</div>';
+          html += '<div style="font-size:11.5px;color:var(--color-text);margin-top:2px">Fiche fiscale définitive. La note de frais client et la facture peuvent être délivrées.</div>';
+          html += '</div></div>';
+        }
+      }
 
       // 1. Choix du dossier et client
       html += '<div class="field"><label>Dossier Notarial & Client (Comparants)</label><select class="input" id="taxe-modal-select-dossier" style="font-weight:600">';
@@ -5179,7 +5259,10 @@
       html += '<div style="border:1px solid var(--color-border);border-radius:var(--radius);background:var(--color-surface);padding:10px 12px">';
       html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">';
       html += '<div><span style="font-size:12px;font-weight:700;color:var(--color-accent);text-transform:uppercase">💼 Émoluments de Formalités & Diligences (CA Notaire)</span><div style="font-size:11px;color:var(--color-text-dim)">Cochez les formalités accomplies pour ce dossier (montants modifiables en direct) :</div></div>';
+      html += '<div style="display:flex;gap:6px">';
+      html += '<button type="button" class="btn btn-ghost" id="btn-ajouter-formalite-libre" style="font-size:11px;padding:2px 8px;font-weight:600;color:var(--color-accent)">+ Ajouter une formalité</button>';
       html += '<button type="button" class="btn btn-ghost" id="btn-toggle-toutes-formalites" style="font-size:11px;padding:2px 6px">Tout cocher / décocher</button>';
+      html += '</div>';
       html += '</div>';
 
       html += '<div id="conteneur-cases-emoluments" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:6px;max-height:180px;overflow-y:auto;padding-right:4px">';
@@ -5208,7 +5291,7 @@
         html += '<div class="item-formalite-row" style="display:flex;align-items:center;justify-content:space-between;gap:6px;background:var(--color-surface-2);padding:4px 8px;border-radius:4px;border:1px solid var(--color-border)">';
         html += '<label style="display:flex;align-items:center;gap:6px;font-size:11.5px;margin:0;cursor:pointer;flex:1">';
         html += '<input type="checkbox" class="chk-formalite-item" data-code="' + formItem.code + '"' + isCheck + '> ';
-        html += '<span>' + formItem.libelle + '</span>';
+        html += '<span class="label-formalite-nom">' + formItem.libelle + '</span>';
         html += '</label>';
         html += '<input type="number" class="input input-formalite-montant" data-code="' + formItem.code + '" value="' + formItem.montantDefaut + '" style="width:75px;font-size:11px;padding:2px 4px;text-align:right;height:24px">';
         html += '</div>';
@@ -5217,8 +5300,12 @@
 
       // Section Débours Tiers
       html += '<div style="margin-top:8px;border-top:1px dashed var(--color-border);padding-top:6px">';
-      html += '<div style="font-size:11px;font-weight:700;color:var(--color-warning);text-transform:uppercase;margin-bottom:4px">🤝 Débours Tiers (Frais Réels Géomètre / Tribunal / Divers)</div>';
-      html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:6px">';
+      html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">';
+      html += '<div style="font-size:11px;font-weight:700;color:var(--color-warning);text-transform:uppercase">🤝 Débours Tiers (Frais Réels Géomètre / Tribunal / Divers)</div>';
+      html += '<button type="button" class="btn btn-ghost" id="btn-ajouter-debours-libre" style="font-size:11px;padding:2px 8px;font-weight:600;color:var(--color-warning)">+ Ajouter un débours</button>';
+      html += '</div>';
+
+      html += '<div id="conteneur-cases-debours" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:6px">';
       
       var deboursListe = catalogueLignes.filter(function (l) { return l.categorie === "debours"; });
       if (!deboursListe.length) {
@@ -5234,7 +5321,7 @@
         html += '<div class="item-formalite-row" style="display:flex;align-items:center;justify-content:space-between;gap:6px;background:var(--color-surface-2);padding:4px 8px;border-radius:4px;border:1px solid var(--color-border)">';
         html += '<label style="display:flex;align-items:center;gap:6px;font-size:11.5px;margin:0;cursor:pointer;flex:1">';
         html += '<input type="checkbox" class="chk-debours-item" data-code="' + debItem.code + '"' + isDebCheck + '> ';
-        html += '<span>' + debItem.libelle + '</span>';
+        html += '<span class="label-debours-nom">' + debItem.libelle + '</span>';
         html += '</label>';
         html += '<input type="number" class="input input-debours-montant" data-code="' + debItem.code + '" value="' + debItem.montantDefaut + '" style="width:75px;font-size:11px;padding:2px 4px;text-align:right;height:24px">';
         html += '</div>';
@@ -5246,26 +5333,49 @@
       // 5. Zone d'aperçu du calcul en temps réel (Structure 4 Colonnes & 3 Piliers)
       html += '<div id="zone-apercu-calcul-modal" style="margin-top:2px"></div>';
 
+      // 6. Section Observations du Notaire (si Notaire)
+      if (estNotaire) {
+        html += '<div style="background:var(--color-surface-2);border:1px solid var(--color-border);padding:8px 12px;border-radius:var(--radius);margin-top:4px">';
+        html += '<label style="font-size:11.5px;font-weight:700;color:var(--color-accent);margin-bottom:4px;display:block">📝 Observations / Remarques du Notaire (obligatoire en cas de renvoi pour correction) :</label>';
+        html += '<textarea id="taxe-modal-commentaire-notaire" class="input" style="min-height:50px;font-size:12px" placeholder="Ex: Majorer les vacations de 50 000 F suite au déplacement à Grand-Bassam ou corriger le droit foncier…">' + (derniereFiche && derniereFiche.commentaire_notaire ? escapeHtml(derniereFiche.commentaire_notaire) : '') + '</textarea>';
+        html += '</div>';
+      }
+
       html += '<div id="erreur-creer-taxe" class="erreur-inline" style="display:none"></div>';
 
-      // 6. Barre d'actions & 3 formats d'impression
+      // 7. Barre d'actions déontologiques & formats d'impression
       html += '<div style="display:flex;justify-content:space-between;align-items:center;gap:var(--space-2);margin-top:var(--space-2);flex-wrap:wrap">';
       html += '<button type="button" class="btn btn-ghost" id="btn-annuler-modal-taxe">Fermer</button>';
-      html += '<div style="display:flex;gap:6px;flex-wrap:wrap">';
-      html += '<button type="button" class="btn btn-secondary" id="btn-imprimer-fiche-taxe" title="Imprimer la Fiche de Taxe officielle en 4 colonnes A4">🖨️ Fiche de Taxe (4 Col)</button>';
-      html += '<button type="button" class="btn btn-secondary" id="btn-imprimer-note-frais" title="Imprimer la Note de Frais Prévisionnelle pour le client">📄 Note de Frais</button>';
-      html += '<button type="button" class="btn btn-secondary" id="btn-imprimer-facture" title="Imprimer la Facture Normalisée avec TVA 18%">🧾 Facture Normalisée</button>';
-      html += '<button type="submit" class="btn btn-primary" id="btn-enregistrer-modal-taxe" style="font-weight:700">💾 Enregistrer la Taxe</button>';
+      html += '<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">';
+      
+      // Boutons d'impression des 3 formats normés
+      html += '<button type="button" class="btn btn-secondary" id="btn-imprimer-fiche-taxe" title="Imprimer la Fiche de Taxe interne en 4 colonnes A4">🖨️ Fiche 4 Col</button>';
+      html += '<button type="button" class="btn btn-secondary" id="btn-imprimer-note-frais" title="Imprimer la Note de Frais Prévisionnelle Client">📄 Note de Frais</button>';
+      html += '<button type="button" class="btn btn-secondary" id="btn-imprimer-facture" title="Imprimer la Facture Normalisée avec TVA 18%">🧾 Facture</button>';
+
+      if (estNotaire) {
+        // Actions Notaire
+        if (derniereFiche && (derniereFiche.statut === "soumis" || derniereFiche.statut === "a_corriger")) {
+          html += '<button type="button" class="btn btn-secondary" id="btn-notaire-renvoyer" style="color:#dc2626;border-color:rgba(239,68,68,0.4);font-weight:700">↩️ Renvoyer au Comptable</button>';
+          html += '<button type="button" class="btn btn-secondary" id="btn-notaire-corriger-valider" style="color:#0891b2;border-color:rgba(6,182,212,0.4);font-weight:700">✏️ Valider avec Corrections</button>';
+        }
+        html += '<button type="button" class="btn btn-primary" id="btn-notaire-valider" style="background:#059669;border-color:#059669;font-weight:700">✅ Valider la Taxe</button>';
+      } else {
+        // Actions Comptable / Clerc
+        html += '<button type="button" class="btn btn-secondary" id="btn-enregistrer-brouillon-taxe" style="font-weight:600">💾 Enregistrer Brouillon</button>';
+        html += '<button type="button" class="btn btn-primary" id="btn-soumettre-notaire-taxe" style="font-weight:700">📤 Soumettre au Notaire</button>';
+      }
+
       html += '</div>';
       html += '</div>';
 
       html += '</form>';
 
       ouvrirModal({
-        titre: 'Établissement & Taxe Prévisionnelle Notariale (Décret 2013-279 & Pratique)',
+        titre: 'Circuit de Taxe & Liquidation Notariale (Décret 2013-279 & Pratique)',
         corps: html,
         boutonFermer: true,
-        largeur: "880px",
+        largeur: "900px",
         apresOuverture: function () {
           document.getElementById("btn-annuler-modal-taxe").addEventListener("click", fermerModal);
 
@@ -5294,15 +5404,21 @@
             document.querySelectorAll(".chk-formalite-item").forEach(function (chk) {
               var code = chk.dataset.code;
               var inputMt = document.querySelector('.input-formalite-montant[data-code="' + code + '"]');
+              var row = chk.closest(".item-formalite-row");
+              var labelElem = row ? row.querySelector(".label-formalite-nom") : null;
+              var libelleNom = labelElem ? labelElem.textContent : code;
               var mt = inputMt ? parseFloat(inputMt.value) || 0 : 0;
-              lignesEmols.push({ code: code, actif: chk.checked, montant: mt });
+              lignesEmols.push({ code: code, libelle: libelleNom, actif: chk.checked, montant: mt });
             });
 
             document.querySelectorAll(".chk-debours-item").forEach(function (chk) {
               var code = chk.dataset.code;
               var inputMt = document.querySelector('.input-debours-montant[data-code="' + code + '"]');
+              var row = chk.closest(".item-formalite-row");
+              var labelElem = row ? row.querySelector(".label-debours-nom") : null;
+              var libelleNom = labelElem ? labelElem.textContent : code;
               var mt = inputMt ? parseFloat(inputMt.value) || 0 : 0;
-              lignesEmols.push({ code: code, categorie: "debours", actif: chk.checked, montant: mt });
+              lignesEmols.push({ code: code, libelle: libelleNom, categorie: "debours", actif: chk.checked, montant: mt });
             });
 
             return {
@@ -5331,8 +5447,6 @@
                 if (!zoneApercu) return;
 
                 var emo = f.emoluments || {};
-                var nomRegle = emo.libelleRegle || "Barème Décret 2013-279";
-
                 var totalCA = f.totaux.emolumentsHT || (emo.totalEmolumentsHT || emo.montantHT);
                 var totalTresor = f.totaux.tresor || f.totaux.droitsEtat;
                 var totalDebours = f.totaux.debours || 0;
@@ -5429,7 +5543,7 @@
             recalculerApercuModal();
           });
 
-          // Écouteurs de modification de sélection
+          // Écouteurs de modification de sélection dossier
           selectDossier.addEventListener("change", function () {
             var dId = selectDossier.value;
             var curDossier = (cache.dossiers || []).find(function (d) { return d.id === dId; });
@@ -5460,12 +5574,17 @@
           }
 
           // Écouteurs sur les cases à cocher et montants d'émoluments/débours
-          document.querySelectorAll(".chk-formalite-item, .chk-debours-item").forEach(function (chk) {
-            chk.addEventListener("change", recalculerApercuModal);
-          });
-          document.querySelectorAll(".input-formalite-montant, .input-debours-montant").forEach(function (inp) {
-            inp.addEventListener("input", recalculerApercuModal);
-          });
+          function attacherEcouteursCases() {
+            document.querySelectorAll(".chk-formalite-item, .chk-debours-item").forEach(function (chk) {
+              chk.removeEventListener("change", recalculerApercuModal);
+              chk.addEventListener("change", recalculerApercuModal);
+            });
+            document.querySelectorAll(".input-formalite-montant, .input-debours-montant").forEach(function (inp) {
+              inp.removeEventListener("input", recalculerApercuModal);
+              inp.addEventListener("input", recalculerApercuModal);
+            });
+          }
+          attacherEcouteursCases();
 
           // Bouton tout cocher / décocher
           var btnToggle = document.getElementById("btn-toggle-toutes-formalites");
@@ -5480,10 +5599,46 @@
             });
           }
 
+          // Ajout dynamique d'une formalité personnalisée
+          var btnAjouterFormalite = document.getElementById("btn-ajouter-formalite-libre");
+          if (btnAjouterFormalite) {
+            btnAjouterFormalite.addEventListener("click", function () {
+              var nom = prompt("Nom de la formalité personnalisée :");
+              if (!nom || !nom.trim()) return;
+              var code = "perso_" + Date.now();
+              var conteneur = document.getElementById("conteneur-cases-emoluments");
+              var div = document.createElement("div");
+              div.className = "item-formalite-row";
+              div.style = "display:flex;align-items:center;justify-content:space-between;gap:6px;background:var(--color-surface-2);padding:4px 8px;border-radius:4px;border:1px solid var(--color-border)";
+              div.innerHTML = '<label style="display:flex;align-items:center;gap:6px;font-size:11.5px;margin:0;cursor:pointer;flex:1"><input type="checkbox" class="chk-formalite-item" data-code="' + code + '" checked> <span class="label-formalite-nom">' + escapeHtml(nom.trim()) + '</span></label><input type="number" class="input input-formalite-montant" data-code="' + code + '" value="25000" style="width:75px;font-size:11px;padding:2px 4px;text-align:right;height:24px">';
+              conteneur.appendChild(div);
+              attacherEcouteursCases();
+              recalculerApercuModal();
+            });
+          }
+
+          // Ajout dynamique d'un débours personnalisé
+          var btnAjouterDebours = document.getElementById("btn-ajouter-debours-libre");
+          if (btnAjouterDebours) {
+            btnAjouterDebours.addEventListener("click", function () {
+              var nom = prompt("Libellé du débours tiers :");
+              if (!nom || !nom.trim()) return;
+              var code = "debours_perso_" + Date.now();
+              var conteneur = document.getElementById("conteneur-cases-debours");
+              var div = document.createElement("div");
+              div.className = "item-formalite-row";
+              div.style = "display:flex;align-items:center;justify-content:space-between;gap:6px;background:var(--color-surface-2);padding:4px 8px;border-radius:4px;border:1px solid var(--color-border)";
+              div.innerHTML = '<label style="display:flex;align-items:center;gap:6px;font-size:11.5px;margin:0;cursor:pointer;flex:1"><input type="checkbox" class="chk-debours-item" data-code="' + code + '" checked> <span class="label-debours-nom">' + escapeHtml(nom.trim()) + '</span></label><input type="number" class="input input-debours-montant" data-code="' + code + '" value="50000" style="width:75px;font-size:11px;padding:2px 4px;text-align:right;height:24px">';
+              conteneur.appendChild(div);
+              attacherEcouteursCases();
+              recalculerApercuModal();
+            });
+          }
+
           // Premier calcul immédiat
           recalculerApercuModal();
 
-          // Boutons d'impression des 3 formats normés
+          // Impression des 3 formats normés
           document.getElementById("btn-imprimer-fiche-taxe").addEventListener("click", function () {
             var dId = selectDossier.value;
             var curDossier = (cache.dossiers || []).find(function (d) { return d.id === dId; });
@@ -5514,28 +5669,114 @@
             }
           });
 
-          // Form submit : Enregistrer
-          document.getElementById("form-modal-creer-taxe").addEventListener("submit", function (ev) {
-            ev.preventDefault();
+          // Fonctions de soumission déontologique
+          function enregistrerTaxeAvecStatut(statutCible, commentaireCustom) {
             var dId = selectDossier.value;
             var errZone = document.getElementById("erreur-creer-taxe");
             errZone.style.display = "none";
-
             var saisies = construireSaisies();
 
-            API.post("/api/fiscal/dossiers/" + dId + "/enregistrer", {
+            var payload = {
               saisies: saisies,
               typeActeId: selectTypeActe.value,
               montant: extraireNombre(inputMontant.value),
-            }).then(function () {
-              toast("Fiche de taxe enregistrée avec succès sur le dossier !");
+              statut: statutCible,
+              commentaire: commentaireCustom || (document.getElementById("taxe-modal-commentaire-notaire") ? document.getElementById("taxe-modal-commentaire-notaire").value : null)
+            };
+
+            API.post("/api/fiscal/dossiers/" + dId + "/enregistrer", payload).then(function () {
+              var msg = statutCible === "soumis" 
+                ? "Fiche de taxe soumise avec succès au Notaire pour visa !" 
+                : (statutCible === "valide" ? "Fiche de taxe validée avec succès !" : "Brouillon enregistré.");
+              toast(msg);
               fermerModal();
               renderComptabilite();
             }).catch(function (e) {
               errZone.textContent = "Erreur : " + e.message;
               errZone.style.display = "block";
             });
-          });
+          }
+
+          // Écouteurs pour le Comptable
+          var btnBrouillon = document.getElementById("btn-enregistrer-brouillon-taxe");
+          if (btnBrouillon) {
+            btnBrouillon.addEventListener("click", function () {
+              enregistrerTaxeAvecStatut("brouillon");
+            });
+          }
+
+          var btnSoumettre = document.getElementById("btn-soumettre-notaire-taxe");
+          if (btnSoumettre) {
+            btnSoumettre.addEventListener("click", function () {
+              enregistrerTaxeAvecStatut("soumis");
+            });
+          }
+
+          // Écouteurs pour le Notaire
+          var btnNotaireValider = document.getElementById("btn-notaire-valider");
+          if (btnNotaireValider) {
+            btnNotaireValider.addEventListener("click", function () {
+              if (derniereFiche && derniereFiche.id) {
+                API.post("/api/fiscal/fiches/" + derniereFiche.id + "/valider", {})
+                  .then(function () {
+                    toast("Fiche de taxe validée conforme par le Notaire !");
+                    fermerModal();
+                    renderComptabilite();
+                  })
+                  .catch(function (e) { toast("Erreur validation : " + e.message); });
+              } else {
+                enregistrerTaxeAvecStatut("valide");
+              }
+            });
+          }
+
+          var btnNotaireCorrigerValider = document.getElementById("btn-notaire-corriger-valider");
+          if (btnNotaireCorrigerValider) {
+            btnNotaireCorrigerValider.addEventListener("click", function () {
+              var comm = document.getElementById("taxe-modal-commentaire-notaire") ? document.getElementById("taxe-modal-commentaire-notaire").value : "Ajusté et validé par le Notaire";
+              if (derniereFiche && derniereFiche.id) {
+                API.post("/api/fiscal/fiches/" + derniereFiche.id + "/corriger-valider", {
+                  saisies: construireSaisies(),
+                  typeActeId: selectTypeActe.value,
+                  montant: extraireNombre(inputMontant.value),
+                  commentaire: comm
+                }).then(function () {
+                  toast("Fiche de taxe modifiée et validée avec succès (statut: Validé Corrigé) !");
+                  fermerModal();
+                  renderComptabilite();
+                }).catch(function (e) { toast("Erreur correction : " + e.message); });
+              } else {
+                enregistrerTaxeAvecStatut("valide", comm);
+              }
+            });
+          }
+
+          var btnNotaireRenvoyer = document.getElementById("btn-notaire-renvoyer");
+          if (btnNotaireRenvoyer) {
+            btnNotaireRenvoyer.addEventListener("click", function () {
+              var commArea = document.getElementById("taxe-modal-commentaire-notaire");
+              var comm = commArea ? commArea.value.trim() : "";
+              if (!comm) {
+                alert("Veuillez saisir vos observations ou remarques dans le champ ci-dessus pour expliquer au comptable les corrections à apporter.");
+                if (commArea) commArea.focus();
+                return;
+              }
+              if (derniereFiche && derniereFiche.id) {
+                API.post("/api/fiscal/fiches/" + derniereFiche.id + "/renvoyer", { commentaire: comm })
+                  .then(function () {
+                    toast("Fiche renvoyée pour correction avec vos observations !");
+                    fermerModal();
+                    renderComptabilite();
+                    toast("Fiche renvoyée pour correction avec vos observations !");
+                    fermerModal();
+                    renderComptabilite();
+                  })
+                  .catch(function (e) { toast("Erreur renvoi : " + e.message); });
+              } else {
+                enregistrerTaxeAvecStatut("a_corriger", comm);
+              }
+            });
+          }
         },
       });
     });
@@ -6247,7 +6488,8 @@
   function renderFicheTaxe(d) {
     if (!cache.permissions.fiscal || d.statut !== "actif") return "";
     var fiches = cache.fichesTaxeHistorique || [];
-    var derniereFiche = fiches.length > 0 ? fiches[fiches.length - 1] : null;
+    var derniereFiche = fiches.length > 0 ? fiches[0] : null; // triée par created_at DESC
+    var estNotaire = cache.utilisateur && (cache.utilisateur.role === "notaire" || cache.utilisateur.role === "premier_clerc" || cache.utilisateur.role === "superadmin");
 
     var html = '<div class="card" style="background:var(--color-surface);border:1px solid var(--color-border);padding:var(--space-4);margin-top:var(--space-4);margin-bottom:var(--space-4);box-shadow:var(--shadow-sm)">';
     html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:var(--space-3);margin-bottom:var(--space-3)">';
@@ -6255,10 +6497,33 @@
     html += '<h3 style="margin:0;display:flex;align-items:center;gap:8px">💰 Pôle Financier, Taxe & Facturation Notariale</h3>';
     html += '<p style="font-size:12.5px;color:var(--color-text-dim);margin:2px 0 0">Cycle en 3 étapes : Fiche de Taxe Interne (4 col) → Note de Frais (Appel de fonds client) → Facture Normalisée (TTC).</p>';
     html += '</div>';
+
+    var btnLabel = !derniereFiche ? '+ Établir la Fiche de Taxe' : (derniereFiche.statut === 'soumis' && estNotaire ? '⚖️ Examiner & Valider' : '⚙️ Modifier la Taxe');
     html += '<button type="button" class="btn btn-primary btn-ouvrir-modal-taxe" data-id="' + d.id + '" style="font-size:12.5px;padding:6px 14px;font-weight:700">';
-    html += (derniereFiche ? '⚙️ Modifier la Fiche de Taxe' : '+ Établir la Fiche de Taxe');
+    html += btnLabel;
     html += '</button>';
     html += '</div>';
+
+    // Statut déontologique si fiche existante
+    if (derniereFiche) {
+      var st = derniereFiche.statut || "valide";
+      if (st === "a_corriger") {
+        html += '<div style="background:rgba(239,68,68,0.08);border:1.5px solid rgba(239,68,68,0.35);border-radius:6px;padding:8px 12px;margin-bottom:var(--space-3);display:flex;align-items:flex-start;gap:8px">';
+        html += '<span style="font-size:18px">⚠️</span>';
+        html += '<div style="font-size:12px"><strong style="color:#dc2626">Fiche à corriger selon directives du Notaire :</strong> « ' + escapeHtml(derniereFiche.commentaire_notaire || "") + ' »</div>';
+        html += '</div>';
+      } else if (st === "soumis") {
+        html += '<div style="background:rgba(245,158,11,0.08);border:1.5px solid rgba(245,158,11,0.35);border-radius:6px;padding:8px 12px;margin-bottom:var(--space-3);display:flex;align-items:center;gap:8px">';
+        html += '<span style="font-size:18px">⏳</span>';
+        html += '<div style="font-size:12px"><strong style="color:#d97706">Fiche soumise au Notaire pour visa officiel.</strong> ' + (estNotaire ? 'Cliquez sur "Examiner & Valider" pour instruire.' : '') + '</div>';
+        html += '</div>';
+      } else if (st === "valide" || st === "valide_corrige") {
+        html += '<div style="background:rgba(16,185,129,0.08);border:1.5px solid rgba(16,185,129,0.35);border-radius:6px;padding:8px 12px;margin-bottom:var(--space-3);display:flex;align-items:center;gap:8px">';
+        html += '<span style="font-size:18px">✅</span>';
+        html += '<div style="font-size:12px"><strong style="color:#059669">Fiche de taxe certifiée et validée par le Notaire ' + (st === "valide_corrige" ? '(avec corrections)' : '') + '</strong></div>';
+        html += '</div>';
+      }
+    }
 
     // Les 3 Pôles / Documents Visuels
     html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--space-3);margin-bottom:var(--space-4)">';
@@ -6296,10 +6561,18 @@
     if (fiches.length > 0) {
       html += '<div style="border-top:1px solid var(--color-border);padding-top:var(--space-3)">';
       html += '<div style="font-size:12px;font-weight:700;color:var(--color-text-dim);text-transform:uppercase;margin-bottom:6px">Historique des liquidations enregistrées sur ce dossier</div>';
-      html += '<table class="table" style="font-size:12px;margin:0"><thead><tr><th>Date</th><th>Auteur</th><th>Total TTC</th><th>Actions d\'impression</th></tr></thead><tbody>';
+      html += '<table class="table" style="font-size:12px;margin:0"><thead><tr><th>Date</th><th>Auteur</th><th>Total TTC</th><th>Statut</th><th>Actions d\'impression</th></tr></thead><tbody>';
       fiches.forEach(function (f, idx) {
         var tot = (f.donnees && f.donnees.totaux && f.donnees.totaux.general) || 0;
+        var stHist = f.statut || "valide";
+        var tagHist = stHist === "soumis" 
+          ? '<span class="tag" style="background:rgba(245,158,11,0.15);color:#d97706;font-weight:700">Soumis</span>'
+          : (stHist === "a_corriger" 
+            ? '<span class="tag" style="background:rgba(239,68,68,0.15);color:#dc2626;font-weight:700">À corriger</span>'
+            : '<span class="tag" style="background:rgba(16,185,129,0.15);color:#059669;font-weight:700">Validé' + (stHist === "valide_corrige" ? ' (Corrigé)' : '') + '</span>');
+
         html += '<tr><td>' + fmtDate(f.created_at) + '</td><td>' + nomClerc(f.utilisateur_id) + '</td><td style="font-weight:700;color:var(--color-accent)">' + fmtFCFA(tot) + '</td>';
+        html += '<td>' + tagHist + '</td>';
         html += '<td><div style="display:flex;gap:4px">';
         html += '<button type="button" class="btn btn-secondary btn-imprimer-hist-fiche" data-idx="' + idx + '" style="font-size:11px;padding:2px 6px">🖨️ Fiche 4 Col</button>';
         html += '<button type="button" class="btn btn-secondary btn-imprimer-hist-note" data-idx="' + idx + '" style="font-size:11px;padding:2px 6px">📄 Note Frais</button>';

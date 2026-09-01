@@ -435,6 +435,21 @@ function calculerFicheDeTaxe(typeActe, montant, parametresEtude = {}, tranchesBa
     }
   });
 
+  // Lignes Trésor et Débours détaillées
+  const lignesTresor = [];
+  if (timbres.minute > 0) lignesTresor.push({ code: "timbres_minute", libelle: `Timbres fiscaux — Minute (${qteTimbres.pagesMinute || 0} pages × 500 F)`, montant: timbres.minute });
+  if (timbres.expedition > 0) lignesTresor.push({ code: "timbres_expedition", libelle: `Timbres fiscaux — Expéditions (${qteTimbres.nombreExpeditions || 0} exp. × ${qteTimbres.pagesExpedition || 0} p. × 500 F)`, montant: timbres.expedition });
+  if (timbres.troisiemeDocument > 0) lignesTresor.push({ code: "timbres_bordereau", libelle: `Timbres fiscaux — Bordereau (${qteTimbres.pagesBordereau || 0} p. × 500 F)`, montant: timbres.troisiemeDocument });
+  if (droitEnregistrement.montant > 0) lignesTresor.push({ code: "droit_enregistrement", libelle: `Droits d'enregistrement DGI (${typeActe.droitEnregistrementMode === "fixe" ? "Droit fixe" : (typeActe.droitEnregistrementValeur * 100) + " %"})`, montant: droitEnregistrement.montant });
+  if (taxeFonciere.total > 0) lignesTresor.push({ code: "taxe_fonciere", libelle: `Taxe de publicité foncière (1,2 % + 3 000 FCFA)`, montant: taxeFonciere.total });
+
+  const lignesDebours = [];
+  saisiesLignes.filter(s => s.categorie === "debours" && s.actif).forEach(s => {
+    lignesDebours.push({ code: s.code, libelle: s.libelle || "Frais débours tiers", montant: arrondi(s.montant) });
+  });
+
+  const totalDeboursCalc = lignesDebours.reduce((acc, d) => acc + d.montant, 0);
+
   return {
     typeActe: { id: typeActe.id, libelle: typeActe.libelle },
     montantAssiette: montant,
@@ -452,14 +467,18 @@ function calculerFicheDeTaxe(typeActe, montant, parametresEtude = {}, tranchesBa
     totalFraisFormalites,
     divers,
     tva,
+    lignesTresor,
+    lignesDebours,
     totaux: {
       droitsEtat: totalDroitsEtat,
+      tresor: totalDroitsEtat,
+      debours: totalDeboursCalc,
       honoraires: totalHonoraires,
       formalitesEtDivers: totalFormalitesEtDivers,
-      general: totalGeneral,
-      generalEnLettres: totalGeneralEnLettres,
+      general: totalGeneral + totalDeboursCalc,
+      generalEnLettres: nombreEnLettresFCFA(totalGeneral + totalDeboursCalc),
       emolumentsHT: emolumentsProportionnels.montantHT + vacations + totalFraisFormalites + roles.total + divers,
-      factureNormaliseeTTC: totalDroitsEtat + (emolumentsProportionnels.montantHT + vacations + totalFraisFormalites + roles.total + divers) + tva,
+      factureNormaliseeTTC: totalDroitsEtat + totalDeboursCalc + (emolumentsProportionnels.montantHT + vacations + totalFraisFormalites + roles.total + divers) + tva,
     },
   };
 }
