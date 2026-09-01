@@ -5120,6 +5120,98 @@
   }
 
   // =========================================================================
+  // GESTIONNAIRE DES MODÈLES & MATRICES EXCEL D'ÉTUDE (.XLSX)
+  // =========================================================================
+  function modalGererModelesExcel() {
+    API.get("/api/fiscal/modeles-excel").then(function (modeles) {
+      var corps = '<div style="display:flex;flex-direction:column;gap:14px">';
+      
+      // Zone d'importation de fichier Excel d'étude
+      corps += '<div class="card" style="background:var(--color-surface-2);border:1.5px dashed var(--color-accent);padding:14px;border-radius:var(--radius);text-align:center">';
+      corps += '<div style="font-size:14px;font-weight:700;color:var(--color-text)">📥 Importer un modèle Excel personnalisé (.xlsx)</div>';
+      corps += '<p style="font-size:12px;color:var(--color-text-dim);margin:4px 0 10px">Déposez ici la feuille de calcul Excel (.xlsx) habituelle de votre étude. Le système l\'adoptera immédiatement avec sa mise en page, ses colonnes, ses formules et ses styles.</p>';
+      corps += '<input type="file" id="input-upload-excel-file" accept=".xlsx,.xls" style="display:none">';
+      corps += '<button type="button" class="btn btn-primary" id="btn-choisir-excel-file" style="font-size:12.5px;padding:6px 14px;font-weight:700">📤 Choisir un fichier Excel (.xlsx) sur mon ordinateur</button>';
+      corps += '</div>';
+
+      // Liste des modèles disponibles
+      corps += '<div>';
+      corps += '<div style="font-size:13px;font-weight:700;color:var(--color-text);margin-bottom:8px">Matrices & Fichiers Excel du Cabinet :</div>';
+      corps += '<div class="table-wrap"><table class="table" style="font-size:12px;margin:0"><thead><tr><th>Nom du Modèle</th><th>Type</th><th>Taille</th><th>Actions Visuelles</th></tr></thead><tbody>';
+      
+      (modeles || []).forEach(function (m) {
+        var badge = m.type === "personnalise" 
+          ? '<span class="tag" style="background:rgba(16,185,129,0.15);color:#059669;font-weight:700">Modèle Étude</span>'
+          : '<span class="tag tag-outline">Matrice Notariat CI</span>';
+        var tailleKo = m.taille ? Math.round(m.taille / 1024) + ' Ko' : '—';
+        corps += '<tr>';
+        corps += '<td><strong>' + escapeHtml(m.nom) + '</strong><br><span style="font-size:10.5px;color:var(--color-text-dim)">' + escapeHtml(m.fichier) + '</span></td>';
+        corps += '<td>' + badge + '</td>';
+        corps += '<td>' + tailleKo + '</td>';
+        corps += '<td><div style="display:flex;gap:4px">';
+        corps += '<button type="button" class="btn btn-secondary btn-apercu-excel-modele" data-id="' + m.id + '" style="font-size:11px;padding:3px 7px;font-weight:600">👁️ Voir Mise en Page</button>';
+        corps += '</div></td>';
+        corps += '</tr>';
+      });
+
+      corps += '</tbody></table></div>';
+      corps += '</div>';
+      corps += '</div>';
+
+      ouvrirModal({
+        titre: "📂 Modèles Excel du Cabinet & Mise en Page",
+        largeur: "820px",
+        corps: corps,
+        footer: '<button class="btn btn-secondary" id="modal-excel-fermer">Fermer</button>',
+        apresOuverture: function () {
+          var modalDom = document.getElementById("modal-racine");
+          if (!modalDom) return;
+          modalDom.querySelector("#modal-excel-fermer").addEventListener("click", fermerModal);
+
+          var btnChoisir = modalDom.querySelector("#btn-choisir-excel-file");
+          var inputFichier = modalDom.querySelector("#input-upload-excel-file");
+          if (btnChoisir && inputFichier) {
+            btnChoisir.addEventListener("click", function () { inputFichier.click(); });
+            inputFichier.addEventListener("change", function (e) {
+              var file = e.target.files && e.target.files[0];
+              if (!file) return;
+              if (!file.name.match(/\.xlsx?$/i)) {
+                toast("Veuillez sélectionner un fichier Excel (.xlsx ou .xls).");
+                return;
+              }
+              toast("Téléversement et analyse du fichier Excel en cours...");
+              var reader = new FileReader();
+              reader.onload = function (evt) {
+                var b64 = evt.target.result.split(",")[1];
+                API.post("/api/fiscal/importer-modele-excel", {
+                  nomFichier: file.name,
+                  contenuBase64: b64,
+                }).then(function () {
+                  toast("Modèle Excel ajouté avec succès !");
+                  fermerModal();
+                  modalGererModelesExcel();
+                }).catch(function (err) {
+                  toast("Erreur import : " + err.message);
+                });
+              };
+              reader.readAsDataURL(file);
+            });
+          }
+
+          modalDom.querySelectorAll(".btn-apercu-excel-modele").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+              var modeleId = btn.dataset.id;
+              fermerModal();
+              modalApercuDocument({}, {}, "excel_natif", modeleId);
+            });
+          });
+        },
+      });
+    }).catch(function (err) {
+      toast("Erreur chargement modèles : " + err.message);
+    });
+  }
+
   // =========================================================================
   // MODALE INTERACTIVE : CRÉER / ÉTABLIR UNE FICHE DE TAXE
   // =========================================================================
@@ -6371,8 +6463,10 @@
   // -----------------------------------------------------------------
   // Modale de Visualisation & Impression A4 Immédiate & Export Excel
   // -----------------------------------------------------------------
-  function modalApercuDocument(dossier, donneesFiche, formatInitial) {
+  function modalApercuDocument(dossier, donneesFiche, formatInitial, modeleExcelInitial) {
     var formatActuel = formatInitial || "fiche_taxe";
+    var modeleActuel = modeleExcelInitial || "TEST";
+    var feuilleActuelle = null;
 
     if (typeof dossier === "string") {
       var dTrouve = (cache.dossiers || []).find(function (d) { return String(d.id) === String(dossier); });
@@ -6384,7 +6478,8 @@
     function titreModal(fmt) {
       if (fmt === "fiche_taxe") return "🖨️ Fiche de Taxe (Document Interne de Liquidation)";
       if (fmt === "note_frais") return "📄 Note de Frais Prévisionnelle (Appel de Provision Client)";
-      return "🧾 Facture Normalisée Notariée (Document Fiscal TTC)";
+      if (fmt === "facture") return "🧾 Facture Normalisée Notariée (Document Fiscal TTC)";
+      return "📊 Rendu Direct du Fichier Excel de l'Étude (.xlsx)";
     }
 
     Promise.all([
@@ -6394,6 +6489,52 @@
       var params = res[0] || {};
       var modelesExcel = res[1] || [];
 
+      function chargerRenduExcelNatif(zoneConteneur) {
+        zoneConteneur.innerHTML = '<div style="padding:40px;text-align:center;color:#fff"><div class="spinner"></div><p style="margin-top:8px">Chargement et calcul du classeur Excel…</p></div>';
+        
+        var payload = {
+          dossierId: dossier.id,
+          typeActeId: dossier.typeActeId || dossier.type_acte_id,
+          montant: dossier.montantAssiette !== undefined ? dossier.montantAssiette : dossier.montant_assiette,
+          saisies: (donneesFiche && donneesFiche.saisies) || {},
+          modeleId: modeleActuel,
+          feuille: feuilleActuelle,
+          clientNom: dossier.comparantsNoms || dossier.clientNom,
+          numeroDossier: dossier.numeroDossier || dossier.numero_dossier,
+        };
+
+        API.post("/api/fiscal/excel/rendu-html", payload).then(function (resExcel) {
+          var h = '<div style="display:flex;flex-direction:column;gap:8px;width:100%">';
+          
+          // Barre des onglets de feuilles du fichier Excel
+          if (resExcel.feuillesDisponibles && resExcel.feuillesDisponibles.length > 1) {
+            h += '<div style="display:flex;gap:4px;background:#374151;padding:6px;border-radius:4px;overflow-x:auto">';
+            resExcel.feuillesDisponibles.forEach(function (sh) {
+              var isShAct = sh === resExcel.feuilleActive;
+              var btnCls = isShAct ? 'background:#10b981;color:#fff;font-weight:700' : 'background:#4b5563;color:#d1d5db';
+              h += '<button type="button" class="btn btn-sm btn-select-sheet-excel" data-sheet="' + escapeHtml(sh) + '" style="font-size:11px;padding:3px 8px;border:none;border-radius:3px;cursor:pointer;' + btnCls + '">📑 ' + escapeHtml(sh) + '</button>';
+            });
+            h += '</div>';
+          }
+
+          h += '<div id="conteneur-feuille-excel-injectee" style="overflow-x:auto;display:flex;justify-content:center;background:#52525b;padding:12px;border-radius:4px">';
+          h += resExcel.html;
+          h += '</div>';
+
+          h += '</div>';
+          zoneConteneur.innerHTML = h;
+
+          zoneConteneur.querySelectorAll(".btn-select-sheet-excel").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+              feuilleActuelle = btn.dataset.sheet;
+              chargerRenduExcelNatif(zoneConteneur);
+            });
+          });
+        }).catch(function (err) {
+          zoneConteneur.innerHTML = '<div style="padding:20px;color:#ef4444;background:#fff;border-radius:4px">Erreur rendu Excel : ' + escapeHtml(err.message) + '</div>';
+        });
+      }
+
       function construireCorps(fmt) {
         var html = '<div style="display:flex;flex-direction:column;gap:12px">';
         
@@ -6401,18 +6542,20 @@
         html += '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--color-surface-2);padding:8px 12px;border-radius:var(--radius);border:1px solid var(--color-border);flex-wrap:wrap">';
         
         // Onglets
-        html += '<div style="display:flex;gap:6px;flex-wrap:wrap">';
-        html += '<button type="button" class="btn ' + (fmt === "fiche_taxe" ? "btn-primary" : "btn-ghost") + ' btn-switch-doc-fmt" data-fmt="fiche_taxe" style="font-size:12px;padding:4px 10px">🖨️ Fiche de Taxe (Interne)</button>';
-        html += '<button type="button" class="btn ' + (fmt === "note_frais" ? "btn-primary" : "btn-ghost") + ' btn-switch-doc-fmt" data-fmt="note_frais" style="font-size:12px;padding:4px 10px">📄 Note de Frais (Client)</button>';
-        html += '<button type="button" class="btn ' + (fmt === "facture" ? "btn-primary" : "btn-ghost") + ' btn-switch-doc-fmt" data-fmt="facture" style="font-size:12px;padding:4px 10px">🧾 Facture Normalisée (TTC)</button>';
+        html += '<div style="display:flex;gap:4px;flex-wrap:wrap">';
+        html += '<button type="button" class="btn ' + (fmt === "fiche_taxe" ? "btn-primary" : "btn-ghost") + ' btn-switch-doc-fmt" data-fmt="fiche_taxe" style="font-size:11.5px;padding:4px 8px">🖨️ Fiche de Taxe</button>';
+        html += '<button type="button" class="btn ' + (fmt === "note_frais" ? "btn-primary" : "btn-ghost") + ' btn-switch-doc-fmt" data-fmt="note_frais" style="font-size:11.5px;padding:4px 8px">📄 Note de Frais</button>';
+        html += '<button type="button" class="btn ' + (fmt === "facture" ? "btn-primary" : "btn-ghost") + ' btn-switch-doc-fmt" data-fmt="facture" style="font-size:11.5px;padding:4px 8px">🧾 Facture Normalisée</button>';
+        html += '<button type="button" class="btn ' + (fmt === "excel_natif" ? "btn-primary" : "btn-ghost") + ' btn-switch-doc-fmt" data-fmt="excel_natif" style="font-size:11.5px;padding:4px 8px;background:' + (fmt === "excel_natif" ? '#059669' : 'transparent') + ';color:' + (fmt === "excel_natif" ? '#fff' : '#059669') + ';font-weight:700">📊 Rendu Fichier Excel (.xlsx)</button>';
         html += '</div>';
 
         // Sélecteur & Export Excel
         html += '<div style="display:flex;align-items:center;gap:6px;margin-left:auto;flex-wrap:wrap">';
         html += '<span style="font-size:11.5px;color:var(--color-text-dim)">Matrice :</span>';
-        html += '<select id="modal-select-modele-excel" class="input" style="font-size:12px;padding:3px 6px;height:auto;min-height:30px;width:auto;max-width:200px">';
+        html += '<select id="modal-select-modele-excel" class="input" style="font-size:12px;padding:3px 6px;height:auto;min-height:30px;width:auto;max-width:210px">';
         modelesExcel.forEach(function (m) {
-          html += '<option value="' + m.id + '"' + (m.parDefaut ? ' selected' : '') + '>' + escapeHtml(m.nom) + '</option>';
+          var isSel = m.id === modeleActuel ? ' selected' : '';
+          html += '<option value="' + m.id + '"' + isSel + '>' + escapeHtml(m.nom) + '</option>';
         });
         html += '</select>';
         html += '<button type="button" class="btn btn-secondary" id="modal-btn-export-excel" style="font-size:12px;padding:4px 10px;background:rgba(16,185,129,0.12);color:#059669;border-color:rgba(16,185,129,0.35);font-weight:700" title="Télécharger le classeur Excel (.xlsx) pré-rempli">📊 Télécharger Excel (.xlsx)</button>';
@@ -6420,9 +6563,13 @@
 
         html += '</div>';
 
-        // Zone d'aperçu papier A4
+        // Zone d'aperçu papier A4 ou Grille Excel
         html += '<div id="zone-apercu-feuille-a4" style="background:#4b5563;padding:16px;border-radius:var(--radius);max-height:68vh;overflow-y:auto;display:flex;justify-content:center">';
-        html += genererHtmlDocumentOfficiel(dossier, donneesFiche, fmt, params);
+        if (fmt === "excel_natif") {
+          html += '<div id="conteneur-excel-rendu-interne" style="width:100%"></div>';
+        } else {
+          html += genererHtmlDocumentOfficiel(dossier, donneesFiche, fmt, params);
+        }
         html += '</div>';
 
         html += '</div>';
@@ -6432,7 +6579,12 @@
       function executerImpression(fmt) {
         var printContainer = document.getElementById("print-container");
         if (printContainer) {
-          printContainer.innerHTML = genererHtmlDocumentOfficiel(dossier, donneesFiche, fmt, params);
+          if (fmt === "excel_natif") {
+            var zoneExcel = document.getElementById("conteneur-feuille-excel-injectee") || document.getElementById("zone-apercu-feuille-a4");
+            printContainer.innerHTML = zoneExcel ? zoneExcel.innerHTML : "";
+          } else {
+            printContainer.innerHTML = genererHtmlDocumentOfficiel(dossier, donneesFiche, fmt, params);
+          }
           toast("Préparation de l'impression A4...");
           setTimeout(function () {
             window.print();
@@ -6442,7 +6594,7 @@
 
       function executerExportExcel() {
         var sel = document.getElementById("modal-select-modele-excel");
-        var modeleChoisi = sel ? sel.value : "TEST";
+        var modeleChoisi = sel ? sel.value : modeleActuel;
         var nomFichier = "Liquidation_" + ((dossier && (dossier.numeroDossier || dossier.numero_dossier)) || "Notaire") + ".xlsx";
 
         toast("Génération du fichier Excel (.xlsx) en cours...");
@@ -6467,7 +6619,7 @@
 
       ouvrirModal({
         titre: titreModal(formatActuel),
-        largeur: "940px",
+        largeur: "960px",
         corps: construireCorps(formatActuel),
         footer: 
           '<button class="btn btn-secondary" id="modal-doc-fermer">Fermer</button>' +
@@ -6489,18 +6641,41 @@
           var btnFootExcel = modalDom.querySelector("#modal-doc-footer-excel");
           if (btnFootExcel) btnFootExcel.addEventListener("click", executerExportExcel);
 
+          var selModele = modalDom.querySelector("#modal-select-modele-excel");
+          if (selModele) {
+            selModele.addEventListener("change", function () {
+              modeleActuel = selModele.value;
+              feuilleActuelle = null;
+              if (formatActuel === "excel_natif") {
+                var zone = modalDom.querySelector("#zone-apercu-feuille-a4");
+                chargerRenduExcelNatif(zone);
+              }
+            });
+          }
+
+          if (formatActuel === "excel_natif") {
+            var zone = modalDom.querySelector("#zone-apercu-feuille-a4");
+            chargerRenduExcelNatif(zone);
+          }
+
           modalDom.querySelectorAll(".btn-switch-doc-fmt").forEach(function (btn) {
             btn.addEventListener("click", function () {
               formatActuel = btn.dataset.fmt;
               var zone = modalDom.querySelector("#zone-apercu-feuille-a4");
               if (zone) {
-                zone.innerHTML = genererHtmlDocumentOfficiel(dossier, donneesFiche, formatActuel, params);
+                if (formatActuel === "excel_natif") {
+                  chargerRenduExcelNatif(zone);
+                } else {
+                  zone.innerHTML = genererHtmlDocumentOfficiel(dossier, donneesFiche, formatActuel, params);
+                }
               }
               modalDom.querySelectorAll(".btn-switch-doc-fmt").forEach(function (b) {
                 if (b.dataset.fmt === formatActuel) {
                   b.className = "btn btn-primary btn-switch-doc-fmt";
+                  if (formatActuel === "excel_natif") b.style.background = "#059669";
                 } else {
                   b.className = "btn btn-ghost btn-switch-doc-fmt";
+                  b.style.background = "transparent";
                 }
               });
               var titreEl = modalDom.querySelector(".modal-title") || modalDom.querySelector("h2") || modalDom.querySelector("h3") || modalDom.querySelector("#modal-header-titre");

@@ -16,6 +16,7 @@ const fiscalService = require("../services/fiscal.service");
 const referentielService = require("../services/referentiel.service");
 const parametresService = require("../services/parametres.service");
 const excelService = require("../services/excel.service");
+const excelRendererService = require("../services/excel-renderer.service");
 
 const router = express.Router();
 
@@ -479,6 +480,53 @@ router.get("/dossiers/:dossierId/export-excel", async (req, res, next) => {
     res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
     res.setHeader("Content-Disposition", `attachment; filename="${nomFichierSortie}"`);
     res.send(bufferExcel);
+  } catch (e) { next(e); }
+});
+
+// Obtenir le rendu HTML interactif fidèle d'un modèle Excel (.xlsx)
+router.post("/excel/rendu-html", async (req, res, next) => {
+  try {
+    const { dossierId, typeActeId, montant, saisies, modeleId, feuille } = req.body || {};
+
+    let dossier = {};
+    if (dossierId) {
+      const { rows } = await pool.query(
+        `SELECT d.*, 
+                COALESCE((SELECT string_agg(c.nom, ', ') FROM dossier_comparants c WHERE c.dossier_id = d.id), '') AS comparants_noms,
+                t.libelle AS type_acte_libelle
+         FROM dossiers d
+         LEFT JOIN types_actes t ON t.id = d.type_acte_id
+         WHERE d.id = $1`,
+        [dossierId]
+      );
+      if (rows.length) dossier = rows[0];
+    }
+
+    const tActeId = typeActeId || dossier.type_acte_id || "vente_immobiliere";
+    const mAssiette = montant !== undefined ? Number(montant) : (Number(dossier.montant_assiette) || 0);
+
+    const [typeActe, parametres, tranches] = await Promise.all([
+      referentielService.obtenirTypeActe(tActeId),
+      parametresService.obtenir(),
+      referentielService.obtenirTranchesBareme(typeActeId ? (await referentielService.obtenirTypeActe(tActeId))?.baremeEmolumentsId : undefined),
+    ]);
+
+    const ficheCalculee = fiscalService.calculerFicheDeTaxe(typeActe || {}, mAssiette, parametres, tranches || [], saisies || {});
+
+    const rendu = excelRendererService.rendreClasseurExcelInteractif(
+      modeleId || "TEST",
+      {
+        montantAssiette: mAssiette,
+        comparantsNoms: dossier.comparants_noms || req.body.clientNom || "CLIENT DU DOSSIER",
+        numeroDossier: dossier.numero_dossier || req.body.numeroDossier || "DOSSIER",
+        typeActeLibelle: (typeActe && typeActe.libelle) || dossier.type_acte_libelle || "ACTE NOTARIÉ",
+      },
+      ficheCalculee,
+      parametres,
+      feuille
+    );
+
+    res.json(rendu);
   } catch (e) { next(e); }
 });
 
