@@ -27,6 +27,18 @@ async function calculerPourTypeActe(typeActeId, montant, saisies) {
   return fiscalService.calculerFicheDeTaxe(typeActe, montant, parametres, tranches, saisies);
 }
 
+router.get("/catalogue-lignes", async (req, res, next) => {
+  try {
+    const { typeActeId, montant } = req.query || {};
+    let typeActe = {};
+    if (typeActeId) {
+      typeActe = (await referentielService.obtenirTypeActe(typeActeId)) || {};
+    }
+    const catalogue = fiscalService.obtenirCatalogueLignesStandard(typeActe, Number(montant) || 0);
+    res.json(catalogue);
+  } catch (e) { next(e); }
+});
+
 router.post("/calculer", exigerPermission("fiscal:calculer"), async (req, res, next) => {
   try {
     const { typeActeId, montant, saisies } = req.body || {};
