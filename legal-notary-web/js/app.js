@@ -5073,9 +5073,12 @@
           return cache.dossiers;
         }).catch(function () { return []; });
 
-    Promise.all([chargerTypes, chargerDossiers]).then(function (res) {
+    var chargerCatalogue = API.get("/api/fiscal/catalogue-lignes").catch(function () { return []; });
+
+    Promise.all([chargerTypes, chargerDossiers, chargerCatalogue]).then(function (res) {
       var typesActes = res[0] || [];
       var dossiers = res[1] || [];
+      var catalogueLignes = res[2] || [];
 
       var dossierInitial = dossierIdSelectionne 
         ? dossiers.find(function (d) { return d.id === dossierIdSelectionne; })
@@ -5110,39 +5113,108 @@
       html += '</div>';
       html += '</div>';
 
-      // 3. Paramètres & Formalités
+      // 3. Paramètres Invariables de Rédaction & Droits de Timbre (500 F / page)
       html += '<div style="background:var(--color-surface-2);padding:10px 12px;border-radius:var(--radius);border:1px solid var(--color-border)">';
-      html += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--color-text-dim);margin-bottom:8px">Paramètres de Rédaction & Droits de Timbre</div>';
-      html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:var(--space-2)">';
-      html += '<div class="field" style="margin:0"><label style="font-size:11px">Pages Minute</label><input class="input" type="number" min="0" id="taxe-m-timbres-min" value="4"></div>';
-      html += '<div class="field" style="margin:0"><label style="font-size:11px">Pages Expédition</label><input class="input" type="number" min="0" id="taxe-m-timbres-exp" value="4"></div>';
+      html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--color-text-dim)">Paramètres Invariables (Timbres & Rôles : 500 F / page)</span><span class="tag tag-accent" style="font-size:10px">Tarif Légal Fixe</span></div>';
+      html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:var(--space-2)">';
+      html += '<div class="field" style="margin:0"><label style="font-size:11px">Pages Minute</label><input class="input" type="number" min="1" id="taxe-m-timbres-min" value="4"></div>';
+      html += '<div class="field" style="margin:0"><label style="font-size:11px">Pages Expédition</label><input class="input" type="number" min="1" id="taxe-m-timbres-exp" value="5"></div>';
       html += '<div class="field" style="margin:0"><label style="font-size:11px">Nb Expéditions</label><input class="input" type="number" min="1" id="taxe-m-timbres-nbexp" value="2"></div>';
-      html += '<div class="field" style="margin:0"><label style="font-size:11px">Pages Rôles</label><input class="input" type="number" min="0" id="taxe-m-roles-min" value="4"></div>';
-      html += '<div class="field" style="margin:0"><label style="font-size:11px">Vacations (FCFA)</label><input class="input" type="number" min="0" step="5000" id="taxe-m-vacations" value="0"></div>';
-      html += '<div class="field" style="margin:0"><label style="font-size:11px">Débours / Divers</label><input class="input" type="number" min="0" step="1000" id="taxe-m-divers" value="24000"></div>';
+      html += '<div class="field" style="margin:0"><label style="font-size:11px">Pages Copies</label><input class="input" type="number" min="0" id="taxe-m-roles-copies" value="0"></div>';
       html += '</div>';
       html += '</div>';
 
-      // 4. Zone d'aperçu du calcul en temps réel
+      // 4. Catalogue Interactif des Émoluments & Formalités (Chiffre d'Affaires de l'Étude)
+      html += '<div style="border:1px solid var(--color-border);border-radius:var(--radius);background:var(--color-surface);padding:10px 12px">';
+      html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">';
+      html += '<div><span style="font-size:12px;font-weight:700;color:var(--color-accent);text-transform:uppercase">💼 Émoluments de Formalités & Diligences (CA Notaire)</span><div style="font-size:11px;color:var(--color-text-dim)">Cochez les formalités accomplies pour ce dossier (montants modifiables en direct) :</div></div>';
+      html += '<button type="button" class="btn btn-ghost" id="btn-toggle-toutes-formalites" style="font-size:11px;padding:2px 6px">Tout cocher / décocher</button>';
+      html += '</div>';
+
+      html += '<div id="conteneur-cases-emoluments" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:6px;max-height:180px;overflow-y:auto;padding-right:4px">';
+      
+      var formalitesListe = catalogueLignes.filter(function (l) { return l.categorie !== "debours"; });
+      if (!formalitesListe.length) {
+        formalitesListe = [
+          { code: "inscription_livre_foncier", libelle: "Inscription au Livre Foncier", montantDefaut: 75000, actif: true },
+          { code: "extrait_topographique", libelle: "Demande d'extrait topographique", montantDefaut: 15000, actif: true },
+          { code: "requisition_fonciere", libelle: "Réquisitions foncières", montantDefaut: 10000, actif: true },
+          { code: "bordereau_enregistrement", libelle: "Émolument bordereau d'enregistrement", montantDefaut: 1000, actif: true },
+          { code: "etats_fonciers", libelle: "Demande d'états fonciers", montantDefaut: 30000, actif: true },
+          { code: "situation_fiscale", libelle: "Demande situation fiscale", montantDefaut: 15000, actif: true },
+          { code: "certificat_mutation", libelle: "Certificat de mutation foncière", montantDefaut: 75000, actif: false },
+          { code: "certificat_localisation", libelle: "Émolument certificat localisation", montantDefaut: 15000, actif: false },
+          { code: "vacations", libelle: "Vacations du Notaire", montantDefaut: 150000, actif: false },
+          { code: "transport", libelle: "Frais de transport aller/retour", montantDefaut: 81000, actif: false },
+          { code: "deplacement_sejour", libelle: "Frais de déplacement et séjour", montantDefaut: 40000, actif: false },
+          { code: "art_135", libelle: "Honoraires de diligence (Art. 135)", montantDefaut: 20000, actif: true },
+          { code: "divers_papeterie", libelle: "Frais de correspondance & papeterie", montantDefaut: 20000, actif: true }
+        ];
+      }
+
+      formalitesListe.forEach(function (formItem) {
+        var isCheck = formItem.actif ? " checked" : "";
+        html += '<div class="item-formalite-row" style="display:flex;align-items:center;justify-content:space-between;gap:6px;background:var(--color-surface-2);padding:4px 8px;border-radius:4px;border:1px solid var(--color-border)">';
+        html += '<label style="display:flex;align-items:center;gap:6px;font-size:11.5px;margin:0;cursor:pointer;flex:1">';
+        html += '<input type="checkbox" class="chk-formalite-item" data-code="' + formItem.code + '"' + isCheck + '> ';
+        html += '<span>' + formItem.libelle + '</span>';
+        html += '</label>';
+        html += '<input type="number" class="input input-formalite-montant" data-code="' + formItem.code + '" value="' + formItem.montantDefaut + '" style="width:75px;font-size:11px;padding:2px 4px;text-align:right;height:24px">';
+        html += '</div>';
+      });
+      html += '</div>';
+
+      // Section Débours Tiers
+      html += '<div style="margin-top:8px;border-top:1px dashed var(--color-border);padding-top:6px">';
+      html += '<div style="font-size:11px;font-weight:700;color:var(--color-warning);text-transform:uppercase;margin-bottom:4px">🤝 Débours Tiers (Frais Réels Géomètre / Tribunal / Divers)</div>';
+      html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:6px">';
+      
+      var deboursListe = catalogueLignes.filter(function (l) { return l.categorie === "debours"; });
+      if (!deboursListe.length) {
+        deboursListe = [
+          { code: "debours_dossier_technique", libelle: "Dossier technique / Géomètre", montantDefaut: 150000, actif: false },
+          { code: "debours_certificat_localisation", libelle: "Certificat localisation (Frais réels)", montantDefaut: 250000, actif: false },
+          { code: "debours_divers_formalites", libelle: "Débours divers de formalités", montantDefaut: 100000, actif: true }
+        ];
+      }
+
+      deboursListe.forEach(function (debItem) {
+        var isDebCheck = debItem.actif ? " checked" : "";
+        html += '<div class="item-formalite-row" style="display:flex;align-items:center;justify-content:space-between;gap:6px;background:var(--color-surface-2);padding:4px 8px;border-radius:4px;border:1px solid var(--color-border)">';
+        html += '<label style="display:flex;align-items:center;gap:6px;font-size:11.5px;margin:0;cursor:pointer;flex:1">';
+        html += '<input type="checkbox" class="chk-debours-item" data-code="' + debItem.code + '"' + isDebCheck + '> ';
+        html += '<span>' + debItem.libelle + '</span>';
+        html += '</label>';
+        html += '<input type="number" class="input input-debours-montant" data-code="' + debItem.code + '" value="' + debItem.montantDefaut + '" style="width:75px;font-size:11px;padding:2px 4px;text-align:right;height:24px">';
+        html += '</div>';
+      });
+      html += '</div>';
+      html += '</div>';
+      html += '</div>';
+
+      // 5. Zone d'aperçu du calcul en temps réel (Structure 4 Colonnes & 3 Piliers)
       html += '<div id="zone-apercu-calcul-modal" style="margin-top:2px"></div>';
 
       html += '<div id="erreur-creer-taxe" class="erreur-inline" style="display:none"></div>';
 
+      // 6. Barre d'actions & 3 formats d'impression
       html += '<div style="display:flex;justify-content:space-between;align-items:center;gap:var(--space-2);margin-top:var(--space-2);flex-wrap:wrap">';
       html += '<button type="button" class="btn btn-ghost" id="btn-annuler-modal-taxe">Fermer</button>';
-      html += '<div style="display:flex;gap:var(--space-2)">';
-      html += '<button type="button" class="btn btn-secondary" id="btn-imprimer-modal-taxe">Imprimer Facture</button>';
-      html += '<button type="submit" class="btn btn-primary" id="btn-enregistrer-modal-taxe">Enregistrer la Fiche de Taxe</button>';
+      html += '<div style="display:flex;gap:6px;flex-wrap:wrap">';
+      html += '<button type="button" class="btn btn-secondary" id="btn-imprimer-fiche-taxe" title="Imprimer la Fiche de Taxe officielle en 4 colonnes A4">🖨️ Fiche de Taxe (4 Col)</button>';
+      html += '<button type="button" class="btn btn-secondary" id="btn-imprimer-note-frais" title="Imprimer la Note de Frais Prévisionnelle pour le client">📄 Note de Frais</button>';
+      html += '<button type="button" class="btn btn-secondary" id="btn-imprimer-facture" title="Imprimer la Facture Normalisée avec TVA 18%">🧾 Facture Normalisée</button>';
+      html += '<button type="submit" class="btn btn-primary" id="btn-enregistrer-modal-taxe" style="font-weight:700">💾 Enregistrer la Taxe</button>';
       html += '</div>';
       html += '</div>';
 
       html += '</form>';
 
       ouvrirModal({
-        titre: 'Établissement & Calcul d\'une Fiche de Taxe (Décret N° 2013-279)',
+        titre: 'Établissement & Taxe Prévisionnelle Notariale (Décret 2013-279 & Pratique)',
         corps: html,
         boutonFermer: true,
-        largeur: "680px",
+        largeur: "880px",
         apresOuverture: function () {
           document.getElementById("btn-annuler-modal-taxe").addEventListener("click", fermerModal);
 
@@ -5161,29 +5233,45 @@
 
           var dernierCalculResultat = null;
 
+          function construireSaisies() {
+            var pagesMin = parseInt(document.getElementById("taxe-m-timbres-min").value, 10) || 4;
+            var pagesExp = parseInt(document.getElementById("taxe-m-timbres-exp").value, 10) || (pagesMin + 1);
+            var nbExp = parseInt(document.getElementById("taxe-m-timbres-nbexp").value, 10) || 2;
+            var pagesCop = parseInt(document.getElementById("taxe-m-roles-copies").value, 10) || 0;
+
+            var lignesEmols = [];
+            document.querySelectorAll(".chk-formalite-item").forEach(function (chk) {
+              var code = chk.dataset.code;
+              var inputMt = document.querySelector('.input-formalite-montant[data-code="' + code + '"]');
+              var mt = inputMt ? parseFloat(inputMt.value) || 0 : 0;
+              lignesEmols.push({ code: code, actif: chk.checked, montant: mt });
+            });
+
+            document.querySelectorAll(".chk-debours-item").forEach(function (chk) {
+              var code = chk.dataset.code;
+              var inputMt = document.querySelector('.input-debours-montant[data-code="' + code + '"]');
+              var mt = inputMt ? parseFloat(inputMt.value) || 0 : 0;
+              lignesEmols.push({ code: code, categorie: "debours", actif: chk.checked, montant: mt });
+            });
+
+            return {
+              timbres: { pagesMinute: pagesMin, pagesExpedition: pagesExp, nombreExpeditions: nbExp, pagesBordereau: 1 },
+              roles: { pagesMinute: pagesMin, pagesExpedition: pagesExp, nombreExpeditions: nbExp, pagesCopie: pagesCop },
+              lignesEmoluments: lignesEmols,
+              pagesMinute: pagesMin,
+              pagesExpedition: pagesExp,
+              nombreExpeditions: nbExp,
+              pagesCopie: pagesCop,
+            };
+          }
+
           function recalculerApercuModal() {
             if (!selectTypeActe || !inputMontant) return;
             var typeActeId = selectTypeActe.value;
             var montant = extraireNombre(inputMontant.value);
             if (affMontant) affMontant.textContent = "Assiette : " + fmtFCFA(montant);
 
-            var saisies = {
-              timbres: {
-                pagesMinute: parseInt(document.getElementById("taxe-m-timbres-min").value, 10) || 0,
-                pagesExpedition: parseInt(document.getElementById("taxe-m-timbres-exp").value, 10) || 0,
-                nombreExpeditions: parseInt(document.getElementById("taxe-m-timbres-nbexp").value, 10) || 1,
-                pagesBordereau: 0,
-              },
-              roles: {
-                pagesMinute: parseInt(document.getElementById("taxe-m-roles-min").value, 10) || 0,
-                pagesExpedition: parseInt(document.getElementById("taxe-m-timbres-exp").value, 10) || 0,
-                nombreExpeditions: parseInt(document.getElementById("taxe-m-timbres-nbexp").value, 10) || 1,
-                pagesCopie: 0,
-              },
-              vacations: parseFloat(document.getElementById("taxe-m-vacations").value) || 0,
-              fraisFormalites: { depotBanque: 0, depotEnregistrement: 0, inscriptionLivreFoncier: 0, requisitionEtat: 0 },
-              diversSupplementaire: parseFloat(document.getElementById("taxe-m-divers").value) || 0,
-            };
+            var saisies = construireSaisies();
 
             API.post("/api/fiscal/calculer", { typeActeId: typeActeId, montant: montant, saisies: saisies })
               .then(function (f) {
@@ -5192,65 +5280,89 @@
                 if (!zoneApercu) return;
 
                 var emo = f.emoluments || {};
-                var nomRegle = emo.libelleRegle || (emo.baremeNom ? emo.baremeNom : (emo.minimumApplique ? "Minimum légal de minute (50 000 FCFA — Décret N° 2013-279)" : "Barème Décret 2013-279"));
+                var nomRegle = emo.libelleRegle || "Barème Décret 2013-279";
 
-                var h = '<div class="card" style="background:var(--color-surface);border-color:var(--color-border);padding:12px 14px">';
-                h += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:4px">';
-                h += '<div style="font-size:11.5px;font-weight:700;text-transform:uppercase;color:var(--color-accent)">Décompte Fiscal Officiel en Temps Réel</div>';
-                h += '<span class="tag tag-accent" style="font-size:11px">' + (f.typeActe ? f.typeActe.libelle : "Acte notarié") + '</span>';
+                var totalCA = f.totaux.emolumentsHT || (emo.totalEmolumentsHT || emo.montantHT);
+                var totalTresor = f.totaux.tresor || f.totaux.droitsEtat;
+                var totalDebours = f.totaux.debours || 0;
+                var totalGeneral = f.totaux.general;
+                var enLettres = f.totaux.generalEnLettres || "";
+
+                var h = '<div class="card" style="background:var(--color-surface);border:1.5px solid var(--color-border);padding:10px 12px;margin-top:4px">';
+                
+                // 3 Cartes de synthèse des 3 piliers
+                h += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px">';
+                h += '<div style="background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.3);border-radius:6px;padding:8px;text-align:center">';
+                h += '<div style="font-size:10.5px;font-weight:700;color:var(--color-accent);text-transform:uppercase">🏛️ CA Émoluments Notaire (HT)</div>';
+                h += '<div style="font-size:15px;font-weight:800;color:var(--color-accent);margin-top:2px">' + fmtFCFA(totalCA) + '</div>';
                 h += '</div>';
 
-                h += '<table class="table" style="font-size:12.5px;margin-bottom:0"><tbody>';
+                h += '<div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-radius:6px;padding:8px;text-align:center">';
+                h += '<div style="font-size:10.5px;font-weight:700;color:var(--color-warning);text-transform:uppercase">🏢 Trésor (DGI & Foncier)</div>';
+                h += '<div style="font-size:15px;font-weight:800;color:var(--color-warning);margin-top:2px">' + fmtFCFA(totalTresor) + '</div>';
+                h += '</div>';
 
-                // 1. Émoluments du notaire avec citation explicite de la règle
-                h += '<tr>';
-                h += '<td style="vertical-align:top">';
-                h += '<div style="font-weight:700;color:var(--color-text)">1. Émoluments Notaire HT</div>';
-                h += '<div style="font-size:11px;color:var(--color-accent);font-weight:600;margin-top:2px">' + nomRegle + '</div>';
+                h += '<div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.3);border-radius:6px;padding:8px;text-align:center">';
+                h += '<div style="font-size:10.5px;font-weight:700;color:#10b981;text-transform:uppercase">🤝 Débours Tiers (Frais réels)</div>';
+                h += '<div style="font-size:15px;font-weight:800;color:#10b981;margin-top:2px">' + fmtFCFA(totalDebours) + '</div>';
+                h += '</div>';
+                h += '</div>';
 
-                // Détail des tranches calculées
-                if (emo.detailTranches && emo.detailTranches.length > 0) {
-                  h += '<div style="background:var(--color-surface-2);border-radius:var(--radius);padding:6px 10px;margin-top:6px;font-size:11px;border:1px solid var(--color-border)">';
-                  h += '<div style="font-weight:700;color:var(--color-text);margin-bottom:4px">Détail du calcul par tranches dégressives :</div>';
-                  emo.detailTranches.forEach(function (tr, idx) {
-                    var pct = (tr.taux * 100).toFixed(tr.taux < 0.01 ? 2 : 1) + ' %';
-                    var trancheLib = tr.a ? (fmtFCFA(tr.de) + ' à ' + fmtFCFA(tr.a)) : ('Au-delà de ' + fmtFCFA(tr.de));
-                    h += '<div style="display:flex;justify-content:space-between;color:var(--color-text-dim);padding:2px 0">';
-                    h += '<span>• Tranche ' + (idx + 1) + ' (' + trancheLib + ' à ' + pct + ')</span>';
-                    h += '<strong style="color:var(--color-text)">' + fmtFCFA(tr.montant) + '</strong>';
-                    h += '</div>';
+                // Tableau de ventilation détaillé en 4 colonnes
+                h += '<div class="table-wrap" style="max-height:160px;overflow-y:auto;border:1px solid var(--color-border);border-radius:4px">';
+                h += '<table class="table" style="font-size:11.5px;margin:0"><thead><tr style="background:var(--color-surface-2)">';
+                h += '<th style="padding:4px 8px">Rubrique Détaillée</th><th style="padding:4px 8px;text-align:right">Émoluments (HT)</th><th style="padding:4px 8px;text-align:right">Trésor (DGI/Cons)</th><th style="padding:4px 8px;text-align:right">Débours</th>';
+                h += '</tr></thead><tbody>';
+
+                // Émoluments détaillés
+                if (emo.lignesDetaillees && emo.lignesDetaillees.length) {
+                  emo.lignesDetaillees.filter(function (l) { return l.actif; }).forEach(function (l) {
+                    h += '<tr>';
+                    h += '<td style="padding:3px 8px">' + l.libelle + '</td>';
+                    h += '<td style="padding:3px 8px;text-align:right;font-weight:700;color:var(--color-accent)">' + fmtFCFA(l.montant) + '</td>';
+                    h += '<td style="padding:3px 8px;text-align:right;color:var(--color-text-dim)">—</td>';
+                    h += '<td style="padding:3px 8px;text-align:right;color:var(--color-text-dim)">—</td>';
+                    h += '</tr>';
                   });
-                  h += '</div>';
-                }
-                h += '</td>';
-                h += '<td style="text-align:right;font-weight:800;font-size:13.5px;color:var(--color-accent);vertical-align:top">' + fmtFCFA(emo.montantHT) + '</td>';
-                h += '</tr>';
-
-                // 2. TVA légale
-                h += '<tr><td><strong>2. TVA légale (18 %)</strong><div style="font-size:11px;color:var(--color-text-dim)">Applicable sur les émoluments et vacations du notaire</div></td><td style="text-align:right;font-weight:600">' + fmtFCFA(f.tva) + '</td></tr>';
-
-                // 3. Droits d'enregistrement DGI
-                var dgiInfo = f.droitEnregistrement.mode === 'fixe'
-                  ? 'Droit fixe DGI de ' + fmtFCFA(f.droitEnregistrement.montant)
-                  : (f.droitEnregistrement.valeur ? ((f.droitEnregistrement.valeur * 100) + ' % sur assiette de ' + fmtFCFA(f.montantAssiette)) : 'Selon assiette de l\'acte');
-                h += '<tr><td><strong>3. Droits d\'enregistrement DGI</strong><div style="font-size:11px;color:var(--color-text-dim)">' + dgiInfo + '</div></td><td style="text-align:right;font-weight:600">' + fmtFCFA(f.droitEnregistrement.montant) + '</td></tr>';
-
-                // 4. Taxe foncière
-                if (f.taxeFonciere && f.taxeFonciere.total > 0) {
-                  h += '<tr><td><strong>4. Taxe Foncière (Livre Foncier)</strong><div style="font-size:11px;color:var(--color-text-dim)">1,2 % proportionnel (' + fmtFCFA(f.taxeFonciere.proportionnel) + ') + 3 000 FCFA fixe</div></td><td style="text-align:right;font-weight:600">' + fmtFCFA(f.taxeFonciere.total) + '</td></tr>';
                 }
 
-                // 5. Timbres et rôles
-                h += '<tr><td><strong>5. Timbres fiscaux & rôles</strong><div style="font-size:11px;color:var(--color-text-dim)">Minute, expéditions et copies (500 FCFA / page)</div></td><td style="text-align:right;font-weight:600">' + fmtFCFA(f.timbres.total + f.roles.total) + '</td></tr>';
-
-                // 6. Débours et divers
-                if (f.divers > 0 || f.vacations > 0) {
-                  h += '<tr><td><strong>6. Débours & Papeterie</strong><div style="font-size:11px;color:var(--color-text-dim)">Débours administratifs et formalités</div></td><td style="text-align:right;font-weight:600">' + fmtFCFA(f.divers + f.vacations + f.totalFraisFormalites) + '</td></tr>';
+                // Trésor détaillé
+                if (f.lignesTresor && f.lignesTresor.length) {
+                  f.lignesTresor.forEach(function (tr) {
+                    h += '<tr>';
+                    h += '<td style="padding:3px 8px;color:var(--color-text)">' + tr.libelle + '</td>';
+                    h += '<td style="padding:3px 8px;text-align:right;color:var(--color-text-dim)">—</td>';
+                    h += '<td style="padding:3px 8px;text-align:right;font-weight:700;color:var(--color-warning)">' + fmtFCFA(tr.montant) + '</td>';
+                    h += '<td style="padding:3px 8px;text-align:right;color:var(--color-text-dim)">—</td>';
+                    h += '</tr>';
+                  });
                 }
 
-                // Total TTC
-                h += '<tr style="background:rgba(56,189,248,0.08);border-top:2px solid var(--color-accent)"><td style="font-weight:700;font-size:14px;color:var(--color-text)">TOTAL GÉNÉRAL TTC DU DÉCOMPTE</td><td style="text-align:right;font-weight:800;font-size:16px;color:var(--color-accent)">' + fmtFCFA(f.totaux.general) + '</td></tr>';
-                h += '</tbody></table>';
+                // Débours détaillés
+                if (f.lignesDebours && f.lignesDebours.length) {
+                  f.lignesDebours.forEach(function (deb) {
+                    h += '<tr>';
+                    h += '<td style="padding:3px 8px;color:var(--color-text)">' + deb.libelle + '</td>';
+                    h += '<td style="padding:3px 8px;text-align:right;color:var(--color-text-dim)">—</td>';
+                    h += '<td style="padding:3px 8px;text-align:right;color:var(--color-text-dim)">—</td>';
+                    h += '<td style="padding:3px 8px;text-align:right;font-weight:700;color:#10b981">' + fmtFCFA(deb.montant) + '</td>';
+                    h += '</tr>';
+                  });
+                }
+
+                h += '</tbody></table></div>';
+
+                // Total Général et Arrêté en lettres
+                h += '<div style="margin-top:8px;background:rgba(99,102,241,0.06);border:1px solid rgba(99,102,241,0.25);border-radius:6px;padding:8px 12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">';
+                h += '<div>';
+                h += '<div style="font-size:12px;font-weight:800;color:var(--color-text)">TOTAL GÉNÉRAL À PAYER : <span style="color:var(--color-accent);font-size:15px">' + fmtFCFA(totalGeneral) + '</span></div>';
+                if (enLettres) {
+                  h += '<div style="font-size:10.5px;font-style:italic;color:var(--color-text-dim);margin-top:2px">Arrêté à la somme de : <strong>' + enLettres + '</strong></div>';
+                }
+                h += '</div>';
+                h += '<div style="text-align:right;font-size:11px;color:var(--color-text-dim)">TVA 18% sur CA : <strong>' + fmtFCFA(f.tva) + '</strong></div>';
+                h += '</div>';
+
                 h += '</div>';
 
                 zoneApercu.innerHTML = h;
@@ -5262,12 +5374,11 @@
           // Formatage du montant avec espaces au fur et à mesure de la saisie
           inputMontant.addEventListener("input", function () {
             var raw = inputMontant.value.replace(/\s/g, "").replace(/[^0-9]/g, "");
-            var cursorPos = inputMontant.selectionStart;
             inputMontant.value = formaterEspaces(raw);
             recalculerApercuModal();
           });
 
-          // Écouteurs de modification
+          // Écouteurs de modification de sélection
           selectDossier.addEventListener("change", function () {
             var dId = selectDossier.value;
             var curDossier = (cache.dossiers || []).find(function (d) { return d.id === dId; });
@@ -5280,22 +5391,75 @@
 
           selectTypeActe.addEventListener("change", recalculerApercuModal);
 
-          ["taxe-m-timbres-min", "taxe-m-timbres-exp", "taxe-m-timbres-nbexp", "taxe-m-roles-min", "taxe-m-vacations", "taxe-m-divers"].forEach(function (fId) {
+          // Écouteurs sur les inputs de pages
+          ["taxe-m-timbres-min", "taxe-m-timbres-exp", "taxe-m-timbres-nbexp", "taxe-m-roles-copies"].forEach(function (fId) {
             var elem = document.getElementById(fId);
             if (elem) elem.addEventListener("input", recalculerApercuModal);
           });
 
+          // Automatisme pagesMinute => pagesExpédition = pagesMinute + 1
+          var inputMin = document.getElementById("taxe-m-timbres-min");
+          var inputExp = document.getElementById("taxe-m-timbres-exp");
+          if (inputMin && inputExp) {
+            inputMin.addEventListener("change", function () {
+              var pMin = parseInt(inputMin.value, 10) || 1;
+              inputExp.value = pMin + 1;
+              recalculerApercuModal();
+            });
+          }
+
+          // Écouteurs sur les cases à cocher et montants d'émoluments/débours
+          document.querySelectorAll(".chk-formalite-item, .chk-debours-item").forEach(function (chk) {
+            chk.addEventListener("change", recalculerApercuModal);
+          });
+          document.querySelectorAll(".input-formalite-montant, .input-debours-montant").forEach(function (inp) {
+            inp.addEventListener("input", recalculerApercuModal);
+          });
+
+          // Bouton tout cocher / décocher
+          var btnToggle = document.getElementById("btn-toggle-toutes-formalites");
+          if (btnToggle) {
+            var toggleState = true;
+            btnToggle.addEventListener("click", function () {
+              toggleState = !toggleState;
+              document.querySelectorAll(".chk-formalite-item").forEach(function (chk) {
+                chk.checked = toggleState;
+              });
+              recalculerApercuModal();
+            });
+          }
+
           // Premier calcul immédiat
           recalculerApercuModal();
 
-          // Bouton imprimer
-          document.getElementById("btn-imprimer-modal-taxe").addEventListener("click", function () {
+          // Boutons d'impression des 3 formats normés
+          document.getElementById("btn-imprimer-fiche-taxe").addEventListener("click", function () {
             var dId = selectDossier.value;
             var curDossier = (cache.dossiers || []).find(function (d) { return d.id === dId; });
             if (curDossier && dernierCalculResultat) {
-              imprimerDecompteOfficiel(curDossier, dernierCalculResultat);
+              imprimerDecompteOfficiel(curDossier, dernierCalculResultat, "fiche_taxe");
             } else {
-              toast("Veuillez patienter pendant le calcul du décompte.");
+              toast("Veuillez patienter pendant le calcul de la taxe.");
+            }
+          });
+
+          document.getElementById("btn-imprimer-note-frais").addEventListener("click", function () {
+            var dId = selectDossier.value;
+            var curDossier = (cache.dossiers || []).find(function (d) { return d.id === dId; });
+            if (curDossier && dernierCalculResultat) {
+              imprimerDecompteOfficiel(curDossier, dernierCalculResultat, "note_frais");
+            } else {
+              toast("Veuillez patienter pendant le calcul de la taxe.");
+            }
+          });
+
+          document.getElementById("btn-imprimer-facture").addEventListener("click", function () {
+            var dId = selectDossier.value;
+            var curDossier = (cache.dossiers || []).find(function (d) { return d.id === dId; });
+            if (curDossier && dernierCalculResultat) {
+              imprimerDecompteOfficiel(curDossier, dernierCalculResultat, "facture");
+            } else {
+              toast("Veuillez patienter pendant le calcul de la taxe.");
             }
           });
 
@@ -5306,23 +5470,7 @@
             var errZone = document.getElementById("erreur-creer-taxe");
             errZone.style.display = "none";
 
-            var saisies = {
-              timbres: {
-                pagesMinute: parseInt(document.getElementById("taxe-m-timbres-min").value, 10) || 0,
-                pagesExpedition: parseInt(document.getElementById("taxe-m-timbres-exp").value, 10) || 0,
-                nombreExpeditions: parseInt(document.getElementById("taxe-m-timbres-nbexp").value, 10) || 1,
-                pagesBordereau: 0,
-              },
-              roles: {
-                pagesMinute: parseInt(document.getElementById("taxe-m-roles-min").value, 10) || 0,
-                pagesExpedition: parseInt(document.getElementById("taxe-m-timbres-exp").value, 10) || 0,
-                nombreExpeditions: parseInt(document.getElementById("taxe-m-timbres-nbexp").value, 10) || 1,
-                pagesCopie: 0,
-              },
-              vacations: parseFloat(document.getElementById("taxe-m-vacations").value) || 0,
-              fraisFormalites: { depotBanque: 0, depotEnregistrement: 0, inscriptionLivreFoncier: 0, requisitionEtat: 0 },
-              diversSupplementaire: parseFloat(document.getElementById("taxe-m-divers").value) || 0,
-            };
+            var saisies = construireSaisies();
 
             API.post("/api/fiscal/dossiers/" + dId + "/enregistrer", {
               saisies: saisies,
@@ -5681,67 +5829,241 @@
   // -----------------------------------------------------------------
   // Impression officielle de la Fiche de Taxe / Décompte Notarié
   // -----------------------------------------------------------------
-  function imprimerDecompteOfficiel(dossier, f) {
+  function imprimerDecompteOfficiel(dossier, f, formatChoisi) {
+    formatChoisi = formatChoisi || "fiche_taxe";
     API.get("/api/parametres").then(function (params) {
       var printContainer = document.getElementById("print-container");
       if (!printContainer) return;
 
       var dateJour = new Date().toLocaleDateString("fr-CI", { day: "numeric", month: "long", year: "numeric" });
-      var html = '<div style="padding:24px;max-width:800px;margin:0 auto;color:#111;background:#fff;font-family:Inter,sans-serif">';
+      var comparantsAff = (dossier.comparantsNoms && dossier.comparantsNoms.trim()) ? dossier.comparantsNoms.trim() : (dossier.clientNom || "Client du dossier");
+      var emo = f.emoluments || {};
+      var totalCA = f.totaux.emolumentsHT || (emo.totalEmolumentsHT || emo.montantHT);
+      var totalTresor = f.totaux.tresor || f.totaux.droitsEtat;
+      var totalDebours = f.totaux.debours || 0;
+      var totalGeneral = f.totaux.general;
+      var enLettres = f.totaux.generalEnLettres || "";
 
-      // En-tête de l'étude
-      html += '<div class="print-header" style="border-bottom:2px solid #111827;padding-bottom:12px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:flex-start">';
+      var html = '<div style="padding:15mm;max-width:210mm;margin:0 auto;color:#111;background:#fff;font-family:\'Inter\',Arial,sans-serif;box-sizing:border-box">';
+
+      // En-tête officiel de l'Étude
+      html += '<div style="border-bottom:2px solid #111827;padding-bottom:10px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:flex-start">';
       html += '<div>';
-      html += '<div style="font-family:\'Space Grotesk\',sans-serif;font-weight:700;font-size:16pt;text-transform:uppercase;color:#111827">' + (params.nomEtude || "ÉTUDE NOTARIALE") + '</div>';
-      html += '<div style="font-size:11pt;font-weight:600;margin-top:2px">' + (params.titreNotaire || "Maître") + ' ' + (params.nomNotaire || "") + '</div>';
-      html += '<div style="font-size:9pt;color:#4b5563;margin-top:4px">' + (params.adresse || "Abidjan, Côte d'Ivoire") + '</div>';
-      if (params.telephoneFixe || params.telephone) html += '<div style="font-size:9pt;color:#4b5563">Tél : ' + (params.telephoneFixe || params.telephone) + '</div>';
-      if (params.email) html += '<div style="font-size:9pt;color:#4b5563">Email : ' + params.email + '</div>';
+      html += '<div style="font-family:\'Space Grotesk\',Arial,sans-serif;font-weight:800;font-size:14pt;text-transform:uppercase;color:#111827">' + (params.nomEtude || "ÉTUDE DE MAÎTRE NOTAIRE") + '</div>';
+      html += '<div style="font-size:11pt;font-weight:700;color:#1f2937;margin-top:2px">' + (params.titreNotaire || "Maître") + ' ' + (params.nomNotaire || "") + ' — NOTAIRE</div>';
+      html += '<div style="font-size:8.5pt;color:#4b5563;margin-top:2px">' + (params.adresse || "Abidjan, Côte d'Ivoire") + (params.boitePostale ? " — " + params.boitePostale : "") + '</div>';
+      if (params.telephoneFixe || params.telephonePortable) html += '<div style="font-size:8.5pt;color:#4b5563">Tél : ' + (params.telephoneFixe || params.telephonePortable) + '</div>';
+      if (params.email) html += '<div style="font-size:8.5pt;color:#4b5563">Email : ' + params.email + '</div>';
       html += '</div>';
+      html += '<div style="text-align:right;font-size:8.5pt;color:#4b5563">';
+      if (params.numeroCC) html += '<div>N° CC : <strong>' + params.numeroCC + '</strong></div>';
+      if (params.centreImpots) html += '<div>Régime / Centre : ' + params.centreImpots + '</div>';
+      html += '<div style="margin-top:4px">Abidjan, le <strong>' + dateJour + '</strong></div>';
+      html += '</div>';
+      html += '</div>';
+
+      // =========================================================================
+      // FORMAT 1 : FICHE DE TAXE OFFICIELLE (TABLEAU EN 4 COLONNES)
+      // =========================================================================
+      if (formatChoisi === "fiche_taxe") {
+        html += '<div style="text-align:center;margin-bottom:14px">';
+        html += '<div style="font-family:\'Space Grotesk\',Arial,sans-serif;font-weight:800;font-size:13pt;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1.5px solid #111;display:inline-block;padding-bottom:2px">FICHE DE TAXE PRÉVISIONNELLE NOTARIÉE</div>';
+        html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:9pt;margin-top:8px;background:#f9fafb;padding:6px 10px;border-radius:4px;border:1px solid #e5e7eb;text-align:left">';
+        html += '<div>AFFAIRE : <strong>' + labelActe(dossier.typeActeId) + '</strong></div>';
+        html += '<div>DOSSIER N° : <strong>' + dossier.numeroDossier + '</strong></div>';
+        html += '<div>COMPARANTS : <strong>' + comparantsAff + '</strong></div>';
+        html += '<div>BASE DE CALCUL : <strong>' + fmtFCFA(dossier.montantAssiette) + '</strong></div>';
+        html += '</div>';
+        html += '</div>';
+
+        // Tableau 4 colonnes : RUBRIQUES | ÉMOLUMENTS | TRÉSOR | DÉBOURS
+        html += '<table style="width:100%;border-collapse:collapse;margin-top:10px;margin-bottom:14px;font-size:8.5pt">';
+        html += '<thead><tr style="background:#f3f4f6;font-weight:800;border-top:1.5px solid #111;border-bottom:1.5px solid #111">';
+        html += '<th style="border:1px solid #d1d5db;padding:5px 8px;text-align:left;width:48%">RUBRIQUES TARIFAIRES</th>';
+        html += '<th style="border:1px solid #d1d5db;padding:5px 8px;text-align:right;width:17%">ÉMOLUMENTS</th>';
+        html += '<th style="border:1px solid #d1d5db;padding:5px 8px;text-align:right;width:18%">TRÉSOR</th>';
+        html += '<th style="border:1px solid #d1d5db;padding:5px 8px;text-align:right;width:17%">DÉBOURS</th>';
+        html += '</tr></thead><tbody>';
+
+        // 1. Timbres Fiscaux
+        html += '<tr style="background:#f9fafb;font-weight:700"><td colspan="4" style="border:1px solid #d1d5db;padding:4px 8px;color:#374151">1. TIMBRES FISCAUX</td></tr>';
+        if (f.lignesTresor && f.lignesTresor.length) {
+          f.lignesTresor.filter(function (t) { return t.code.indexOf("timbres_") === 0; }).forEach(function (t) {
+            html += '<tr><td style="border:1px solid #e5e7eb;padding:3px 8px">• ' + t.libelle + '</td><td style="border:1px solid #e5e7eb;text-align:right;color:#9ca3af">—</td><td style="border:1px solid #e5e7eb;text-align:right;font-weight:600">' + fmtFCFA(t.montant) + '</td><td style="border:1px solid #e5e7eb;text-align:right;color:#9ca3af">—</td></tr>';
+          });
+        }
+
+        // 2. Enregistrement DGI & Conservation Foncière
+        html += '<tr style="background:#f9fafb;font-weight:700"><td colspan="4" style="border:1px solid #d1d5db;padding:4px 8px;color:#374151">2. ENREGISTREMENT DGI & CONSERVATION FONCIÈRE</td></tr>';
+        if (f.lignesTresor && f.lignesTresor.length) {
+          f.lignesTresor.filter(function (t) { return t.code.indexOf("timbres_") !== 0; }).forEach(function (t) {
+            html += '<tr><td style="border:1px solid #e5e7eb;padding:3px 8px">• ' + t.libelle + '</td><td style="border:1px solid #e5e7eb;text-align:right;color:#9ca3af">—</td><td style="border:1px solid #e5e7eb;text-align:right;font-weight:600">' + fmtFCFA(t.montant) + '</td><td style="border:1px solid #e5e7eb;text-align:right;color:#9ca3af">—</td></tr>';
+          });
+        }
+
+        // 3. Émoluments du Notaire (Détaillés Ligne par Ligne)
+        html += '<tr style="background:#f9fafb;font-weight:700"><td colspan="4" style="border:1px solid #d1d5db;padding:4px 8px;color:#1e3a8a">3. ÉMOLUMENTS DU NOTAIRE (CA ÉTUDE HT)</td></tr>';
+        if (emo.lignesDetaillees && emo.lignesDetaillees.length) {
+          emo.lignesDetaillees.filter(function (l) { return l.actif; }).forEach(function (l) {
+            html += '<tr><td style="border:1px solid #e5e7eb;padding:3px 8px">• ' + l.libelle + '</td><td style="border:1px solid #e5e7eb;text-align:right;font-weight:700;color:#1e3a8a">' + fmtFCFA(l.montant) + '</td><td style="border:1px solid #e5e7eb;text-align:right;color:#9ca3af">—</td><td style="border:1px solid #e5e7eb;text-align:right;color:#9ca3af">—</td></tr>';
+          });
+        }
+
+        // 4. Débours Tiers
+        if (f.lignesDebours && f.lignesDebours.length) {
+          html += '<tr style="background:#f9fafb;font-weight:700"><td colspan="4" style="border:1px solid #d1d5db;padding:4px 8px;color:#065f46">4. DÉBOURS TIERS (FRAIS RÉELS)</td></tr>';
+          f.lignesDebours.forEach(function (deb) {
+            html += '<tr><td style="border:1px solid #e5e7eb;padding:3px 8px">• ' + deb.libelle + '</td><td style="border:1px solid #e5e7eb;text-align:right;color:#9ca3af">—</td><td style="border:1px solid #e5e7eb;text-align:right;color:#9ca3af">—</td><td style="border:1px solid #e5e7eb;text-align:right;font-weight:600;color:#065f46">' + fmtFCFA(deb.montant) + '</td></tr>';
+          });
+        }
+
+        // Sous-totaux
+        html += '<tr style="background:#f3f4f6;font-weight:800;border-top:1.5px solid #111">';
+        html += '<td style="border:1px solid #d1d5db;padding:5px 8px">SOUS-TOTAUX</td>';
+        html += '<td style="border:1px solid #d1d5db;padding:5px 8px;text-align:right;color:#1e3a8a">' + fmtFCFA(totalCA) + '</td>';
+        html += '<td style="border:1px solid #d1d5db;padding:5px 8px;text-align:right;color:#92400e">' + fmtFCFA(totalTresor) + '</td>';
+        html += '<td style="border:1px solid #d1d5db;padding:5px 8px;text-align:right;color:#065f46">' + fmtFCFA(totalDebours) + '</td>';
+        html += '</tr>';
+
+        // Total Général
+        html += '<tr style="background:#111827;color:#fff;font-weight:800;font-size:10pt">';
+        html += '<td colspan="2" style="border:1px solid #111827;padding:6px 10px;text-transform:uppercase">TOTAL GÉNÉRAL À PAYER</td>';
+        html += '<td colspan="2" style="border:1px solid #111827;padding:6px 10px;text-align:right;font-size:11pt">' + fmtFCFA(totalGeneral) + '</td>';
+        html += '</tr>';
+        html += '</tbody></table>';
+
+        // Formule d'arrêté officiel
+        html += '<div style="background:#f9fafb;border:1px solid #e5e7eb;padding:8px 12px;border-radius:4px;font-size:8.5pt;margin-top:8px">';
+        html += 'Sauf à parfaire ou à diminuer, veuillez arrêter la présente taxe prévisionnelle à la somme de :<br>';
+        html += '<strong style="font-size:9pt;color:#111827">' + enLettres + '</strong>.';
+        html += '</div>';
+      }
+
+      // =========================================================================
+      // FORMAT 2 : NOTE DE FRAIS PRÉVISIONNELLE CLIENT (3 PÔLES)
+      // =========================================================================
+      else if (formatChoisi === "note_frais") {
+        html += '<div style="text-align:center;margin-bottom:16px">';
+        html += '<div style="font-family:\'Space Grotesk\',Arial,sans-serif;font-weight:800;font-size:13pt;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1.5px solid #111;display:inline-block;padding-bottom:2px">NOTE DE FRAIS PRÉVISIONNELLE N° ' + dossier.numeroDossier + '</div>';
+        html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:9pt;margin-top:8px;background:#f9fafb;padding:6px 10px;border-radius:4px;border:1px solid #e5e7eb;text-align:left">';
+        html += '<div>Identité du client : <strong>' + comparantsAff + '</strong></div>';
+        html += '<div>Affaire : <strong>' + labelActe(dossier.typeActeId) + '</strong></div>';
+        html += '<div>Numéro de dossier : <strong>' + dossier.numeroDossier + '</strong></div>';
+        html += '<div>Base de calcul : <strong>' + fmtFCFA(dossier.montantAssiette) + '</strong></div>';
+        html += '</div>';
+        html += '</div>';
+
+        html += '<table style="width:100%;border-collapse:collapse;margin-top:10px;margin-bottom:14px;font-size:8.5pt">';
+        html += '<thead><tr style="background:#f3f4f6;font-weight:800;border-top:1.5px solid #111;border-bottom:1.5px solid #111">';
+        html += '<th style="border:1px solid #d1d5db;padding:5px 8px;text-align:left;width:33%">DROITS / ÉTAT</th>';
+        html += '<th style="border:1px solid #d1d5db;padding:5px 8px;text-align:left;width:33%">DÉBOURS & FORMALITÉS</th>';
+        html += '<th style="border:1px solid #d1d5db;padding:5px 8px;text-align:left;width:34%">ÉMOLUMENTS & HONORAIRES</th>';
+        html += '</tr></thead><tbody>';
+
+        html += '<tr>';
+        // Colonne 1 : Droits
+        html += '<td style="border:1px solid #e5e7eb;padding:8px;vertical-align:top">';
+        if (f.lignesTresor && f.lignesTresor.length) {
+          f.lignesTresor.forEach(function (t) {
+            html += '<div style="display:flex;justify-content:space-between;margin-bottom:3px"><span>' + t.libelle + '</span><strong>' + fmtFCFA(t.montant) + '</strong></div>';
+          });
+        }
+        html += '<div style="border-top:1px solid #d1d5db;margin-top:6px;padding-top:4px;display:flex;justify-content:space-between;font-weight:800"><span>Total Droits :</span><span>' + fmtFCFA(totalTresor) + '</span></div>';
+        html += '</td>';
+
+        // Colonne 2 : Débours
+        html += '<td style="border:1px solid #e5e7eb;padding:8px;vertical-align:top">';
+        if (f.lignesDebours && f.lignesDebours.length) {
+          f.lignesDebours.forEach(function (deb) {
+            html += '<div style="display:flex;justify-content:space-between;margin-bottom:3px"><span>' + deb.libelle + '</span><strong>' + fmtFCFA(deb.montant) + '</strong></div>';
+          });
+        } else {
+          html += '<div style="color:#9ca3af;font-style:italic">Aucun débours spécifique</div>';
+        }
+        html += '<div style="border-top:1px solid #d1d5db;margin-top:6px;padding-top:4px;display:flex;justify-content:space-between;font-weight:800"><span>Total Débours :</span><span>' + fmtFCFA(totalDebours) + '</span></div>';
+        html += '</td>';
+
+        // Colonne 3 : Émoluments
+        html += '<td style="border:1px solid #e5e7eb;padding:8px;vertical-align:top">';
+        if (emo.lignesDetaillees && emo.lignesDetaillees.length) {
+          emo.lignesDetaillees.filter(function (l) { return l.actif; }).forEach(function (l) {
+            html += '<div style="display:flex;justify-content:space-between;margin-bottom:3px"><span>' + l.libelle + '</span><strong style="color:#1e3a8a">' + fmtFCFA(l.montant) + '</strong></div>';
+          });
+        }
+        html += '<div style="border-top:1px solid #d1d5db;margin-top:6px;padding-top:4px;display:flex;justify-content:space-between;font-weight:800;color:#1e3a8a"><span>Total Émoluments :</span><span>' + fmtFCFA(totalCA) + '</span></div>';
+        html += '</td>';
+        html += '</tr>';
+
+        html += '<tr style="background:#111827;color:#fff;font-weight:800;font-size:10pt">';
+        html += '<td colspan="2" style="border:1px solid #111827;padding:6px 10px;text-transform:uppercase">TOTAL GÉNÉRAL DE LA NOTE DE FRAIS</td>';
+        html += '<td style="border:1px solid #111827;padding:6px 10px;text-align:right;font-size:11pt">' + fmtFCFA(totalGeneral) + '</td>';
+        html += '</tr>';
+        html += '</tbody></table>';
+
+        html += '<div style="background:#f9fafb;border:1px solid #e5e7eb;padding:8px 12px;border-radius:4px;font-size:8.5pt;margin-top:8px">';
+        html += 'Arrêtée la présente note de frais à la somme de :<br>';
+        html += '<strong style="font-size:9pt;color:#111827">' + enLettres + '</strong>.';
+        html += '</div>';
+      }
+
+      // =========================================================================
+      // FORMAT 3 : FACTURE NORMALISÉE FISCALE (AVEC TVA 18 %)
+      // =========================================================================
+      else if (formatChoisi === "facture") {
+        html += '<div style="text-align:center;margin-bottom:16px">';
+        html += '<div style="font-family:\'Space Grotesk\',Arial,sans-serif;font-weight:800;font-size:13pt;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1.5px solid #111;display:inline-block;padding-bottom:2px">FACTURE NORMALISÉE NOTARIÉE</div>';
+        html += '<div style="font-size:8.5pt;color:#6b7280;margin-top:2px">Conforme à la législation fiscale DGI de Côte d\'Ivoire</div>';
+        html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:9pt;margin-top:8px;background:#f9fafb;padding:6px 10px;border-radius:4px;border:1px solid #e5e7eb;text-align:left">';
+        html += '<div>Client : <strong>' + comparantsAff + '</strong></div>';
+        html += '<div>Acte : <strong>' + labelActe(dossier.typeActeId) + '</strong></div>';
+        html += '<div>Dossier N° : <strong>' + dossier.numeroDossier + '</strong></div>';
+        html += '<div>Assiette : <strong>' + fmtFCFA(dossier.montantAssiette) + '</strong></div>';
+        html += '</div>';
+        html += '</div>';
+
+        html += '<table style="width:100%;border-collapse:collapse;margin-top:10px;margin-bottom:14px;font-size:8.5pt">';
+        html += '<thead><tr style="background:#f3f4f6;font-weight:800;border-top:1.5px solid #111;border-bottom:1.5px solid #111">';
+        html += '<th style="border:1px solid #d1d5db;padding:5px 8px;text-align:left;width:40%">POSTES</th>';
+        html += '<th style="border:1px solid #d1d5db;padding:5px 8px;text-align:right;width:20%">DROITS / ÉTAT</th>';
+        html += '<th style="border:1px solid #d1d5db;padding:5px 8px;text-align:right;width:20%">FRAIS DÉBOURS</th>';
+        html += '<th style="border:1px solid #d1d5db;padding:5px 8px;text-align:right;width:20%">HONORAIRES HT</th>';
+        html += '</tr></thead><tbody>';
+
+        html += '<tr><td style="border:1px solid #e5e7eb;padding:4px 8px">Enregistrement DGI & Timbres</td><td style="border:1px solid #e5e7eb;text-align:right;font-weight:600">' + fmtFCFA(totalTresor) + '</td><td style="border:1px solid #e5e7eb;text-align:right;color:#9ca3af">—</td><td style="border:1px solid #e5e7eb;text-align:right;color:#9ca3af">—</td></tr>';
+        html += '<tr><td style="border:1px solid #e5e7eb;padding:4px 8px">Frais Débours & Géomètre</td><td style="border:1px solid #e5e7eb;text-align:right;color:#9ca3af">—</td><td style="border:1px solid #e5e7eb;text-align:right;font-weight:600">' + fmtFCFA(totalDebours) + '</td><td style="border:1px solid #e5e7eb;text-align:right;color:#9ca3af">—</td></tr>';
+        html += '<tr><td style="border:1px solid #e5e7eb;padding:4px 8px">Émoluments & Honoraires Notaire</td><td style="border:1px solid #e5e7eb;text-align:right;color:#9ca3af">—</td><td style="border:1px solid #e5e7eb;text-align:right;color:#9ca3af">—</td><td style="border:1px solid #e5e7eb;text-align:right;font-weight:700;color:#1e3a8a">' + fmtFCFA(totalCA) + '</td></tr>';
+        html += '<tr style="background:#f9fafb"><td style="border:1px solid #e5e7eb;padding:4px 8px">TVA légale (18 % sur Honoraires)</td><td style="border:1px solid #e5e7eb;text-align:right;color:#9ca3af">—</td><td style="border:1px solid #e5e7eb;text-align:right;color:#9ca3af">—</td><td style="border:1px solid #e5e7eb;text-align:right;font-weight:600">' + fmtFCFA(f.tva) + '</td></tr>';
+
+        var totalFactureTTC = totalTresor + totalDebours + totalCA + f.tva;
+        var totalFactureEnLettres = nombreEnLettresFCFA(totalFactureTTC);
+
+        html += '<tr style="background:#111827;color:#fff;font-weight:800;font-size:10pt">';
+        html += '<td colspan="2" style="border:1px solid #111827;padding:6px 10px;text-transform:uppercase">TOTAL GÉNÉRAL FACTURE TTC</td>';
+        html += '<td colspan="2" style="border:1px solid #111827;padding:6px 10px;text-align:right;font-size:11pt">' + fmtFCFA(totalFactureTTC) + '</td>';
+        html += '</tr>';
+        html += '</tbody></table>';
+
+        html += '<div style="background:#f9fafb;border:1px solid #e5e7eb;padding:8px 12px;border-radius:4px;font-size:8.5pt;margin-top:8px">';
+        html += 'Arrêtée la présente facture à la somme de :<br>';
+        html += '<strong style="font-size:9pt;color:#111827">' + totalFactureEnLettres + '</strong>.';
+        html += '</div>';
+      }
+
+      // Mentions légales & Sceau
+      html += '<div style="margin-top:14px;font-size:7.5pt;color:#6b7280;line-height:1.3">';
+      html += 'NB : Conformément à la réglementation notariale, la présente taxe prévisionnelle doit être intégralement réglée avant la signature de l\'acte.<br>';
+      html += 'En cas de règlement par chèque ou virement, libeller au nom de : <strong>' + (params.nomEtude || "ÉTUDE NOTARIALE") + '</strong>.';
+      html += '</div>';
+
+      // Bloc signature
+      html += '<div style="margin-top:24px;display:flex;justify-content:space-between;align-items:flex-start;page-break-inside:avoid">';
+      html += '<div style="font-size:8.5pt;color:#6b7280">Reçu pour acquit / Bon pour accord :</div>';
       html += '<div style="text-align:right">';
-      if (params.numeroOrdre) html += '<div style="font-size:9pt;color:#4b5563">N° Ordre : ' + params.numeroOrdre + '</div>';
-      if (params.numeroCC) html += '<div style="font-size:9pt;color:#4b5563">N° CC : ' + params.numeroCC + '</div>';
-      if (params.centreImpots) html += '<div style="font-size:9pt;color:#4b5563">Centre Impôts : ' + params.centreImpots + '</div>';
-      if (params.compteSequestreCDCI) html += '<div style="font-size:9pt;color:#4b5563">Caisse des Dépôts : ' + params.compteSequestreCDCI + '</div>';
+      html += '<div style="font-size:9pt;font-weight:700">' + (params.titreNotaire || "Maître") + ' ' + (params.nomNotaire || "") + '</div>';
+      html += '<div style="font-size:8pt;color:#6b7280">Notaire Titulaire</div>';
+      html += '<div style="margin-top:35px;font-size:8pt;color:#9ca3af">[ Sceau & Signature ]</div>';
       html += '</div>';
       html += '</div>';
-
-      // Titre
-      html += '<div style="text-align:center;margin-bottom:24px">';
-      html += '<div style="font-family:\'Space Grotesk\',sans-serif;font-weight:700;font-size:14pt;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid #111;display:inline-block;padding-bottom:4px">FACTURE DE FRAIS & TAXE NOTARIÉE (DÉCRET N° 2013-279)</div>';
-      html += '<div style="font-size:10pt;color:#4b5563;margin-top:6px">Dossier N° <strong>' + dossier.numeroDossier + '</strong> — Acte : <strong>' + labelActe(dossier.typeActeId) + '</strong></div>';
-      html += '<div style="font-size:10pt;color:#4b5563">Montant de l\'assiette fiscale : <strong>' + fmtFCFA(dossier.montantAssiette) + '</strong></div>';
-      html += '</div>';
-
-      // Tableau officiel
-      html += '<table class="print-table" style="width:100%;border-collapse:collapse;margin-top:16px;margin-bottom:20px;font-size:10pt">';
-      html += '<thead><tr style="background:#f3f4f6"><th style="border:1px solid #9ca3af;padding:6px 10px;text-align:left">RUBRIQUE TARIFAIRE</th><th style="border:1px solid #9ca3af;padding:6px 10px;text-align:right">MONTANT FCFA</th></tr></thead>';
-      html += '<tbody>';
-      html += '<tr><td style="border:1px solid #d1d5db;padding:6px 10px">1. Émoluments proportionnels / fixes du Notaire (HT)<div style="font-size:8.5pt;color:#4b5563;margin-top:2px">' + (f.emoluments.libelleRegle || (f.emoluments.minimumApplique ? "Minimum légal de minute (Décret N° 2013-279)" : "Barème réglementé Décret N° 2013-279")) + '</div></td><td style="border:1px solid #d1d5db;padding:6px 10px;text-align:right;font-weight:600">' + fmtFCFA(f.emoluments.montantHT) + '</td></tr>';
-      html += '<tr><td style="border:1px solid #d1d5db;padding:6px 10px">2. Taxe sur la Valeur Ajoutée (TVA 18 %)</td><td style="border:1px solid #d1d5db;padding:6px 10px;text-align:right">' + fmtFCFA(f.tva) + '</td></tr>';
-      html += '<tr><td style="border:1px solid #d1d5db;padding:6px 10px">3. Droits d\'enregistrement DGI' + (!f.droitEnregistrement.confirme ? " <em>(à confirmer)</em>" : "") + '</td><td style="border:1px solid #d1d5db;padding:6px 10px;text-align:right">' + fmtFCFA(f.droitEnregistrement.montant) + '</td></tr>';
-      html += '<tr><td style="border:1px solid #d1d5db;padding:6px 10px">4. Taxe de publicité foncière (1,2 % + 3 000 FCFA)</td><td style="border:1px solid #d1d5db;padding:6px 10px;text-align:right">' + fmtFCFA(f.taxeFonciere.total) + '</td></tr>';
-      html += '<tr><td style="border:1px solid #d1d5db;padding:6px 10px">5. Timbres fiscaux et rôles de minute</td><td style="border:1px solid #d1d5db;padding:6px 10px;text-align:right">' + fmtFCFA(f.timbres.total + f.roles.total) + '</td></tr>';
-      html += '<tr><td style="border:1px solid #d1d5db;padding:6px 10px">6. Frais de formalités et débours (Banque, DGI, Conservation)</td><td style="border:1px solid #d1d5db;padding:6px 10px;text-align:right">' + fmtFCFA(f.totalFraisFormalites) + '</td></tr>';
-      if (f.vacations) html += '<tr><td style="border:1px solid #d1d5db;padding:6px 10px">7. Vacations</td><td style="border:1px solid #d1d5db;padding:6px 10px;text-align:right">' + fmtFCFA(f.vacations) + '</td></tr>';
-      if (f.divers) html += '<tr><td style="border:1px solid #d1d5db;padding:6px 10px">8. Forfait papeterie & débours divers</td><td style="border:1px solid #d1d5db;padding:6px 10px;text-align:right">' + fmtFCFA(f.divers) + '</td></tr>';
-
-      html += '<tr class="print-total-row" style="background:#f9fafb;font-weight:700;font-size:11pt"><td style="border:2px solid #111827;padding:8px 10px">TOTAL GÉNÉRAL DE LA FACTURE (TTC)</td><td style="border:2px solid #111827;padding:8px 10px;text-align:right;color:#111827">' + fmtFCFA(f.totaux.general) + '</td></tr>';
-      html += '</tbody></table>';
-
-      // Mention arrêtée
-      html += '<div style="margin-top:16px;font-size:10pt;font-style:italic">';
-      html += 'Arrêtée la présente facture à la somme totale de : <strong>' + fmtFCFA(f.totaux.general) + '</strong>.';
-      html += '</div>';
-
-      // Signatures
-      html += '<div class="print-signatures" style="margin-top:36px;display:flex;justify-content:space-between;align-items:flex-start">';
-      html += '<div><div style="font-size:9pt;color:#6b7280">Mention client / Reçu pour acquit :</div></div>';
-      html += '<div style="text-align:right">';
-      html += '<div style="font-size:10pt">Fait à ' + (params.adresse ? params.adresse.split(",")[0] : "Abidjan") + ', le ' + dateJour + '</div>';
-      html += '<div style="font-size:10pt;font-weight:600;margin-top:6px;margin-bottom:50px">Le Notaire Titulaire</div>';
-      html += '<div style="font-size:9pt;color:#9ca3af">[ Sceau & Signature ]</div>';
-      html += '</div></div>';
 
       html += '</div>';
 
