@@ -4354,6 +4354,33 @@
       ];
       html += renderKpisGrid(kpis);
 
+      // Bannière explicative du Cycle des 3 Documents Financiers
+      html += '<div class="card" style="background:var(--color-surface);border:1.5px solid var(--color-border);padding:14px 18px;margin-top:var(--space-4);box-shadow:var(--shadow-sm)">';
+      html += '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:var(--space-2);margin-bottom:10px">';
+      html += '<div style="font-size:13px;font-weight:700;text-transform:uppercase;color:var(--color-accent);letter-spacing:0.5px">📑 Le Cycle Financier Notarial en 3 Documents Officiels</div>';
+      html += '<button type="button" class="btn btn-secondary btn-emoluments-ouvrir-taxe-direct" style="font-size:12px;padding:4px 12px;font-weight:700">+ Établir une Fiche de Taxe</button>';
+      html += '</div>';
+
+      html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:var(--space-3)">';
+      
+      html += '<div style="background:rgba(99,102,241,0.06);border:1px solid rgba(99,102,241,0.25);border-radius:6px;padding:10px 12px">';
+      html += '<div style="font-size:11.5px;font-weight:800;color:var(--color-accent)">1️⃣ FICHE DE TAXE INTERNE</div>';
+      html += '<div style="font-size:11px;color:var(--color-text);margin-top:3px">Document technique en <strong>4 colonnes</strong> (Trésor, Émols, Débours) pour le Notaire et le Comptable taxateur.</div>';
+      html += '</div>';
+
+      html += '<div style="background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.25);border-radius:6px;padding:10px 12px">';
+      html += '<div style="font-size:11.5px;font-weight:800;color:var(--color-warning)">2️⃣ NOTE DE FRAIS CLIENT</div>';
+      html += '<div style="font-size:11px;color:var(--color-text);margin-top:3px">Appel de <strong>provision pour frais</strong> remis au client avant la signature de l\'acte authentique.</div>';
+      html += '</div>';
+
+      html += '<div style="background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.25);border-radius:6px;padding:10px 12px">';
+      html += '<div style="font-size:11.5px;font-weight:800;color:#10b981">3️⃣ FACTURE NORMALISÉE</div>';
+      html += '<div style="font-size:11px;color:var(--color-text);margin-top:3px">Facture fiscale définitive remise avec <strong>TVA 18 %</strong> après liquidation et réalisation des formalités.</div>';
+      html += '</div>';
+
+      html += '</div>';
+      html += '</div>';
+
       // Barre de recherche
       html += '<div class="dashboard-panel" style="margin-top:var(--space-4)">';
       html += '<div class="panel-header" style="flex-wrap:wrap;gap:var(--space-3);align-items:center">';
@@ -4517,6 +4544,11 @@
           modalCreerFicheTaxe();
         });
       }
+      c.querySelectorAll(".btn-emoluments-ouvrir-taxe-direct").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          modalCreerFicheTaxe();
+        });
+      });
 
       // Boutons Modifier
       c.querySelectorAll(".btn-modifier-bareme").forEach(function (btn) {
@@ -4960,9 +4992,11 @@
           }
           html += '</td>';
           html += '<td><div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">';
-          html += '<button type="button" class="btn btn-primary btn-ouvrir-modal-taxe" data-id="' + d.id + '" style="font-size:11px;padding:3px 8px;font-weight:700" title="Établir ou modifier la fiche de taxe">' + (ficheRecente ? 'Fiche de taxe' : '+ Fiche de taxe') + '</button>';
-          html += '<button type="button" class="btn btn-secondary btn-imprimer-taxe-direct" data-id="' + d.id + '" style="font-size:11px;padding:3px 8px" title="Imprimer la facture officielle de taxe">Facture</button>';
-          html += '<button type="button" class="btn btn-ghost btn-voir-dossier-direct" data-id="' + d.id + '" style="font-size:11px;padding:3px 6px" title="Voir le dossier"></button>';
+          html += '<button type="button" class="btn btn-primary btn-ouvrir-modal-taxe" data-id="' + d.id + '" style="font-size:11px;padding:3px 7px;font-weight:700" title="Établir ou modifier la fiche de taxe">' + (ficheRecente ? 'Modifier Taxe' : '+ Établir Taxe') + '</button>';
+          html += '<button type="button" class="btn btn-secondary btn-imprimer-fiche-taxe-row" data-id="' + d.id + '" style="font-size:11px;padding:3px 6px" title="Imprimer la Fiche de Taxe interne en 4 colonnes">🖨️ Taxe</button>';
+          html += '<button type="button" class="btn btn-secondary btn-imprimer-note-frais-row" data-id="' + d.id + '" style="font-size:11px;padding:3px 6px" title="Imprimer la Note de Frais client">📄 Note Frais</button>';
+          html += '<button type="button" class="btn btn-secondary btn-imprimer-facture-row" data-id="' + d.id + '" style="font-size:11px;padding:3px 6px" title="Imprimer la Facture Normalisée avec TVA 18%">🧾 Facture</button>';
+          html += '<button type="button" class="btn btn-ghost btn-voir-dossier-direct" data-id="' + d.id + '" style="font-size:11px;padding:3px 6px" title="Voir le dossier">Dossier →</button>';
           html += '</div></td>';
           html += '</tr>';
         });
@@ -5016,20 +5050,37 @@
         });
       });
 
-      c.querySelectorAll(".btn-imprimer-taxe-direct").forEach(function (btn) {
+      function imprimerDepuisLigne(dId, formatDoc) {
+        var dos = cache.dossiers.find(function (it) { return it.id === dId; });
+        if (!dos) return;
+        var ficheRec = fichesParDossier[dId];
+        if (ficheRec && ficheRec.donnees) {
+          imprimerDecompteOfficiel(dos, ficheRec.donnees, formatDoc);
+        } else {
+          API.post("/api/fiscal/calculer", { typeActeId: dos.typeActeId, montant: dos.montantAssiette, saisies: {} })
+            .then(function (f) { imprimerDecompteOfficiel(dos, f, formatDoc); })
+            .catch(function (e) { toast("Erreur calcul taxe : " + e.message); });
+        }
+      }
+
+      c.querySelectorAll(".btn-imprimer-fiche-taxe-row").forEach(function (btn) {
         btn.addEventListener("click", function (ev) {
           ev.stopPropagation();
-          var dId = btn.dataset.id;
-          var dos = cache.dossiers.find(function (it) { return it.id === dId; });
-          if (!dos) return;
-          var ficheRec = fichesParDossier[dId];
-          if (ficheRec && ficheRec.donnees) {
-            imprimerDecompteOfficiel(dos, ficheRec.donnees);
-          } else {
-            API.post("/api/fiscal/calculer", { typeActeId: dos.typeActeId, montant: dos.montantAssiette, saisies: {} })
-              .then(function (f) { imprimerDecompteOfficiel(dos, f); })
-              .catch(function (e) { toast("Erreur calcul taxe : " + e.message); });
-          }
+          imprimerDepuisLigne(btn.dataset.id, "fiche_taxe");
+        });
+      });
+
+      c.querySelectorAll(".btn-imprimer-note-frais-row").forEach(function (btn) {
+        btn.addEventListener("click", function (ev) {
+          ev.stopPropagation();
+          imprimerDepuisLigne(btn.dataset.id, "note_frais");
+        });
+      });
+
+      c.querySelectorAll(".btn-imprimer-facture-row").forEach(function (btn) {
+        btn.addEventListener("click", function (ev) {
+          ev.stopPropagation();
+          imprimerDepuisLigne(btn.dataset.id, "facture");
         });
       });
 
@@ -6195,37 +6246,70 @@
   // -----------------------------------------------------------------
   function renderFicheTaxe(d) {
     if (!cache.permissions.fiscal || d.statut !== "actif") return "";
-    var html = '<h3 style="margin-bottom:var(--space-3)">Fiche de taxe & Décompte notarié</h3>';
-    html += '<table class="table" style="margin-bottom:var(--space-3)"><thead><tr><th>Date</th><th>Enregistrée par</th><th>Total général</th><th>Action</th></tr></thead><tbody>';
-    if (!cache.fichesTaxeHistorique.length) html += '<tr><td colspan="4" class="text-muted">Aucune fiche de taxe enregistrée.</td></tr>';
-    cache.fichesTaxeHistorique.forEach(function (f, idx) {
-      html += '<tr><td>' + fmtDate(f.created_at) + '</td><td>' + nomClerc(f.utilisateur_id) + '</td><td style="font-weight:600">' + fmtFCFA(f.donnees.totaux.general) + '</td>';
-      html += '<td><button class="btn btn-secondary btn-imprimer-historique-taxe" data-idx="' + idx + '" style="padding:4px 8px;font-size:12px">Imprimer</button></td></tr>';
-    });
-    html += '</tbody></table>';
+    var fiches = cache.fichesTaxeHistorique || [];
+    var derniereFiche = fiches.length > 0 ? fiches[fiches.length - 1] : null;
 
-    html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:var(--space-3);margin-bottom:var(--space-3)">';
-    html += champFiche("taxe-timbres-minute", "Timbres — pages minute");
-    html += champFiche("taxe-timbres-expedition", "Timbres — pages expédition");
-    html += champFiche("taxe-timbres-nb-expeditions", "Timbres — nombre d'expéditions");
-    html += champFiche("taxe-timbres-bordereau", "Timbres — pages bordereau");
-    html += champFiche("taxe-roles-minute", "Rôles — pages minute");
-    html += champFiche("taxe-roles-expedition", "Rôles — pages expédition");
-    html += champFiche("taxe-roles-nb-expeditions", "Rôles — nombre d'expéditions");
-    html += champFiche("taxe-roles-copie", "Rôles — pages copie");
-    html += champFiche("taxe-vacations", "Vacations (FCFA)");
-    html += champFiche("taxe-frais-depot-banque", "Dépôt banque (FCFA)");
-    html += champFiche("taxe-frais-depot-enregistrement", "Dépôt enregistrement (FCFA)");
-    html += champFiche("taxe-frais-inscription-foncier", "Inscription livre foncier (FCFA)");
-    html += champFiche("taxe-frais-requisition-etat", "Réquisition état (FCFA)");
-    html += champFiche("taxe-divers", "Divers supplémentaire (FCFA)");
+    var html = '<div class="card" style="background:var(--color-surface);border:1px solid var(--color-border);padding:var(--space-4);margin-top:var(--space-4);margin-bottom:var(--space-4);box-shadow:var(--shadow-sm)">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:var(--space-3);margin-bottom:var(--space-3)">';
+    html += '<div>';
+    html += '<h3 style="margin:0;display:flex;align-items:center;gap:8px">💰 Pôle Financier, Taxe & Facturation Notariale</h3>';
+    html += '<p style="font-size:12.5px;color:var(--color-text-dim);margin:2px 0 0">Cycle en 3 étapes : Fiche de Taxe Interne (4 col) → Note de Frais (Appel de fonds client) → Facture Normalisée (TTC).</p>';
+    html += '</div>';
+    html += '<button type="button" class="btn btn-primary btn-ouvrir-modal-taxe" data-id="' + d.id + '" style="font-size:12.5px;padding:6px 14px;font-weight:700">';
+    html += (derniereFiche ? '⚙️ Modifier la Fiche de Taxe' : '+ Établir la Fiche de Taxe');
+    html += '</button>';
     html += '</div>';
 
-    html += '<div style="display:flex;gap:var(--space-2);flex-wrap:wrap;margin-bottom:var(--space-3)">';
-    html += '<button class="btn btn-secondary" id="bouton-taxe-calculer">Calculer un aperçu</button>';
-    html += '<button class="btn btn-primary" id="bouton-taxe-enregistrer">Enregistrer la fiche de taxe</button>';
+    // Les 3 Pôles / Documents Visuels
+    html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--space-3);margin-bottom:var(--space-4)">';
+    
+    // 1. Fiche de Taxe
+    html += '<div style="background:rgba(99,102,241,0.06);border:1px solid rgba(99,102,241,0.25);border-radius:var(--radius);padding:12px;display:flex;flex-direction:column;justify-content:space-between;gap:8px">';
+    html += '<div>';
+    html += '<div style="font-size:11px;font-weight:700;color:var(--color-accent);text-transform:uppercase">1️⃣ Fiche de Taxe Interne</div>';
+    html += '<div style="font-size:12px;color:var(--color-text);margin-top:3px">Tableau de liquidation technique en <strong>4 colonnes</strong> (Trésor, Émols, Débours).</div>';
     html += '</div>';
-    html += '<div id="taxe-apercu" style="margin-bottom:var(--space-6)"></div>';
+    html += '<button type="button" class="btn btn-secondary btn-dossier-print-taxe" data-id="' + d.id + '" style="font-size:11.5px;padding:4px 8px;width:100%">🖨️ Imprimer Fiche de Taxe (4 Col)</button>';
+    html += '</div>';
+
+    // 2. Note de Frais
+    html += '<div style="background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.25);border-radius:var(--radius);padding:12px;display:flex;flex-direction:column;justify-content:space-between;gap:8px">';
+    html += '<div>';
+    html += '<div style="font-size:11px;font-weight:700;color:var(--color-warning);text-transform:uppercase">2️⃣ Note de Frais Client</div>';
+    html += '<div style="font-size:12px;color:var(--color-text);margin-top:3px">Appel de <strong>provision pour frais</strong> à transmettre au client avant la signature.</div>';
+    html += '</div>';
+    html += '<button type="button" class="btn btn-secondary btn-dossier-print-note" data-id="' + d.id + '" style="font-size:11.5px;padding:4px 8px;width:100%">📄 Imprimer Note de Frais</button>';
+    html += '</div>';
+
+    // 3. Facture Normalisée
+    html += '<div style="background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.25);border-radius:var(--radius);padding:12px;display:flex;flex-direction:column;justify-content:space-between;gap:8px">';
+    html += '<div>';
+    html += '<div style="font-size:11px;font-weight:700;color:#10b981;text-transform:uppercase">3️⃣ Facture Normalisée</div>';
+    html += '<div style="font-size:12px;color:var(--color-text);margin-top:3px">Facture légale officielle avec <strong>TVA 18 %</strong> et quittance libératoire.</div>';
+    html += '</div>';
+    html += '<button type="button" class="btn btn-secondary btn-dossier-print-facture" data-id="' + d.id + '" style="font-size:11.5px;padding:4px 8px;width:100%">🧾 Imprimer Facture TTC</button>';
+    html += '</div>';
+
+    html += '</div>';
+
+    // Historique des fiches enregistrées
+    if (fiches.length > 0) {
+      html += '<div style="border-top:1px solid var(--color-border);padding-top:var(--space-3)">';
+      html += '<div style="font-size:12px;font-weight:700;color:var(--color-text-dim);text-transform:uppercase;margin-bottom:6px">Historique des liquidations enregistrées sur ce dossier</div>';
+      html += '<table class="table" style="font-size:12px;margin:0"><thead><tr><th>Date</th><th>Auteur</th><th>Total TTC</th><th>Actions d\'impression</th></tr></thead><tbody>';
+      fiches.forEach(function (f, idx) {
+        var tot = (f.donnees && f.donnees.totaux && f.donnees.totaux.general) || 0;
+        html += '<tr><td>' + fmtDate(f.created_at) + '</td><td>' + nomClerc(f.utilisateur_id) + '</td><td style="font-weight:700;color:var(--color-accent)">' + fmtFCFA(tot) + '</td>';
+        html += '<td><div style="display:flex;gap:4px">';
+        html += '<button type="button" class="btn btn-secondary btn-imprimer-hist-fiche" data-idx="' + idx + '" style="font-size:11px;padding:2px 6px">🖨️ Fiche 4 Col</button>';
+        html += '<button type="button" class="btn btn-secondary btn-imprimer-hist-note" data-idx="' + idx + '" style="font-size:11px;padding:2px 6px">📄 Note Frais</button>';
+        html += '<button type="button" class="btn btn-secondary btn-imprimer-hist-facture" data-idx="' + idx + '" style="font-size:11px;padding:2px 6px">🧾 Facture</button>';
+        html += '</div></td></tr>';
+      });
+      html += '</tbody></table></div>';
+    }
+
+    html += '</div>';
     return html;
   }
   function champFiche(id, label) {
@@ -6328,34 +6412,52 @@
         .then(function () { ouvrirDossier(dossierId, etat.vuePrecedente); })
         .catch(function (e) { toast(e.message); });
     });
-    var btnTaxeCalculer = document.getElementById("bouton-taxe-calculer");
-    if (btnTaxeCalculer) btnTaxeCalculer.addEventListener("click", function () {
-      API.post("/api/fiscal/calculer", { typeActeId: cache.dossierDetail.typeActeId, montant: cache.dossierDetail.montantAssiette, saisies: lireSaisiesFiche() })
-        .then(function (f) {
-          document.getElementById("taxe-apercu").innerHTML = renderApercuFiche(f);
-          var btnImp = document.getElementById("bouton-imprimer-apercu-taxe");
-          if (btnImp) {
-            btnImp.addEventListener("click", function () {
-              imprimerDecompteOfficiel(cache.dossierDetail, f);
-            });
-          }
-        })
-        .catch(function (e) { toast(e.message); });
-    });
-    var btnTaxeEnregistrer = document.getElementById("bouton-taxe-enregistrer");
-    if (btnTaxeEnregistrer) btnTaxeEnregistrer.addEventListener("click", function () {
-      API.post("/api/fiscal/dossiers/" + dossierId + "/enregistrer", { saisies: lireSaisiesFiche() })
-        .then(function () { toast("Fiche de taxe enregistrée."); ouvrirDossier(dossierId, etat.vuePrecedente); })
-        .catch(function (e) { toast(e.message); });
+    function imprimerPourDossier(formatDoc) {
+      var fiches = cache.fichesTaxeHistorique || [];
+      var derniereFiche = fiches.length > 0 ? fiches[fiches.length - 1] : null;
+      if (derniereFiche && derniereFiche.donnees) {
+        imprimerDecompteOfficiel(cache.dossierDetail, derniereFiche.donnees, formatDoc);
+      } else {
+        API.post("/api/fiscal/calculer", { typeActeId: cache.dossierDetail.typeActeId, montant: cache.dossierDetail.montantAssiette, saisies: {} })
+          .then(function (f) { imprimerDecompteOfficiel(cache.dossierDetail, f, formatDoc); })
+          .catch(function (e) { toast("Erreur calcul : " + e.message); });
+      }
+    }
+
+    var btnDossierTaxe = c.querySelector(".btn-dossier-print-taxe");
+    if (btnDossierTaxe) btnDossierTaxe.addEventListener("click", function () { imprimerPourDossier("fiche_taxe"); });
+
+    var btnDossierNote = c.querySelector(".btn-dossier-print-note");
+    if (btnDossierNote) btnDossierNote.addEventListener("click", function () { imprimerPourDossier("note_frais"); });
+
+    var btnDossierFacture = c.querySelector(".btn-dossier-print-facture");
+    if (btnDossierFacture) btnDossierFacture.addEventListener("click", function () { imprimerPourDossier("facture"); });
+
+    c.querySelectorAll(".btn-ouvrir-modal-taxe").forEach(function (btn) {
+      btn.addEventListener("click", function () { modalCreerFicheTaxe(dossierId); });
     });
 
-    c.querySelectorAll(".btn-imprimer-historique-taxe").forEach(function (btn) {
+    c.querySelectorAll(".btn-imprimer-hist-fiche").forEach(function (btn) {
       btn.addEventListener("click", function () {
         var idx = parseInt(btn.dataset.idx, 10);
-        var ficheHist = cache.fichesTaxeHistorique[idx];
-        if (ficheHist && ficheHist.donnees) {
-          imprimerDecompteOfficiel(cache.dossierDetail, ficheHist.donnees);
-        }
+        var f = cache.fichesTaxeHistorique[idx];
+        if (f && f.donnees) imprimerDecompteOfficiel(cache.dossierDetail, f.donnees, "fiche_taxe");
+      });
+    });
+
+    c.querySelectorAll(".btn-imprimer-hist-note").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var idx = parseInt(btn.dataset.idx, 10);
+        var f = cache.fichesTaxeHistorique[idx];
+        if (f && f.donnees) imprimerDecompteOfficiel(cache.dossierDetail, f.donnees, "note_frais");
+      });
+    });
+
+    c.querySelectorAll(".btn-imprimer-hist-facture").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var idx = parseInt(btn.dataset.idx, 10);
+        var f = cache.fichesTaxeHistorique[idx];
+        if (f && f.donnees) imprimerDecompteOfficiel(cache.dossierDetail, f.donnees, "facture");
       });
     });
     var btnCloturer = document.getElementById("bouton-cloturer");
