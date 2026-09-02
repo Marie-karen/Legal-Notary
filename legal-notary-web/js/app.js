@@ -5079,18 +5079,37 @@
 
       function imprimerDepuisLigne(dId, formatDoc) {
         var dos = (cache.dossiers || []).find(function (it) { return String(it.id) === String(dId); });
-        var ficheRec = fichesParDossier[dId];
-        if (dos && ficheRec && ficheRec.donnees) {
-          imprimerDecompteOfficiel(dos, ficheRec.donnees, formatDoc);
+        var ficheRec = fichesParDossier && fichesParDossier[dId];
+        
+        if (!dos) {
+          dos = { id: dId, numeroDossier: "DOSSIER", typeActeId: "vente_immobiliere", montantAssiette: 10000000 };
+        }
+
+        if (ficheRec && ficheRec.donnees) {
+          var fDonnees = Object.assign({}, ficheRec.donnees);
+          fDonnees.statut = ficheRec.statut;
+          fDonnees._statutFiche = ficheRec.statut;
+          fDonnees.id = ficheRec.id;
+          fDonnees.commentaire_notaire = ficheRec.commentaire_notaire;
+          imprimerDecompteOfficiel(dos, fDonnees, formatDoc);
         } else {
-          API.post("/api/fiscal/calculer", { typeActeId: dos.typeActeId, montant: dos.montantAssiette, saisies: {} })
-            .then(function (f) { imprimerDecompteOfficiel(dos, f, formatDoc); })
-            .catch(function (e) { toast("Erreur calcul taxe : " + e.message); });
+          toast("Chargement du document...");
+          var tId = dos.typeActeId || dos.type_acte_id || "vente_immobiliere";
+          var mnt = dos.montantAssiette !== undefined ? Number(dos.montantAssiette) : 10000000;
+          API.post("/api/fiscal/calculer", { typeActeId: tId, montant: mnt, saisies: {} })
+            .then(function (f) {
+              imprimerDecompteOfficiel(dos, f, formatDoc);
+            })
+            .catch(function (e) {
+              toast("Calcul : " + e.message);
+              imprimerDecompteOfficiel(dos, {}, formatDoc);
+            });
         }
       }
 
       c.querySelectorAll(".btn-imprimer-fiche-taxe-row").forEach(function (btn) {
         btn.addEventListener("click", function (ev) {
+          ev.preventDefault();
           ev.stopPropagation();
           imprimerDepuisLigne(btn.dataset.id, "fiche_taxe");
         });
@@ -5098,6 +5117,7 @@
 
       c.querySelectorAll(".btn-imprimer-note-frais-row").forEach(function (btn) {
         btn.addEventListener("click", function (ev) {
+          ev.preventDefault();
           ev.stopPropagation();
           imprimerDepuisLigne(btn.dataset.id, "note_frais");
         });
@@ -5105,13 +5125,29 @@
 
       c.querySelectorAll(".btn-imprimer-facture-row").forEach(function (btn) {
         btn.addEventListener("click", function (ev) {
+          ev.preventDefault();
           ev.stopPropagation();
           imprimerDepuisLigne(btn.dataset.id, "facture");
         });
       });
 
+      c.querySelectorAll(".btn-export-excel-row").forEach(function (btn) {
+        btn.addEventListener("click", function (ev) {
+          ev.preventDefault();
+          ev.stopPropagation();
+          var dId = btn.dataset.id;
+          var dos = (cache.dossiers || []).find(function (it) { return String(it.id) === String(dId); }) || { id: dId };
+          var nomFichier = "Liquidation_" + (dos.numeroDossier || "Notaire") + ".xlsx";
+          toast("Téléchargement du fichier Excel (.xlsx)...");
+          API.telechargerFichier("/api/fiscal/dossiers/" + dId + "/export-excel", null, nomFichier)
+            .then(function () { toast("Classeur Excel (.xlsx) téléchargé avec succès !"); })
+            .catch(function (e) { toast("Erreur export Excel : " + e.message); });
+        });
+      });
+
       c.querySelectorAll(".btn-voir-dossier-direct").forEach(function (btn) {
         btn.addEventListener("click", function (ev) {
+          ev.preventDefault();
           ev.stopPropagation();
           ouvrirDossier(btn.dataset.id, "comptabilite");
         });
@@ -5711,38 +5747,58 @@
             });
           }
 
-          // Premier calcul immédiat
-          recalculerApercuModal();
+          function ouvrirFormatDepuisModal(formatCible) {
+            var dId = selectDossier ? selectDossier.value : (dossierInitial && dossierInitial.id);
+            var curDossier = dossiers.find(function (d) { return String(d.id) === String(dId); }) || dossierInitial || {
+              id: dId,
+              numeroDossier: "DOSSIER",
+              typeActeId: selectTypeActe ? selectTypeActe.value : "vente_immobiliere",
+              montantAssiette: inputMontant ? extraireNombre(inputMontant.value) : 10000000
+            };
+
+            var saisies = construireSaisies();
+            toast("Chargement du document...");
+            var typeActeVal = selectTypeActe ? selectTypeActe.value : (curDossier.typeActeId || "vente_immobiliere");
+            var montantVal = inputMontant ? extraireNombre(inputMontant.value) : (curDossier.montantAssiette || 10000000);
+
+            API.post("/api/fiscal/calculer", {
+              typeActeId: typeActeVal,
+              montant: montantVal,
+              saisies: saisies
+            }).then(function (fCalculee) {
+              fCalculee.saisies = saisies;
+              if (derniereFiche) {
+                fCalculee.statut = derniereFiche.statut;
+                fCalculee._statutFiche = derniereFiche.statut;
+                fCalculee.id = derniereFiche.id;
+                fCalculee.commentaire_notaire = derniereFiche.commentaire_notaire;
+              }
+              fermerModal();
+              setTimeout(function () {
+                modalApercuDocument(curDossier, fCalculee, formatCible);
+              }, 60);
+            }).catch(function (e) {
+              fermerModal();
+              setTimeout(function () {
+                modalApercuDocument(curDossier, { saisies: saisies }, formatCible);
+              }, 60);
+            });
+          }
 
           // Impression des 3 formats normés
-          document.getElementById("btn-imprimer-fiche-taxe").addEventListener("click", function () {
-            var dId = selectDossier.value;
-            var curDossier = (cache.dossiers || []).find(function (d) { return d.id === dId; });
-            if (curDossier && dernierCalculResultat) {
-              imprimerDecompteOfficiel(curDossier, dernierCalculResultat, "fiche_taxe");
-            } else {
-              toast("Veuillez patienter pendant le calcul de la taxe.");
-            }
+          document.getElementById("btn-imprimer-fiche-taxe").addEventListener("click", function (ev) {
+            ev.preventDefault();
+            ouvrirFormatDepuisModal("fiche_taxe");
           });
 
-          document.getElementById("btn-imprimer-note-frais").addEventListener("click", function () {
-            var dId = selectDossier.value;
-            var curDossier = (cache.dossiers || []).find(function (d) { return d.id === dId; });
-            if (curDossier && dernierCalculResultat) {
-              imprimerDecompteOfficiel(curDossier, dernierCalculResultat, "note_frais");
-            } else {
-              toast("Veuillez patienter pendant le calcul de la taxe.");
-            }
+          document.getElementById("btn-imprimer-note-frais").addEventListener("click", function (ev) {
+            ev.preventDefault();
+            ouvrirFormatDepuisModal("note_frais");
           });
 
-          document.getElementById("btn-imprimer-facture").addEventListener("click", function () {
-            var dId = selectDossier.value;
-            var curDossier = (cache.dossiers || []).find(function (d) { return d.id === dId; });
-            if (curDossier && dernierCalculResultat) {
-              imprimerDecompteOfficiel(curDossier, dernierCalculResultat, "facture");
-            } else {
-              toast("Veuillez patienter pendant le calcul de la taxe.");
-            }
+          document.getElementById("btn-imprimer-facture").addEventListener("click", function (ev) {
+            ev.preventDefault();
+            ouvrirFormatDepuisModal("facture");
           });
 
           var btnModalExcel = document.getElementById("btn-modal-taxe-export-excel");
@@ -7357,27 +7413,40 @@
     function imprimerPourDossier(formatDoc) {
       var fiches = cache.fichesTaxeHistorique || [];
       var derniereFiche = fiches.length > 0 ? fiches[fiches.length - 1] : null;
+      var dos = cache.dossierDetail || { id: dossierId };
       if (derniereFiche && derniereFiche.donnees) {
-        imprimerDecompteOfficiel(cache.dossierDetail, derniereFiche.donnees, formatDoc);
+        var fDonnees = Object.assign({}, derniereFiche.donnees);
+        fDonnees.statut = derniereFiche.statut;
+        fDonnees._statutFiche = derniereFiche.statut;
+        fDonnees.id = derniereFiche.id;
+        fDonnees.commentaire_notaire = derniereFiche.commentaire_notaire;
+        imprimerDecompteOfficiel(dos, fDonnees, formatDoc);
       } else {
-        API.post("/api/fiscal/calculer", { typeActeId: cache.dossierDetail.typeActeId, montant: cache.dossierDetail.montantAssiette, saisies: {} })
-          .then(function (f) { imprimerDecompteOfficiel(cache.dossierDetail, f, formatDoc); })
-          .catch(function (e) { toast("Erreur calcul : " + e.message); });
+        toast("Chargement du document...");
+        var tId = dos.typeActeId || dos.type_acte_id || "vente_immobiliere";
+        var mnt = dos.montantAssiette !== undefined ? Number(dos.montantAssiette) : 10000000;
+        API.post("/api/fiscal/calculer", { typeActeId: tId, montant: mnt, saisies: {} })
+          .then(function (f) { imprimerDecompteOfficiel(dos, f, formatDoc); })
+          .catch(function (e) {
+            toast("Calcul : " + e.message);
+            imprimerDecompteOfficiel(dos, {}, formatDoc);
+          });
       }
     }
 
     var btnDossierTaxe = c.querySelector(".btn-dossier-print-taxe");
-    if (btnDossierTaxe) btnDossierTaxe.addEventListener("click", function () { imprimerPourDossier("fiche_taxe"); });
+    if (btnDossierTaxe) btnDossierTaxe.addEventListener("click", function (ev) { ev.preventDefault(); imprimerPourDossier("fiche_taxe"); });
 
     var btnDossierNote = c.querySelector(".btn-dossier-print-note");
-    if (btnDossierNote) btnDossierNote.addEventListener("click", function () { imprimerPourDossier("note_frais"); });
+    if (btnDossierNote) btnDossierNote.addEventListener("click", function (ev) { ev.preventDefault(); imprimerPourDossier("note_frais"); });
 
     var btnDossierFacture = c.querySelector(".btn-dossier-print-facture");
-    if (btnDossierFacture) btnDossierFacture.addEventListener("click", function () { imprimerPourDossier("facture"); });
+    if (btnDossierFacture) btnDossierFacture.addEventListener("click", function (ev) { ev.preventDefault(); imprimerPourDossier("facture"); });
 
     var btnDossierExcel = c.querySelector(".btn-dossier-download-excel");
     if (btnDossierExcel) {
-      btnDossierExcel.addEventListener("click", function () {
+      btnDossierExcel.addEventListener("click", function (ev) {
+        ev.preventDefault();
         var numDos = (cache.dossierDetail && cache.dossierDetail.numeroDossier) || "Dossier";
         var nomFichier = "Liquidation_" + numDos + ".xlsx";
         toast("Téléchargement du fichier Excel de l'étude (.xlsx)...");
@@ -7388,30 +7457,57 @@
     }
 
     c.querySelectorAll(".btn-ouvrir-modal-taxe").forEach(function (btn) {
-      btn.addEventListener("click", function () { modalCreerFicheTaxe(dossierId); });
+      btn.addEventListener("click", function (ev) { ev.preventDefault(); modalCreerFicheTaxe(dossierId); });
     });
 
     c.querySelectorAll(".btn-imprimer-hist-fiche").forEach(function (btn) {
-      btn.addEventListener("click", function () {
+      btn.addEventListener("click", function (ev) {
+        ev.preventDefault();
         var idx = parseInt(btn.dataset.idx, 10);
-        var f = cache.fichesTaxeHistorique[idx];
-        if (f && f.donnees) imprimerDecompteOfficiel(cache.dossierDetail, f.donnees, "fiche_taxe");
+        var f = cache.fichesTaxeHistorique && cache.fichesTaxeHistorique[idx];
+        var dos = cache.dossierDetail || { id: dossierId };
+        if (f && f.donnees) {
+          var fDonnees = Object.assign({}, f.donnees);
+          fDonnees.statut = f.statut;
+          fDonnees._statutFiche = f.statut;
+          fDonnees.id = f.id;
+          fDonnees.commentaire_notaire = f.commentaire_notaire;
+          imprimerDecompteOfficiel(dos, fDonnees, "fiche_taxe");
+        }
       });
     });
 
     c.querySelectorAll(".btn-imprimer-hist-note").forEach(function (btn) {
-      btn.addEventListener("click", function () {
+      btn.addEventListener("click", function (ev) {
+        ev.preventDefault();
         var idx = parseInt(btn.dataset.idx, 10);
-        var f = cache.fichesTaxeHistorique[idx];
-        if (f && f.donnees) imprimerDecompteOfficiel(cache.dossierDetail, f.donnees, "note_frais");
+        var f = cache.fichesTaxeHistorique && cache.fichesTaxeHistorique[idx];
+        var dos = cache.dossierDetail || { id: dossierId };
+        if (f && f.donnees) {
+          var fDonnees = Object.assign({}, f.donnees);
+          fDonnees.statut = f.statut;
+          fDonnees._statutFiche = f.statut;
+          fDonnees.id = f.id;
+          fDonnees.commentaire_notaire = f.commentaire_notaire;
+          imprimerDecompteOfficiel(dos, fDonnees, "note_frais");
+        }
       });
     });
 
     c.querySelectorAll(".btn-imprimer-hist-facture").forEach(function (btn) {
-      btn.addEventListener("click", function () {
+      btn.addEventListener("click", function (ev) {
+        ev.preventDefault();
         var idx = parseInt(btn.dataset.idx, 10);
-        var f = cache.fichesTaxeHistorique[idx];
-        if (f && f.donnees) imprimerDecompteOfficiel(cache.dossierDetail, f.donnees, "facture");
+        var f = cache.fichesTaxeHistorique && cache.fichesTaxeHistorique[idx];
+        var dos = cache.dossierDetail || { id: dossierId };
+        if (f && f.donnees) {
+          var fDonnees = Object.assign({}, f.donnees);
+          fDonnees.statut = f.statut;
+          fDonnees._statutFiche = f.statut;
+          fDonnees.id = f.id;
+          fDonnees.commentaire_notaire = f.commentaire_notaire;
+          imprimerDecompteOfficiel(dos, fDonnees, "facture");
+        }
       });
     });
     var btnCloturer = document.getElementById("bouton-cloturer");
