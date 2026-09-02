@@ -299,6 +299,148 @@ router.post("/fiches/:ficheId/renvoyer", async (req, res, next) => {
   } catch (e) { next(e); }
 });
 
+// Soumettre la Note de Frais au Notaire
+router.post("/dossiers/:dossierId/soumettre-note-frais", async (req, res, next) => {
+  try {
+    const { rows } = await pool.query(
+      `SELECT f.*, d.numero_dossier 
+       FROM fiches_taxe f
+       JOIN dossiers d ON d.id = f.dossier_id
+       WHERE f.dossier_id = $1
+       ORDER BY f.created_at DESC LIMIT 1`,
+      [req.params.dossierId]
+    );
+    if (!rows.length) return res.status(404).json({ erreur: "Fiche de taxe introuvable." });
+    const fiche = rows[0];
+    if (fiche.statut !== "valide" && fiche.statut !== "valide_corrige") {
+      return res.status(400).json({ erreur: "La Fiche de Taxe doit être validée par le Notaire avant de soumettre la Note de Frais." });
+    }
+
+    const donnees = fiche.donnees || {};
+    donnees.statutNoteFrais = "soumis";
+    donnees.noteFraisSoumiseLe = new Date();
+    donnees.noteFraisSoumisePar = req.utilisateur.nom_complet;
+
+    await pool.query("UPDATE fiches_taxe SET donnees = $1 WHERE id = $2", [donnees, fiche.id]);
+
+    // Notifier le notaire
+    const notaires = await pool.query("SELECT id FROM utilisateurs WHERE role = 'notaire' OR role = 'premier_clerc'");
+    for (const notaire of notaires.rows) {
+      await pool.query(
+        `INSERT INTO notifications (utilisateur_id, titre, corps, priorite, created_at)
+         VALUES ($1, $2, $3, 'haute', now())`,
+        [
+          notaire.id,
+          `📄 Note de frais soumise pour visa — ${fiche.numero_dossier}`,
+          `La Note de Frais client du dossier ${fiche.numero_dossier} a été soumise par ${req.utilisateur.nom_complet || "le comptable"} pour autorisation de délivrance.`
+        ]
+      );
+    }
+
+    res.json({ message: "Note de frais soumise avec succès au Notaire.", donnees });
+  } catch (e) { next(e); }
+});
+
+// Valider la Note de Frais (Par le Notaire)
+router.post("/dossiers/:dossierId/valider-note-frais", async (req, res, next) => {
+  try {
+    if (req.utilisateur.role !== "notaire" && req.utilisateur.role !== "premier_clerc" && req.utilisateur.role !== "superadmin") {
+      return res.status(403).json({ erreur: "Seul le Notaire ou le Premier Clerc peut valider la Note de Frais." });
+    }
+
+    const { rows } = await pool.query(
+      `SELECT f.*, d.numero_dossier 
+       FROM fiches_taxe f
+       JOIN dossiers d ON d.id = f.dossier_id
+       WHERE f.dossier_id = $1
+       ORDER BY f.created_at DESC LIMIT 1`,
+      [req.params.dossierId]
+    );
+    if (!rows.length) return res.status(404).json({ erreur: "Fiche de taxe introuvable." });
+    const fiche = rows[0];
+
+    const donnees = fiche.donnees || {};
+    donnees.statutNoteFrais = "valide";
+    donnees.noteFraisValideeLe = new Date();
+    donnees.noteFraisValideePar = req.utilisateur.nom_complet;
+
+    await pool.query("UPDATE fiches_taxe SET donnees = $1 WHERE id = $2", [donnees, fiche.id]);
+
+    res.json({ message: "Note de frais validée par Maître. Elle peut être délivrée au client.", donnees });
+  } catch (e) { next(e); }
+});
+
+// Soumettre la Facture Normalisée au Notaire
+router.post("/dossiers/:dossierId/soumettre-facture", async (req, res, next) => {
+  try {
+    const { rows } = await pool.query(
+      `SELECT f.*, d.numero_dossier 
+       FROM fiches_taxe f
+       JOIN dossiers d ON d.id = f.dossier_id
+       WHERE f.dossier_id = $1
+       ORDER BY f.created_at DESC LIMIT 1`,
+      [req.params.dossierId]
+    );
+    if (!rows.length) return res.status(404).json({ erreur: "Fiche de taxe introuvable." });
+    const fiche = rows[0];
+    if (fiche.statut !== "valide" && fiche.statut !== "valide_corrige") {
+      return res.status(400).json({ erreur: "La Fiche de Taxe doit être validée avant d'émettre la facture." });
+    }
+
+    const donnees = fiche.donnees || {};
+    donnees.statutFacture = "soumis";
+    donnees.factureSoumiseLe = new Date();
+    donnees.factureSoumisePar = req.utilisateur.nom_complet;
+
+    await pool.query("UPDATE fiches_taxe SET donnees = $1 WHERE id = $2", [donnees, fiche.id]);
+
+    // Notifier le notaire
+    const notaires = await pool.query("SELECT id FROM utilisateurs WHERE role = 'notaire' OR role = 'premier_clerc'");
+    for (const notaire of notaires.rows) {
+      await pool.query(
+        `INSERT INTO notifications (utilisateur_id, titre, corps, priorite, created_at)
+         VALUES ($1, $2, $3, 'haute', now())`,
+        [
+          notaire.id,
+          `🧾 Facture soumise pour visa & émission — ${fiche.numero_dossier}`,
+          `La Facture Normalisée du dossier ${fiche.numero_dossier} a été soumise par ${req.utilisateur.nom_complet || "le comptable"} pour émission.`
+        ]
+      );
+    }
+
+    res.json({ message: "Facture soumise avec succès au Notaire.", donnees });
+  } catch (e) { next(e); }
+});
+
+// Valider la Facture (Par le Notaire)
+router.post("/dossiers/:dossierId/valider-facture", async (req, res, next) => {
+  try {
+    if (req.utilisateur.role !== "notaire" && req.utilisateur.role !== "premier_clerc" && req.utilisateur.role !== "superadmin") {
+      return res.status(403).json({ erreur: "Seul le Notaire ou le Premier Clerc peut émettre et valider la facture." });
+    }
+
+    const { rows } = await pool.query(
+      `SELECT f.*, d.numero_dossier 
+       FROM fiches_taxe f
+       JOIN dossiers d ON d.id = f.dossier_id
+       WHERE f.dossier_id = $1
+       ORDER BY f.created_at DESC LIMIT 1`,
+      [req.params.dossierId]
+    );
+    if (!rows.length) return res.status(404).json({ erreur: "Fiche de taxe introuvable." });
+    const fiche = rows[0];
+
+    const donnees = fiche.donnees || {};
+    donnees.statutFacture = "valide";
+    donnees.factureValideeLe = new Date();
+    donnees.factureValideePar = req.utilisateur.nom_complet;
+
+    await pool.query("UPDATE fiches_taxe SET donnees = $1 WHERE id = $2", [donnees, fiche.id]);
+
+    res.json({ message: "Facture Normalisée validée et émise par Maître.", donnees });
+  } catch (e) { next(e); }
+});
+
 // Fiches de taxe en attente de visa du notaire
 router.get("/fiches-en-attente", async (req, res, next) => {
   try {
