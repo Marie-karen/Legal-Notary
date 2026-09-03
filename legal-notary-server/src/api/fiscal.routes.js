@@ -90,8 +90,8 @@ router.post("/dossiers/:dossierId/enregistrer", exigerPermission("fiscal:enregis
       const notaires = await pool.query("SELECT id FROM utilisateurs WHERE role = 'notaire' OR role = 'premier_clerc'");
       for (const notaire of notaires.rows) {
         await pool.query(
-          `INSERT INTO notifications (utilisateur_id, titre, corps, priorite, created_at)
-           VALUES ($1, $2, $3, 'haute', now())`,
+          `INSERT INTO notifications (utilisateur_id, evenement, canal, titre, corps, created_at)
+           VALUES ($1, 'validation_notaire', 'in_app', $2, $3, now())`,
           [
             notaire.id,
             `📑 Fiche de taxe à valider — Dossier ${dossier.numero_dossier}`,
@@ -130,8 +130,8 @@ router.post("/fiches/:ficheId/soumettre", exigerPermission("fiscal:enregistrer_f
     const notaires = await pool.query("SELECT id FROM utilisateurs WHERE role = 'notaire' OR role = 'premier_clerc'");
     for (const notaire of notaires.rows) {
       await pool.query(
-        `INSERT INTO notifications (utilisateur_id, titre, corps, priorite, created_at)
-         VALUES ($1, $2, $3, 'haute', now())`,
+        `INSERT INTO notifications (utilisateur_id, evenement, canal, titre, corps, created_at)
+         VALUES ($1, 'validation_notaire', 'in_app', $2, $3, now())`,
         [
           notaire.id,
           `📑 Fiche de taxe soumise pour visa — ${fiche.numero_dossier}`,
@@ -175,8 +175,8 @@ router.post("/fiches/:ficheId/valider", async (req, res, next) => {
     // Notifier l'auteur comptable
     if (fiche.utilisateur_id && fiche.utilisateur_id !== req.utilisateur.id) {
       await pool.query(
-        `INSERT INTO notifications (utilisateur_id, titre, corps, priorite, created_at)
-         VALUES ($1, $2, $3, 'normale', now())`,
+        `INSERT INTO notifications (utilisateur_id, evenement, canal, titre, corps, created_at)
+         VALUES ($1, 'validation_notaire', 'in_app', $2, $3, now())`,
         [
           fiche.utilisateur_id,
           `✅ Fiche de taxe validée — ${fiche.numero_dossier}`,
@@ -237,8 +237,8 @@ router.post("/fiches/:ficheId/corriger-valider", async (req, res, next) => {
     // Notifier l'auteur comptable
     if (fiche.utilisateur_id && fiche.utilisateur_id !== req.utilisateur.id) {
       await pool.query(
-        `INSERT INTO notifications (utilisateur_id, titre, corps, priorite, created_at)
-         VALUES ($1, $2, $3, 'normale', now())`,
+        `INSERT INTO notifications (utilisateur_id, evenement, canal, titre, corps, created_at)
+         VALUES ($1, 'validation_notaire', 'in_app', $2, $3, now())`,
         [
           fiche.utilisateur_id,
           `✏️ Fiche de taxe corrigée & validée — ${fiche.numero_dossier}`,
@@ -285,8 +285,8 @@ router.post("/fiches/:ficheId/renvoyer", async (req, res, next) => {
     // Notifier l'auteur comptable
     if (fiche.utilisateur_id) {
       await pool.query(
-        `INSERT INTO notifications (utilisateur_id, titre, corps, priorite, created_at)
-         VALUES ($1, $2, $3, 'haute', now())`,
+        `INSERT INTO notifications (utilisateur_id, evenement, canal, titre, corps, created_at)
+         VALUES ($1, 'validation_notaire', 'in_app', $2, $3, now())`,
         [
           fiche.utilisateur_id,
           `⚠️ Fiche de taxe à corriger — ${fiche.numero_dossier}`,
@@ -327,8 +327,8 @@ router.post("/dossiers/:dossierId/soumettre-note-frais", async (req, res, next) 
     const notaires = await pool.query("SELECT id FROM utilisateurs WHERE role = 'notaire' OR role = 'premier_clerc'");
     for (const notaire of notaires.rows) {
       await pool.query(
-        `INSERT INTO notifications (utilisateur_id, titre, corps, priorite, created_at)
-         VALUES ($1, $2, $3, 'haute', now())`,
+        `INSERT INTO notifications (utilisateur_id, evenement, canal, titre, corps, created_at)
+         VALUES ($1, 'validation_notaire', 'in_app', $2, $3, now())`,
         [
           notaire.id,
           `📄 Note de frais soumise pour visa — ${fiche.numero_dossier}`,
@@ -398,8 +398,8 @@ router.post("/dossiers/:dossierId/soumettre-facture", async (req, res, next) => 
     const notaires = await pool.query("SELECT id FROM utilisateurs WHERE role = 'notaire' OR role = 'premier_clerc'");
     for (const notaire of notaires.rows) {
       await pool.query(
-        `INSERT INTO notifications (utilisateur_id, titre, corps, priorite, created_at)
-         VALUES ($1, $2, $3, 'haute', now())`,
+        `INSERT INTO notifications (utilisateur_id, evenement, canal, titre, corps, created_at)
+         VALUES ($1, 'validation_notaire', 'in_app', $2, $3, now())`,
         [
           notaire.id,
           `🧾 Facture soumise pour visa & émission — ${fiche.numero_dossier}`,
@@ -438,6 +438,122 @@ router.post("/dossiers/:dossierId/valider-facture", async (req, res, next) => {
     await pool.query("UPDATE fiches_taxe SET donnees = $1 WHERE id = $2", [donnees, fiche.id]);
 
     res.json({ message: "Facture Normalisée validée et émise par Maître.", donnees });
+  } catch (e) { next(e); }
+});
+
+// =========================================================================
+// PARAPHEUR GLOBAL NOTARIAL — ÉLÉMENTS EN ATTENTE DE VALIDATION
+// (Fiches de taxe, Notes de frais, Factures, Projets d'actes, Salaires & Charges)
+// =========================================================================
+router.get("/validations/parapheur-global", async (req, res, next) => {
+  try {
+    // 1. Fiches de taxe soumises
+    const fichesTaxeRes = await pool.query(`
+      SELECT f.id, f.dossier_id, f.donnees, f.statut, f.commentaire_notaire, f.created_at, f.version,
+             d.numero_dossier, d.type_acte_id, d.montant_assiette,
+             u.nom_complet AS utilisateur_nom,
+             COALESCE((
+               SELECT string_agg(c.nom, ', ')
+               FROM dossier_comparants c
+               WHERE c.dossier_id = d.id
+             ), '') AS comparants_noms
+      FROM fiches_taxe f
+      JOIN dossiers d ON d.id = f.dossier_id
+      LEFT JOIN utilisateurs u ON u.id = f.utilisateur_id
+      WHERE f.statut = 'soumis'
+      ORDER BY f.created_at DESC
+    `);
+
+    // 2. Notes de frais soumises
+    const notesFraisRes = await pool.query(`
+      SELECT f.id, f.dossier_id, f.donnees, f.created_at,
+             (f.donnees->>'statutNoteFrais') AS statut_note,
+             (f.donnees->>'noteFraisSoumisePar') AS soumis_par,
+             (f.donnees->>'noteFraisSoumiseLe') AS soumis_le,
+             d.numero_dossier, d.type_acte_id, d.montant_assiette,
+             u.nom_complet AS utilisateur_nom,
+             COALESCE((
+               SELECT string_agg(c.nom, ', ')
+               FROM dossier_comparants c
+               WHERE c.dossier_id = d.id
+             ), '') AS comparants_noms
+      FROM fiches_taxe f
+      JOIN dossiers d ON d.id = f.dossier_id
+      LEFT JOIN utilisateurs u ON u.id = f.utilisateur_id
+      WHERE (f.donnees->>'statutNoteFrais') = 'soumis'
+      ORDER BY f.created_at DESC
+    `);
+
+    // 3. Factures soumises
+    const facturesRes = await pool.query(`
+      SELECT f.id, f.dossier_id, f.donnees, f.created_at,
+             (f.donnees->>'statutFacture') AS statut_facture,
+             (f.donnees->>'factureSoumisePar') AS soumis_par,
+             (f.donnees->>'factureSoumiseLe') AS soumis_le,
+             d.numero_dossier, d.type_acte_id, d.montant_assiette,
+             u.nom_complet AS utilisateur_nom,
+             COALESCE((
+               SELECT string_agg(c.nom, ', ')
+               FROM dossier_comparants c
+               WHERE c.dossier_id = d.id
+             ), '') AS comparants_noms
+      FROM fiches_taxe f
+      JOIN dossiers d ON d.id = f.dossier_id
+      LEFT JOIN utilisateurs u ON u.id = f.utilisateur_id
+      WHERE (f.donnees->>'statutFacture') = 'soumis'
+      ORDER BY f.created_at DESC
+    `);
+
+    // 4. Projets d'actes soumis
+    const projetsActeRes = await pool.query(`
+      SELECT p.id, p.dossier_id, p.numero_version, p.contenu, p.piece_jointe_url, p.statut, p.soumis_le, p.created_at,
+             d.numero_dossier, d.type_acte_id,
+             u.nom_complet AS redige_par_nom,
+             COALESCE((
+               SELECT string_agg(c.nom, ', ')
+               FROM dossier_comparants c
+               WHERE c.dossier_id = d.id
+             ), '') AS comparants_noms
+      FROM dossier_projets_acte p
+      JOIN dossiers d ON d.id = p.dossier_id
+      LEFT JOIN utilisateurs u ON u.id = p.redige_par_id
+      WHERE p.statut = 'soumis'
+      ORDER BY p.soumis_le DESC NULLS LAST, p.created_at DESC
+    `);
+
+    // 5. Salaires & Charges à valider
+    let salairesEtCharges = [];
+    try {
+      const equipeRes = await pool.query(`
+        SELECT u.id, u.nom_complet, u.email, u.role, u.telephone, u.type_contrat, u.salaire_net
+        FROM utilisateurs u
+        WHERE u.actif = true AND u.salaire_net > 0
+        ORDER BY u.nom_complet ASC
+      `);
+      salairesEtCharges = equipeRes.rows.map(m => ({
+        id: m.id,
+        nomComplet: m.nom_complet,
+        role: m.role,
+        salaireNet: Number(m.salaire_net) || 0,
+        type: "salaire_mensuel",
+        periode: new Date().toLocaleDateString("fr-CI", { month: "long", year: "numeric" }),
+        statut: "a_valider"
+      }));
+    } catch (err) {}
+
+    const totalEnAttente = fichesTaxeRes.rows.length +
+                           notesFraisRes.rows.length +
+                           facturesRes.rows.length +
+                           projetsActeRes.rows.length;
+
+    res.json({
+      totalEnAttente,
+      fichesTaxe: fichesTaxeRes.rows,
+      notesFrais: notesFraisRes.rows,
+      factures: facturesRes.rows,
+      projetsActe: projetsActeRes.rows,
+      salairesCharges: salairesEtCharges
+    });
   } catch (e) { next(e); }
 });
 
