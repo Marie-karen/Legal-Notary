@@ -6370,7 +6370,10 @@
     var totalGeneral = f.totaux ? (f.totaux.general || 0) : 0;
     var enLettres = (f.totaux && f.totaux.generalEnLettres) ? f.totaux.generalEnLettres : nombreEnLettresFCFA(totalGeneral);
 
-    var html = '<div class="document-a4-notarie" style="padding:15mm;max-width:210mm;margin:0 auto;color:#111;background:#fff;font-family:\'Inter\',Arial,sans-serif;box-sizing:border-box;box-shadow:0 4px 20px rgba(0,0,0,0.15);border-radius:4px;border:1px solid #e5e7eb">';
+    var html = '<div class="document-a4-notarie" style="width:100%;max-width:210mm;min-height:297mm;padding:15mm;margin:0 auto;color:#111;background:#fff !important;font-family:\'Inter\',Arial,sans-serif;box-sizing:border-box;box-shadow:0 4px 24px rgba(0,0,0,0.25);border-radius:4px;border:1px solid #e5e7eb;display:flex;flex-direction:column;justify-content:space-between">';
+
+    // Section Haute & Corps du Document
+    html += '<div style="flex:1;display:flex;flex-direction:column">';
 
     // En-tête officiel de l'Étude
     html += '<div style="border-bottom:2px solid #111827;padding-bottom:10px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:flex-start">';
@@ -6672,23 +6675,27 @@
       }
     }
 
-    // Mentions légales & Sceau
-    html += '<div style="margin-top:14px;font-size:7.5pt;color:#6b7280;line-height:1.3">';
+    html += '</div>'; // Fin de la section haute et corps de document flex:1
+
+    // Section Basse : Mentions légales & Signature (toujours poussée au bas de la page A4)
+    html += '<div style="margin-top:auto;padding-top:16px;border-top:1px solid #e5e7eb;page-break-inside:avoid">';
+    html += '<div style="font-size:7.5pt;color:#6b7280;line-height:1.3">';
     html += 'NB : Conformément à la réglementation notariale, la présente taxe prévisionnelle doit être intégralement réglée avant la signature de l\'acte.<br>';
     html += 'En cas de règlement par chèque ou virement, libeller au nom de : <strong>' + (params.nomEtude || "ÉTUDE NOTARIALE") + '</strong>.';
     html += '</div>';
 
     // Bloc signature
-    html += '<div style="margin-top:24px;display:flex;justify-content:space-between;align-items:flex-start;page-break-inside:avoid">';
+    html += '<div style="margin-top:20px;display:flex;justify-content:space-between;align-items:flex-start;page-break-inside:avoid">';
     html += '<div style="font-size:8.5pt;color:#6b7280">Reçu pour acquit / Bon pour accord :</div>';
     html += '<div style="text-align:right">';
     html += '<div style="font-size:9pt;font-weight:700">' + (params.titreNotaire || "Maître") + ' ' + (params.nomNotaire || "") + '</div>';
     html += '<div style="font-size:8pt;color:#6b7280">Notaire Titulaire</div>';
-    html += '<div style="margin-top:35px;font-size:8pt;color:#9ca3af">[ Sceau & Signature ]</div>';
+    html += '<div style="margin-top:30px;font-size:8pt;color:#9ca3af">[ Sceau & Signature ]</div>';
     html += '</div>';
     html += '</div>';
+    html += '</div>'; // Fin de la section basse
 
-    html += '</div>';
+    html += '</div>'; // Fin de .document-a4-notarie
     return html;
   }
 
@@ -6927,7 +6934,7 @@
         html += '</div>';
 
         // Zone d'aperçu papier A4 ou Grille Excel
-        html += '<div id="zone-apercu-feuille-a4" style="background:#4b5563;padding:16px;border-radius:var(--radius);max-height:65vh;overflow-y:auto;display:flex;justify-content:center">';
+        html += '<div id="zone-apercu-feuille-a4" style="background:#374151;padding:24px 16px;border-radius:var(--radius);max-height:72vh;overflow-y:auto;display:flex;justify-content:center;align-items:flex-start">';
         if (fmt === "excel_natif") {
           html += '<div id="conteneur-excel-rendu-interne" style="width:100%"></div>';
         } else {
