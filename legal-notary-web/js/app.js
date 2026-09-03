@@ -5021,7 +5021,36 @@
           var emoHT = totaux ? (totaux.emolumentsHT || totaux.general) : 0;
           var totalGen = totaux ? totaux.general : 0;
 
-          html += '<tr>';
+          // Détermination de l'action principale selon le statut déontologique
+          var libelleBtnAction = "";
+          var styleBtnAction = "";
+          var actionType = ""; // 'corriger_taxe', 'note_frais', 'examiner_visa', 'creer_taxe', 'consulter_taxe'
+
+          if (statutFiche === "a_corriger") {
+            libelleBtnAction = "Modifier & Corriger la taxe →";
+            styleBtnAction = "background:#dc2626;border-color:#dc2626;color:#fff;font-weight:700";
+            actionType = "corriger_taxe";
+          } else if (statutFiche === "valide" || statutFiche === "valide_corrige") {
+            libelleBtnAction = "Établir Note de frais client →";
+            styleBtnAction = "background:#059669;border-color:#059669;color:#fff;font-weight:700";
+            actionType = "note_frais";
+          } else if (statutFiche === "soumis") {
+            if (estNotaire) {
+              libelleBtnAction = "Examiner / Viser la taxe →";
+              styleBtnAction = "background:#2563eb;border-color:#2563eb;color:#fff;font-weight:700";
+              actionType = "examiner_visa";
+            } else {
+              libelleBtnAction = "Consulter (En attente de visa)";
+              styleBtnAction = "background:#d97706;border-color:#d97706;color:#fff;font-weight:700";
+              actionType = "consulter_taxe";
+            }
+          } else {
+            libelleBtnAction = "+ Établir la fiche de taxe";
+            styleBtnAction = "background:var(--color-accent);border-color:var(--color-accent);color:#fff;font-weight:700";
+            actionType = "creer_taxe";
+          }
+
+          html += '<tr class="tr-compta-row" data-id="' + d.id + '" data-action="' + actionType + '" title="Cliquer pour exécuter l\'action principale : ' + escapeHtml(libelleBtnAction) + '">';
           html += '<td><strong style="color:var(--color-text)">' + d.numeroDossier + '</strong></td>';
           html += '<td><div>' + escapeHtml(d.comparantsNoms || d.clientNom || "Client") + '</div></td>';
           html += '<td><span class="tag tag-outline">' + labelActe(d.typeActeId) + '</span></td>';
@@ -5029,34 +5058,36 @@
           html += '<td style="text-align:right;color:var(--color-accent);font-weight:700">' + (totaux ? fmtFCFA(emoHT) : '<span style="color:var(--color-text-dim)">—</span>') + '</td>';
           html += '<td style="text-align:right;font-weight:800;color:var(--color-text)">' + (totaux ? fmtFCFA(totalGen) : '<span style="color:var(--color-text-dim)">—</span>') + '</td>';
 
-          // Statut Déontologique
+          // Statut Déontologique cliquable
           html += '<td>';
           if (statutFiche === "soumis") {
-            html += '<span class="tag" style="background:rgba(245,158,11,0.15);color:#d97706;font-weight:700;font-size:10.5px;padding:3px 6px;border:1px solid rgba(245,158,11,0.3)">Soumis au notaire</span>';
+            html += '<span class="tag badge-statut-compta-click" data-id="' + d.id + '" data-action="' + actionType + '" style="background:rgba(245,158,11,0.15);color:#d97706;font-weight:700;font-size:10.5px;padding:3px 6px;border:1px solid rgba(245,158,11,0.3);cursor:pointer" title="Fiche soumise à Maître — Cliquer pour examiner">Soumis au notaire</span>';
           } else if (statutFiche === "valide") {
-            html += '<span class="tag" style="background:rgba(16,185,129,0.15);color:#059669;font-weight:700;font-size:10.5px;padding:3px 6px;border:1px solid rgba(16,185,129,0.3)">Validée</span>';
+            html += '<span class="tag badge-statut-compta-click" data-id="' + d.id + '" data-action="' + actionType + '" style="background:rgba(16,185,129,0.15);color:#059669;font-weight:700;font-size:10.5px;padding:3px 6px;border:1px solid rgba(16,185,129,0.3);cursor:pointer" title="Taxe validée — Cliquer pour générer la Note de Frais client">Validée</span>';
           } else if (statutFiche === "valide_corrige") {
-            html += '<span class="tag" style="background:rgba(6,182,212,0.15);color:#0891b2;font-weight:700;font-size:10.5px;padding:3px 6px;border:1px solid rgba(6,182,212,0.3)">Validée avec corrections</span>';
+            html += '<span class="tag badge-statut-compta-click" data-id="' + d.id + '" data-action="' + actionType + '" style="background:rgba(6,182,212,0.15);color:#0891b2;font-weight:700;font-size:10.5px;padding:3px 6px;border:1px solid rgba(6,182,212,0.3);cursor:pointer" title="Taxe validée avec corrections — Cliquer pour générer la Note de Frais">Validée avec corrections</span>';
           } else if (statutFiche === "a_corriger") {
-            var commTooltip = ficheRecente && ficheRecente.commentaire_notaire ? escapeHtml(ficheRecente.commentaire_notaire) : "À corriger selon directives du Notaire";
-            html += '<span class="tag" style="background:rgba(239,68,68,0.15);color:#dc2626;font-weight:700;font-size:10.5px;padding:3px 6px;border:1px solid rgba(239,68,68,0.3);cursor:help" title="' + commTooltip + '">À corriger</span>';
+            var commTooltip = ficheRecente && ficheRecente.commentaire_notaire ? escapeHtml(ficheRecente.commentaire_notaire) : "Directives de Maître : ajuster et re-soumettre";
+            html += '<span class="tag badge-statut-compta-click" data-id="' + d.id + '" data-action="' + actionType + '" style="background:rgba(239,68,68,0.15);color:#dc2626;font-weight:700;font-size:10.5px;padding:3px 6px;border:1px solid rgba(239,68,68,0.3);cursor:pointer" title="' + commTooltip + ' — Cliquer pour modifier la taxe">À corriger</span>';
           } else if (statutFiche === "brouillon") {
-            html += '<span class="tag tag-outline" style="font-size:10.5px;padding:3px 6px">Brouillon</span>';
+            html += '<span class="tag tag-outline badge-statut-compta-click" data-id="' + d.id + '" data-action="' + actionType + '" style="font-size:10.5px;padding:3px 6px;cursor:pointer" title="Cliquer pour reprendre le brouillon">Brouillon</span>';
           } else {
-            html += '<span class="tag tag-outline" style="font-size:10.5px;padding:3px 6px;opacity:.75">À établir</span>';
+            html += '<span class="tag tag-outline badge-statut-compta-click" data-id="' + d.id + '" data-action="' + actionType + '" style="font-size:10.5px;padding:3px 6px;opacity:.75;cursor:pointer" title="Cliquer pour établir la fiche de taxe">À établir</span>';
           }
           html += '</td>';
 
           // Actions
           html += '<td><div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">';
-          var libelleBtnAction = !ficheRecente ? '+ Établir taxe' : (statutFiche === 'soumis' && estNotaire ? 'Examiner / Valider' : 'Modifier la taxe');
-          var classeBtnAction = (statutFiche === 'soumis' && estNotaire) ? 'btn btn-primary' : (ficheRecente ? 'btn btn-secondary' : 'btn btn-primary');
+          html += '<button type="button" class="btn btn-action-principale-compta" data-id="' + d.id + '" data-action="' + actionType + '" style="font-size:11px;padding:3px 8px;' + styleBtnAction + '">' + libelleBtnAction + '</button>';
 
-          html += '<button type="button" class="' + classeBtnAction + ' btn-ouvrir-modal-taxe" data-id="' + d.id + '" style="font-size:11px;padding:3px 7px;font-weight:700">' + libelleBtnAction + '</button>';
-          html += '<button type="button" class="btn btn-secondary btn-imprimer-fiche-taxe-row" data-id="' + d.id + '" style="font-size:11px;padding:3px 6px" title="Consulter et imprimer la Fiche de Taxe Interne">Fiche de taxe</button>';
-          html += '<button type="button" class="btn btn-secondary btn-imprimer-note-frais-row" data-id="' + d.id + '" style="font-size:11px;padding:3px 6px" title="Consulter et imprimer la Note de Frais client">Note de frais</button>';
-          html += '<button type="button" class="btn btn-secondary btn-imprimer-facture-row" data-id="' + d.id + '" style="font-size:11px;padding:3px 6px" title="Consulter et imprimer la Facture Normalisée avec TVA 18%">Facture</button>';
-          html += '<button type="button" class="btn btn-secondary btn-export-excel-row" data-id="' + d.id + '" style="font-size:11px;padding:3px 6px;background:rgba(16,185,129,0.1);color:#059669;border-color:rgba(16,185,129,0.3);font-weight:700" title="Télécharger le fichier Excel officiel (.xlsx) complété">Excel</button>';
+          if (statutFiche === "valide" || statutFiche === "valide_corrige") {
+            html += '<button type="button" class="btn btn-secondary btn-imprimer-facture-row" data-id="' + d.id + '" style="font-size:11px;padding:3px 6px" title="Facture Normalisée TTC">Facture</button>';
+            html += '<button type="button" class="btn btn-secondary btn-imprimer-fiche-taxe-row" data-id="' + d.id + '" style="font-size:11px;padding:3px 6px" title="Consulter la Fiche de Taxe">Fiche taxe</button>';
+          } else if (statutFiche === "a_corriger" || statutFiche === "soumis") {
+            html += '<button type="button" class="btn btn-secondary btn-imprimer-fiche-taxe-row" data-id="' + d.id + '" style="font-size:11px;padding:3px 6px" title="Consulter la Fiche de Taxe">Aperçu Fiche</button>';
+          }
+
+          html += '<button type="button" class="btn btn-secondary btn-export-excel-row" data-id="' + d.id + '" style="font-size:11px;padding:3px 6px;background:rgba(16,185,129,0.1);color:#059669;border-color:rgba(16,185,129,0.3);font-weight:700" title="Télécharger le fichier Excel (.xlsx)">Excel</button>';
           html += '<button type="button" class="btn btn-ghost btn-voir-dossier-direct" data-id="' + d.id + '" style="font-size:11px;padding:3px 6px" title="Voir le dossier">Dossier →</button>';
           html += '</div></td>';
           html += '</tr>';
@@ -5109,7 +5140,7 @@
         btnModelesExcel.addEventListener("click", modalGererModelesExcel);
       }
 
-      // 1. Établir une Fiche de Taxe
+      // 1. Établir une Fiche de Taxe (Boutons cartes du haut)
       var btnFicheTop = document.getElementById("btn-creer-fiche-taxe-top") || document.getElementById("btn-nouvelle-fiche-taxe");
       if (btnFicheTop) {
         btnFicheTop.addEventListener("click", function () {
@@ -5122,7 +5153,7 @@
         });
       });
 
-      // 2. Établir une Note de Frais
+      // 2. Établir une Note de Frais (Boutons cartes du haut)
       var btnNoteTop = document.getElementById("btn-creer-note-frais-top");
       if (btnNoteTop) {
         btnNoteTop.addEventListener("click", function () {
@@ -5135,7 +5166,7 @@
         });
       });
 
-      // 3. Établir une Facture
+      // 3. Établir une Facture (Boutons cartes du haut)
       var btnFactureTop = document.getElementById("btn-creer-facture-top");
       if (btnFactureTop) {
         btnFactureTop.addEventListener("click", function () {
@@ -5145,13 +5176,6 @@
       c.querySelectorAll(".btn-creer-facture-carte").forEach(function (b) {
         b.addEventListener("click", function () {
           modalCreerFicheTaxe(null, "facture");
-        });
-      });
-
-      c.querySelectorAll(".btn-ouvrir-modal-taxe").forEach(function (btn) {
-        btn.addEventListener("click", function (ev) {
-          ev.stopPropagation();
-          modalCreerFicheTaxe(btn.dataset.id);
         });
       });
 
@@ -5185,6 +5209,54 @@
         }
       }
 
+      // Fonction d'exécution contextuelle
+      function executerActionLigneCompta(dId, act) {
+        if (act === "corriger_taxe") {
+          // Ouvre directement le formulaire d'ajustement et rectification de la taxe
+          modalCreerFicheTaxe(dId, "fiche_taxe");
+        } else if (act === "note_frais") {
+          // Ouvre l'établissement et aperçu officiel de la note de frais client
+          imprimerDepuisLigne(dId, "note_frais");
+        } else if (act === "examiner_visa" || act === "consulter_taxe") {
+          // Ouvre la fiche de taxe pour examen et visa officiel par Maître
+          imprimerDepuisLigne(dId, "fiche_taxe");
+        } else {
+          // Création initiale de taxe
+          modalCreerFicheTaxe(dId, "fiche_taxe");
+        }
+      }
+
+      // Clic interactif sur toute la ligne du tableau
+      c.querySelectorAll(".tr-compta-row").forEach(function (tr) {
+        tr.addEventListener("click", function (ev) {
+          if (ev.target.closest("button") || ev.target.closest("a") || ev.target.closest("select") || ev.target.closest("input")) {
+            return;
+          }
+          var dId = tr.dataset.id;
+          var act = tr.dataset.action;
+          executerActionLigneCompta(dId, act);
+        });
+      });
+
+      // Clic sur le bouton d'action principale de la ligne
+      c.querySelectorAll(".btn-action-principale-compta").forEach(function (btn) {
+        btn.addEventListener("click", function (ev) {
+          ev.preventDefault();
+          ev.stopPropagation();
+          executerActionLigneCompta(btn.dataset.id, btn.dataset.action);
+        });
+      });
+
+      // Clic sur le badge de statut
+      c.querySelectorAll(".badge-statut-compta-click").forEach(function (badge) {
+        badge.addEventListener("click", function (ev) {
+          ev.preventDefault();
+          ev.stopPropagation();
+          executerActionLigneCompta(badge.dataset.id, badge.dataset.action);
+        });
+      });
+
+      // Boutons secondaires de ligne
       c.querySelectorAll(".btn-imprimer-fiche-taxe-row").forEach(function (btn) {
         btn.addEventListener("click", function (ev) {
           ev.preventDefault();

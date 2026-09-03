@@ -1140,3 +1140,17 @@ select.input { -webkit-appearance: none; appearance: none; }
     background: #ffffff !important;
   }
 }
+
+/* Lignes et interactions dynamiques dans la Facturation */
+.tr-compta-row {
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+.tr-compta-row:hover td {
+  background-color: var(--color-surface-2) !important;
+}
+.badge-statut-compta-click:hover {
+  filter: brightness(0.92);
+  transform: translateY(-1px);
+  transition: all 0.15s ease;
+}
