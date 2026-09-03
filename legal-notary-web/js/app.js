@@ -731,7 +731,7 @@
       { nav: "clients", label: "👥 Clients & KYC" },
       { nav: "actes", label: "📜 Actes & Référentiel" },
       { nav: "emoluments", label: "⚖️ Barèmes d'Émoluments" },
-      { nav: "comptabilite", label: "Facturation" },
+      { nav: "comptabilite", label: "💳 Facturation & Fiches de Taxe" },
       { nav: "archives", label: "🏛️ Minutier & Archives" },
       { nav: "equipe", label: "👔 Équipe & Salaires" },
       { nav: "evolution", label: "📈 Performance globale" },
@@ -769,7 +769,7 @@
       { nav: "dashboard", label: "📊 Tableau de bord Financier", vueParDefaut: true },
       { nav: "agenda", label: "📅 Échéances & Rendez-vous" },
       { nav: "validations", label: "📂 Transmis au Notaire" },
-      { nav: "comptabilite", label: "Facturation" },
+      { nav: "comptabilite", label: "💳 Facturation & Fiches de Taxe" },
       { nav: "emoluments", label: "⚖️ Barèmes d'Émoluments" },
       { nav: "dossiers", label: "📁 Dossiers (Suivi Financier)" },
       { nav: "evolution", label: "📈 Mon évolution" },
@@ -777,7 +777,7 @@
     assistante: [
       { nav: "dashboard", label: "📊 Accueil & Réception", vueParDefaut: true },
       { nav: "agenda", label: "📅 Agenda Notaire & Salles" },
-      { nav: "nouveau-dossier", label: "📂 + Nouveau dossier" },
+      { nav: "nouveau-dossier", label: "✨ + Nouveau dossier" },
       { nav: "clients", label: "👥 Fichier Clients & KYC" },
       { nav: "dossiers", label: "📁 Dossiers assignés" },
       { nav: "evolution", label: "📈 Mon évolution" },
@@ -9925,8 +9925,8 @@
     html += '</div>';
 
     html += '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">';
-    html += '<button type="button" class="btn btn-primary" id="btn-nouveau-rdv" style="font-size:13px;padding:8px 14px;box-shadow:0 2px 8px rgba(37,99,235,0.25)">+ Nouveau Rendez-vous</button>';
-    html += '<button type="button" class="btn btn-secondary" id="btn-nouvelle-tache" style="font-size:13px;padding:8px 12px">+ Nouvelle Tâche</button>';
+    html += '<button type="button" class="btn btn-primary" id="btn-nouveau-rdv" style="font-size:13px;padding:8px 14px;box-shadow:0 2px 8px rgba(37,99,235,0.25)">➕ Nouveau Rendez-vous</button>';
+    html += '<button type="button" class="btn btn-secondary" id="btn-nouvelle-tache" style="font-size:13px;padding:8px 12px">📝 Nouvelle Tâche</button>';
     html += '</div>';
     html += '</div>';
 
@@ -9951,16 +9951,16 @@
     }
 
     html += '<div style="display:flex;align-items:center;gap:6px">';
-    html += '<button type="button" class="btn btn-ghost" id="btn-agenda-prev" style="padding:4px 8px;font-size:12px">‹ Précédent</button>';
-    html += '<button type="button" class="btn btn-secondary" id="btn-agenda-today" style="padding:4px 10px;font-size:12px">Aujourd\'hui</button>';
-    html += '<button type="button" class="btn btn-ghost" id="btn-agenda-next" style="padding:4px 8px;font-size:12px">Suivant ›</button>';
+    html += '<button type="button" class="btn btn-ghost" id="btn-agenda-prev" style="padding:4px 8px;font-size:12px">◀ Précédent</button>';
+    html += '<button type="button" class="btn btn-secondary" id="btn-agenda-today" style="padding:4px 10px;font-size:12px">📌 Aujourd\'hui</button>';
+    html += '<button type="button" class="btn btn-ghost" id="btn-agenda-next" style="padding:4px 8px;font-size:12px">Suivant ▶</button>';
     html += '<span style="font-weight:700;font-size:13px;margin-left:8px;color:var(--color-text)">' + textePeriode + '</span>';
     html += '</div>';
 
     // Filtres
     html += '<div style="display:flex;align-items:center;gap:6px">';
-    html += '<select class="input" id="filtre-type-rdv" style="padding:4px 8px;font-size:12px;height:30px;width:150px">';
-    html += '<option value="all">Tous les types</option>';
+    html += '<select class="input" id="filtre-type-rdv" style="padding:4px 8px;font-size:12px;height:30px;width:160px">';
+    html += '<option value="all">🔍 Tous les types de RDV</option>';
     html += '<option value="signature_acte" ' + (etatAgenda.filtreType === "signature_acte" ? "selected" : "") + '>📜 Signatures d\'actes</option>';
     html += '<option value="consultation_client" ' + (etatAgenda.filtreType === "consultation_client" ? "selected" : "") + '>👥 Consultations</option>';
     html += '<option value="rdv_telephonique" ' + (etatAgenda.filtreType === "rdv_telephonique" ? "selected" : "") + '>📞 Téléphone / Visio</option>';
@@ -10058,7 +10058,7 @@
       html += '</div>';
 
       // Bouton rapide d'ajout pour ce jour
-      html += '<button type="button" class="btn btn-ghost btn-block btn-ajouter-creneau-jour" data-jour="' + jourIsoStr + '" style="padding:4px;font-size:11px;border:1px dashed var(--color-border);margin-top:auto">+ Ajouter</button>';
+      html += '<button type="button" class="btn btn-ghost btn-block btn-ajouter-creneau-jour" data-jour="' + jourIsoStr + '" style="padding:4px;font-size:11px;border:1px dashed var(--color-border);margin-top:auto">➕ Ajouter</button>';
 
       html += '</div>';
     }
@@ -10079,10 +10079,10 @@
 
     // Planning horaire de la journée
     html += '<div class="card" style="padding:16px">';
-    html += '<div style="font-family:var(--font-heading);font-weight:700;font-size:16px;margin-bottom:12px;border-bottom:1px solid var(--color-border);padding-bottom:8px">Planning détaillé de la journée</div>';
+    html += '<div style="font-family:var(--font-heading);font-weight:700;font-size:16px;margin-bottom:12px;border-bottom:1px solid var(--color-border);padding-bottom:8px">📅 Planning détaillé de la journée</div>';
 
     if (evtsJour.length === 0) {
-      html += '<div style="padding:40px;text-align:center;color:var(--color-text-dim)">Aucun rendez-vous positionné pour cette journée.<br><button type="button" class="btn btn-primary" id="btn-creer-rdv-jour-vide" style="margin-top:12px">+ Planifier un rendez-vous</button></div>';
+      html += '<div style="padding:40px;text-align:center;color:var(--color-text-dim)">Aucun rendez-vous positionné pour cette journée.<br><button type="button" class="btn btn-primary" id="btn-creer-rdv-jour-vide" style="margin-top:12px">➕ Planifier un rendez-vous</button></div>';
     } else {
       html += '<div style="display:flex;flex-direction:column;gap:12px">';
       evtsJour.forEach(function (e) {
@@ -10129,9 +10129,9 @@
     html += '<div class="card" style="padding:14px">';
     html += '<div style="font-weight:700;font-size:14px;margin-bottom:8px">🏛️ Occupation des Salles</div>';
     html += '<div style="font-size:12px;display:flex;flex-direction:column;gap:6px">';
-    html += '<div style="display:flex;justify-content:space-between;padding:4px 6px;background:var(--color-surface-2);border-radius:4px"><span>Grande Salle des Actes</span><strong style="color:#10b981">Disponible</strong></div>';
-    html += '<div style="display:flex;justify-content:space-between;padding:4px 6px;background:var(--color-surface-2);border-radius:4px"><span>Salle Conseil N°2</span><strong style="color:#10b981">Disponible</strong></div>';
-    html += '<div style="display:flex;justify-content:space-between;padding:4px 6px;background:var(--color-surface-2);border-radius:4px"><span>Bureau Maître Notaire</span><strong style="color:#f59e0b">Réservé</strong></div>';
+    html += '<div style="display:flex;justify-content:space-between;padding:4px 6px;background:var(--color-surface-2);border-radius:4px"><span>Grande Salle des Actes</span><strong style="color:#10b981">🟢 Libre</strong></div>';
+    html += '<div style="display:flex;justify-content:space-between;padding:4px 6px;background:var(--color-surface-2);border-radius:4px"><span>Salle Conseil N°2</span><strong style="color:#10b981">🟢 Libre</strong></div>';
+    html += '<div style="display:flex;justify-content:space-between;padding:4px 6px;background:var(--color-surface-2);border-radius:4px"><span>Bureau Maître Notaire</span><strong style="color:#f59e0b">🟡 Occupé</strong></div>';
     html += '</div>';
     html += '</div>';
 
@@ -10169,7 +10169,7 @@
     // Onglets de filtre de la To-Do List
     html += '<div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--color-border);padding-bottom:12px;margin-bottom:16px;flex-wrap:wrap;gap:10px">';
     html += '<div style="display:flex;gap:6px">';
-    html += '<button type="button" class="btn ' + (etatAgenda.ongletTaches === "toutes" ? "btn-secondary" : "btn-ghost") + ' btn-filtre-taches" data-onglet="toutes" style="font-size:12.5px;padding:5px 12px">Toutes les Tâches (' + etatAgenda.taches.length + ')</button>';
+    html += '<button type="button" class="btn ' + (etatAgenda.ongletTaches === "toutes" ? "btn-secondary" : "btn-ghost") + ' btn-filtre-taches" data-onglet="toutes" style="font-size:12.5px;padding:5px 12px">📌 Toutes les Tâches (' + etatAgenda.taches.length + ')</button>';
     html += '<button type="button" class="btn ' + (etatAgenda.ongletTaches === "dossiers" ? "btn-secondary" : "btn-ghost") + ' btn-filtre-taches" data-onglet="dossiers" style="font-size:12.5px;padding:5px 12px">📋 Liées aux Dossiers</button>';
     html += '<button type="button" class="btn ' + (etatAgenda.ongletTaches === "memos" ? "btn-secondary" : "btn-ghost") + ' btn-filtre-taches" data-onglet="memos" style="font-size:12.5px;padding:5px 12px">✍️ Mémos Personnels</button>';
     html += '</div>';
@@ -10178,11 +10178,11 @@
     html += '<form id="form-ajout-rapide-tache" style="display:flex;gap:6px;flex:1;max-width:480px">';
     html += '<input class="input" type="text" name="titre" placeholder="Ajouter une micro-tâche ou un mémo rapide…" required style="font-size:12.5px;padding:6px 10px;flex:1">';
     html += '<select class="input" name="priorite" style="width:95px;font-size:12px;padding:4px 6px">';
-    html += '<option value="normale">Normale</option>';
+    html += '<option value="normale">🟡 Normale</option>';
     html += '<option value="haute">🔴 Haute</option>';
     html += '<option value="basse">🟢 Basse</option>';
     html += '</select>';
-    html += '<button type="submit" class="btn btn-primary" style="font-size:12px;padding:6px 12px">+ Ajouter</button>';
+    html += '<button type="submit" class="btn btn-primary" style="font-size:12px;padding:6px 12px">➕ Ajouter</button>';
     html += '</form>';
     html += '</div>';
 
@@ -10199,7 +10199,7 @@
 
     // Section À FAIRE
     html += '<div>';
-    html += '<div style="font-weight:800;font-size:14px;color:var(--color-text);margin-bottom:8px;display:flex;align-items:center;gap:6px"><span>À Réaliser</span><span class="tag tag-accent" style="font-size:11px">' + aFaire.length + '</span></div>';
+    html += '<div style="font-weight:800;font-size:14px;color:var(--color-text);margin-bottom:8px;display:flex;align-items:center;gap:6px"><span>⏳ Actions à Réaliser</span><span class="tag tag-accent" style="font-size:11px">' + aFaire.length + '</span></div>';
 
     if (aFaire.length === 0) {
       html += '<div style="padding:24px;text-align:center;color:var(--color-text-dim);font-style:italic;background:var(--color-surface-2);border-radius:6px">Aucune tâche en attente dans cette catégorie. Vous êtes totalement à jour !</div>';
@@ -10220,7 +10220,7 @@
         html += '<span style="' + prioStyle + '">' + prioLabel + '</span>';
         html += '</div></div></div>';
 
-        html += '<button type="button" class="btn btn-ghost btn-supprimer-tache" data-tache-id="' + t.id + '" style="font-size:11px;color:#ef4444;padding:4px 8px" title="Supprimer la tâche">✕</button>';
+        html += '<button type="button" class="btn btn-ghost btn-supprimer-tache" data-tache-id="' + t.id + '" style="font-size:12px;padding:4px 8px" title="Supprimer la tâche">🗑️</button>';
         html += '</div>';
       });
       html += '</div>';
@@ -10230,7 +10230,7 @@
     // Section TERMINÉES
     if (terminees.length > 0) {
       html += '<div style="margin-top:10px;padding-top:14px;border-top:1px solid var(--color-divider)">';
-      html += '<div style="font-weight:700;font-size:13px;color:var(--color-text-dim);margin-bottom:8px">Tâches Terminées (' + terminees.length + ')</div>';
+      html += '<div style="font-weight:700;font-size:13px;color:var(--color-text-dim);margin-bottom:8px">✅ Tâches Clôturées (' + terminees.length + ')</div>';
       html += '<div style="display:flex;flex-direction:column;gap:6px">';
       terminees.forEach(function (t) {
         html += '<div style="padding:6px 12px;display:flex;align-items:center;justify-content:space-between;background:var(--color-surface-2);border-radius:4px;opacity:.7">';
@@ -10238,7 +10238,7 @@
         html += '<input type="checkbox" checked class="checkbox-toggle-tache" data-tache-id="' + t.id + '" style="cursor:pointer" title="Remettre en À faire">';
         html += '<span style="font-size:12.5px;text-decoration:line-through;color:var(--color-text-dim)">' + t.titre + '</span>';
         html += '</div>';
-        html += '<button type="button" class="btn btn-ghost btn-supprimer-tache" data-tache-id="' + t.id + '" style="font-size:11px;color:#ef4444;padding:2px 6px">✕</button>';
+        html += '<button type="button" class="btn btn-ghost btn-supprimer-tache" data-tache-id="' + t.id + '" style="font-size:12px;padding:2px 6px">🗑️</button>';
         html += '</div>';
       });
       html += '</div></div>';
