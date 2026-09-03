@@ -789,7 +789,7 @@ select.input { -webkit-appearance: none; appearance: none; }
 /* Mise en page d'impression officielle (@media print)               */
 @media print {
   @page {
-    margin: 4mm 6mm;
+    margin: 4mm 6mm !important;
     size: A4 portrait;
   }
   body, html {
@@ -800,7 +800,7 @@ select.input { -webkit-appearance: none; appearance: none; }
     margin: 0 !important;
     padding: 0 !important;
     width: 100% !important;
-    height: auto !important;
+    height: 100% !important;
     max-height: 100% !important;
     overflow: hidden !important;
   }
@@ -825,15 +825,19 @@ select.input { -webkit-appearance: none; appearance: none; }
     display: block !important;
     position: relative !important;
     width: 100% !important;
-    height: auto !important;
-    max-height: 100% !important;
+    height: 100% !important;
+    max-height: 285mm !important;
     margin: 0 !important;
     padding: 0 !important;
     background: #fff !important;
     color: #111 !important;
     page-break-after: avoid !important;
+    page-break-before: avoid !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
+    break-after: avoid !important;
+    break-before: avoid !important;
+    overflow: hidden !important;
   }
   .print-header {
     border-bottom: 2px solid #111827;

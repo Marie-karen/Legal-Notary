@@ -6469,44 +6469,44 @@
       var lTres = (f.lignesTresor || []).length || 1;
       var lDeb = (f.lignesDebours || []).length || 1;
       var lEmo = emoLignes.length || 1;
-      totalLignesEstime = Math.max(lTres, lDeb, lEmo) + 3;
+      totalLignesEstime = Math.max(lTres, lDeb, lEmo) + 2;
     } else {
-      totalLignesEstime = 7;
+      totalLignesEstime = 6;
     }
 
-    // Réglages adaptatifs automatiques (Polices agrandies et haute netteté)
-    var ecartTitreCartouche = "10px";
-    var ecartCartoucheTableau = "20px";
-    var ecartTableauArrete = "8px";
-    var tableCellPadding = "4px 7px";
-    var tableFontSize = "9pt";
-    var tableHeaderFontSize = "9.5pt";
-    var tableSubHeaderFontSize = "9pt";
-    var tableLineHeight = "1.35";
-    var signatureGap = "16px";
+    // Réglages adaptatifs automatiques (Garantie stricte 1 seule page A4)
+    var ecartTitreCartouche = "7px";
+    var ecartCartoucheTableau = "12px";
+    var ecartTableauArrete = "5px";
+    var tableCellPadding = "3px 6px";
+    var tableFontSize = "8.5pt";
+    var tableHeaderFontSize = "9pt";
+    var tableSubHeaderFontSize = "8.5pt";
+    var tableLineHeight = "1.26";
+    var signatureGap = "10px";
 
-    if (totalLignesEstime > 16) {
-      // Cas maximal (15+ formalités cochées)
+    if (totalLignesEstime > 13) {
+      // Cas maximal (12+ formalités cochées)
+      ecartTitreCartouche = "4px";
+      ecartCartoucheTableau = "6px";
+      ecartTableauArrete = "3px";
+      tableCellPadding = "1.5px 4px";
+      tableFontSize = "7.5pt";
+      tableHeaderFontSize = "8pt";
+      tableSubHeaderFontSize = "7.8pt";
+      tableLineHeight = "1.15";
+      signatureGap = "5px";
+    } else if (totalLignesEstime > 8) {
+      // Cas moyen à chargé (7-11 formalités)
       ecartTitreCartouche = "5px";
       ecartCartoucheTableau = "8px";
       ecartTableauArrete = "4px";
-      tableCellPadding = "1.8px 5px";
-      tableFontSize = "7.8pt";
+      tableCellPadding = "2.2px 5px";
+      tableFontSize = "8pt";
       tableHeaderFontSize = "8.5pt";
       tableSubHeaderFontSize = "8pt";
       tableLineHeight = "1.2";
       signatureGap = "8px";
-    } else if (totalLignesEstime > 12) {
-      // Cas moyen à chargé (9-14 formalités)
-      ecartTitreCartouche = "7px";
-      ecartCartoucheTableau = "14px";
-      ecartTableauArrete = "6px";
-      tableCellPadding = "2.8px 6px";
-      tableFontSize = "8.5pt";
-      tableHeaderFontSize = "9pt";
-      tableSubHeaderFontSize = "8.5pt";
-      tableLineHeight = "1.28";
-      signatureGap = "12px";
     }
 
     var html = '<div class="document-a4-notarie" style="font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',Roboto,Helvetica,Arial,sans-serif;color:#111827">';
@@ -6515,7 +6515,7 @@
     html += '<div style="display:flex;flex-direction:column">';
 
     // En-tête officiel de l'Étude
-    html += '<div style="border-bottom:2px solid #111827;padding-bottom:5px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:flex-start">';
+    html += '<div style="border-bottom:2px solid #111827;padding-bottom:4px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:flex-start">';
     html += '<div>';
     html += '<div style="font-family:\'Space Grotesk\',Arial,sans-serif;font-weight:800;font-size:12pt;text-transform:uppercase;color:#111827;line-height:1.2">' + (params.nomEtude || "ÉTUDE DE MAÎTRE NOTAIRE") + '</div>';
     html += '<div style="font-size:9.5pt;font-weight:700;color:#1e3a8a;margin-top:2px">' + (params.titreNotaire || "Maître") + ' ' + (params.nomNotaire || "") + ' — NOTAIRE</div>';
