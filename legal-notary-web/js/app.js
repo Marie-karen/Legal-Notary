@@ -724,6 +724,7 @@
     ],
     notaire: [
       { nav: "dashboard", label: "📊 Tableau de bord", vueParDefaut: true },
+      { nav: "agenda", label: "📅 Agenda & Rendez-vous" },
       { nav: "validations", label: "⏳ En attente de validation" },
       { nav: "kanban", label: "📋 Circuit d'instruction" },
       { nav: "dossiers", label: "📁 Dossiers de l'étude" },
@@ -738,6 +739,7 @@
     ],
     premier_clerc: [
       { nav: "dashboard", label: "📊 Tableau de bord", vueParDefaut: true },
+      { nav: "agenda", label: "📅 Agenda & Rendez-vous" },
       { nav: "validations", label: "📂 Parapheur transmis" },
       { nav: "kanban", label: "📋 Circuit d'instruction" },
       { nav: "dossiers", label: "📁 Tous les dossiers" },
@@ -750,6 +752,7 @@
     ],
     clerc_redacteur: [
       { nav: "dashboard", label: "📊 Mon Tableau de bord", vueParDefaut: true },
+      { nav: "agenda", label: "📅 Mon Agenda & Tâches" },
       { nav: "dossiers", label: "📁 Mes Dossiers assignés" },
       { nav: "clients", label: "👥 Mes Clients & Pièces" },
       { nav: "actes", label: "✍️ Projets d'actes" },
@@ -757,12 +760,14 @@
     ],
     clerc_formaliste: [
       { nav: "dashboard", label: "📊 Formalités & Délais", vueParDefaut: true },
+      { nav: "agenda", label: "📅 Planning & Dépôts" },
       { nav: "dossiers", label: "🏛️ Dossiers Formalités (DGI/CF)" },
       { nav: "archives", label: "📦 Minutier & Cartons" },
       { nav: "evolution", label: "📈 Mon évolution" },
     ],
     comptable_taxateur: [
       { nav: "dashboard", label: "📊 Tableau de bord Financier", vueParDefaut: true },
+      { nav: "agenda", label: "📅 Échéances & Rendez-vous" },
       { nav: "validations", label: "📂 Transmis au Notaire" },
       { nav: "comptabilite", label: "Facturation" },
       { nav: "emoluments", label: "⚖️ Barèmes d'Émoluments" },
@@ -771,6 +776,7 @@
     ],
     assistante: [
       { nav: "dashboard", label: "📊 Accueil & Réception", vueParDefaut: true },
+      { nav: "agenda", label: "📅 Agenda Notaire & Salles" },
       { nav: "nouveau-dossier", label: "📂 + Nouveau dossier" },
       { nav: "clients", label: "👥 Fichier Clients & KYC" },
       { nav: "dossiers", label: "📁 Dossiers assignés" },
@@ -778,6 +784,7 @@
     ],
     archiviste: [
       { nav: "dashboard", label: "📊 Supervision & Minutier", vueParDefaut: true },
+      { nav: "agenda", label: "📅 Planning Minutier & Visites" },
       { nav: "archives", label: "🏛️ Minutier Numérique & Scellement", sousOnglet: "minutier" },
       { nav: "archives", label: "📦 Cartons & Dépôt Physique", sousOnglet: "cartons" },
       { nav: "archives", label: "🔍 Piste d'Audit & Registre", sousOnglet: "audit" },
@@ -880,6 +887,7 @@
     });
 
     if (vue === "dashboard") renderDashboard();
+    if (vue === "agenda") renderAgenda();
     if (vue === "kanban") renderKanban();
     if (vue === "dossiers") renderDossiersListe();
     if (vue === "nouveau-dossier") renderNouveauDossier();
@@ -1362,9 +1370,12 @@
 
     // Raccourcis d'accueil dans un panneau moderne
     html += '<div class="dashboard-panel">';
-    html += '<div class="panel-header"><div class="panel-title">Actions rapides d\'accueil</div></div>';
+    html += '<div class="panel-header"><div class="panel-title">Actions rapides d\'accueil & Pilotage</div></div>';
     html += '<div class="panel-body">';
     html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:var(--space-3)">';
+    html += '<div class="card card-action-agenda card-interactive" id="card-action-agenda-assistante" style="cursor:pointer;border-left:4px solid #2563eb;padding:var(--space-4);background:var(--color-surface-2)" title="Cliquer pour gérer l\'agenda du notaire et les salles">';
+    html += '<div style="font-family:var(--font-heading);font-weight:700;font-size:16px;margin-bottom:4px;color:#3b82f6">📅 Agenda Notaire & Salles</div>';
+    html += '<div class="card-body">Planifier les signatures d\'actes, rendez-vous clients et vérifier les prérequis.</div></div>';
     html += '<div class="card card-action-nouveau card-interactive" id="card-action-nouveau" style="cursor:pointer;border-left:4px solid var(--color-accent);padding:var(--space-4)" title="Cliquer pour créer un nouveau dossier">';
     html += '<div style="font-family:var(--font-heading);font-weight:700;font-size:16px;margin-bottom:4px">Ouvrir un nouveau dossier</div>';
     html += '<div class="card-body">Saisir les comparants, le type d\'acte et générer la checklist légale.</div></div>';
@@ -1395,6 +1406,8 @@
     c.innerHTML = html;
     attacherEvenementsDashboard(c);
 
+    var cardAgendaAss = document.getElementById("card-action-agenda-assistante");
+    if (cardAgendaAss) cardAgendaAss.addEventListener("click", function () { irVers("agenda"); });
     var cardNouveau = document.getElementById("card-action-nouveau");
     if (cardNouveau) cardNouveau.addEventListener("click", function () { irVers("nouveau-dossier"); });
     var cardClients = document.getElementById("card-action-clients");
@@ -9696,9 +9709,937 @@
     });
   }
 
-  // -----------------------------------------------------------------
-  // Connexion / initialisation
-  // -----------------------------------------------------------------
+  // =========================================================================
+  // MODULE AGENDA NOTARIAL (DÉLÉGATION ASSISTANTE) & TO-DO LIST INTELIGENTE
+  // =========================================================================
+
+  var etatAgenda = {
+    vueFormat: "semaine", // "semaine", "jour", "mois", "taches"
+    dateRef: new Date(),
+    filtreNotaire: "all",
+    filtreType: "all",
+    filtreSalle: "all",
+    evenements: [],
+    taches: [],
+    ongletTaches: "toutes", // "toutes", "dossiers", "memos"
+    chargement: false,
+  };
+
+  var CONFIG_TYPES_RDV = {
+    signature_acte: { label: "Signature d'Acte", bg: "rgba(37,99,235,0.12)", border: "#2563eb", color: "#3b82f6", icon: "📜", dureeDefaut: 60 },
+    consultation_client: { label: "Conseil & Ouverture", bg: "rgba(16,185,129,0.12)", border: "#059669", color: "#10b981", icon: "👥", dureeDefaut: 30 },
+    rdv_telephonique: { label: "Point Téléphonique / Visio", bg: "rgba(139,92,246,0.12)", border: "#7c3aed", color: "#8b5cf6", icon: "📞", dureeDefaut: 15 },
+    deplacement_externe: { label: "Déplacement / Conservation / Tribunal", bg: "rgba(245,158,11,0.12)", border: "#d97706", color: "#f59e0b", icon: "🏛️", dureeDefaut: 120 },
+    reunion_interne: { label: "Réunion Interne de Cabinet", bg: "rgba(107,114,128,0.12)", border: "#4b5563", color: "#6b7280", icon: "👔", dureeDefaut: 45 },
+  };
+
+  function obtenirDebutFinSemaine(date) {
+    var d = new Date(date);
+    var jour = d.getDay();
+    var diff = d.getDate() - jour + (jour === 0 ? -6 : 1); // Lundi premier jour
+    var lundi = new Date(d.setDate(diff));
+    lundi.setHours(0, 0, 0, 0);
+
+    var dimanche = new Date(lundi);
+    dimanche.setDate(lundi.getDate() + 6);
+    dimanche.setHours(23, 59, 59, 999);
+
+    return { debut: lundi, fin: dimanche };
+  }
+
+  function formaterDateHeureFr(dateIso) {
+    if (!dateIso) return "—";
+    var d = new Date(dateIso);
+    return d.toLocaleDateString("fr-CI", { day: "2-digit", month: "2-digit", year: "numeric" }) + " à " +
+           d.toLocaleTimeString("fr-CI", { hour: "2-digit", minute: "2-digit" });
+  }
+
+  function formaterHeureFr(dateIso) {
+    if (!dateIso) return "";
+    var d = new Date(dateIso);
+    return d.toLocaleTimeString("fr-CI", { hour: "2-digit", minute: "2-digit" });
+  }
+
+  function renderAgenda() {
+    var conteneur = document.getElementById("vue-agenda");
+    if (!conteneur) return;
+
+    var estAssistante = (cache.utilisateur && (cache.utilisateur.role === "assistante" || cache.utilisateur.role === "accueil"));
+    var roleLabel = (ROLE_LABEL[cache.utilisateur.role] || "Collaborateur");
+
+    conteneur.innerHTML = '<div style="padding:40px;text-align:center"><span class="spinner"></span><div style="margin-top:12px;color:var(--color-text-dim)">Chargement de l\'agenda et des tâches…</div></div>';
+
+    Promise.all([
+      API.get("/api/agenda/evenements?debut=" + encodeURIComponent(new Date(Date.now() - 30 * 86400000).toISOString())),
+      API.get("/api/agenda/taches"),
+      cache.dossiers && cache.dossiers.length ? Promise.resolve(cache.dossiers) : API.get("/api/dossiers"),
+    ]).then(function (res) {
+      etatAgenda.evenements = res[0] || [];
+      etatAgenda.taches = res[1] || [];
+      cache.dossiers = res[2] || [];
+      afficherVueAgenda(conteneur, estAssistante, roleLabel);
+    }).catch(function (err) {
+      conteneur.innerHTML = '<div class="card" style="padding:24px;color:#ef4444">Erreur de chargement : ' + (err.message || "Impossible de joindre le serveur") + '</div>';
+    });
+  }
+
+  function afficherVueAgenda(conteneur, estAssistante, roleLabel) {
+    var sem = obtenirDebutFinSemaine(etatAgenda.dateRef);
+    var dateDuJour = new Date();
+
+    var titreMode = estAssistante
+      ? "Agenda de Maître Notaire & Salles de Signature (Mode Assistante)"
+      : "Agenda Notarial & Planning de l'Office";
+
+    var sousTitre = estAssistante
+      ? "Coordination des signatures d'actes, gestion des rendez-vous clients et suivi des prérequis déontologiques."
+      : "Visualisation de vos rendez-vous, audiences, signatures d'actes authentiques et to-do list connectée.";
+
+    var html = '';
+
+    // En-tête de page sticky
+    html += '<div style="position:sticky;top:calc(-1 * var(--space-6));background:var(--color-bg);z-index:10;padding-top:var(--space-1);margin-bottom:var(--space-4);border-bottom:1px solid var(--color-border);padding-bottom:var(--space-3)">';
+    html += '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">';
+    html += '<div>';
+    html += '<div style="display:flex;align-items:center;gap:8px">';
+    html += '<h1 style="margin:0;font-size:22px">' + titreMode + '</h1>';
+    if (estAssistante) {
+      html += '<span class="tag tag-accent" style="font-size:11px;font-weight:700">Délégation Active</span>';
+    }
+    html += '</div>';
+    html += '<p style="opacity:.7;font-size:13px;margin:3px 0 0">' + sousTitre + '</p>';
+    html += '</div>';
+
+    html += '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">';
+    html += '<button type="button" class="btn btn-primary" id="btn-nouveau-rdv" style="font-size:13px;padding:8px 14px;box-shadow:0 2px 8px rgba(37,99,235,0.25)">+ Nouveau Rendez-vous</button>';
+    html += '<button type="button" class="btn btn-secondary" id="btn-nouvelle-tache" style="font-size:13px;padding:8px 12px">+ Nouvelle Tâche</button>';
+    html += '</div>';
+    html += '</div>';
+
+    // Barre d'outils (Sélecteur de vue Semaine/Jour/Mois/Tâches + Navigation temporelle + Filtres)
+    html += '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-top:14px;background:var(--color-surface);padding:8px 12px;border-radius:var(--radius);border:1px solid var(--color-border)">';
+    
+    // Switcher de format
+    html += '<div style="display:flex;background:var(--color-surface-2);border-radius:6px;padding:2px;border:1px solid var(--color-border)">';
+    html += '<button type="button" class="btn-agenda-vue ' + (etatAgenda.vueFormat === "semaine" ? "actif" : "") + '" data-vue="semaine" style="padding:4px 10px;font-size:12px;border:none;border-radius:4px;cursor:pointer;background:' + (etatAgenda.vueFormat === "semaine" ? "var(--color-surface)" : "transparent") + ';color:var(--color-text);font-weight:' + (etatAgenda.vueFormat === "semaine" ? "700" : "500") + '">📆 Semaine</button>';
+    html += '<button type="button" class="btn-agenda-vue ' + (etatAgenda.vueFormat === "jour" ? "actif" : "") + '" data-vue="jour" style="padding:4px 10px;font-size:12px;border:none;border-radius:4px;cursor:pointer;background:' + (etatAgenda.vueFormat === "jour" ? "var(--color-surface)" : "transparent") + ';color:var(--color-text);font-weight:' + (etatAgenda.vueFormat === "jour" ? "700" : "500") + '">📅 Jour</button>';
+    html += '<button type="button" class="btn-agenda-vue ' + (etatAgenda.vueFormat === "taches" ? "actif" : "") + '" data-vue="taches" style="padding:4px 10px;font-size:12px;border:none;border-radius:4px;cursor:pointer;background:' + (etatAgenda.vueFormat === "taches" ? "var(--color-surface)" : "transparent") + ';color:var(--color-text);font-weight:' + (etatAgenda.vueFormat === "taches" ? "700" : "500") + '">✅ To-Do List (' + etatAgenda.taches.filter(function(t){return t.statut==="a_faire";}).length + ')</button>';
+    html += '</div>';
+
+    // Navigation temporelle (Précédent / Aujourd'hui / Suivant)
+    var textePeriode = "";
+    if (etatAgenda.vueFormat === "semaine") {
+      textePeriode = "Semaine du " + sem.debut.toLocaleDateString("fr-CI", { day: "numeric", month: "short" }) + " au " + sem.fin.toLocaleDateString("fr-CI", { day: "numeric", month: "short", year: "numeric" });
+    } else if (etatAgenda.vueFormat === "jour") {
+      textePeriode = etatAgenda.dateRef.toLocaleDateString("fr-CI", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+    } else {
+      textePeriode = "Gestion des tâches et mémos du cabinet";
+    }
+
+    html += '<div style="display:flex;align-items:center;gap:6px">';
+    html += '<button type="button" class="btn btn-ghost" id="btn-agenda-prev" style="padding:4px 8px;font-size:12px">‹ Précédent</button>';
+    html += '<button type="button" class="btn btn-secondary" id="btn-agenda-today" style="padding:4px 10px;font-size:12px">Aujourd\'hui</button>';
+    html += '<button type="button" class="btn btn-ghost" id="btn-agenda-next" style="padding:4px 8px;font-size:12px">Suivant ›</button>';
+    html += '<span style="font-weight:700;font-size:13px;margin-left:8px;color:var(--color-text)">' + textePeriode + '</span>';
+    html += '</div>';
+
+    // Filtres
+    html += '<div style="display:flex;align-items:center;gap:6px">';
+    html += '<select class="input" id="filtre-type-rdv" style="padding:4px 8px;font-size:12px;height:30px;width:150px">';
+    html += '<option value="all">Tous les types</option>';
+    html += '<option value="signature_acte" ' + (etatAgenda.filtreType === "signature_acte" ? "selected" : "") + '>📜 Signatures d\'actes</option>';
+    html += '<option value="consultation_client" ' + (etatAgenda.filtreType === "consultation_client" ? "selected" : "") + '>👥 Consultations</option>';
+    html += '<option value="rdv_telephonique" ' + (etatAgenda.filtreType === "rdv_telephonique" ? "selected" : "") + '>📞 Téléphone / Visio</option>';
+    html += '<option value="deplacement_externe" ' + (etatAgenda.filtreType === "deplacement_externe" ? "selected" : "") + '>🏛️ Déplacements</option>';
+    html += '</select>';
+    html += '</div>';
+
+    html += '</div>';
+    html += '</div>'; // Fin en-tête
+
+    // Corps principal selon le format choisi
+    if (etatAgenda.vueFormat === "semaine") {
+      html += renderCorpsSemaine(sem, dateDuJour);
+    } else if (etatAgenda.vueFormat === "jour") {
+      html += renderCorpsJour(etatAgenda.dateRef);
+    } else if (etatAgenda.vueFormat === "taches") {
+      html += renderCorpsTodoList();
+    }
+
+    conteneur.innerHTML = html;
+
+    // Attachement des écouteurs d'événements
+    attacherEvenementsAgenda(conteneur);
+  }
+
+  function renderCorpsSemaine(sem, dateDuJour) {
+    var html = '<div style="display:grid;grid-template-columns:repeat(7, 1fr);gap:10px;min-height:540px">';
+    var joursNoms = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
+
+    for (var i = 0; i < 7; i++) {
+      var jourCourant = new Date(sem.debut);
+      jourCourant.setDate(sem.debut.getDate() + i);
+      var estAujourdhui = jourCourant.toDateString() === dateDuJour.toDateString();
+      var jourIsoStr = jourCourant.toISOString().split("T")[0];
+
+      // Événements de ce jour
+      var evtsJour = etatAgenda.evenements.filter(function (e) {
+        if (etatAgenda.filtreType !== "all" && e.typeRdv !== etatAgenda.filtreType) return false;
+        var dEvt = new Date(e.dateDebut).toISOString().split("T")[0];
+        return dEvt === jourIsoStr;
+      }).sort(function (a, b) { return new Date(a.dateDebut) - new Date(b.dateDebut); });
+
+      html += '<div class="card" style="padding:10px;display:flex;flex-direction:column;gap:8px;background:' + (estAujourdhui ? "var(--color-surface-2)" : "var(--color-surface)") + ';border-color:' + (estAujourdhui ? "var(--color-primary)" : "var(--color-border)") + ';border-width:' + (estAujourdhui ? "2px" : "1px") + '">';
+      
+      // En-tête de la colonne du jour
+      html += '<div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--color-border);padding-bottom:6px">';
+      html += '<div>';
+      html += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;color:' + (estAujourdhui ? "var(--color-primary)" : "var(--color-text-dim)") + '">' + joursNoms[i] + '</div>';
+      html += '<div style="font-size:14px;font-weight:800;color:var(--color-text)">' + jourCourant.getDate() + ' ' + jourCourant.toLocaleDateString("fr-CI", { month: "short" }) + '</div>';
+      html += '</div>';
+      if (evtsJour.length > 0) {
+        html += '<span class="tag tag-outline" style="font-size:10px;padding:1px 5px">' + evtsJour.length + ' RDV</span>';
+      }
+      html += '</div>';
+
+      // Liste des cartes de rendez-vous
+      html += '<div style="display:flex;flex-direction:column;gap:8px;flex:1">';
+      if (evtsJour.length === 0) {
+        html += '<div style="padding:20px 6px;text-align:center;color:var(--color-text-dim);font-size:11.5px;font-style:italic;margin-top:auto;margin-bottom:auto">Aucun créneau planifié</div>';
+      } else {
+        evtsJour.forEach(function (e) {
+          var cfg = CONFIG_TYPES_RDV[e.typeRdv] || CONFIG_TYPES_RDV.consultation_client;
+          var heureDeb = formaterHeureFr(e.dateDebut);
+          var heureFin = formaterHeureFr(e.dateFin);
+
+          // Contrôle prérequis signature
+          var prerequisBadge = '';
+          if (e.typeRdv === "signature_acte") {
+            if (e.prerequisStatut && e.prerequisStatut.pretPourSignature === false) {
+              prerequisBadge = '<div style="margin-top:4px;font-size:10px;background:#fee2e2;color:#991b1b;padding:2px 4px;border-radius:3px;font-weight:700">⚠️ Provision non reçue</div>';
+            } else {
+              prerequisBadge = '<div style="margin-top:4px;font-size:10px;background:#dcfce7;color:#166534;padding:2px 4px;border-radius:3px;font-weight:700">🟢 Feu Vert Signature</div>';
+            }
+          }
+
+          html += '<div class="card card-interactive card-evenement-agenda" data-evt-id="' + e.id + '" style="background:' + cfg.bg + ';border-left:4px solid ' + cfg.border + ';padding:8px;border-radius:4px;cursor:pointer" title="Cliquer pour afficher les détails du rendez-vous">';
+          html += '<div style="display:flex;align-items:center;justify-content:space-between;font-size:11px;font-weight:700;color:' + cfg.color + '">';
+          html += '<span>' + cfg.icon + ' ' + heureDeb + ' - ' + heureFin + '</span>';
+          html += '<span style="font-size:9.5px;opacity:.8">' + (e.salle || "Bureau") + '</span>';
+          html += '</div>';
+
+          html += '<div style="font-weight:700;font-size:12px;color:var(--color-text);margin-top:3px;line-height:1.25">' + e.titre + '</div>';
+
+          if (e.clientNom) {
+            html += '<div style="font-size:11px;color:var(--color-text-dim);margin-top:2px">Client : <strong>' + e.clientNom + '</strong></div>';
+          }
+          if (e.numeroDossier) {
+            html += '<div style="font-size:10.5px;color:var(--color-primary);margin-top:2px">Dossier : ' + e.numeroDossier + '</div>';
+          }
+
+          html += prerequisBadge;
+          html += '</div>';
+        });
+      }
+      html += '</div>';
+
+      // Bouton rapide d'ajout pour ce jour
+      html += '<button type="button" class="btn btn-ghost btn-block btn-ajouter-creneau-jour" data-jour="' + jourIsoStr + '" style="padding:4px;font-size:11px;border:1px dashed var(--color-border);margin-top:auto">+ Ajouter</button>';
+
+      html += '</div>';
+    }
+
+    html += '</div>';
+    return html;
+  }
+
+  function renderCorpsJour(dateRef) {
+    var dateIsoStr = dateRef.toISOString().split("T")[0];
+    var evtsJour = etatAgenda.evenements.filter(function (e) {
+      if (etatAgenda.filtreType !== "all" && e.typeRdv !== etatAgenda.filtreType) return false;
+      var dEvt = new Date(e.dateDebut).toISOString().split("T")[0];
+      return dEvt === dateIsoStr;
+    }).sort(function (a, b) { return new Date(a.dateDebut) - new Date(b.dateDebut); });
+
+    var html = '<div style="display:grid;grid-template-columns:2fr 1fr;gap:var(--space-4)">';
+
+    // Planning horaire de la journée
+    html += '<div class="card" style="padding:16px">';
+    html += '<div style="font-family:var(--font-heading);font-weight:700;font-size:16px;margin-bottom:12px;border-bottom:1px solid var(--color-border);padding-bottom:8px">Planning détaillé de la journée</div>';
+
+    if (evtsJour.length === 0) {
+      html += '<div style="padding:40px;text-align:center;color:var(--color-text-dim)">Aucun rendez-vous positionné pour cette journée.<br><button type="button" class="btn btn-primary" id="btn-creer-rdv-jour-vide" style="margin-top:12px">+ Planifier un rendez-vous</button></div>';
+    } else {
+      html += '<div style="display:flex;flex-direction:column;gap:12px">';
+      evtsJour.forEach(function (e) {
+        var cfg = CONFIG_TYPES_RDV[e.typeRdv] || CONFIG_TYPES_RDV.consultation_client;
+        var heureDeb = formaterHeureFr(e.dateDebut);
+        var heureFin = formaterHeureFr(e.dateFin);
+
+        html += '<div class="card card-interactive card-evenement-agenda" data-evt-id="' + e.id + '" style="background:' + cfg.bg + ';border-left:5px solid ' + cfg.border + ';padding:14px;cursor:pointer">';
+        html += '<div style="display:flex;justify-content:space-between;align-items:flex-start">';
+        html += '<div>';
+        html += '<div style="font-size:12px;font-weight:700;color:' + cfg.color + '">' + cfg.icon + ' ' + heureDeb + ' - ' + heureFin + ' · ' + cfg.label + '</div>';
+        html += '<div style="font-size:15px;font-weight:800;color:var(--color-text);margin-top:4px">' + e.titre + '</div>';
+        html += '</div>';
+        html += '<span class="tag tag-outline" style="font-size:11px">' + (e.salle || "Bureau du Notaire") + '</span>';
+        html += '</div>';
+
+        if (e.description) {
+          html += '<div style="font-size:12.5px;color:var(--color-text);margin-top:6px;opacity:.9">' + e.description + '</div>';
+        }
+
+        html += '<div style="display:flex;gap:16px;margin-top:10px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.08);font-size:12px;color:var(--color-text-dim);flex-wrap:wrap">';
+        if (e.clientNom) html += '<div>👤 Client : <strong style="color:var(--color-text)">' + e.clientNom + '</strong></div>';
+        if (e.clientTelephone) html += '<div>📞 Tél : <strong style="color:var(--color-text)">' + e.clientTelephone + '</strong></div>';
+        if (e.numeroDossier) html += '<div>📁 Dossier : <strong style="color:var(--color-primary)">' + e.numeroDossier + '</strong></div>';
+        html += '</div>';
+
+        if (e.typeRdv === "signature_acte") {
+          if (e.prerequisStatut && e.prerequisStatut.pretPourSignature === false) {
+            html += '<div style="margin-top:8px;padding:6px 10px;background:#fee2e2;color:#991b1b;border-radius:4px;font-size:11.5px;font-weight:700">⚠️ Attention déontologique : La provision / taxe prévisionnelle n\'a pas encore été validée comme encaissée.</div>';
+          } else {
+            html += '<div style="margin-top:8px;padding:6px 10px;background:#dcfce7;color:#166534;border-radius:4px;font-size:11.5px;font-weight:700">🟢 Prérequis validés : Projet d\'acte conforme et dossier prêt pour recueil des signatures.</div>';
+          }
+        }
+
+        html += '</div>';
+      });
+      html += '</div>';
+    }
+
+    html += '</div>';
+
+    // Panneau latéral : Rappel des tâches du jour & Salles
+    html += '<div style="display:flex;flex-direction:column;gap:var(--space-3)">';
+    html += '<div class="card" style="padding:14px">';
+    html += '<div style="font-weight:700;font-size:14px;margin-bottom:8px">🏛️ Occupation des Salles</div>';
+    html += '<div style="font-size:12px;display:flex;flex-direction:column;gap:6px">';
+    html += '<div style="display:flex;justify-content:space-between;padding:4px 6px;background:var(--color-surface-2);border-radius:4px"><span>Grande Salle des Actes</span><strong style="color:#10b981">Disponible</strong></div>';
+    html += '<div style="display:flex;justify-content:space-between;padding:4px 6px;background:var(--color-surface-2);border-radius:4px"><span>Salle Conseil N°2</span><strong style="color:#10b981">Disponible</strong></div>';
+    html += '<div style="display:flex;justify-content:space-between;padding:4px 6px;background:var(--color-surface-2);border-radius:4px"><span>Bureau Maître Notaire</span><strong style="color:#f59e0b">Réservé</strong></div>';
+    html += '</div>';
+    html += '</div>';
+
+    // Widget mini To-Do
+    html += '<div class="card" style="padding:14px;flex:1">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">';
+    html += '<div style="font-weight:700;font-size:14px">✅ Mes Mémos du Jour</div>';
+    html += '<button type="button" class="btn btn-ghost" id="btn-switch-vers-taches" style="font-size:11px;padding:2px 6px">Tout voir →</button>';
+    html += '</div>';
+
+    var tachesActives = etatAgenda.taches.filter(function (t) { return t.statut === "a_faire"; }).slice(0, 5);
+    if (tachesActives.length === 0) {
+      html += '<div style="font-size:12px;color:var(--color-text-dim);font-style:italic;text-align:center;padding:16px">Toutes vos tâches sont à jour !</div>';
+    } else {
+      html += '<div style="display:flex;flex-direction:column;gap:6px">';
+      tachesActives.forEach(function (t) {
+        html += '<div style="display:flex;align-items:center;gap:8px;font-size:12px;padding:4px 6px;background:var(--color-surface-2);border-radius:4px">';
+        html += '<input type="checkbox" class="checkbox-toggle-tache" data-tache-id="' + t.id + '" style="cursor:pointer">';
+        html += '<div style="flex:1;line-height:1.2"><div>' + t.titre + '</div>';
+        if (t.numeroDossier) html += '<span style="font-size:10px;color:var(--color-primary)">' + t.numeroDossier + '</span>';
+        html += '</div></div>';
+      });
+      html += '</div>';
+    }
+    html += '</div>';
+    html += '</div>';
+
+    html += '</div>';
+    return html;
+  }
+
+  function renderCorpsTodoList() {
+    var html = '<div class="card" style="padding:20px">';
+    
+    // Onglets de filtre de la To-Do List
+    html += '<div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--color-border);padding-bottom:12px;margin-bottom:16px;flex-wrap:wrap;gap:10px">';
+    html += '<div style="display:flex;gap:6px">';
+    html += '<button type="button" class="btn ' + (etatAgenda.ongletTaches === "toutes" ? "btn-secondary" : "btn-ghost") + ' btn-filtre-taches" data-onglet="toutes" style="font-size:12.5px;padding:5px 12px">Toutes les Tâches (' + etatAgenda.taches.length + ')</button>';
+    html += '<button type="button" class="btn ' + (etatAgenda.ongletTaches === "dossiers" ? "btn-secondary" : "btn-ghost") + ' btn-filtre-taches" data-onglet="dossiers" style="font-size:12.5px;padding:5px 12px">📋 Liées aux Dossiers</button>';
+    html += '<button type="button" class="btn ' + (etatAgenda.ongletTaches === "memos" ? "btn-secondary" : "btn-ghost") + ' btn-filtre-taches" data-onglet="memos" style="font-size:12.5px;padding:5px 12px">✍️ Mémos Personnels</button>';
+    html += '</div>';
+
+    // Formulaire d'ajout rapide de tâche en 1 ligne
+    html += '<form id="form-ajout-rapide-tache" style="display:flex;gap:6px;flex:1;max-width:480px">';
+    html += '<input class="input" type="text" name="titre" placeholder="Ajouter une micro-tâche ou un mémo rapide…" required style="font-size:12.5px;padding:6px 10px;flex:1">';
+    html += '<select class="input" name="priorite" style="width:95px;font-size:12px;padding:4px 6px">';
+    html += '<option value="normale">Normale</option>';
+    html += '<option value="haute">🔴 Haute</option>';
+    html += '<option value="basse">🟢 Basse</option>';
+    html += '</select>';
+    html += '<button type="submit" class="btn btn-primary" style="font-size:12px;padding:6px 12px">+ Ajouter</button>';
+    html += '</form>';
+    html += '</div>';
+
+    var listeFiltree = etatAgenda.taches.filter(function (t) {
+      if (etatAgenda.ongletTaches === "dossiers") return Boolean(t.dossierId || t.numeroDossier || t.source === "dossier_auto");
+      if (etatAgenda.ongletTaches === "memos") return Boolean(t.source === "manuel" && !t.dossierId);
+      return true;
+    });
+
+    var aFaire = listeFiltree.filter(function (t) { return t.statut === "a_faire"; });
+    var terminees = listeFiltree.filter(function (t) { return t.statut === "termine"; });
+
+    html += '<div style="display:flex;flex-direction:column;gap:16px">';
+
+    // Section À FAIRE
+    html += '<div>';
+    html += '<div style="font-weight:800;font-size:14px;color:var(--color-text);margin-bottom:8px;display:flex;align-items:center;gap:6px"><span>À Réaliser</span><span class="tag tag-accent" style="font-size:11px">' + aFaire.length + '</span></div>';
+
+    if (aFaire.length === 0) {
+      html += '<div style="padding:24px;text-align:center;color:var(--color-text-dim);font-style:italic;background:var(--color-surface-2);border-radius:6px">Aucune tâche en attente dans cette catégorie. Vous êtes totalement à jour !</div>';
+    } else {
+      html += '<div style="display:flex;flex-direction:column;gap:8px">';
+      aFaire.forEach(function (t) {
+        var prioStyle = t.priorite === "haute" ? "color:#ef4444;font-weight:700" : (t.priorite === "basse" ? "color:#10b981" : "color:var(--color-text-dim)");
+        var prioLabel = t.priorite === "haute" ? "🔴 Haute" : (t.priorite === "basse" ? "🟢 Basse" : "🟡 Normale");
+
+        html += '<div class="card" style="padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--color-surface);border-left:4px solid ' + (t.priorite === "haute" ? "#ef4444" : "var(--color-border)") + '">';
+        html += '<div style="display:flex;align-items:center;gap:12px;flex:1">';
+        html += '<input type="checkbox" class="checkbox-toggle-tache" data-tache-id="' + t.id + '" style="transform:scale(1.25);cursor:pointer" title="Marquer comme terminée">';
+        html += '<div>';
+        html += '<div style="font-size:13.5px;font-weight:700;color:var(--color-text)">' + t.titre + '</div>';
+        html += '<div style="display:flex;gap:10px;align-items:center;font-size:11px;color:var(--color-text-dim);margin-top:3px">';
+        if (t.numeroDossier) html += '<span style="color:var(--color-primary);font-weight:600">📁 ' + t.numeroDossier + '</span>';
+        if (t.echeance) html += '<span>⏰ Échéance : ' + formaterDateHeureFr(t.echeance) + '</span>';
+        html += '<span style="' + prioStyle + '">' + prioLabel + '</span>';
+        html += '</div></div></div>';
+
+        html += '<button type="button" class="btn btn-ghost btn-supprimer-tache" data-tache-id="' + t.id + '" style="font-size:11px;color:#ef4444;padding:4px 8px" title="Supprimer la tâche">✕</button>';
+        html += '</div>';
+      });
+      html += '</div>';
+    }
+    html += '</div>';
+
+    // Section TERMINÉES
+    if (terminees.length > 0) {
+      html += '<div style="margin-top:10px;padding-top:14px;border-top:1px solid var(--color-divider)">';
+      html += '<div style="font-weight:700;font-size:13px;color:var(--color-text-dim);margin-bottom:8px">Tâches Terminées (' + terminees.length + ')</div>';
+      html += '<div style="display:flex;flex-direction:column;gap:6px">';
+      terminees.forEach(function (t) {
+        html += '<div style="padding:6px 12px;display:flex;align-items:center;justify-content:space-between;background:var(--color-surface-2);border-radius:4px;opacity:.7">';
+        html += '<div style="display:flex;align-items:center;gap:10px">';
+        html += '<input type="checkbox" checked class="checkbox-toggle-tache" data-tache-id="' + t.id + '" style="cursor:pointer" title="Remettre en À faire">';
+        html += '<span style="font-size:12.5px;text-decoration:line-through;color:var(--color-text-dim)">' + t.titre + '</span>';
+        html += '</div>';
+        html += '<button type="button" class="btn btn-ghost btn-supprimer-tache" data-tache-id="' + t.id + '" style="font-size:11px;color:#ef4444;padding:2px 6px">✕</button>';
+        html += '</div>';
+      });
+      html += '</div></div>';
+    }
+
+    html += '</div>';
+    html += '</div>';
+    return html;
+  }
+
+  function attacherEvenementsAgenda(conteneur) {
+    // Boutons de changement de vue (Semaine / Jour / Tâches)
+    conteneur.querySelectorAll(".btn-agenda-vue").forEach(function (b) {
+      b.addEventListener("click", function () {
+        etatAgenda.vueFormat = b.dataset.vue;
+        renderAgenda();
+      });
+    });
+
+    // Navigation temporelle
+    var btnPrev = conteneur.querySelector("#btn-agenda-prev");
+    if (btnPrev) {
+      btnPrev.addEventListener("click", function () {
+        var decalage = etatAgenda.vueFormat === "jour" ? 1 : 7;
+        etatAgenda.dateRef.setDate(etatAgenda.dateRef.getDate() - decalage);
+        renderAgenda();
+      });
+    }
+
+    var btnToday = conteneur.querySelector("#btn-agenda-today");
+    if (btnToday) {
+      btnToday.addEventListener("click", function () {
+        etatAgenda.dateRef = new Date();
+        renderAgenda();
+      });
+    }
+
+    var btnNext = conteneur.querySelector("#btn-agenda-next");
+    if (btnNext) {
+      btnNext.addEventListener("click", function () {
+        var decalage = etatAgenda.vueFormat === "jour" ? 1 : 7;
+        etatAgenda.dateRef.setDate(etatAgenda.dateRef.getDate() + decalage);
+        renderAgenda();
+      });
+    }
+
+    // Filtre de type de RDV
+    var filtreType = conteneur.querySelector("#filtre-type-rdv");
+    if (filtreType) {
+      filtreType.addEventListener("change", function (e) {
+        etatAgenda.filtreType = e.target.value;
+        renderAgenda();
+      });
+    }
+
+    // Boutons de création de RDV et Tâche
+    var btnNouvRdv = conteneur.querySelector("#btn-nouveau-rdv");
+    if (btnNouvRdv) {
+      btnNouvRdv.addEventListener("click", function () { modalCreerEvenement(); });
+    }
+
+    var btnCreerRdvVide = conteneur.querySelector("#btn-creer-rdv-jour-vide");
+    if (btnCreerRdvVide) {
+      btnCreerRdvVide.addEventListener("click", function () { modalCreerEvenement(); });
+    }
+
+    var btnNouvTache = conteneur.querySelector("#btn-nouvelle-tache");
+    if (btnNouvTache) {
+      btnNouvTache.addEventListener("click", function () { modalCreerTache(); });
+    }
+
+    // Boutons rapides d'ajout par jour (+ Ajouter)
+    conteneur.querySelectorAll(".btn-ajouter-creneau-jour").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var jourStr = b.dataset.jour;
+        modalCreerEvenement(jourStr);
+      });
+    });
+
+    // Clic sur une carte d'événement -> Modale de détail
+    conteneur.querySelectorAll(".card-evenement-agenda").forEach(function (card) {
+      card.addEventListener("click", function () {
+        var id = card.dataset.evtId;
+        modalDetailEvenement(id);
+      });
+    });
+
+    // Checkboxes de bascule de tâche To-Do
+    conteneur.querySelectorAll(".checkbox-toggle-tache").forEach(function (cb) {
+      cb.addEventListener("change", function () {
+        var id = cb.dataset.tacheId;
+        API.patch("/api/agenda/taches/" + id + "/toggle").then(function () {
+          toast("Tâche mise à jour.");
+          renderAgenda();
+        }).catch(function (e) {
+          toast(e.message, "danger");
+        });
+      });
+    });
+
+    // Suppression de tâche
+    conteneur.querySelectorAll(".btn-supprimer-tache").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var id = b.dataset.tacheId;
+        API.del("/api/agenda/taches/" + id).then(function () {
+          toast("Tâche supprimée.");
+          renderAgenda();
+        });
+      });
+    });
+
+    // Filtres d'onglets de la To-Do List
+    conteneur.querySelectorAll(".btn-filtre-taches").forEach(function (b) {
+      b.addEventListener("click", function () {
+        etatAgenda.ongletTaches = b.dataset.onglet;
+        renderAgenda();
+      });
+    });
+
+    // Switch vers la vue tâches depuis le panneau latéral jour
+    var btnSwitchTaches = conteneur.querySelector("#btn-switch-vers-taches");
+    if (btnSwitchTaches) {
+      btnSwitchTaches.addEventListener("click", function () {
+        etatAgenda.vueFormat = "taches";
+        renderAgenda();
+      });
+    }
+
+    // Formulaire d'ajout rapide de tâche
+    var formAjoutRapide = conteneur.querySelector("#form-ajout-rapide-tache");
+    if (formAjoutRapide) {
+      formAjoutRapide.addEventListener("submit", function (e) {
+        e.preventDefault();
+        var titre = formAjoutRapide.titre.value.trim();
+        var priorite = formAjoutRapide.priorite.value;
+        if (!titre) return;
+
+        API.post("/api/agenda/taches", {
+          titre: titre,
+          priorite: priorite,
+          source: "manuel",
+        }).then(function () {
+          toast("Tâche enregistrée !");
+          renderAgenda();
+        }).catch(function (err) {
+          toast(err.message, "danger");
+        });
+      });
+    }
+  }
+
+  // Modale de création intelligente de Rendez-vous
+  function modalCreerEvenement(dateInitialeStr) {
+    var now = new Date();
+    if (dateInitialeStr) {
+      var parts = dateInitialeStr.split("-");
+      now = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10), 10, 0);
+    } else {
+      now.setHours(now.getHours() + 1, 0, 0, 0);
+    }
+
+    var dateVal = now.toISOString().split("T")[0];
+    var heureVal = now.toTimeString().substring(0, 5);
+
+    var html = '';
+    html += '<form id="form-creer-evenement-agenda" style="display:flex;flex-direction:column;gap:12px">';
+    
+    html += '<div class="field">';
+    html += '<label style="font-weight:700">Type de Rendez-vous Notarial *</label>';
+    html += '<select class="input" name="typeRdv" id="select-modal-type-rdv" required>';
+    html += '<option value="signature_acte">📜 Signature d\'Acte Authentique (1h - Vérification Prérequis)</option>';
+    html += '<option value="consultation_client" selected>👥 Premier Rendez-vous / Ouverture de dossier (30 min)</option>';
+    html += '<option value="rdv_telephonique">📞 Rendez-vous Téléphonique / Visio (15 min)</option>';
+    html += '<option value="deplacement_externe">🏛️ Déplacement / Conservation Foncière / Tribunal</option>';
+    html += '<option value="reunion_interne">👔 Réunion Interne de Cabinet</option>';
+    html += '</select>';
+    html += '</div>';
+
+    html += '<div class="field">';
+    html += '<label style="font-weight:700">Intitulé du Rendez-vous *</label>';
+    html += '<input class="input" type="text" name="titre" id="input-modal-titre-rdv" placeholder="Ex: Signature Vente Immobilière — Famille KOUASSI" required>';
+    html += '</div>';
+
+    // Sélecteur de dossier (très important pour les signatures d'actes)
+    html += '<div class="field" id="champ-dossier-rdv">';
+    html += '<label style="font-weight:700">Dossier concerné (Optionnel ou Recommandé)</label>';
+    html += '<select class="input" name="dossierId" id="select-modal-dossier-rdv">';
+    html += '<option value="">— Aucun dossier associé —</option>';
+    if (cache.dossiers && cache.dossiers.length) {
+      cache.dossiers.forEach(function (d) {
+        html += '<option value="' + d.id + '" data-num="' + d.numeroDossier + '" data-client="' + (d.comparantsNoms || '') + '">' + d.numeroDossier + ' — ' + labelActe(d.typeActeId) + ' (' + (d.comparantsNoms || 'Client') + ')</option>';
+      });
+    }
+    html += '</select>';
+    html += '</div>';
+
+    // Zone d'alerte en direct des prérequis notariaux
+    html += '<div id="zone-alerte-prerequis-rdv" style="display:none;padding:10px;border-radius:4px;font-size:12px;line-height:1.4"></div>';
+
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">';
+    html += '<div class="field">';
+    html += '<label style="font-weight:700">Date *</label>';
+    html += '<input class="input" type="date" name="dateDebut" value="' + dateVal + '" required>';
+    html += '</div>';
+    html += '<div class="field">';
+    html += '<label style="font-weight:700">Heure de début *</label>';
+    html += '<input class="input" type="time" name="heureDebut" value="' + heureVal + '" required>';
+    html += '</div>';
+    html += '</div>';
+
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">';
+    html += '<div class="field">';
+    html += '<label style="font-weight:700">Salle / Lieu</label>';
+    html += '<select class="input" name="salle">';
+    html += '<option value="Bureau du Notaire">Bureau du Notaire</option>';
+    html += '<option value="Grande Salle des Actes">Grande Salle des Actes</option>';
+    html += '<option value="Salle Conseil N°2">Salle Conseil N°2</option>';
+    html += '<option value="Extérieur">Extérieur / Déplacement</option>';
+    html += '</select>';
+    html += '</div>';
+    html += '<div class="field">';
+    html += '<label style="font-weight:700">Notaire assigné</label>';
+    html += '<input class="input" type="text" name="notaireNom" value="Maître Notaire Titulaire">';
+    html += '</div>';
+    html += '</div>';
+
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">';
+    html += '<div class="field">';
+    html += '<label style="font-weight:700">Nom du Client / Comparant</label>';
+    html += '<input class="input" type="text" name="clientNom" id="input-modal-client-nom" placeholder="M. / Mme…">';
+    html += '</div>';
+    html += '<div class="field">';
+    html += '<label style="font-weight:700">Téléphone (SMS / WhatsApp)</label>';
+    html += '<input class="input" type="text" name="clientTelephone" placeholder="+225 07…">';
+    html += '</div>';
+    html += '</div>';
+
+    html += '<div class="field">';
+    html += '<label style="font-weight:700">Notes & Instructions particulières</label>';
+    html += '<textarea class="input" name="description" rows="2" placeholder="Pièces originales à réclamer, procuration, témoins nécessaires…"></textarea>';
+    html += '</div>';
+
+    html += '<div style="display:flex;align-items:center;gap:8px;background:var(--color-surface-2);padding:8px 10px;border-radius:4px;font-size:12px">';
+    html += '<input type="checkbox" name="rappelSms" checked style="cursor:pointer" id="cb-rappel-sms">';
+    html += '<label for="cb-rappel-sms" style="cursor:pointer;margin:0">Envoyer une confirmation et un rappel automatique par SMS/WhatsApp au client</label>';
+    html += '</div>';
+
+    html += '<div style="display:flex;justify-content:flex-end;gap:10px;margin-top:10px;border-top:1px solid var(--color-border);padding-top:12px">';
+    html += '<button type="button" class="btn btn-ghost" id="btn-annuler-creer-rdv">Annuler</button>';
+    html += '<button type="submit" class="btn btn-primary">Enregistrer le Rendez-vous</button>';
+    html += '</div>';
+
+    html += '</form>';
+
+    ouvrirModal({
+      titre: '📅 Planifier un Rendez-vous Notarial',
+      corps: html,
+      boutonFermer: true,
+      largeur: "580px",
+      apresOuverture: function () {
+        var form = document.getElementById("form-creer-evenement-agenda");
+        var selectType = document.getElementById("select-modal-type-rdv");
+        var selectDossier = document.getElementById("select-modal-dossier-rdv");
+        var alertePrerequis = document.getElementById("zone-alerte-prerequis-rdv");
+        var inputTitre = document.getElementById("input-modal-titre-rdv");
+        var inputClient = document.getElementById("input-modal-client-nom");
+
+        document.getElementById("btn-annuler-creer-rdv").addEventListener("click", fermerModal);
+
+        // Mise à jour automatique des champs lors de la sélection du dossier
+        selectDossier.addEventListener("change", function () {
+          var dossierId = selectDossier.value;
+          var opt = selectDossier.options[selectDossier.selectedIndex];
+          if (dossierId && opt) {
+            var client = opt.dataset.client;
+            var num = opt.dataset.num;
+            if (client && !inputClient.value) inputClient.value = client;
+            if (!inputTitre.value || inputTitre.value.indexOf("Signature") === 0) {
+              inputTitre.value = "Signature " + (num ? num + " — " : "") + (client || "");
+            }
+
+            // Vérification en direct des prérequis
+            API.get("/api/agenda/prerequis-signature/" + dossierId).then(function (res) {
+              alertePrerequis.style.display = "block";
+              if (res.pretPourSignature) {
+                alertePrerequis.style.background = "#dcfce7";
+                alertePrerequis.style.color = "#166534";
+                alertePrerequis.style.border = "1px solid #86efac";
+                alertePrerequis.innerHTML = "🟢 <strong>Feu Vert Signature :</strong> Provision reçue et projet d'acte prêt.";
+              } else {
+                alertePrerequis.style.background = "#fee2e2";
+                alertePrerequis.style.color = "#991b1b";
+                alertePrerequis.style.border = "1px solid #fca5a5";
+                var msgs = (res.alertes || []).map(function(a){ return "• " + a.message; }).join("<br>");
+                alertePrerequis.innerHTML = "⚠️ <strong>Alerte Sécurité Notariale :</strong><br>" + msgs;
+              }
+            }).catch(function () {
+              alertePrerequis.style.display = "none";
+            });
+          } else {
+            alertePrerequis.style.display = "none";
+          }
+        });
+
+        form.addEventListener("submit", function (e) {
+          e.preventDefault();
+          var typeRdv = form.typeRdv.value;
+          var titre = form.titre.value.trim();
+          var dossierId = form.dossierId.value || null;
+          var optDossier = selectDossier.options[selectDossier.selectedIndex];
+          var numDossier = (optDossier && optDossier.dataset.num) || null;
+
+          var dateStr = form.dateDebut.value;
+          var heureStr = form.heureDebut.value;
+          var dateDebut = new Date(dateStr + "T" + heureStr + ":00");
+
+          // Durée par défaut selon type
+          var duree = (CONFIG_TYPES_RDV[typeRdv] && CONFIG_TYPES_RDV[typeRdv].dureeDefaut) || 60;
+          var dateFin = new Date(dateDebut.getTime() + duree * 60000);
+
+          var payload = {
+            typeRdv: typeRdv,
+            titre: titre,
+            dossierId: dossierId,
+            numeroDossier: numDossier,
+            dateDebut: dateDebut.toISOString(),
+            dateFin: dateFin.toISOString(),
+            salle: form.salle.value,
+            notaireNom: form.notaireNom.value,
+            clientNom: form.clientNom.value.trim(),
+            clientTelephone: form.clientTelephone.value.trim(),
+            description: form.description.value.trim(),
+            rappelSms: form.rappelSms.checked,
+          };
+
+          API.post("/api/agenda/evenements", payload).then(function () {
+            toast("Rendez-vous planifié avec succès !");
+            fermerModal();
+            renderAgenda();
+          }).catch(function (err) {
+            toast(err.message, "danger");
+          });
+        });
+      },
+    });
+  }
+
+  // Modale de détail et d'action sur un rendez-vous existant
+  function modalDetailEvenement(id) {
+    var evt = etatAgenda.evenements.find(function (e) { return e.id === id; });
+    if (!evt) return;
+
+    var cfg = CONFIG_TYPES_RDV[evt.typeRdv] || CONFIG_TYPES_RDV.consultation_client;
+
+    var html = '';
+    html += '<div style="display:flex;flex-direction:column;gap:12px">';
+
+    html += '<div style="padding:10px 14px;background:' + cfg.bg + ';border-left:4px solid ' + cfg.border + ';border-radius:4px">';
+    html += '<div style="font-size:12px;font-weight:700;color:' + cfg.color + '">' + cfg.icon + ' ' + cfg.label + '</div>';
+    html += '<div style="font-size:16px;font-weight:800;color:var(--color-text);margin-top:2px">' + evt.titre + '</div>';
+    html += '</div>';
+
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px;background:var(--color-surface-2);padding:10px 12px;border-radius:4px">';
+    html += '<div>📅 <strong>Début :</strong> ' + formaterDateHeureFr(evt.dateDebut) + '</div>';
+    html += '<div>⏰ <strong>Fin :</strong> ' + formaterDateHeureFr(evt.dateFin) + '</div>';
+    html += '<div>🏛️ <strong>Lieu / Salle :</strong> ' + (evt.salle || "Bureau") + '</div>';
+    html += '<div>👔 <strong>Notaire :</strong> ' + (evt.notaireNom || "Maître Notaire") + '</div>';
+    html += '</div>';
+
+    if (evt.clientNom || evt.clientTelephone) {
+      html += '<div style="font-size:13px;padding:8px 12px;border:1px solid var(--color-border);border-radius:4px">';
+      html += '<div style="font-weight:700;margin-bottom:4px">Informations Comparant / Client :</div>';
+      html += '<div>👤 ' + (evt.clientNom || "—") + '</div>';
+      if (evt.clientTelephone) html += '<div style="color:var(--color-text-dim)">📞 ' + evt.clientTelephone + ' (Rappel auto activé)</div>';
+      html += '</div>';
+    }
+
+    if (evt.description) {
+      html += '<div style="font-size:12.5px;padding:8px 12px;background:var(--color-surface-2);border-radius:4px">';
+      html += '<div style="font-weight:700;margin-bottom:2px">Notes & Directives :</div>';
+      html += '<div>' + evt.description + '</div>';
+      html += '</div>';
+    }
+
+    if (evt.typeRdv === "signature_acte") {
+      if (evt.prerequisStatut && evt.prerequisStatut.pretPourSignature === false) {
+        html += '<div style="padding:8px 10px;background:#fee2e2;color:#991b1b;border-radius:4px;font-size:12px;font-weight:700">⚠️ Attention : La taxe ou provision prévisionnelle n\'est pas enregistrée comme encaissée.</div>';
+      } else {
+        html += '<div style="padding:8px 10px;background:#dcfce7;color:#166534;border-radius:4px;font-size:12px;font-weight:700">🟢 Feu Vert Signature : Prérequis déontologiques conformes.</div>';
+      }
+    }
+
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;border-top:1px solid var(--color-border);padding-top:12px">';
+    html += '<button type="button" class="btn btn-ghost" id="btn-supprimer-rdv" style="color:#ef4444">Annuler ce RDV</button>';
+    html += '<div style="display:flex;gap:8px">';
+    if (evt.dossierId) {
+      html += '<button type="button" class="btn btn-secondary" id="btn-ouvrir-dossier-rdv">Consulter le dossier →</button>';
+    }
+    html += '<button type="button" class="btn btn-primary" id="btn-fermer-detail-rdv">Fermer</button>';
+    html += '</div></div>';
+
+    html += '</div>';
+
+    ouvrirModal({
+      titre: 'Détail du Rendez-vous Notarial',
+      corps: html,
+      boutonFermer: true,
+      largeur: "520px",
+      apresOuverture: function () {
+        document.getElementById("btn-fermer-detail-rdv").addEventListener("click", fermerModal);
+
+        var btnOuvrirDossier = document.getElementById("btn-ouvrir-dossier-rdv");
+        if (btnOuvrirDossier) {
+          btnOuvrirDossier.addEventListener("click", function () {
+            fermerModal();
+            ouvrirDossier(evt.dossierId, "agenda");
+          });
+        }
+
+        var btnSuppr = document.getElementById("btn-supprimer-rdv");
+        if (btnSuppr) {
+          btnSuppr.addEventListener("click", function () {
+            if (confirm("Confirmez-vous l'annulation et la suppression de ce rendez-vous ?")) {
+              API.del("/api/agenda/evenements/" + evt.id).then(function () {
+                toast("Rendez-vous annulé.");
+                fermerModal();
+                renderAgenda();
+              });
+            }
+          });
+        }
+      },
+    });
+  }
+
+  // Modale de création d'une tâche To-Do
+  function modalCreerTache() {
+    var html = '';
+    html += '<form id="form-creer-tache-agenda" style="display:flex;flex-direction:column;gap:12px">';
+    
+    html += '<div class="field">';
+    html += '<label style="font-weight:700">Intitulé de la tâche / micro-action *</label>';
+    html += '<input class="input" type="text" name="titre" placeholder="Ex: Relancer le vendeur pour l\'état des droits réels" required>';
+    html += '</div>';
+
+    html += '<div class="field">';
+    html += '<label style="font-weight:700">Dossier lié (Optionnel)</label>';
+    html += '<select class="input" name="dossierId">';
+    html += '<option value="">— Aucun dossier spécifique —</option>';
+    if (cache.dossiers && cache.dossiers.length) {
+      cache.dossiers.forEach(function (d) {
+        html += '<option value="' + d.id + '" data-num="' + d.numeroDossier + '">' + d.numeroDossier + ' — ' + labelActe(d.typeActeId) + '</option>';
+      });
+    }
+    html += '</select>';
+    html += '</div>';
+
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">';
+    html += '<div class="field">';
+    html += '<label style="font-weight:700">Priorité</label>';
+    html += '<select class="input" name="priorite">';
+    html += '<option value="normale">🟡 Normale</option>';
+    html += '<option value="haute">🔴 Haute (Urgent)</option>';
+    html += '<option value="basse">🟢 Basse (Mémo)</option>';
+    html += '</select>';
+    html += '</div>';
+    html += '<div class="field">';
+    html += '<label style="font-weight:700">Échéance</label>';
+    html += '<input class="input" type="date" name="echeance">';
+    html += '</div>';
+    html += '</div>';
+
+    html += '<div style="display:flex;justify-content:flex-end;gap:10px;margin-top:8px;border-top:1px solid var(--color-border);padding-top:10px">';
+    html += '<button type="button" class="btn btn-ghost" id="btn-annuler-creer-tache">Annuler</button>';
+    html += '<button type="submit" class="btn btn-primary">Enregistrer la tâche</button>';
+    html += '</div>';
+
+    html += '</form>';
+
+    ouvrirModal({
+      titre: '✅ Nouvelle Tâche / Mémo',
+      corps: html,
+      boutonFermer: true,
+      largeur: "480px",
+      apresOuverture: function () {
+        document.getElementById("btn-annuler-creer-tache").addEventListener("click", fermerModal);
+        var form = document.getElementById("form-creer-tache-agenda");
+        form.addEventListener("submit", function (e) {
+          e.preventDefault();
+          var titre = form.titre.value.trim();
+          var dossierId = form.dossierId.value || null;
+          var priorite = form.priorite.value;
+          var echeance = form.echeance.value ? new Date(form.echeance.value + "T18:00:00").toISOString() : null;
+
+          var optD = form.dossierId.options[form.dossierId.selectedIndex];
+          var numD = (optD && optD.dataset.num) || null;
+
+          API.post("/api/agenda/taches", {
+            titre: titre,
+            dossierId: dossierId,
+            numeroDossier: numD,
+            priorite: priorite,
+            echeance: echeance,
+            source: dossierId ? "dossier_auto" : "manuel",
+          }).then(function () {
+            toast("Tâche enregistrée !");
+            fermerModal();
+            renderAgenda();
+          }).catch(function (err) {
+            toast(err.message, "danger");
+          });
+        });
+      },
+    });
+  }
   function init() {
     API.surNonAutorise(function () {
       var appEl = document.getElementById("app");

@@ -149,6 +149,7 @@ window.LegalNotaryAPI = (function () {
     if (chemin.indexOf("/clients") !== -1) invaliderCache("/clients");
     if (chemin.indexOf("/notifications") !== -1) invaliderCache("/notifications");
     if (chemin.indexOf("/parametres") !== -1) invaliderCache("/parametres");
+    if (chemin.indexOf("/agenda") !== -1) invaliderCache("/agenda");
 
     return requeteReseau(methode, chemin, corps).then(function (res) {
       return res;

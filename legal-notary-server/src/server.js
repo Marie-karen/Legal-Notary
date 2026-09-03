@@ -38,6 +38,7 @@ const supportRoutes = require("./api/support.routes");
 const superadminRoutes = require("./api/superadmin.routes");
 const telemetrieRoutes = require("./api/telemetrie.routes");
 const rapportsRoutes = require("./api/rapports.routes");
+const agendaRoutes = require("./api/agenda.routes");
 const telemetrieService = require("./services/telemetrie.service");
 const { appliquerEnTetesSecurite } = require("./middleware/securite.middleware");
 
@@ -82,6 +83,7 @@ app.use("/api/infra", infraRoutes);
 app.use("/api/support", supportRoutes);
 app.use("/api/superadmin", superadminRoutes);
 app.use("/api/rapports", rapportsRoutes);
+app.use("/api/agenda", agendaRoutes);
 
 /**
  * Sert aussi le frontend statique (legal-notary-web/) depuis ce même
