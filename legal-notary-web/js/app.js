@@ -6613,39 +6613,28 @@
       totalLignesEstime = 6;
     }
 
-    // Réglages adaptatifs automatiques (Garantie stricte 1 seule page A4)
-    var ecartTitreCartouche = "7px";
-    var ecartCartoucheTableau = "12px";
+    // Réglages des dimensions & polices (Parfaitement lisibles et garanties sur 1 page A4)
+    var ecartTitreCartouche = "6px";
+    var ecartCartoucheTableau = "10px";
     var ecartTableauArrete = "5px";
-    var tableCellPadding = "3px 6px";
-    var tableFontSize = "8.5pt";
-    var tableHeaderFontSize = "9pt";
-    var tableSubHeaderFontSize = "8.5pt";
-    var tableLineHeight = "1.26";
+    var tableCellPadding = "3.5px 6px";
+    var tableFontSize = "9pt";
+    var tableHeaderFontSize = "9.5pt";
+    var tableSubHeaderFontSize = "9pt";
+    var tableLineHeight = "1.25";
     var signatureGap = "10px";
 
-    if (totalLignesEstime > 13) {
-      // Cas maximal (12+ formalités cochées)
+    if (totalLignesEstime > 15) {
+      // Cas exceptionnel avec un très grand nombre de formalités
       ecartTitreCartouche = "4px";
       ecartCartoucheTableau = "6px";
       ecartTableauArrete = "3px";
-      tableCellPadding = "1.5px 4px";
-      tableFontSize = "7.5pt";
-      tableHeaderFontSize = "8pt";
-      tableSubHeaderFontSize = "7.8pt";
-      tableLineHeight = "1.15";
-      signatureGap = "5px";
-    } else if (totalLignesEstime > 8) {
-      // Cas moyen à chargé (7-11 formalités)
-      ecartTitreCartouche = "5px";
-      ecartCartoucheTableau = "8px";
-      ecartTableauArrete = "4px";
-      tableCellPadding = "2.2px 5px";
+      tableCellPadding = "2px 4px";
       tableFontSize = "8pt";
       tableHeaderFontSize = "8.5pt";
       tableSubHeaderFontSize = "8pt";
-      tableLineHeight = "1.2";
-      signatureGap = "8px";
+      tableLineHeight = "1.18";
+      signatureGap = "6px";
     }
 
     var html = '<div class="document-a4-notarie" style="font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',Roboto,Helvetica,Arial,sans-serif;color:#111827">';
