@@ -6445,21 +6445,21 @@
     var html = '<div class="document-a4-notarie">';
 
     // Section Haute & Corps du Document
-    html += '<div style="flex:1;display:flex;flex-direction:column">';
+    html += '<div style="display:flex;flex-direction:column">';
 
     // En-tête officiel de l'Étude
-    html += '<div style="border-bottom:2px solid #111827;padding-bottom:6px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:flex-start">';
+    html += '<div style="border-bottom:1.5px solid #111827;padding-bottom:3px;margin-bottom:4px;display:flex;justify-content:space-between;align-items:flex-start">';
     html += '<div>';
-    html += '<div style="font-family:\'Space Grotesk\',Arial,sans-serif;font-weight:800;font-size:13pt;text-transform:uppercase;color:#111827;line-height:1.2">' + (params.nomEtude || "ÉTUDE DE MAÎTRE NOTAIRE") + '</div>';
-    html += '<div style="font-size:10.5pt;font-weight:700;color:#1e3a8a;margin-top:2px">' + (params.titreNotaire || "Maître") + ' ' + (params.nomNotaire || "") + ' — NOTAIRE</div>';
-    html += '<div style="font-size:8pt;color:#4b5563;margin-top:2px">' + (params.adresse || "Abidjan, Côte d'Ivoire") + (params.boitePostale ? " — " + params.boitePostale : "") + '</div>';
-    if (params.telephoneFixe || params.telephonePortable) html += '<div style="font-size:8pt;color:#4b5563">Tél : ' + (params.telephoneFixe || params.telephonePortable) + '</div>';
-    if (params.email) html += '<div style="font-size:8pt;color:#4b5563">Email : ' + params.email + '</div>';
+    html += '<div style="font-family:\'Space Grotesk\',Arial,sans-serif;font-weight:800;font-size:10.5pt;text-transform:uppercase;color:#111827;line-height:1.15">' + (params.nomEtude || "ÉTUDE DE MAÎTRE NOTAIRE") + '</div>';
+    html += '<div style="font-size:8.5pt;font-weight:700;color:#1e3a8a;margin-top:1px">' + (params.titreNotaire || "Maître") + ' ' + (params.nomNotaire || "") + ' — NOTAIRE</div>';
+    html += '<div style="font-size:7pt;color:#4b5563;margin-top:1px">' + (params.adresse || "Abidjan, Côte d'Ivoire") + (params.boitePostale ? " — " + params.boitePostale : "") + '</div>';
+    if (params.telephoneFixe || params.telephonePortable) html += '<div style="font-size:7pt;color:#4b5563">Tél : ' + (params.telephoneFixe || params.telephonePortable) + '</div>';
+    if (params.email) html += '<div style="font-size:7pt;color:#4b5563">Email : ' + params.email + '</div>';
     html += '</div>';
-    html += '<div style="text-align:right;font-size:8pt;color:#4b5563">';
+    html += '<div style="text-align:right;font-size:7pt;color:#4b5563">';
     if (params.numeroCC) html += '<div>N° CC : <strong>' + params.numeroCC + '</strong></div>';
     if (params.centreImpots) html += '<div>Régime / Centre : ' + params.centreImpots + '</div>';
-    html += '<div style="margin-top:4px">Abidjan, le <strong>' + dateJour + '</strong></div>';
+    html += '<div style="margin-top:2px">Abidjan, le <strong>' + dateJour + '</strong></div>';
     html += '</div>';
     html += '</div>';
 
@@ -6467,10 +6467,10 @@
     // FORMAT 1 : FICHE DE TAXE OFFICIELLE (2 BLOCS / 4 COLONNES CÔTE À CÔTE)
     // =========================================================================
     if (formatChoisi === "fiche_taxe") {
-      html += '<div style="text-align:center;margin-bottom:8px">';
-      html += '<div style="font-family:\'Space Grotesk\',Arial,sans-serif;font-weight:800;font-size:11.5pt;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1.5px solid #111;display:inline-block;padding-bottom:2px">FICHE DE TAXE PRÉVISIONNELLE NOTARIÉE</div>';
-      html += '<div style="font-size:7.5pt;color:#6b7280;margin-top:2px">Document interne de liquidation des droits, émoluments et débours (Décret 2013-279)</div>';
-      html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;font-size:8pt;margin-top:6px;background:#f9fafb;padding:5px 8px;border-radius:4px;border:1px solid #e5e7eb;text-align:left">';
+      html += '<div style="text-align:center;margin-bottom:4px">';
+      html += '<div style="font-family:\'Space Grotesk\',Arial,sans-serif;font-weight:800;font-size:9.5pt;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid #111;display:inline-block;padding-bottom:1px">FICHE DE TAXE PRÉVISIONNELLE NOTARIÉE</div>';
+      html += '<div style="font-size:6.5pt;color:#6b7280;margin-top:1px">Document interne de liquidation des droits, émoluments et débours (Décret 2013-279)</div>';
+      html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 8px;font-size:7pt;margin-top:3px;background:#f9fafb;padding:3px 6px;border-radius:3px;border:1px solid #e5e7eb;text-align:left">';
       html += '<div>DESIGNATION : <strong>' + comparantsAff + '</strong></div>';
       html += '<div>DOSSIER N° : <strong>' + (dossier.numeroDossier || "—") + '</strong></div>';
       html += '<div>NATURE DE L\'ACTE : <strong>' + labelActe(dossier.typeActeId) + '</strong></div>';
@@ -6479,18 +6479,18 @@
       html += '</div>';
 
       // Tableau 4 colonnes (2 Blocs côte à côte : Gauche = Trésor / Droite = Étude)
-      html += '<table style="width:100%;border-collapse:collapse;margin-top:6px;margin-bottom:8px;font-size:7.5pt;line-height:1.3">';
-      html += '<thead><tr style="background:#f3f4f6;font-weight:800;border-top:1.5px solid #111;border-bottom:1.5px solid #111">';
-      html += '<th style="border:1px solid #d1d5db;padding:3.5px 6px;text-align:left;width:35%">NATURE (TRÉSOR & FORMALITÉS)</th>';
-      html += '<th style="border:1px solid #d1d5db;padding:3.5px 6px;text-align:right;width:15%">MONTANT</th>';
-      html += '<th style="border:1px solid #d1d5db;padding:3.5px 6px;text-align:left;width:35%">NATURE (ÉTUDE & HONORAIRES)</th>';
-      html += '<th style="border:1px solid #d1d5db;padding:3.5px 6px;text-align:right;width:15%">MONTANT</th>';
+      html += '<table style="width:100%;border-collapse:collapse;margin-top:3px;margin-bottom:4px;font-size:6.8pt;line-height:1.15">';
+      html += '<thead><tr style="background:#f3f4f6;font-weight:800;border-top:1.2px solid #111;border-bottom:1.2px solid #111">';
+      html += '<th style="border:1px solid #d1d5db;padding:2px 4px;text-align:left;width:35%">NATURE (TRÉSOR & FORMALITÉS)</th>';
+      html += '<th style="border:1px solid #d1d5db;padding:2px 4px;text-align:right;width:15%">MONTANT</th>';
+      html += '<th style="border:1px solid #d1d5db;padding:2px 4px;text-align:left;width:35%">NATURE (ÉTUDE & HONORAIRES)</th>';
+      html += '<th style="border:1px solid #d1d5db;padding:2px 4px;text-align:right;width:15%">MONTANT</th>';
       html += '</tr></thead><tbody>';
 
       // 1. Timbres Fiscaux (Gauche) vs Rôles (Droite)
       html += '<tr style="background:#f9fafb;font-weight:700">';
-      html += '<td colspan="2" style="border:1px solid #d1d5db;padding:2.5px 6px;color:#374151">TIMBRES FISCAUX</td>';
-      html += '<td colspan="2" style="border:1px solid #d1d5db;padding:2.5px 6px;color:#1e3a8a">RÔLES</td>';
+      html += '<td colspan="2" style="border:1px solid #d1d5db;padding:1.5px 4px;color:#374151">TIMBRES FISCAUX</td>';
+      html += '<td colspan="2" style="border:1px solid #d1d5db;padding:1.5px 4px;color:#1e3a8a">RÔLES</td>';
       html += '</tr>';
 
       var timbresLignes = (f.lignesTresor || []).filter(function (t) { return t.code.indexOf("timbres_") === 0; });
@@ -6500,30 +6500,30 @@
 
       // Lignes de Timbres vs Rôles
       html += '<tr>';
-      html += '<td style="border:1px solid #e5e7eb;padding:2.5px 6px">Minute (500 F/page)</td>';
+      html += '<td style="border:1px solid #e5e7eb;padding:1.2px 4px">Minute (500 F/page)</td>';
       html += '<td style="border:1px solid #e5e7eb;text-align:right;font-weight:600">' + fmtFCFA((timbresLignes[0] && timbresLignes[0].montant) || 2000) + '</td>';
-      html += '<td style="border:1px solid #e5e7eb;padding:2.5px 6px">Minute (500 F/page)</td>';
+      html += '<td style="border:1px solid #e5e7eb;padding:1.2px 4px">Minute (500 F/page)</td>';
       html += '<td style="border:1px solid #e5e7eb;text-align:right;font-weight:600;color:#1e3a8a">' + fmtFCFA((rolesLignes[0] && rolesLignes[0].montant) || 2000) + '</td>';
       html += '</tr>';
 
       html += '<tr>';
-      html += '<td style="border:1px solid #e5e7eb;padding:2.5px 6px">Expédition (500 F/page)</td>';
+      html += '<td style="border:1px solid #e5e7eb;padding:1.2px 4px">Expédition (500 F/page)</td>';
       html += '<td style="border:1px solid #e5e7eb;text-align:right;font-weight:600">' + fmtFCFA((timbresLignes[1] && timbresLignes[1].montant) || 5000) + '</td>';
-      html += '<td style="border:1px solid #e5e7eb;padding:2.5px 6px">Expédition (500 F/page)</td>';
+      html += '<td style="border:1px solid #e5e7eb;padding:1.2px 4px">Expédition (500 F/page)</td>';
       html += '<td style="border:1px solid #e5e7eb;text-align:right;font-weight:600;color:#1e3a8a">' + fmtFCFA((rolesLignes[1] && rolesLignes[1].montant) || 7500) + '</td>';
       html += '</tr>';
 
       html += '<tr>';
-      html += '<td style="border:1px solid #e5e7eb;padding:2.5px 6px">Bordereau d\'enregistrement</td>';
+      html += '<td style="border:1px solid #e5e7eb;padding:1.2px 4px">Bordereau d\'enregistrement</td>';
       html += '<td style="border:1px solid #e5e7eb;text-align:right;font-weight:600">' + fmtFCFA((timbresLignes[2] && timbresLignes[2].montant) || 500) + '</td>';
-      html += '<td style="border:1px solid #e5e7eb;padding:2.5px 6px">Copies</td>';
+      html += '<td style="border:1px solid #e5e7eb;padding:1.2px 4px">Copies</td>';
       html += '<td style="border:1px solid #e5e7eb;text-align:right;font-weight:600;color:#1e3a8a">' + fmtFCFA((rolesLignes[2] && rolesLignes[2].montant) || 0) + '</td>';
       html += '</tr>';
 
       // 2. Enregistrement & Foncier (Gauche) vs Honoraires & Émoluments (Droite)
       html += '<tr style="background:#f9fafb;font-weight:700">';
-      html += '<td colspan="2" style="border:1px solid #d1d5db;padding:2.5px 6px;color:#374151">ENREGISTREMENT & CONSERVATION FONCIÈRE</td>';
-      html += '<td colspan="2" style="border:1px solid #d1d5db;padding:2.5px 6px;color:#1e3a8a">HONORAIRES & ÉMOLUMENTS RÉGLEMENTÉS</td>';
+      html += '<td colspan="2" style="border:1px solid #d1d5db;padding:1.5px 4px;color:#374151">ENREGISTREMENT & CONSERVATION FONCIÈRE</td>';
+      html += '<td colspan="2" style="border:1px solid #d1d5db;padding:1.5px 4px;color:#1e3a8a">HONORAIRES & ÉMOLUMENTS RÉGLEMENTÉS</td>';
       html += '</tr>';
 
       var droitEnr = (f.droitEnregistrement && f.droitEnregistrement.montant) || 0;
@@ -6531,23 +6531,23 @@
       var emoProp = (emo && emo.montantHT) || 0;
 
       html += '<tr>';
-      html += '<td style="border:1px solid #e5e7eb;padding:2.5px 6px">Droits d\'Enregistrement DGI</td>';
+      html += '<td style="border:1px solid #e5e7eb;padding:1.2px 4px">Droits d\'Enregistrement DGI</td>';
       html += '<td style="border:1px solid #e5e7eb;text-align:right;font-weight:600">' + fmtFCFA(droitEnr) + '</td>';
-      html += '<td style="border:1px solid #e5e7eb;padding:2.5px 6px">Émolument Proportionnel d\'Acte</td>';
+      html += '<td style="border:1px solid #e5e7eb;padding:1.2px 4px">Émolument Proportionnel d\'Acte</td>';
       html += '<td style="border:1px solid #e5e7eb;text-align:right;font-weight:700;color:#1e3a8a">' + fmtFCFA(emoProp) + '</td>';
       html += '</tr>';
 
       html += '<tr>';
-      html += '<td style="border:1px solid #e5e7eb;padding:2.5px 6px">Taxe Foncière (Livre Foncier : 1,2% + 3 000 F)</td>';
+      html += '<td style="border:1px solid #e5e7eb;padding:1.2px 4px">Taxe Foncière (Livre Foncier : 1,2% + 3 000 F)</td>';
       html += '<td style="border:1px solid #e5e7eb;text-align:right;font-weight:600">' + fmtFCFA(taxeFonc) + '</td>';
-      html += '<td style="border:1px solid #e5e7eb;padding:2.5px 6px">Vacations & Déplacements</td>';
+      html += '<td style="border:1px solid #e5e7eb;padding:1.2px 4px">Vacations & Déplacements</td>';
       html += '<td style="border:1px solid #e5e7eb;text-align:right;font-weight:600;color:#1e3a8a">' + fmtFCFA(f.vacations || 0) + '</td>';
       html += '</tr>';
 
       // 3. Formalités Administratives (Gauche) vs Émoluments Formalités & Divers (Droite)
       html += '<tr style="background:#f9fafb;font-weight:700">';
-      html += '<td colspan="2" style="border:1px solid #d1d5db;padding:2.5px 6px;color:#374151">FORMALITÉS & DÉBOURS TIERS</td>';
-      html += '<td colspan="2" style="border:1px solid #d1d5db;padding:2.5px 6px;color:#1e3a8a">ÉMOLUMENTS DE FORMALITÉS & DIVERS</td>';
+      html += '<td colspan="2" style="border:1px solid #d1d5db;padding:1.5px 4px;color:#374151">FORMALITÉS & DÉBOURS TIERS</td>';
+      html += '<td colspan="2" style="border:1px solid #d1d5db;padding:1.5px 4px;color:#1e3a8a">ÉMOLUMENTS DE FORMALITÉS & DIVERS</td>';
       html += '</tr>';
 
       var formGauche = (f.lignesDebours && f.lignesDebours.length) ? f.lignesDebours : [{ libelle: "Réquisition d'État", montant: 6000 }];
@@ -6566,32 +6566,32 @@
         var g = formGauche[i];
         var d = formDroite[i];
         html += '<tr>';
-        html += '<td style="border:1px solid #e5e7eb;padding:2.5px 6px">' + (g ? g.libelle : '—') + '</td>';
+        html += '<td style="border:1px solid #e5e7eb;padding:1.2px 4px">' + (g ? g.libelle : '—') + '</td>';
         html += '<td style="border:1px solid #e5e7eb;text-align:right;font-weight:600">' + (g ? fmtFCFA(g.montant) : '—') + '</td>';
-        html += '<td style="border:1px solid #e5e7eb;padding:2.5px 6px">' + (d ? d.libelle : '—') + '</td>';
+        html += '<td style="border:1px solid #e5e7eb;padding:1.2px 4px">' + (d ? d.libelle : '—') + '</td>';
         html += '<td style="border:1px solid #e5e7eb;text-align:right;font-weight:600;color:#1e3a8a">' + (d ? fmtFCFA(d.montant) : '—') + '</td>';
         html += '</tr>';
       }
 
       // Sous-totaux des deux colonnes
-      html += '<tr style="background:#f3f4f6;font-weight:800;border-top:1.5px solid #111">';
-      html += '<td style="border:1px solid #d1d5db;padding:3.5px 6px">TOTAL (TRÉSOR & DÉBOURS)</td>';
-      html += '<td style="border:1px solid #d1d5db;padding:3.5px 6px;text-align:right;color:#92400e">' + fmtFCFA(totalTresor + totalDebours) + '</td>';
-      html += '<td style="border:1px solid #d1d5db;padding:3.5px 6px">TOTAL (HONORAIRES ÉTUDE)</td>';
-      html += '<td style="border:1px solid #d1d5db;padding:3.5px 6px;text-align:right;color:#1e3a8a">' + fmtFCFA(totalCA) + '</td>';
+      html += '<tr style="background:#f3f4f6;font-weight:800;border-top:1.2px solid #111">';
+      html += '<td style="border:1px solid #d1d5db;padding:2px 4px">TOTAL (TRÉSOR & DÉBOURS)</td>';
+      html += '<td style="border:1px solid #d1d5db;padding:2px 4px;text-align:right;color:#92400e">' + fmtFCFA(totalTresor + totalDebours) + '</td>';
+      html += '<td style="border:1px solid #d1d5db;padding:2px 4px">TOTAL (HONORAIRES ÉTUDE)</td>';
+      html += '<td style="border:1px solid #d1d5db;padding:2px 4px;text-align:right;color:#1e3a8a">' + fmtFCFA(totalCA) + '</td>';
       html += '</tr>';
 
       // Total Général
-      html += '<tr style="background:#111827;color:#fff;font-weight:800;font-size:9.5pt">';
-      html += '<td colspan="2" style="border:1px solid #111827;padding:5px 8px;text-transform:uppercase">TOTAL GÉNÉRAL DE LA TAXE</td>';
-      html += '<td colspan="2" style="border:1px solid #111827;padding:5px 8px;text-align:right;font-size:10.5pt">' + fmtFCFA(totalGeneral) + '</td>';
+      html += '<tr style="background:#111827;color:#fff;font-weight:800;font-size:8.5pt">';
+      html += '<td colspan="2" style="border:1px solid #111827;padding:3px 6px;text-transform:uppercase">TOTAL GÉNÉRAL DE LA TAXE</td>';
+      html += '<td colspan="2" style="border:1px solid #111827;padding:3px 6px;text-align:right;font-size:9pt">' + fmtFCFA(totalGeneral) + '</td>';
       html += '</tr>';
       html += '</tbody></table>';
 
       // Formule d'arrêté officiel
-      html += '<div style="background:#f9fafb;border:1px solid #e5e7eb;padding:6px 10px;border-radius:4px;font-size:8pt;margin-top:6px;line-height:1.35">';
+      html += '<div style="background:#f9fafb;border:1px solid #e5e7eb;padding:3px 6px;border-radius:3px;font-size:6.8pt;margin-top:2px;line-height:1.2">';
       html += 'Sauf à parfaire ou à diminuer, veuillez arrêter la présente taxe prévisionnelle à la somme de :<br>';
-      html += '<strong style="font-size:8.5pt;color:#111827">' + enLettres + '</strong>.';
+      html += '<strong style="font-size:7.2pt;color:#111827">' + enLettres + '</strong>.';
       html += '</div>';
     }
 
@@ -6601,13 +6601,13 @@
     else if (formatChoisi === "note_frais") {
       var estTaxeValidee = f && (f.statut === "valide" || f.statut === "valide_corrige" || f._statutFiche === "valide" || f._statutFiche === "valide_corrige");
       var sousTitreBadge = estTaxeValidee 
-        ? '<span class="tag" style="background:#d1fae5;color:#065f46;font-weight:800;font-size:9.5px;padding:2px 8px;border-radius:10px;border:1px solid #6ee7b7">Taxe Validée par le Notaire — Document Officiel</span>'
-        : '<span class="tag" style="background:#fef3c7;color:#92400e;font-weight:800;font-size:9.5px;padding:2px 8px;border-radius:10px;border:1px solid #fcd34d">Note de Frais Prévisionnelle (Appel de Provision Client)</span>';
+        ? '<span class="tag" style="background:#d1fae5;color:#065f46;font-weight:800;font-size:8.5px;padding:1px 6px;border-radius:8px;border:1px solid #6ee7b7">Taxe Validée par le Notaire — Document Officiel</span>'
+        : '<span class="tag" style="background:#fef3c7;color:#92400e;font-weight:800;font-size:8.5px;padding:1px 6px;border-radius:8px;border:1px solid #fcd34d">Note de Frais Prévisionnelle (Appel de Provision Client)</span>';
 
-      html += '<div style="text-align:center;margin-bottom:8px">';
-      html += '<div style="font-family:\'Space Grotesk\',Arial,sans-serif;font-weight:800;font-size:11.5pt;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1.5px solid #111;display:inline-block;padding-bottom:2px">NOTE DE FRAIS (APPEL DE PROVISION) N° ' + (dossier.numeroDossier || "EN COURS") + '</div>';
-      html += '<div style="font-size:7.5pt;color:#6b7280;margin-top:2px">' + sousTitreBadge + '</div>';
-      html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;font-size:8pt;margin-top:6px;background:#f9fafb;padding:5px 8px;border-radius:4px;border:1px solid #e5e7eb;text-align:left">';
+      html += '<div style="text-align:center;margin-bottom:4px">';
+      html += '<div style="font-family:\'Space Grotesk\',Arial,sans-serif;font-weight:800;font-size:9.5pt;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid #111;display:inline-block;padding-bottom:1px">NOTE DE FRAIS (APPEL DE PROVISION) N° ' + (dossier.numeroDossier || "EN COURS") + '</div>';
+      html += '<div style="font-size:6.5pt;color:#6b7280;margin-top:1px">' + sousTitreBadge + '</div>';
+      html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 8px;font-size:7pt;margin-top:3px;background:#f9fafb;padding:3px 6px;border-radius:3px;border:1px solid #e5e7eb;text-align:left">';
       html += '<div>Identité du client : <strong>' + comparantsAff + '</strong></div>';
       html += '<div>Affaire : <strong>' + labelActe(dossier.typeActeId) + '</strong></div>';
       html += '<div>Numéro de dossier : <strong>' + (dossier.numeroDossier || "—") + '</strong></div>';
@@ -6615,60 +6615,60 @@
       html += '</div>';
       html += '</div>';
 
-      html += '<table style="width:100%;border-collapse:collapse;margin-top:6px;margin-bottom:8px;font-size:7.5pt;line-height:1.35">';
-      html += '<thead><tr style="background:#f3f4f6;font-weight:800;border-top:1.5px solid #111;border-bottom:1.5px solid #111">';
-      html += '<th style="border:1px solid #d1d5db;padding:4px 8px;text-align:left;width:33%">DROITS / ÉTAT (TRÉSOR)</th>';
-      html += '<th style="border:1px solid #d1d5db;padding:4px 8px;text-align:left;width:33%">DÉBOURS & FORMALITÉS TIERS</th>';
-      html += '<th style="border:1px solid #d1d5db;padding:4px 8px;text-align:left;width:34%">ÉMOLUMENTS & HONORAIRES ÉTUDE</th>';
+      html += '<table style="width:100%;border-collapse:collapse;margin-top:3px;margin-bottom:4px;font-size:6.8pt;line-height:1.2">';
+      html += '<thead><tr style="background:#f3f4f6;font-weight:800;border-top:1.2px solid #111;border-bottom:1.2px solid #111">';
+      html += '<th style="border:1px solid #d1d5db;padding:2px 4px;text-align:left;width:33%">DROITS / ÉTAT (TRÉSOR)</th>';
+      html += '<th style="border:1px solid #d1d5db;padding:2px 4px;text-align:left;width:33%">DÉBOURS & FORMALITÉS TIERS</th>';
+      html += '<th style="border:1px solid #d1d5db;padding:2px 4px;text-align:left;width:34%">ÉMOLUMENTS & HONORAIRES ÉTUDE</th>';
       html += '</tr></thead><tbody>';
 
       html += '<tr>';
       // Colonne 1 : Droits
-      html += '<td style="border:1px solid #e5e7eb;padding:6px 8px;vertical-align:top">';
+      html += '<td style="border:1px solid #e5e7eb;padding:3px 5px;vertical-align:top">';
       if (f.lignesTresor && f.lignesTresor.length) {
         f.lignesTresor.forEach(function (t) {
-          html += '<div style="display:flex;justify-content:space-between;margin-bottom:3px"><span>' + t.libelle + '</span><strong>' + fmtFCFA(t.montant) + '</strong></div>';
+          html += '<div style="display:flex;justify-content:space-between;margin-bottom:1px"><span>' + t.libelle + '</span><strong>' + fmtFCFA(t.montant) + '</strong></div>';
         });
       } else {
-        html += '<div style="display:flex;justify-content:space-between;margin-bottom:3px"><span>Droits d\'Enregistrement DGI</span><strong>' + fmtFCFA(totalTresor || 0) + '</strong></div>';
+        html += '<div style="display:flex;justify-content:space-between;margin-bottom:1px"><span>Droits d\'Enregistrement DGI</span><strong>' + fmtFCFA(totalTresor || 0) + '</strong></div>';
       }
-      html += '<div style="border-top:1px solid #d1d5db;margin-top:6px;padding-top:3px;display:flex;justify-content:space-between;font-weight:800"><span>Total Droits :</span><span>' + fmtFCFA(totalTresor) + '</span></div>';
+      html += '<div style="border-top:1px solid #d1d5db;margin-top:3px;padding-top:2px;display:flex;justify-content:space-between;font-weight:800"><span>Total Droits :</span><span>' + fmtFCFA(totalTresor) + '</span></div>';
       html += '</td>';
 
       // Colonne 2 : Débours
-      html += '<td style="border:1px solid #e5e7eb;padding:6px 8px;vertical-align:top">';
+      html += '<td style="border:1px solid #e5e7eb;padding:3px 5px;vertical-align:top">';
       if (f.lignesDebours && f.lignesDebours.length) {
         f.lignesDebours.forEach(function (deb) {
-          html += '<div style="display:flex;justify-content:space-between;margin-bottom:3px"><span>' + deb.libelle + '</span><strong>' + fmtFCFA(deb.montant) + '</strong></div>';
+          html += '<div style="display:flex;justify-content:space-between;margin-bottom:1px"><span>' + deb.libelle + '</span><strong>' + fmtFCFA(deb.montant) + '</strong></div>';
         });
       } else {
         html += '<div style="color:#9ca3af;font-style:italic">Frais réels et débours tiers</div>';
       }
-      html += '<div style="border-top:1px solid #d1d5db;margin-top:6px;padding-top:3px;display:flex;justify-content:space-between;font-weight:800"><span>Total Débours :</span><span>' + fmtFCFA(totalDebours) + '</span></div>';
+      html += '<div style="border-top:1px solid #d1d5db;margin-top:3px;padding-top:2px;display:flex;justify-content:space-between;font-weight:800"><span>Total Débours :</span><span>' + fmtFCFA(totalDebours) + '</span></div>';
       html += '</td>';
 
       // Colonne 3 : Émoluments
-      html += '<td style="border:1px solid #e5e7eb;padding:6px 8px;vertical-align:top">';
+      html += '<td style="border:1px solid #e5e7eb;padding:3px 5px;vertical-align:top">';
       if (emo.lignesDetaillees && emo.lignesDetaillees.length) {
         emo.lignesDetaillees.filter(function (l) { return l.actif; }).forEach(function (l) {
-          html += '<div style="display:flex;justify-content:space-between;margin-bottom:3px"><span>' + l.libelle + '</span><strong style="color:#1e3a8a">' + fmtFCFA(l.montant) + '</strong></div>';
+          html += '<div style="display:flex;justify-content:space-between;margin-bottom:1px"><span>' + l.libelle + '</span><strong style="color:#1e3a8a">' + fmtFCFA(l.montant) + '</strong></div>';
         });
       } else {
-        html += '<div style="display:flex;justify-content:space-between;margin-bottom:3px"><span>Émoluments Réglementés</span><strong style="color:#1e3a8a">' + fmtFCFA(totalCA || 0) + '</strong></div>';
+        html += '<div style="display:flex;justify-content:space-between;margin-bottom:1px"><span>Émoluments Réglementés</span><strong style="color:#1e3a8a">' + fmtFCFA(totalCA || 0) + '</strong></div>';
       }
-      html += '<div style="border-top:1px solid #d1d5db;margin-top:6px;padding-top:3px;display:flex;justify-content:space-between;font-weight:800;color:#1e3a8a"><span>Total Émoluments :</span><span>' + fmtFCFA(totalCA) + '</span></div>';
+      html += '<div style="border-top:1px solid #d1d5db;margin-top:3px;padding-top:2px;display:flex;justify-content:space-between;font-weight:800;color:#1e3a8a"><span>Total Émoluments :</span><span>' + fmtFCFA(totalCA) + '</span></div>';
       html += '</td>';
       html += '</tr>';
 
-      html += '<tr style="background:#111827;color:#fff;font-weight:800;font-size:9.5pt">';
-      html += '<td colspan="2" style="border:1px solid #111827;padding:5px 8px;text-transform:uppercase">TOTAL GÉNÉRAL DE LA NOTE DE FRAIS</td>';
-      html += '<td style="border:1px solid #111827;padding:5px 8px;text-align:right;font-size:10.5pt">' + fmtFCFA(totalGeneral) + '</td>';
+      html += '<tr style="background:#111827;color:#fff;font-weight:800;font-size:8.5pt">';
+      html += '<td colspan="2" style="border:1px solid #111827;padding:3px 6px;text-transform:uppercase">TOTAL GÉNÉRAL DE LA NOTE DE FRAIS</td>';
+      html += '<td style="border:1px solid #111827;padding:3px 6px;text-align:right;font-size:9pt">' + fmtFCFA(totalGeneral) + '</td>';
       html += '</tr>';
       html += '</tbody></table>';
 
-      html += '<div style="background:#f9fafb;border:1px solid #e5e7eb;padding:6px 10px;border-radius:4px;font-size:8pt;margin-top:6px;line-height:1.35">';
+      html += '<div style="background:#f9fafb;border:1px solid #e5e7eb;padding:3px 6px;border-radius:3px;font-size:6.8pt;margin-top:2px;line-height:1.2">';
       html += 'Arrêtée la présente note de frais à la somme de :<br>';
-      html += '<strong style="font-size:8.5pt;color:#111827">' + enLettres + '</strong>.';
+      html += '<strong style="font-size:7.2pt;color:#111827">' + enLettres + '</strong>.';
       html += '</div>';
     }
 
@@ -6678,13 +6678,13 @@
     else if (formatChoisi === "facture") {
       var estTaxeValideeF = f && (f.statut === "valide" || f.statut === "valide_corrige" || f._statutFiche === "valide" || f._statutFiche === "valide_corrige");
       var badgeFacture = estTaxeValideeF
-        ? '<span class="tag" style="background:#d1fae5;color:#065f46;font-weight:800;font-size:9.5px;padding:2px 8px;border-radius:10px;border:1px solid #6ee7b7">Facture Fiscale Définitive TTC</span>'
-        : '<span class="tag" style="background:#cffafe;color:#155e75;font-weight:800;font-size:9.5px;padding:2px 8px;border-radius:10px;border:1px solid #67e8f9">Facture Proforma TTC (Projet Fiscal)</span>';
+        ? '<span class="tag" style="background:#d1fae5;color:#065f46;font-weight:800;font-size:8.5px;padding:1px 6px;border-radius:8px;border:1px solid #6ee7b7">Facture Fiscale Définitive TTC</span>'
+        : '<span class="tag" style="background:#cffafe;color:#155e75;font-weight:800;font-size:8.5px;padding:1px 6px;border-radius:8px;border:1px solid #67e8f9">Facture Proforma TTC (Projet Fiscal)</span>';
 
-      html += '<div style="text-align:center;margin-bottom:8px">';
-      html += '<div style="font-family:\'Space Grotesk\',Arial,sans-serif;font-weight:800;font-size:11.5pt;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1.5px solid #111;display:inline-block;padding-bottom:2px">FACTURE NORMALISÉE NOTARIÉE</div>';
-      html += '<div style="font-size:7.5pt;color:#6b7280;margin-top:2px">' + badgeFacture + '</div>';
-      html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;font-size:8pt;margin-top:6px;background:#f9fafb;padding:5px 8px;border-radius:4px;border:1px solid #e5e7eb;text-align:left">';
+      html += '<div style="text-align:center;margin-bottom:4px">';
+      html += '<div style="font-family:\'Space Grotesk\',Arial,sans-serif;font-weight:800;font-size:9.5pt;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid #111;display:inline-block;padding-bottom:1px">FACTURE NORMALISÉE NOTARIÉE</div>';
+      html += '<div style="font-size:6.5pt;color:#6b7280;margin-top:1px">' + badgeFacture + '</div>';
+      html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 8px;font-size:7pt;margin-top:3px;background:#f9fafb;padding:3px 6px;border-radius:3px;border:1px solid #e5e7eb;text-align:left">';
       html += '<div>Client : <strong>' + comparantsAff + '</strong></div>';
       html += '<div>Acte : <strong>' + labelActe(dossier.typeActeId) + '</strong></div>';
       html += '<div>Dossier N° : <strong>' + (dossier.numeroDossier || "—") + '</strong></div>';
@@ -6692,50 +6692,50 @@
       html += '</div>';
       html += '</div>';
 
-      html += '<table style="width:100%;border-collapse:collapse;margin-top:6px;margin-bottom:8px;font-size:7.5pt;line-height:1.35">';
-      html += '<thead><tr style="background:#f3f4f6;font-weight:800;border-top:1.5px solid #111;border-bottom:1.5px solid #111">';
-      html += '<th style="border:1px solid #d1d5db;padding:4px 8px;text-align:left;width:40%">POSTES</th>';
-      html += '<th style="border:1px solid #d1d5db;padding:4px 8px;text-align:right;width:20%">DROITS / ÉTAT</th>';
-      html += '<th style="border:1px solid #d1d5db;padding:4px 8px;text-align:right;width:20%">FRAIS DÉBOURS</th>';
-      html += '<th style="border:1px solid #d1d5db;padding:4px 8px;text-align:right;width:20%">HONORAIRES HT</th>';
+      html += '<table style="width:100%;border-collapse:collapse;margin-top:3px;margin-bottom:4px;font-size:6.8pt;line-height:1.2">';
+      html += '<thead><tr style="background:#f3f4f6;font-weight:800;border-top:1.2px solid #111;border-bottom:1.2px solid #111">';
+      html += '<th style="border:1px solid #d1d5db;padding:2px 4px;text-align:left;width:40%">POSTES</th>';
+      html += '<th style="border:1px solid #d1d5db;padding:2px 4px;text-align:right;width:20%">DROITS / ÉTAT</th>';
+      html += '<th style="border:1px solid #d1d5db;padding:2px 4px;text-align:right;width:20%">FRAIS DÉBOURS</th>';
+      html += '<th style="border:1px solid #d1d5db;padding:2px 4px;text-align:right;width:20%">HONORAIRES HT</th>';
       html += '</tr></thead><tbody>';
 
-      html += '<tr><td style="border:1px solid #e5e7eb;padding:3px 8px">Enregistrement DGI & Timbres</td><td style="border:1px solid #e5e7eb;text-align:right;font-weight:600">' + fmtFCFA(totalTresor) + '</td><td style="border:1px solid #e5e7eb;text-align:right;color:#9ca3af">—</td><td style="border:1px solid #e5e7eb;text-align:right;color:#9ca3af">—</td></tr>';
-      html += '<tr><td style="border:1px solid #e5e7eb;padding:3px 8px">Frais Débours & Géomètre</td><td style="border:1px solid #e5e7eb;text-align:right;color:#9ca3af">—</td><td style="border:1px solid #e5e7eb;text-align:right;font-weight:600">' + fmtFCFA(totalDebours) + '</td><td style="border:1px solid #e5e7eb;text-align:right;color:#9ca3af">—</td></tr>';
-      html += '<tr><td style="border:1px solid #e5e7eb;padding:3px 8px">Émoluments & Honoraires Notaire</td><td style="border:1px solid #e5e7eb;text-align:right;color:#9ca3af">—</td><td style="border:1px solid #e5e7eb;text-align:right;color:#9ca3af">—</td><td style="border:1px solid #e5e7eb;text-align:right;font-weight:700;color:#1e3a8a">' + fmtFCFA(totalCA) + '</td></tr>';
-      html += '<tr style="background:#f9fafb"><td style="border:1px solid #e5e7eb;padding:3px 8px">TVA légale (18 % sur Honoraires)</td><td style="border:1px solid #e5e7eb;text-align:right;color:#9ca3af">—</td><td style="border:1px solid #e5e7eb;text-align:right;color:#9ca3af">—</td><td style="border:1px solid #e5e7eb;text-align:right;font-weight:600">' + fmtFCFA(f.tva || (totalCA * 0.18)) + '</td></tr>';
+      html += '<tr><td style="border:1px solid #e5e7eb;padding:1.5px 4px">Enregistrement DGI & Timbres</td><td style="border:1px solid #e5e7eb;text-align:right;font-weight:600">' + fmtFCFA(totalTresor) + '</td><td style="border:1px solid #e5e7eb;text-align:right;color:#9ca3af">—</td><td style="border:1px solid #e5e7eb;text-align:right;color:#9ca3af">—</td></tr>';
+      html += '<tr><td style="border:1px solid #e5e7eb;padding:1.5px 4px">Frais Débours & Géomètre</td><td style="border:1px solid #e5e7eb;text-align:right;color:#9ca3af">—</td><td style="border:1px solid #e5e7eb;text-align:right;font-weight:600">' + fmtFCFA(totalDebours) + '</td><td style="border:1px solid #e5e7eb;text-align:right;color:#9ca3af">—</td></tr>';
+      html += '<tr><td style="border:1px solid #e5e7eb;padding:1.5px 4px">Émoluments & Honoraires Notaire</td><td style="border:1px solid #e5e7eb;text-align:right;color:#9ca3af">—</td><td style="border:1px solid #e5e7eb;text-align:right;color:#9ca3af">—</td><td style="border:1px solid #e5e7eb;text-align:right;font-weight:700;color:#1e3a8a">' + fmtFCFA(totalCA) + '</td></tr>';
+      html += '<tr style="background:#f9fafb"><td style="border:1px solid #e5e7eb;padding:1.5px 4px">TVA légale (18 % sur Honoraires)</td><td style="border:1px solid #e5e7eb;text-align:right;color:#9ca3af">—</td><td style="border:1px solid #e5e7eb;text-align:right;color:#9ca3af">—</td><td style="border:1px solid #e5e7eb;text-align:right;font-weight:600">' + fmtFCFA(f.tva || (totalCA * 0.18)) + '</td></tr>';
 
       var totalFactureTTC = totalTresor + totalDebours + totalCA + (f.tva || (totalCA * 0.18));
       var totalFactureEnLettres = nombreEnLettresFCFA(totalFactureTTC);
 
-      html += '<tr style="background:#111827;color:#fff;font-weight:800;font-size:9.5pt">';
-      html += '<td colspan="2" style="border:1px solid #111827;padding:5px 8px;text-transform:uppercase">TOTAL GÉNÉRAL FACTURE TTC</td>';
-      html += '<td colspan="2" style="border:1px solid #111827;padding:5px 8px;text-align:right;font-size:10.5pt">' + fmtFCFA(totalFactureTTC) + '</td>';
+      html += '<tr style="background:#111827;color:#fff;font-weight:800;font-size:8.5pt">';
+      html += '<td colspan="2" style="border:1px solid #111827;padding:3px 6px;text-transform:uppercase">TOTAL GÉNÉRAL FACTURE TTC</td>';
+      html += '<td colspan="2" style="border:1px solid #111827;padding:3px 6px;text-align:right;font-size:9pt">' + fmtFCFA(totalFactureTTC) + '</td>';
       html += '</tr>';
       html += '</tbody></table>';
 
-      html += '<div style="background:#f9fafb;border:1px solid #e5e7eb;padding:6px 10px;border-radius:4px;font-size:8pt;margin-top:6px;line-height:1.35">';
+      html += '<div style="background:#f9fafb;border:1px solid #e5e7eb;padding:3px 6px;border-radius:3px;font-size:6.8pt;margin-top:2px;line-height:1.2">';
       html += 'Arrêtée la présente facture à la somme de :<br>';
-      html += '<strong style="font-size:8.5pt;color:#111827">' + totalFactureEnLettres + '</strong>.';
+      html += '<strong style="font-size:7.2pt;color:#111827">' + totalFactureEnLettres + '</strong>.';
       html += '</div>';
     }
 
-    html += '</div>'; // Fin de la section haute et corps de document flex:1
+    html += '</div>'; // Fin du corps de document
 
-    // Section Basse : Mentions légales & Signature (poussée harmonieusement au bas de la feuille)
-    html += '<div style="margin-top:auto;padding-top:10px;border-top:1.5px solid #111827;page-break-inside:avoid">';
-    html += '<div style="font-size:7.5pt;color:#4b5563;line-height:1.35">';
+    // Section Basse : Mentions légales & Signature (compacte et attachée)
+    html += '<div style="margin-top:4px;padding-top:3px;border-top:1px solid #111827;page-break-inside:avoid">';
+    html += '<div style="font-size:6.2pt;color:#4b5563;line-height:1.15">';
     html += 'NB : Conformément à la réglementation notariale, la présente taxe prévisionnelle doit être intégralement réglée avant la signature de l\'acte.<br>';
     html += 'En cas de règlement par chèque ou virement, libeller au nom de : <strong>' + (params.nomEtude || "ÉTUDE NOTARIALE") + '</strong>.';
     html += '</div>';
 
     // Bloc signature
-    html += '<div style="margin-top:14px;display:flex;justify-content:space-between;align-items:flex-start;page-break-inside:avoid">';
-    html += '<div style="font-size:8.5pt;color:#4b5563">Reçu pour acquit / Bon pour accord :</div>';
+    html += '<div style="margin-top:4px;display:flex;justify-content:space-between;align-items:flex-start;page-break-inside:avoid">';
+    html += '<div style="font-size:6.8pt;color:#4b5563">Reçu pour acquit / Bon pour accord :</div>';
     html += '<div style="text-align:right">';
-    html += '<div style="font-size:9.5pt;font-weight:700;color:#111827">' + (params.titreNotaire || "Maître") + ' ' + (params.nomNotaire || "") + '</div>';
-    html += '<div style="font-size:8pt;color:#6b7280">Notaire Titulaire</div>';
-    html += '<div style="margin-top:28px;font-size:8pt;color:#9ca3af;font-style:italic">[ Sceau & Signature ]</div>';
+    html += '<div style="font-size:7.8pt;font-weight:700;color:#111827">' + (params.titreNotaire || "Maître") + ' ' + (params.nomNotaire || "") + '</div>';
+    html += '<div style="font-size:6.8pt;color:#6b7280">Notaire Titulaire</div>';
+    html += '<div style="margin-top:6px;font-size:6.5pt;color:#9ca3af;font-style:italic">[ Sceau & Signature ]</div>';
     html += '</div>';
     html += '</div>';
     html += '</div>'; // Fin de la section basse

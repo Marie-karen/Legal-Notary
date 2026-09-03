@@ -789,19 +789,20 @@ select.input { -webkit-appearance: none; appearance: none; }
 /* Mise en page d'impression officielle (@media print)               */
 @media print {
   @page {
-    margin: 6mm 8mm;
+    margin: 4mm 6mm;
     size: A4 portrait;
   }
   body, html {
     background: #ffffff !important;
     color: #111827 !important;
-    font-size: 8pt !important;
+    font-size: 7.5pt !important;
     font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
     margin: 0 !important;
     padding: 0 !important;
     width: 100% !important;
-    height: 100% !important;
-    overflow: visible !important;
+    height: auto !important;
+    max-height: 100% !important;
+    overflow: hidden !important;
   }
   #app,
   .barre-laterale,
@@ -824,13 +825,15 @@ select.input { -webkit-appearance: none; appearance: none; }
     display: block !important;
     position: relative !important;
     width: 100% !important;
-    height: 100% !important;
-    margin: 0 auto !important;
+    height: auto !important;
+    max-height: 100% !important;
+    margin: 0 !important;
     padding: 0 !important;
     background: #fff !important;
     color: #111 !important;
     page-break-after: avoid !important;
     page-break-inside: avoid !important;
+    break-inside: avoid !important;
   }
   .print-header {
     border-bottom: 2px solid #111827;
@@ -1131,14 +1134,15 @@ select.input { -webkit-appearance: none; appearance: none; }
 
 @media print {
   @page {
-    margin: 8mm 10mm;
+    margin: 4mm 6mm;
     size: A4 portrait;
   }
   .document-a4-notarie {
     width: 100% !important;
     max-width: 100% !important;
-    height: 278mm !important;
-    min-height: 278mm !important;
+    height: auto !important;
+    min-height: auto !important;
+    max-height: 100% !important;
     box-shadow: none !important;
     border: none !important;
     border-radius: 0 !important;
@@ -1147,10 +1151,10 @@ select.input { -webkit-appearance: none; appearance: none; }
     background: #ffffff !important;
     display: flex !important;
     flex-direction: column !important;
-    justify-content: space-between !important;
     page-break-after: avoid !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
+    overflow: hidden !important;
   }
 }
 
