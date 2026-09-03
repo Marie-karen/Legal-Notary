@@ -6617,10 +6617,10 @@
         var g = formGauche[i];
         var d = formDroite[i];
         html += '<tr>';
-        html += '<td style="border:1px solid #d1d5db;padding:' + tableCellPadding + '">' + (g ? g.libelle : '—') + '</td>';
-        html += '<td style="border:1px solid #d1d5db;text-align:right;font-weight:600;white-space:nowrap">' + (g ? fmtFCFA(g.montant) : '—') + '</td>';
-        html += '<td style="border:1px solid #d1d5db;padding:' + tableCellPadding + '">' + (d ? d.libelle : '—') + '</td>';
-        html += '<td style="border:1px solid #d1d5db;text-align:right;font-weight:600;color:#1e3a8a;white-space:nowrap">' + (d ? fmtFCFA(d.montant) : '—') + '</td>';
+        html += '<td style="border:1px solid #d1d5db;padding:' + tableCellPadding + '">' + (g ? g.libelle : '') + '</td>';
+        html += '<td style="border:1px solid #d1d5db;text-align:right;font-weight:600;white-space:nowrap">' + (g ? fmtFCFA(g.montant) : '') + '</td>';
+        html += '<td style="border:1px solid #d1d5db;padding:' + tableCellPadding + '">' + (d ? d.libelle : '') + '</td>';
+        html += '<td style="border:1px solid #d1d5db;text-align:right;font-weight:600;color:#1e3a8a;white-space:nowrap">' + (d ? fmtFCFA(d.montant) : '') + '</td>';
         html += '</tr>';
       }
 
@@ -6674,11 +6674,28 @@
       html += '<th colspan="2" style="border:1px solid #9ca3af;padding:' + tableCellPadding + ';text-align:center;width:33.34%;font-size:' + tableHeaderFontSize + '">ÉMOLUMENTS & HONORAIRES ÉTUDE</th>';
       html += '</tr></thead><tbody>';
 
-      var tresorList = (f.lignesTresor && f.lignesTresor.length) ? f.lignesTresor : [{ libelle: "Droits d'Enregistrement DGI", montant: totalTresor }];
-      var deboursList = (f.lignesDebours && f.lignesDebours.length) ? f.lignesDebours : [{ libelle: "Frais réels & débours tiers", montant: totalDebours }];
-      var emoList = emoLignes.length ? emoLignes : [{ libelle: "Émoluments Réglementés", montant: totalCA }];
+      var tresorList = [];
+      if (f.lignesTresor && f.lignesTresor.length) {
+        tresorList = f.lignesTresor;
+      } else if (totalTresor > 0) {
+        tresorList = [{ libelle: "Droits d'Enregistrement DGI", montant: totalTresor }];
+      }
 
-      var maxLignesNote = Math.max(tresorList.length, deboursList.length, emoList.length);
+      var deboursList = [];
+      if (f.lignesDebours && f.lignesDebours.length) {
+        deboursList = f.lignesDebours;
+      } else if (totalDebours > 0) {
+        deboursList = [{ libelle: "Frais réels & débours tiers", montant: totalDebours }];
+      }
+
+      var emoList = [];
+      if (emoLignes && emoLignes.length) {
+        emoList = emoLignes;
+      } else if (totalCA > 0) {
+        emoList = [{ libelle: "Émoluments Réglementés", montant: totalCA }];
+      }
+
+      var maxLignesNote = Math.max(tresorList.length, deboursList.length, emoList.length, 1);
       for (var n = 0; n < maxLignesNote; n++) {
         var tItem = tresorList[n];
         var dItem = deboursList[n];
@@ -6686,16 +6703,16 @@
 
         html += '<tr>';
         // Rubrique 1 : Droits (Désignation | Montant)
-        html += '<td style="border:1px solid #d1d5db;padding:' + tableCellPadding + ';width:20%">' + (tItem ? tItem.libelle : '—') + '</td>';
-        html += '<td style="border:1px solid #d1d5db;border-right:1.5px solid #9ca3af;padding:' + tableCellPadding + ';text-align:right;font-weight:600;width:13.33%;white-space:nowrap">' + (tItem ? fmtFCFA(tItem.montant) : '—') + '</td>';
+        html += '<td style="border:1px solid #d1d5db;padding:' + tableCellPadding + ';width:20%">' + (tItem ? tItem.libelle : '') + '</td>';
+        html += '<td style="border:1px solid #d1d5db;border-right:1.5px solid #9ca3af;padding:' + tableCellPadding + ';text-align:right;font-weight:600;width:13.33%;white-space:nowrap">' + (tItem ? fmtFCFA(tItem.montant) : '') + '</td>';
 
         // Rubrique 2 : Débours (Désignation | Montant)
-        html += '<td style="border:1px solid #d1d5db;padding:' + tableCellPadding + ';width:20%">' + (dItem ? dItem.libelle : '—') + '</td>';
-        html += '<td style="border:1px solid #d1d5db;border-right:1.5px solid #9ca3af;padding:' + tableCellPadding + ';text-align:right;font-weight:600;width:13.33%;white-space:nowrap">' + (dItem ? fmtFCFA(dItem.montant) : '—') + '</td>';
+        html += '<td style="border:1px solid #d1d5db;padding:' + tableCellPadding + ';width:20%">' + (dItem ? dItem.libelle : '') + '</td>';
+        html += '<td style="border:1px solid #d1d5db;border-right:1.5px solid #9ca3af;padding:' + tableCellPadding + ';text-align:right;font-weight:600;width:13.33%;white-space:nowrap">' + (dItem ? fmtFCFA(dItem.montant) : '') + '</td>';
 
         // Rubrique 3 : Émoluments (Désignation | Montant)
-        html += '<td style="border:1px solid #d1d5db;padding:' + tableCellPadding + ';width:20%">' + (eItem ? eItem.libelle : '—') + '</td>';
-        html += '<td style="border:1px solid #d1d5db;padding:' + tableCellPadding + ';text-align:right;font-weight:700;color:#1e3a8a;width:13.34%;white-space:nowrap">' + (eItem ? fmtFCFA(eItem.montant) : '—') + '</td>';
+        html += '<td style="border:1px solid #d1d5db;padding:' + tableCellPadding + ';width:20%">' + (eItem ? eItem.libelle : '') + '</td>';
+        html += '<td style="border:1px solid #d1d5db;padding:' + tableCellPadding + ';text-align:right;font-weight:700;color:#1e3a8a;width:13.34%;white-space:nowrap">' + (eItem ? fmtFCFA(eItem.montant) : '') + '</td>';
         html += '</tr>';
       }
 
