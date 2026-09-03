@@ -717,7 +717,7 @@
       { nav: "clients", label: "👥 Clients & KYC" },
       { nav: "actes", label: "📜 Actes & Référentiel" },
       { nav: "emoluments", label: "⚖️ Barèmes d'Émoluments" },
-      { nav: "comptabilite", label: "💰 Comptabilité & Fiscale" },
+      { nav: "comptabilite", label: "💰 Facturation" },
       { nav: "archives", label: "🏛️ Minutier & Archives" },
       { nav: "equipe", label: "👔 Équipe & Salaires" },
       { nav: "evolution", label: "📈 Performance globale" },
@@ -751,7 +751,7 @@
     comptable_taxateur: [
       { nav: "dashboard", label: "📊 Tableau de bord Financier", vueParDefaut: true },
       { nav: "validations", label: "📂 Transmis au Notaire" },
-      { nav: "comptabilite", label: "💰 Fiches de Taxe & Calculs" },
+      { nav: "comptabilite", label: "💰 Facturation" },
       { nav: "emoluments", label: "⚖️ Barèmes d'Émoluments" },
       { nav: "dossiers", label: "📁 Dossiers (Suivi Financier)" },
       { nav: "evolution", label: "📈 Mon évolution" },
@@ -4359,7 +4359,6 @@
       
       html += '<div style="display:flex;gap:var(--space-2);align-items:center">';
       html += '<button type="button" class="btn btn-secondary" id="btn-exporter-baremes" style="font-size:13px;padding:8px 14px;font-weight:600">Exporter le référentiel (JSON)</button>';
-      html += '<button type="button" class="btn btn-secondary" id="btn-emoluments-ouvrir-taxe" style="font-size:13px;padding:8px 14px;font-weight:600">Établir une fiche de taxe</button>';
       html += '<button type="button" class="btn btn-primary" id="btn-creer-nouveau-bareme" style="font-size:13px;padding:8px 16px;font-weight:700">+ Nouveau Barème d\'Émoluments</button>';
       html += '</div>';
       html += '</div></div>';
@@ -4369,36 +4368,9 @@
         { label: "Barèmes Actifs", valeur: String(baremes.length), indice: "accent", icon: "", sub: "Dégressifs par tranches" },
         { label: "Types d'Actes Rattachés", valeur: String(tousLesActes.filter(function (a) { return a.baremeEmolumentsId; }).length) + " / " + tousLesActes.length, indice: "", icon: "", sub: "Au catalogue de l'étude" },
         { label: "Référence Légale", valeur: "Décret 2013-279", indice: "", icon: "", sub: "Barème officiel notariat CI" },
-        { label: "Rôles Autorisés", valeur: "Notaire · 1er Clerc · Compta", indice: "accent", icon: "", sub: "Paramétrage & facturation" },
+        { label: "Rôles Autorisés", valeur: "Notaire · 1er Clerc · Compta", indice: "accent", icon: "", sub: "Paramétrage & barèmes" },
       ];
       html += renderKpisGrid(kpis);
-
-      // Bannière explicative du Cycle des 3 Documents Financiers
-      html += '<div class="card" style="background:var(--color-surface);border:1.5px solid var(--color-border);padding:14px 18px;margin-top:var(--space-4);box-shadow:var(--shadow-sm)">';
-      html += '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:var(--space-2);margin-bottom:10px">';
-      html += '<div style="font-size:13px;font-weight:700;text-transform:uppercase;color:var(--color-accent);letter-spacing:0.5px">📑 Le Cycle Financier Notarial en 3 Documents Officiels</div>';
-      html += '<button type="button" class="btn btn-secondary btn-emoluments-ouvrir-taxe-direct" style="font-size:12px;padding:4px 12px;font-weight:700">+ Établir une Fiche de Taxe</button>';
-      html += '</div>';
-
-      html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:var(--space-3)">';
-      
-      html += '<div style="background:rgba(99,102,241,0.06);border:1px solid rgba(99,102,241,0.25);border-radius:6px;padding:10px 12px">';
-      html += '<div style="font-size:11.5px;font-weight:800;color:var(--color-accent)">1️⃣ FICHE DE TAXE INTERNE</div>';
-      html += '<div style="font-size:11px;color:var(--color-text);margin-top:3px">Document technique en <strong>4 colonnes</strong> (Trésor, Émols, Débours) pour le Notaire et le Comptable taxateur.</div>';
-      html += '</div>';
-
-      html += '<div style="background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.25);border-radius:6px;padding:10px 12px">';
-      html += '<div style="font-size:11.5px;font-weight:800;color:var(--color-warning)">2️⃣ NOTE DE FRAIS CLIENT</div>';
-      html += '<div style="font-size:11px;color:var(--color-text);margin-top:3px">Appel de <strong>provision pour frais</strong> remis au client avant la signature de l\'acte authentique.</div>';
-      html += '</div>';
-
-      html += '<div style="background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.25);border-radius:6px;padding:10px 12px">';
-      html += '<div style="font-size:11.5px;font-weight:800;color:#10b981">3️⃣ FACTURE NORMALISÉE</div>';
-      html += '<div style="font-size:11px;color:var(--color-text);margin-top:3px">Facture fiscale définitive remise avec <strong>TVA 18 %</strong> après liquidation et réalisation des formalités.</div>';
-      html += '</div>';
-
-      html += '</div>';
-      html += '</div>';
 
       // Barre de recherche
       html += '<div class="dashboard-panel" style="margin-top:var(--space-4)">';
@@ -4555,19 +4527,6 @@
           modalCreerModifierBareme(null, tousLesActes);
         });
       }
-
-      // Bouton Ouvrir Taxe
-      var btnTaxe = document.getElementById("btn-emoluments-ouvrir-taxe");
-      if (btnTaxe) {
-        btnTaxe.addEventListener("click", function () {
-          modalCreerFicheTaxe();
-        });
-      }
-      c.querySelectorAll(".btn-emoluments-ouvrir-taxe-direct").forEach(function (btn) {
-        btn.addEventListener("click", function () {
-          modalCreerFicheTaxe();
-        });
-      });
 
       // Boutons Modifier
       c.querySelectorAll(".btn-modifier-bareme").forEach(function (btn) {
@@ -4888,7 +4847,7 @@
       });
 
       var synthese = calculerSyntheseEtude(cache.dossiers);
-      var estNotaire = cache.utilisateur && (cache.utilisateur.role === "notaire" || cache.utilisateur.role === "premier_clerc" || cache.utilisateur.role === "superadmin");
+      var estNotaire = cache.utilisateur && (cache.utilisateur.role === "notaire" || cache.utilisateur.role === "superadmin");
 
       var kpis = [
         { label: "Honoraires & Émoluments HT", valeur: fmtFCFA(synthese.totalEmolumentsHT), indice: "", icon: "", sub: "Décret N° 2013-279" },
@@ -4899,14 +4858,45 @@
 
       var html = '<div style="position:sticky;top:calc(-1 * var(--space-6));background:var(--color-bg);z-index:2;padding-top:var(--space-1);margin-bottom:var(--space-4)">';
       html += '<div style="display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);flex-wrap:wrap">';
-      html += '<div><h1 style="margin:0">Fiches de Taxe & Facturation Notariale</h1>';
-      html += '<p style="opacity:.65;font-size:14px;margin:2px 0 0">Workflow de validation (Comptable ↔ Notaire), Décret 2013-279, droits DGI, TVA 18%, débours et matrices Excel d\'étude.</p></div>';
-      html += '<div style="display:flex;gap:8px;align-items:center">';
-      html += '<button type="button" class="btn btn-secondary" id="btn-gerer-modeles-excel" style="font-size:13px;padding:8px 14px;font-weight:600">📂 Modèles Excel d\'Étude</button>';
-      html += '<button type="button" class="btn btn-primary" id="btn-nouvelle-fiche-taxe" style="font-size:13px;padding:8px 16px;font-weight:700;display:flex;align-items:center;gap:6px">+ Établir une Fiche de Taxe</button>';
+      html += '<div><h1 style="margin:0">Facturation & Liquidation Notariale</h1>';
+      html += '<p style="opacity:.65;font-size:14px;margin:2px 0 0">Établissement des fiches de taxe (internes), notes de frais (provisions client) et factures fiscales TTC (Décret 2013-279).</p></div>';
+      html += '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">';
+      html += '<button type="button" class="btn btn-secondary" id="btn-gerer-modeles-excel" style="font-size:12.5px;padding:7px 12px;font-weight:600">📂 Modèles Excel (.xlsx)</button>';
+      html += '<button type="button" class="btn btn-secondary" id="btn-creer-fiche-taxe-top" style="font-size:12.5px;padding:7px 12px;font-weight:700;background:rgba(217,119,6,0.12);color:#d97706;border-color:rgba(217,119,6,0.35)">🖨️ + Établir une Fiche de Taxe</button>';
+      html += '<button type="button" class="btn btn-secondary" id="btn-creer-note-frais-top" style="font-size:12.5px;padding:7px 12px;font-weight:700;background:rgba(5,150,105,0.12);color:#059669;border-color:rgba(5,150,105,0.35)">📄 + Établir une Note de Frais</button>';
+      html += '<button type="button" class="btn btn-primary" id="btn-creer-facture-top" style="font-size:12.5px;padding:7px 14px;font-weight:700;background:#0891b2;border-color:#0891b2">🧾 + Établir une Facture</button>';
       html += '</div></div></div>';
 
       html += renderKpisGrid(kpis);
+
+      // 3 Cartes d'action prioritaires de Facturation
+      html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:var(--space-3);margin:var(--space-4) 0">';
+      
+      html += '<div class="card" style="background:var(--color-surface);border:1.5px solid rgba(217,119,6,0.35);padding:14px;border-radius:var(--radius);display:flex;flex-direction:column;justify-content:space-between;box-shadow:var(--shadow-sm)">';
+      html += '<div>';
+      html += '<div style="font-size:13px;font-weight:800;color:#d97706;display:flex;align-items:center;gap:6px">🖨️ 1. FICHE DE TAXE (INTERNE)</div>';
+      html += '<p style="font-size:12px;color:var(--color-text-dim);margin:6px 0 12px">Calcul technique en 4 colonnes (Trésor, Émoluments, Débours) pour liquidation déontologique et visa de Maître.</p>';
+      html += '</div>';
+      html += '<button type="button" class="btn btn-secondary btn-creer-fiche-taxe-carte" style="background:rgba(217,119,6,0.1);color:#d97706;border-color:rgba(217,119,6,0.35);font-weight:700;font-size:12.5px;padding:8px">🖨️ Établir une Fiche de Taxe →</button>';
+      html += '</div>';
+
+      html += '<div class="card" style="background:var(--color-surface);border:1.5px solid rgba(5,150,105,0.35);padding:14px;border-radius:var(--radius);display:flex;flex-direction:column;justify-content:space-between;box-shadow:var(--shadow-sm)">';
+      html += '<div>';
+      html += '<div style="font-size:13px;font-weight:800;color:#059669;display:flex;align-items:center;gap:6px">📄 2. NOTE DE FRAIS (CLIENT)</div>';
+      html += '<p style="font-size:12px;color:var(--color-text-dim);margin:6px 0 12px">Appel de provision pour frais client en 3 colonnes réglementaires (Droits, Débours, Émoluments) remis avant signature.</p>';
+      html += '</div>';
+      html += '<button type="button" class="btn btn-secondary btn-creer-note-frais-carte" style="background:rgba(5,150,105,0.1);color:#059669;border-color:rgba(5,150,105,0.35);font-weight:700;font-size:12.5px;padding:8px">📄 Établir une Note de Frais →</button>';
+      html += '</div>';
+
+      html += '<div class="card" style="background:var(--color-surface);border:1.5px solid rgba(8,145,178,0.35);padding:14px;border-radius:var(--radius);display:flex;flex-direction:column;justify-content:space-between;box-shadow:var(--shadow-sm)">';
+      html += '<div>';
+      html += '<div style="font-size:13px;font-weight:800;color:#0891b2;display:flex;align-items:center;gap:6px">🧾 3. FACTURE NORMALISÉE (TTC)</div>';
+      html += '<p style="font-size:12px;color:var(--color-text-dim);margin:6px 0 12px">Facture fiscale définitive avec TVA 18 % sur honoraires et quittance libératoire après formalités.</p>';
+      html += '</div>';
+      html += '<button type="button" class="btn btn-primary btn-creer-facture-carte" style="background:#0891b2;border-color:#0891b2;font-weight:700;font-size:12.5px;padding:8px">🧾 Établir une Facture →</button>';
+      html += '</div>';
+
+      html += '</div>';
 
       // Calcul des compteurs par statut
       var nbSoumis = 0;
@@ -5078,12 +5068,49 @@
         });
       });
 
-      var btnNouvelle = document.getElementById("btn-nouvelle-fiche-taxe");
-      if (btnNouvelle) {
-        btnNouvelle.addEventListener("click", function () {
-          modalCreerFicheTaxe();
+      var btnModelesExcel = document.getElementById("btn-gerer-modeles-excel");
+      if (btnModelesExcel) {
+        btnModelesExcel.addEventListener("click", modalGererModelesExcel);
+      }
+
+      // 1. Établir une Fiche de Taxe
+      var btnFicheTop = document.getElementById("btn-creer-fiche-taxe-top") || document.getElementById("btn-nouvelle-fiche-taxe");
+      if (btnFicheTop) {
+        btnFicheTop.addEventListener("click", function () {
+          modalCreerFicheTaxe(null, "fiche_taxe");
         });
       }
+      c.querySelectorAll(".btn-creer-fiche-taxe-carte").forEach(function (b) {
+        b.addEventListener("click", function () {
+          modalCreerFicheTaxe(null, "fiche_taxe");
+        });
+      });
+
+      // 2. Établir une Note de Frais
+      var btnNoteTop = document.getElementById("btn-creer-note-frais-top");
+      if (btnNoteTop) {
+        btnNoteTop.addEventListener("click", function () {
+          modalCreerFicheTaxe(null, "note_frais");
+        });
+      }
+      c.querySelectorAll(".btn-creer-note-frais-carte").forEach(function (b) {
+        b.addEventListener("click", function () {
+          modalCreerFicheTaxe(null, "note_frais");
+        });
+      });
+
+      // 3. Établir une Facture
+      var btnFactureTop = document.getElementById("btn-creer-facture-top");
+      if (btnFactureTop) {
+        btnFactureTop.addEventListener("click", function () {
+          modalCreerFicheTaxe(null, "facture");
+        });
+      }
+      c.querySelectorAll(".btn-creer-facture-carte").forEach(function (b) {
+        b.addEventListener("click", function () {
+          modalCreerFicheTaxe(null, "facture");
+        });
+      });
 
       c.querySelectorAll(".btn-ouvrir-modal-taxe").forEach(function (btn) {
         btn.addEventListener("click", function (ev) {
@@ -5266,7 +5293,7 @@
   // =========================================================================
   // MODALE INTERACTIVE : CRÉER / ÉTABLIR UNE FICHE DE TAXE
   // =========================================================================
-  function modalCreerFicheTaxe(dossierIdSelectionne) {
+  function modalCreerFicheTaxe(dossierIdSelectionne, formatInitial) {
     function formaterEspaces(val) {
       if (val === null || val === undefined || val === "") return "0";
       var str = String(val).replace(/\s/g, "").replace(/[^0-9]/g, "");
@@ -5279,7 +5306,7 @@
       return parseFloat(net) || 0;
     }
 
-    var estNotaire = cache.utilisateur && (cache.utilisateur.role === "notaire" || cache.utilisateur.role === "premier_clerc" || cache.utilisateur.role === "superadmin");
+    var estNotaire = cache.utilisateur && (cache.utilisateur.role === "notaire" || cache.utilisateur.role === "superadmin");
 
     var chargerTypes = (cache.typesActesListe && cache.typesActesListe.length > 0)
       ? Promise.resolve(cache.typesActesListe)
@@ -5314,6 +5341,10 @@
         : (dossiers.length > 0 ? dossiers[0] : null);
 
       var montantInitialVal = dossierInitial ? (Number(dossierInitial.montantAssiette) || 10000000) : 10000000;
+
+      var titreForm = "🖨️ Établissement de la Fiche de Taxe (Liquidation Interne)";
+      if (formatInitial === "note_frais") titreForm = "📄 Établissement de la Note de Frais Client (Provisions Décret 2013-279)";
+      if (formatInitial === "facture") titreForm = "🧾 Établissement de la Facture Normalisée TTC (Document Fiscal)";
 
       var html = '<form id="form-modal-creer-taxe" style="display:flex;flex-direction:column;gap:var(--space-3)">';
 
@@ -5499,7 +5530,7 @@
       html += '</form>';
 
       ouvrirModal({
-        titre: 'Circuit de Taxe & Liquidation Notariale (Décret 2013-279 & Pratique)',
+        titre: titreForm,
         corps: html,
         boutonFermer: true,
         largeur: "900px",
@@ -5632,7 +5663,7 @@
 
                 // Débours détaillés
                 if (f.lignesDebours && f.lignesDebours.length) {
-                  f.lignesDebours.forEach(function (deb) {
+                  f.lignesDebours.filter(function (d) { return d.actif; }).forEach(function (deb) {
                     h += '<tr>';
                     h += '<td style="padding:3px 8px;color:var(--color-text)">' + deb.libelle + '</td>';
                     h += '<td style="padding:3px 8px;text-align:right;color:var(--color-text-dim)">—</td>';
@@ -5642,31 +5673,40 @@
                   });
                 }
 
+                // Ligne Total Général
+                h += '<tr style="background:var(--color-surface-2);font-weight:800;border-top:1.5px solid var(--color-border)">';
+                h += '<td style="padding:4px 8px;color:var(--color-text)">TOTAL TTC LIQUIDÉ :</td>';
+                h += '<td style="padding:4px 8px;text-align:right;color:var(--color-accent)">' + fmtFCFA(totalCA) + '</td>';
+                h += '<td style="padding:4px 8px;text-align:right;color:var(--color-warning)">' + fmtFCFA(totalTresor) + '</td>';
+                h += '<td style="padding:4px 8px;text-align:right;color:#10b981">' + fmtFCFA(totalDebours) + '</td>';
+                h += '</tr>';
+
                 h += '</tbody></table></div>';
 
-                // Total Général et Arrêté en lettres
-                h += '<div style="margin-top:8px;background:rgba(99,102,241,0.06);border:1px solid rgba(99,102,241,0.25);border-radius:6px;padding:8px 12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">';
-                h += '<div>';
-                h += '<div style="font-size:12px;font-weight:800;color:var(--color-text)">TOTAL GÉNÉRAL À PAYER : <span style="color:var(--color-accent);font-size:15px">' + fmtFCFA(totalGeneral) + '</span></div>';
-                if (enLettres) {
-                  h += '<div style="font-size:10.5px;font-style:italic;color:var(--color-text-dim);margin-top:2px">Arrêté à la somme de : <strong>' + enLettres + '</strong></div>';
-                }
-                h += '</div>';
-                h += '<div style="text-align:right;font-size:11px;color:var(--color-text-dim)">TVA 18% sur CA : <strong>' + fmtFCFA(f.tva) + '</strong></div>';
+                // Synthèse TTC en gros
+                h += '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:6px;border-top:1px solid var(--color-border);flex-wrap:wrap;gap:6px">';
+                h += '<div style="font-size:11px;color:var(--color-text-dim)">Montant en lettres : <em>' + escapeHtml(enLettres) + '</em></div>';
+                h += '<div style="font-size:14px;font-weight:900;color:var(--color-accent)">Total TTC : ' + fmtFCFA(totalGeneral) + '</div>';
                 h += '</div>';
 
                 h += '</div>';
-
                 zoneApercu.innerHTML = h;
-              }).catch(function (err) {
-                console.warn("Calcul modal taxe:", err);
+              })
+              .catch(function (e) {
+                var zoneApercu = document.getElementById("zone-apercu-calcul-modal");
+                if (zoneApercu) zoneApercu.innerHTML = '<div class="alert alert-warning" style="margin-top:6px;font-size:11.5px">Calcul automatique non disponible : ' + escapeHtml(e.message) + '</div>';
               });
           }
 
-          // Formatage du montant avec espaces au fur et à mesure de la saisie
+          // Formatage automatique du montant avec séparateurs d'espaces
           inputMontant.addEventListener("input", function () {
-            var raw = inputMontant.value.replace(/\s/g, "").replace(/[^0-9]/g, "");
-            inputMontant.value = formaterEspaces(raw);
+            var raw = inputMontant.value;
+            var num = extraireNombre(raw);
+            var pos = inputMontant.selectionStart;
+            var oldLen = raw.length;
+            inputMontant.value = formaterEspaces(num);
+            var diff = inputMontant.value.length - oldLen;
+            try { inputMontant.setSelectionRange(pos + diff, pos + diff); } catch (e) {}
             recalculerApercuModal();
           });
 
@@ -5788,15 +5828,9 @@
                 fCalculee.id = derniereFiche.id;
                 fCalculee.commentaire_notaire = derniereFiche.commentaire_notaire;
               }
-              fermerModal();
-              setTimeout(function () {
-                modalApercuDocument(curDossier, fCalculee, formatCible);
-              }, 60);
+              modalApercuDocument(curDossier, fCalculee, formatCible);
             }).catch(function (e) {
-              fermerModal();
-              setTimeout(function () {
-                modalApercuDocument(curDossier, { saisies: saisies }, formatCible);
-              }, 60);
+              modalApercuDocument(curDossier, { saisies: saisies }, formatCible);
             });
           }
 
@@ -6921,8 +6955,7 @@
         var btnModif = modalDom.querySelector("#btn-wf-modifier-taxe");
         if (btnModif) {
           btnModif.addEventListener("click", function () {
-            fermerModal();
-            modalCreerFicheTaxe(dossier.id);
+            modalCreerFicheTaxe(dossier.id, formatActuel);
           });
         }
 
