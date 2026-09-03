@@ -87,12 +87,25 @@ window.LegalNotaryAPI = (function () {
         return Promise.reject(new Error("Session expirée."));
       }
       if (reponse.status === 204) return null;
-      return reponse.json().then(function (corpsJson) {
+      var contentType = reponse.headers.get("content-type") || "";
+      if (contentType.indexOf("application/json") !== -1) {
+        return reponse.json().then(function (corpsJson) {
+          if (!reponse.ok) {
+            var message = (corpsJson && corpsJson.erreur) || "Erreur (" + reponse.status + ")";
+            return Promise.reject(new Error(message));
+          }
+          return corpsJson;
+        });
+      }
+      return reponse.text().then(function (texte) {
         if (!reponse.ok) {
-          var message = (corpsJson && corpsJson.erreur) || "Erreur (" + reponse.status + ")";
-          return Promise.reject(new Error(message));
+          return Promise.reject(new Error("Erreur (" + reponse.status + ") : Ressource non disponible."));
         }
-        return corpsJson;
+        try {
+          return JSON.parse(texte);
+        } catch (e) {
+          return texte;
+        }
       });
     });
   }

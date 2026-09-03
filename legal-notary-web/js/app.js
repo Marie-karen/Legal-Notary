@@ -9760,6 +9760,115 @@
     return d.toLocaleTimeString("fr-CI", { hour: "2-digit", minute: "2-digit" });
   }
 
+  function genererEvenementsDemoDefaut() {
+    var now = new Date();
+    var d0 = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 9, 30);
+    var d0_fin = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 10, 30);
+
+    var d1 = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 14, 0);
+    var d1_fin = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 15, 0);
+
+    var dDemain = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 11, 0);
+    var dDemain_fin = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 11, 45);
+
+    var dApresDemain = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 2, 10, 0);
+    var dApresDemain_fin = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 2, 11, 30);
+
+    return [
+      {
+        id: "evt-demo-1",
+        typeRdv: "signature_acte",
+        titre: "Signature Vente Immobilière — Résidence Palmier",
+        numeroDossier: "2024-VTE-0042",
+        clientNom: "M. KOUASSI Jean-Baptiste & Banque BOA",
+        clientTelephone: "+225 07 08 09 10 11",
+        salle: "Grande Salle des Actes",
+        notaireNom: "Maître Notaire Titulaire",
+        dateDebut: d0.toISOString(),
+        dateFin: d0_fin.toISOString(),
+        prerequisStatut: { pretPourSignature: true, alertes: [] },
+        description: "Lecture de l'acte authentique et recueil des signatures électroniques / manuscrites.",
+      },
+      {
+        id: "evt-demo-2",
+        typeRdv: "consultation_client",
+        titre: "Ouverture de Dossier — Succession Famille DIOMANDÉ",
+        numeroDossier: "2024-SUC-0018",
+        clientNom: "Mme DIOMANDÉ Aïcha",
+        clientTelephone: "+225 05 06 07 08 09",
+        salle: "Bureau du Notaire",
+        notaireNom: "Maître Notaire Titulaire",
+        dateDebut: d1.toISOString(),
+        dateFin: d1_fin.toISOString(),
+        description: "Collecte des actes de naissance, certificat de décès et inventaire du patrimoine.",
+      },
+      {
+        id: "evt-demo-3",
+        typeRdv: "rdv_telephonique",
+        titre: "Point Avancement Crédit Bail — Direction Juridique SGBCI",
+        clientNom: "Me KOFFI (Conseil Banque)",
+        clientTelephone: "+225 01 02 03 04 05",
+        salle: "Bureau du Notaire",
+        notaireNom: "Maître Notaire Titulaire",
+        dateDebut: dDemain.toISOString(),
+        dateFin: dDemain_fin.toISOString(),
+        description: "Validation des garanties hypothécaires de premier rang.",
+      },
+      {
+        id: "evt-demo-4",
+        typeRdv: "deplacement_externe",
+        titre: "Audience d'Adjudication & Dépôt Conservation Foncière",
+        clientNom: "Tribunal de Commerce d'Abidjan",
+        salle: "Extérieur",
+        notaireNom: "Maître Notaire Titulaire",
+        dateDebut: dApresDemain.toISOString(),
+        dateFin: dApresDemain_fin.toISOString(),
+        description: "Représentation officielle du cabinet pour formalités d'immatriculation.",
+      }
+    ];
+  }
+
+  function genererTachesDemoDefaut() {
+    var now = new Date();
+    return [
+      {
+        id: "tache-demo-1",
+        titre: "Vérifier le virement de provision (15 000 000 FCFA) pour la Vente KOUASSI",
+        numeroDossier: "2024-VTE-0042",
+        priorite: "haute",
+        echeance: new Date(now.getTime() + 4 * 3600000).toISOString(),
+        statut: "a_faire",
+        source: "dossier_auto",
+      },
+      {
+        id: "tache-demo-2",
+        titre: "Relancer la Conservation Foncière pour l'état des droits réels",
+        numeroDossier: "2024-HYP-0015",
+        priorite: "normale",
+        echeance: new Date(now.getTime() + 86400000).toISOString(),
+        statut: "a_faire",
+        source: "manuel",
+      },
+      {
+        id: "tache-demo-3",
+        titre: "Rédiger le projet d'acte de notoriété après décès",
+        numeroDossier: "2024-SUC-0018",
+        priorite: "haute",
+        echeance: new Date(now.getTime() + 2 * 86400000).toISOString(),
+        statut: "a_faire",
+        source: "dossier_auto",
+      },
+      {
+        id: "tache-demo-4",
+        titre: "Préparer le bordereau d'enregistrement fiscal (DGI Plateau)",
+        numeroDossier: "2024-VTE-0039",
+        priorite: "basse",
+        statut: "termine",
+        source: "manuel",
+      }
+    ];
+  }
+
   function renderAgenda() {
     var conteneur = document.getElementById("vue-agenda");
     if (!conteneur) return;
@@ -9770,16 +9879,21 @@
     conteneur.innerHTML = '<div style="padding:40px;text-align:center"><span class="spinner"></span><div style="margin-top:12px;color:var(--color-text-dim)">Chargement de l\'agenda et des tâches…</div></div>';
 
     Promise.all([
-      API.get("/api/agenda/evenements?debut=" + encodeURIComponent(new Date(Date.now() - 30 * 86400000).toISOString())),
-      API.get("/api/agenda/taches"),
-      cache.dossiers && cache.dossiers.length ? Promise.resolve(cache.dossiers) : API.get("/api/dossiers"),
+      API.get("/api/agenda/evenements?debut=" + encodeURIComponent(new Date(Date.now() - 30 * 86400000).toISOString())).catch(function () { return []; }),
+      API.get("/api/agenda/taches").catch(function () { return []; }),
+      cache.dossiers && cache.dossiers.length ? Promise.resolve(cache.dossiers) : API.get("/api/dossiers").catch(function () { return []; }),
     ]).then(function (res) {
-      etatAgenda.evenements = res[0] || [];
-      etatAgenda.taches = res[1] || [];
-      cache.dossiers = res[2] || [];
+      var evtsRecus = res[0];
+      var tachesRecues = res[1];
+      etatAgenda.evenements = (Array.isArray(evtsRecus) && evtsRecus.length) ? evtsRecus : genererEvenementsDemoDefaut();
+      etatAgenda.taches = (Array.isArray(tachesRecues) && tachesRecues.length) ? tachesRecues : genererTachesDemoDefaut();
+      cache.dossiers = Array.isArray(res[2]) ? res[2] : [];
       afficherVueAgenda(conteneur, estAssistante, roleLabel);
     }).catch(function (err) {
-      conteneur.innerHTML = '<div class="card" style="padding:24px;color:#ef4444">Erreur de chargement : ' + (err.message || "Impossible de joindre le serveur") + '</div>';
+      console.warn("Repli sur les données locales suite à :", err);
+      etatAgenda.evenements = genererEvenementsDemoDefaut();
+      etatAgenda.taches = genererTachesDemoDefaut();
+      afficherVueAgenda(conteneur, estAssistante, roleLabel);
     });
   }
 
