@@ -5539,16 +5539,19 @@
 
       html += '<div id="erreur-creer-taxe" class="erreur-inline" style="display:none"></div>';
 
-      // 7. Barre d'actions déontologiques & formats d'impression
+      // 7. Barre d'actions déontologiques & aperçu du document
       html += '<div style="display:flex;justify-content:space-between;align-items:center;gap:var(--space-2);margin-top:var(--space-2);flex-wrap:wrap">';
       html += '<button type="button" class="btn btn-ghost" id="btn-annuler-modal-taxe">Fermer</button>';
       html += '<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">';
       
-      // Boutons d'impression des 3 formats normés & Export Excel
-      html += '<button type="button" class="btn btn-secondary" id="btn-imprimer-fiche-taxe" title="Consulter et imprimer la Fiche de Taxe Interne de liquidation">🖨️ Fiche de Taxe</button>';
-      html += '<button type="button" class="btn btn-secondary" id="btn-imprimer-note-frais" title="Consulter et imprimer la Note de Frais Prévisionnelle Client">📄 Note de Frais</button>';
-      html += '<button type="button" class="btn btn-secondary" id="btn-imprimer-facture" title="Consulter et imprimer la Facture Normalisée TTC avec TVA 18%">🧾 Facture</button>';
-      html += '<button type="button" class="btn btn-secondary" id="btn-modal-taxe-export-excel" style="background:rgba(16,185,129,0.12);color:#059669;border-color:rgba(16,185,129,0.35);font-weight:700" title="Télécharger le fichier Excel officiel (.xlsx) complété">📊 Excel (.xlsx)</button>';
+      // Bouton d'aperçu / impression dédié au type de document ouvert
+      if (formatInitial === "note_frais") {
+        html += '<button type="button" class="btn btn-secondary" id="btn-imprimer-document-actuel" style="font-weight:700;background:rgba(5,150,105,0.12);color:#059669;border-color:rgba(5,150,105,0.35)" title="Consulter et imprimer la Note de Frais Prévisionnelle Client">📄 Aperçu & Imprimer Note de Frais</button>';
+      } else if (formatInitial === "facture") {
+        html += '<button type="button" class="btn btn-secondary" id="btn-imprimer-document-actuel" style="font-weight:700;background:rgba(8,145,178,0.12);color:#0891b2;border-color:rgba(8,145,178,0.35)" title="Consulter et imprimer la Facture Normalisée TTC avec TVA 18%">🧾 Aperçu & Imprimer Facture TTC</button>';
+      } else {
+        html += '<button type="button" class="btn btn-secondary" id="btn-imprimer-document-actuel" style="font-weight:700;background:rgba(217,119,6,0.12);color:#d97706;border-color:rgba(217,119,6,0.35)" title="Consulter et imprimer la Fiche de Taxe Interne de liquidation">🖨️ Aperçu & Imprimer Fiche de Taxe</button>';
+      }
 
       if (estNotaire) {
         // Actions Notaire
@@ -5556,7 +5559,7 @@
           html += '<button type="button" class="btn btn-secondary" id="btn-notaire-renvoyer" style="color:#dc2626;border-color:rgba(239,68,68,0.4);font-weight:700">↩️ Renvoyer au Comptable</button>';
           html += '<button type="button" class="btn btn-secondary" id="btn-notaire-corriger-valider" style="color:#0891b2;border-color:rgba(6,182,212,0.4);font-weight:700">✏️ Valider avec Corrections</button>';
         }
-        html += '<button type="button" class="btn btn-primary" id="btn-notaire-valider" style="background:#059669;border-color:#059669;font-weight:700">✅ Valider la Taxe</button>';
+        html += '<button type="button" class="btn btn-primary" id="btn-notaire-valider" style="background:#059669;border-color:#059669;font-weight:700">✅ Valider</button>';
       } else {
         // Actions Comptable / Clerc
         html += '<button type="button" class="btn btn-secondary" id="btn-enregistrer-brouillon-taxe" style="font-weight:600">💾 Enregistrer Brouillon</button>';
@@ -5873,21 +5876,14 @@
             });
           }
 
-          // Impression des 3 formats normés
-          document.getElementById("btn-imprimer-fiche-taxe").addEventListener("click", function (ev) {
-            ev.preventDefault();
-            ouvrirFormatDepuisModal("fiche_taxe");
-          });
-
-          document.getElementById("btn-imprimer-note-frais").addEventListener("click", function (ev) {
-            ev.preventDefault();
-            ouvrirFormatDepuisModal("note_frais");
-          });
-
-          document.getElementById("btn-imprimer-facture").addEventListener("click", function (ev) {
-            ev.preventDefault();
-            ouvrirFormatDepuisModal("facture");
-          });
+          // Aperçu et impression du document concerné
+          var btnImprimerDoc = document.getElementById("btn-imprimer-document-actuel");
+          if (btnImprimerDoc) {
+            btnImprimerDoc.addEventListener("click", function (ev) {
+              ev.preventDefault();
+              ouvrirFormatDepuisModal(formatInitial || "fiche_taxe");
+            });
+          }
 
           var btnModalExcel = document.getElementById("btn-modal-taxe-export-excel");
           if (btnModalExcel) {
