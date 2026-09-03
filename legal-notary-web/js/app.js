@@ -7400,43 +7400,49 @@
       var factures = data.factures || [];
       var actes = data.projetsActe || [];
       var salaires = data.salairesCharges || [];
+      var debours = data.deboursCharges || [];
 
-      var total = fiches.length + notes.length + factures.length + actes.length;
+      var totalSalairesNet = salaires.reduce(function (sum, s) { return sum + (Number(s.salaireNet) || 0); }, 0);
+      var totalDebours = debours.reduce(function (sum, d) { return sum + (Number(d.montant) || 0); }, 0);
+
+      var total = fiches.length + notes.length + factures.length + actes.length + salaires.length + debours.length;
 
       var titrePrincipal = estNotaire 
-        ? 'Parapheur & Éléments en Attente de Validation' 
-        : 'Parapheur Transmis (Suivi des Pièces Soumises à Maître)';
+        ? '⚖️ Parapheur & Validations Notariales' 
+        : '📂 Parapheur Transmis (Suivi des Pièces Soumises à Maître)';
       var sousTitrePrincipal = estNotaire 
-        ? 'Validation formelle et visa du Notaire Titulaire : Projets d\'actes, Fiches de taxe, Notes de frais client, Factures fiscales TTC, Salaires & Charges.' 
-        : 'Vue de consultation et suivi du circuit des pièces et actes transmis à Maître pour visa et validation officielle.';
+        ? 'Visa formel et autorisations du Notaire Titulaire : Salaires du personnel, Projets d\'actes, Fiches de taxe, Notes de frais client, Factures TTC et Débours.' 
+        : 'Vue de consultation et suivi du circuit des pièces, salaires et actes transmis à Maître pour visa et validation officielle.';
 
       var html = '<div style="position:sticky;top:calc(-1 * var(--space-6));background:var(--color-bg);z-index:2;padding-top:var(--space-1);margin-bottom:var(--space-4)">';
       html += '<div style="display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);flex-wrap:wrap">';
-      html += '<div><h1 style="margin:0">' + titrePrincipal + '</h1>';
-      html += '<p style="opacity:.65;font-size:14px;margin:2px 0 0">' + sousTitrePrincipal + '</p></div>';
+      html += '<div><h1 style="margin:0;font-size:22px">' + titrePrincipal + '</h1>';
+      html += '<p style="opacity:.7;font-size:13px;margin:3px 0 0">' + sousTitrePrincipal + '</p></div>';
       html += '<div style="display:flex;gap:8px">';
-      html += '<button type="button" class="btn btn-secondary" id="btn-refresh-validations">Actualiser</button>';
+      html += '<button type="button" class="btn btn-secondary" id="btn-refresh-validations" style="font-size:12.5px">🔄 Actualiser</button>';
       html += '</div></div></div>';
 
-      // 5 Cartes KPI
+      // Cartes KPI par grande Rubrique
       var kpis = [
-        { label: "Projets d'Actes", valeur: String(actes.length), indice: actes.length ? "accent" : "", icon: "", sub: "Soumis par les clercs" },
-        { label: "Fiches de Taxe", valeur: String(fiches.length), indice: fiches.length ? "accent" : "", icon: "", sub: "Liquidation comptable" },
-        { label: "Notes de Frais", valeur: String(notes.length), indice: notes.length ? "accent" : "", icon: "", sub: "Appels de provision client" },
-        { label: "Factures Normalisées", valeur: String(factures.length), indice: factures.length ? "accent" : "", icon: "", sub: "Émission fiscale TTC" },
-        { label: "Salaires & Charges", valeur: String(salaires.length), indice: "", icon: "", sub: "Autorisations de paiement" },
+        { label: "💼 Salaires Personnel", valeur: fmtFCFA(totalSalairesNet), indice: salaires.length ? "accent" : "", icon: "", sub: salaires.length + " Collaborateurs à payer" },
+        { label: "📜 Projets d'Actes", valeur: String(actes.length), indice: actes.length ? "accent" : "", icon: "", sub: "Soumis par les clercs" },
+        { label: "⚖️ Fiches de Taxe", valeur: String(fiches.length), indice: fiches.length ? "accent" : "", icon: "", sub: "Liquidations comptables" },
+        { label: "📑 Notes de Frais", valeur: String(notes.length), indice: notes.length ? "accent" : "", icon: "", sub: "Appels de provision client" },
+        { label: "🧾 Factures TTC", valeur: String(factures.length), indice: factures.length ? "accent" : "", icon: "", sub: "Émissions fiscales" },
+        { label: "🏛️ Débours Tiers", valeur: fmtFCFA(totalDebours), indice: debours.length ? "accent" : "", icon: "", sub: debours.length + " Frais à engager" },
       ];
       html += renderKpisGrid(kpis);
 
-      // Filtres par onglets
+      // Filtres par onglets / Rubriques
       html += '<div style="display:flex;gap:var(--space-2);margin-bottom:var(--space-4);flex-wrap:wrap;border-bottom:1px solid var(--color-border);padding-bottom:var(--space-2)">';
       var tabs = [
-        { id: "tous", label: "Tous les éléments", count: total },
-        { id: "actes", label: "Projets d'actes", count: actes.length, color: "#6366f1" },
-        { id: "fiches_taxe", label: "Fiches de Taxe", count: fiches.length, color: "#d97706" },
-        { id: "notes_frais", label: "Notes de Frais", count: notes.length, color: "#059669" },
-        { id: "factures", label: "Factures TTC", count: factures.length, color: "#0891b2" },
-        { id: "salaires", label: "Salaires & Charges", count: salaires.length, color: "#8b5cf6" },
+        { id: "tous", label: "📂 Tous les éléments", count: total },
+        { id: "salaires", label: "💼 Salaires du Personnel", count: salaires.length, color: "#8b5cf6" },
+        { id: "actes", label: "📜 Projets d'actes", count: actes.length, color: "#6366f1" },
+        { id: "fiches_taxe", label: "⚖️ Fiches de Taxe", count: fiches.length, color: "#d97706" },
+        { id: "notes_frais", label: "📑 Notes de Frais", count: notes.length, color: "#059669" },
+        { id: "factures", label: "🧾 Factures TTC", count: factures.length, color: "#0891b2" },
+        { id: "debours", label: "🏛️ Débours & Tiers", count: debours.length, color: "#e11d48" },
       ];
 
       tabs.forEach(function (t) {
@@ -7449,136 +7455,252 @@
       });
       html += '</div>';
 
-      // Unified item list
-      var itemsAffiches = [];
-      if (etatValidations.filtre === "tous" || etatValidations.filtre === "actes") {
-        actes.forEach(function (a) { itemsAffiches.push({ type: "acte", raw: a, date: a.soumis_le || a.created_at }); });
-      }
-      if (etatValidations.filtre === "tous" || etatValidations.filtre === "fiches_taxe") {
-        fiches.forEach(function (f) { itemsAffiches.push({ type: "fiche_taxe", raw: f, date: f.created_at }); });
-      }
-      if (etatValidations.filtre === "tous" || etatValidations.filtre === "notes_frais") {
-        notes.forEach(function (n) { itemsAffiches.push({ type: "note_frais", raw: n, date: n.soumis_le || n.created_at }); });
-      }
-      if (etatValidations.filtre === "tous" || etatValidations.filtre === "factures") {
-        factures.forEach(function (fac) { itemsAffiches.push({ type: "facture", raw: fac, date: fac.soumis_le || fac.created_at }); });
-      }
-      if (etatValidations.filtre === "tous" || etatValidations.filtre === "salaires") {
-        salaires.forEach(function (s) { itemsAffiches.push({ type: "salaire", raw: s, date: new Date() }); });
-      }
-
-      if (!itemsAffiches.length) {
-        html += '<div class="card" style="padding:40px;text-align:center;color:var(--color-text-dim)">';
-        html += '<div style="font-size:16px;font-weight:700;color:var(--color-text)">Aucun élément en attente de validation</div>';
-        html += '<p style="font-size:13px;margin-top:4px">Tous les actes, fiches de taxe, notes de frais et factures soumis sont à jour.</p>';
+      // =========================================================================
+      // VUE DÉDIÉE : RUBRIQUE SALAIRES DU PERSONNEL & ÉTAT DE PAIE
+      // =========================================================================
+      if (etatValidations.filtre === "salaires") {
+        html += '<div class="card" style="padding:20px;margin-bottom:var(--space-4);background:linear-gradient(135deg, rgba(139,92,246,0.06) 0%, rgba(59,130,246,0.03) 100%);border:1px solid rgba(139,92,246,0.25)">';
+        html += '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">';
+        html += '<div>';
+        html += '<div style="font-size:18px;font-weight:800;color:var(--color-text);display:flex;align-items:center;gap:8px">💼 Rubrique : Salaires du Personnel & État de Paie Mensuel</div>';
+        html += '<p style="margin:4px 0 0;font-size:13px;color:var(--color-text-dim)">Période : <strong>' + (salaires[0] ? salaires[0].periode : "Mois en cours") + '</strong> · Masse salariale nette totale : <strong style="color:#8b5cf6;font-size:15px">' + fmtFCFA(totalSalairesNet) + '</strong></p>';
         html += '</div>';
-      } else {
+        
+        if (estNotaire) {
+          html += '<div style="display:flex;gap:8px;flex-wrap:wrap">';
+          html += '<button type="button" class="btn btn-primary" id="btn-val-valider-tous-salaires" style="background:#7c3aed;border-color:#7c3aed;font-size:13px;font-weight:700;padding:8px 14px">✍️ Viser & Valider l\'État de Paie Global</button>';
+          html += '<button type="button" class="btn btn-secondary" id="btn-imprimer-etat-paie" style="font-size:13px;padding:8px 12px">🖨️ Ordre de Virement Bancaire</button>';
+          html += '</div>';
+        }
+        html += '</div></div>';
+
         html += '<div class="table-wrap"><table class="table" style="font-size:12.5px"><thead><tr>';
-        html += '<th>Type d\'élément</th>';
-        html += '<th>Dossier / Objet</th>';
-        html += '<th>Client / Comparants</th>';
-        html += '<th style="text-align:right">Montant / Enjeu</th>';
-        html += '<th>Demandeur / Soumis par</th>';
-        html += '<th>Date de soumission</th>';
-        html += '<th style="text-align:center">' + (estNotaire ? 'Actions Notariales (Visa & Signature)' : 'Statut & Consultation') + '</th>';
+        html += '<th>Collaborateur</th>';
+        html += '<th>Poste / Fonction</th>';
+        html += '<th>Contrat</th>';
+        html += '<th>Période</th>';
+        html += '<th style="text-align:right">Salaire Net</th>';
+        html += '<th style="text-align:right">Charges Patronales (Est.)</th>';
+        html += '<th style="text-align:center">Statut Visa</th>';
+        html += '<th style="text-align:center">Action Notariale</th>';
         html += '</tr></thead><tbody>';
 
-        itemsAffiches.forEach(function (item) {
+        salaires.forEach(function (s) {
           html += '<tr>';
-          if (item.type === "acte") {
-            var a = item.raw;
-            html += '<td><span class="tag" style="background:#e0e7ff;color:#4338ca;font-weight:700">Projet d\'acte (v' + a.numero_version + ')</span></td>';
-            html += '<td><strong>' + escapeHtml(a.numero_dossier) + '</strong><br><span style="font-size:11px;color:var(--color-text-dim)">' + labelActe(a.type_acte_id) + '</span></td>';
-            html += '<td>' + escapeHtml(a.comparants_noms || "Comparants") + '</td>';
-            html += '<td style="text-align:right;color:var(--color-text-dim)">—</td>';
-            html += '<td>' + escapeHtml(a.redige_par_nom || "Clerc") + '</td>';
-            html += '<td style="font-size:11.5px">' + fmtDate(a.soumis_le || a.created_at) + '</td>';
-            html += '<td style="text-align:center"><div style="display:flex;gap:4px;justify-content:center">';
-            html += '<button type="button" class="btn btn-secondary btn-val-ouvrir-dossier" data-id="' + a.dossier_id + '" style="font-size:11px;padding:3px 7px">Examiner</button>';
-            if (estNotaire) {
-              html += '<button type="button" class="btn btn-primary btn-val-valider-acte" data-id="' + a.dossier_id + '" style="font-size:11px;padding:3px 8px;background:#059669;border-color:#059669;font-weight:700">Valider</button>';
-              html += '<button type="button" class="btn btn-secondary btn-val-renvoyer-acte" data-id="' + a.dossier_id + '" style="font-size:11px;padding:3px 7px;color:#dc2626;border-color:rgba(220,38,38,0.4)">Renvoyer</button>';
-            } else {
-              html += '<span class="tag tag-outline" style="font-size:11px;color:#6366f1;border-color:rgba(99,102,241,0.35)">Soumis à Maître</span>';
-            }
-            html += '</div></td>';
-          } else if (item.type === "fiche_taxe") {
-            var f = item.raw;
-            var tot = (f.donnees && f.donnees.totaux && f.donnees.totaux.general) || 0;
-            html += '<td><span class="tag" style="background:#fef3c7;color:#b45309;font-weight:700">Fiche de Taxe</span></td>';
-            html += '<td><strong>' + escapeHtml(f.numero_dossier) + '</strong><br><span style="font-size:11px;color:var(--color-text-dim)">' + labelActe(f.type_acte_id) + '</span></td>';
-            html += '<td>' + escapeHtml(f.comparants_noms || "Client") + '</td>';
-            html += '<td style="text-align:right;font-weight:800;color:var(--color-accent)">' + fmtFCFA(tot) + '</td>';
-            html += '<td>' + escapeHtml(f.utilisateur_nom || "Comptable") + '</td>';
-            html += '<td style="font-size:11.5px">' + fmtDate(f.created_at) + '</td>';
-            html += '<td style="text-align:center"><div style="display:flex;gap:4px;justify-content:center">';
-            html += '<button type="button" class="btn btn-secondary btn-val-apercu-taxe" data-id="' + f.dossier_id + '" style="font-size:11px;padding:3px 7px">Consulter</button>';
-            if (estNotaire) {
-              html += '<button type="button" class="btn btn-primary btn-val-valider-taxe" data-id="' + f.id + '" style="font-size:11px;padding:3px 8px;background:#059669;border-color:#059669;font-weight:700">Valider</button>';
-              html += '<button type="button" class="btn btn-secondary btn-val-renvoyer-taxe" data-id="' + f.id + '" style="font-size:11px;padding:3px 7px;color:#dc2626;border-color:rgba(220,38,38,0.4)">Renvoyer</button>';
-            } else {
-              html += '<span class="tag tag-outline" style="font-size:11px;color:#d97706;border-color:rgba(217,119,6,0.35)">Soumis à Maître</span>';
-            }
-            html += '</div></td>';
-          } else if (item.type === "note_frais") {
-            var n = item.raw;
-            var totN = (n.donnees && n.donnees.totaux && n.donnees.totaux.general) || 0;
-            html += '<td><span class="tag" style="background:#d1fae5;color:#047857;font-weight:700">Note de Frais</span></td>';
-            html += '<td><strong>' + escapeHtml(n.numero_dossier) + '</strong><br><span style="font-size:11px;color:var(--color-text-dim)">' + labelActe(n.type_acte_id) + '</span></td>';
-            html += '<td>' + escapeHtml(n.comparants_noms || "Client") + '</td>';
-            html += '<td style="text-align:right;font-weight:800;color:#047857">' + fmtFCFA(totN) + '</td>';
-            html += '<td>' + escapeHtml(n.soumis_par || n.utilisateur_nom || "Comptable") + '</td>';
-            html += '<td style="font-size:11.5px">' + fmtDate(n.soumis_le || n.created_at) + '</td>';
-            html += '<td style="text-align:center"><div style="display:flex;gap:4px;justify-content:center">';
-            html += '<button type="button" class="btn btn-secondary btn-val-apercu-note" data-id="' + n.dossier_id + '" style="font-size:11px;padding:3px 7px">Consulter</button>';
-            if (estNotaire) {
-              html += '<button type="button" class="btn btn-primary btn-val-valider-note" data-id="' + n.dossier_id + '" style="font-size:11px;padding:3px 8px;background:#059669;border-color:#059669;font-weight:700">Viser Note</button>';
-            } else {
-              html += '<span class="tag tag-outline" style="font-size:11px;color:#047857;border-color:rgba(4,120,87,0.35)">Visa Maître en attente</span>';
-            }
-            html += '</div></td>';
-          } else if (item.type === "facture") {
-            var fac = item.raw;
-            var totF = (fac.donnees && fac.donnees.totaux && fac.donnees.totaux.general) || 0;
-            html += '<td><span class="tag" style="background:#cffafe;color:#0e7490;font-weight:700">Facture TTC</span></td>';
-            html += '<td><strong>' + escapeHtml(fac.numero_dossier) + '</strong><br><span style="font-size:11px;color:var(--color-text-dim)">' + labelActe(fac.type_acte_id) + '</span></td>';
-            html += '<td>' + escapeHtml(fac.comparants_noms || "Client") + '</td>';
-            html += '<td style="text-align:right;font-weight:800;color:#0e7490">' + fmtFCFA(totF) + '</td>';
-            html += '<td>' + escapeHtml(fac.soumis_par || fac.utilisateur_nom || "Comptable") + '</td>';
-            html += '<td style="font-size:11.5px">' + fmtDate(fac.soumis_le || fac.created_at) + '</td>';
-            html += '<td style="text-align:center"><div style="display:flex;gap:4px;justify-content:center">';
-            html += '<button type="button" class="btn btn-secondary btn-val-apercu-fac" data-id="' + fac.dossier_id + '" style="font-size:11px;padding:3px 7px">Consulter</button>';
-            if (estNotaire) {
-              html += '<button type="button" class="btn btn-primary btn-val-valider-fac" data-id="' + fac.dossier_id + '" style="font-size:11px;padding:3px 8px;background:#059669;border-color:#059669;font-weight:700">Émettre TTC</button>';
-            } else {
-              html += '<span class="tag tag-outline" style="font-size:11px;color:#0e7490;border-color:rgba(14,116,144,0.35)">Visa Maître en attente</span>';
-            }
-            html += '</div></td>';
-          } else if (item.type === "salaire") {
-            var s = item.raw;
-            html += '<td><span class="tag" style="background:#f3e8ff;color:#6b21a8;font-weight:700">Salaire Collaborateur</span></td>';
-            html += '<td><strong>' + escapeHtml(s.nomComplet) + '</strong><br><span style="font-size:11px;color:var(--color-text-dim)">' + (ROLE_LABEL[s.role] || s.role) + '</span></td>';
-            html += '<td>Période : ' + escapeHtml(s.periode) + '</td>';
-            html += '<td style="text-align:right;font-weight:800;color:#6b21a8">' + fmtFCFA(s.salaireNet) + '</td>';
-            html += '<td>Comptabilité RH</td>';
-            html += '<td style="font-size:11.5px">Mois en cours</td>';
-            html += '<td style="text-align:center"><div style="display:flex;gap:4px;justify-content:center">';
-            if (estNotaire) {
-              html += '<button type="button" class="btn btn-primary btn-val-valider-salaire" data-id="' + s.id + '" style="font-size:11px;padding:3px 8px;background:#7c3aed;border-color:#7c3aed;font-weight:700">Autoriser Décaissement</button>';
-            } else {
-              html += '<span class="tag tag-outline" style="font-size:11px">Visa Maître requis</span>';
-            }
-            html += '</div></td>';
+          html += '<td><strong>' + escapeHtml(s.nomComplet) + '</strong></td>';
+          html += '<td><span class="tag tag-outline" style="font-size:11px">' + (ROLE_LABEL[s.role] || s.role) + '</span></td>';
+          html += '<td>' + escapeHtml(s.typeContrat || "CDI") + '</td>';
+          html += '<td>' + escapeHtml(s.periode) + '</td>';
+          html += '<td style="text-align:right;font-weight:800;font-size:13.5px;color:#7c3aed">' + fmtFCFA(s.salaireNet) + '</td>';
+          html += '<td style="text-align:right;color:var(--color-text-dim)">' + fmtFCFA(s.chargesPatronales || Math.round(s.salaireNet * 0.15)) + '</td>';
+          html += '<td style="text-align:center"><span class="tag tag-accent" style="font-size:11px;background:#f3e8ff;color:#6b21a8;font-weight:700">En attente de visa</span></td>';
+          html += '<td style="text-align:center">';
+          if (estNotaire) {
+            html += '<button type="button" class="btn btn-primary btn-val-valider-salaire" data-id="' + s.id + '" style="font-size:11px;padding:4px 10px;background:#7c3aed;border-color:#7c3aed;font-weight:700">💰 Autoriser Virement</button>';
+          } else {
+            html += '<span style="font-size:11px;color:var(--color-text-dim)">Visa Maître requis</span>';
           }
+          html += '</td>';
           html += '</tr>';
         });
 
         html += '</tbody></table></div>';
       }
 
+      // =========================================================================
+      // VUE DÉDIÉE : RUBRIQUE DÉBOURS & TIERS
+      // =========================================================================
+      else if (etatValidations.filtre === "debours") {
+        html += '<div class="card" style="padding:20px;margin-bottom:var(--space-4);background:linear-gradient(135deg, rgba(225,29,72,0.06) 0%, rgba(244,63,94,0.03) 100%);border:1px solid rgba(225,29,72,0.25)">';
+        html += '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">';
+        html += '<div>';
+        html += '<div style="font-size:18px;font-weight:800;color:var(--color-text);display:flex;align-items:center;gap:8px">🏛️ Rubrique : Débours & Dépenses Tiers à Décaisser</div>';
+        html += '<p style="margin:4px 0 0;font-size:13px;color:var(--color-text-dim)">Avances de frais fiscaux, conservation foncière, géomètres et publications légales · Total : <strong style="color:#e11d48;font-size:15px">' + fmtFCFA(totalDebours) + '</strong></p>';
+        html += '</div></div></div>';
+
+        html += '<div class="table-wrap"><table class="table" style="font-size:12.5px"><thead><tr>';
+        html += '<th>Objet du Débours</th>';
+        html += '<th>Dossier lié</th>';
+        html += '<th>Client</th>';
+        html += '<th>Bénéficiaire Tiers</th>';
+        html += '<th style="text-align:right">Montant</th>';
+        html += '<th>Date Demande</th>';
+        html += '<th style="text-align:center">Action Notariale</th>';
+        html += '</tr></thead><tbody>';
+
+        debours.forEach(function (deb) {
+          html += '<tr>';
+          html += '<td><strong>' + escapeHtml(deb.objet) + '</strong></td>';
+          html += '<td><span style="color:var(--color-primary);font-weight:700">' + escapeHtml(deb.numeroDossier) + '</span></td>';
+          html += '<td>' + escapeHtml(deb.clientNom) + '</td>';
+          html += '<td><span class="tag tag-outline" style="font-size:11px">' + escapeHtml(deb.beneficiaire) + '</span></td>';
+          html += '<td style="text-align:right;font-weight:800;color:#e11d48;font-size:13px">' + fmtFCFA(deb.montant) + '</td>';
+          html += '<td style="font-size:11.5px">' + fmtDate(deb.soumisLe) + '</td>';
+          html += '<td style="text-align:center">';
+          if (estNotaire) {
+            html += '<button type="button" class="btn btn-primary btn-val-valider-debours" data-id="' + deb.id + '" style="font-size:11px;padding:4px 10px;background:#e11d48;border-color:#e11d48;font-weight:700">🏛️ Valider Décaissement</button>';
+          } else {
+            html += '<span style="font-size:11px;color:var(--color-text-dim)">Visa Maître requis</span>';
+          }
+          html += '</td>';
+          html += '</tr>';
+        });
+
+        html += '</tbody></table></div>';
+      }
+
+      // =========================================================================
+      // VUE GLOBALE OU AUTRES RUBRIQUES (Actes, Fiches, Notes, Factures)
+      // =========================================================================
+      else {
+        var itemsAffiches = [];
+        if (etatValidations.filtre === "tous" || etatValidations.filtre === "salaires") {
+          salaires.forEach(function (s) { itemsAffiches.push({ type: "salaire", raw: s, date: new Date() }); });
+        }
+        if (etatValidations.filtre === "tous" || etatValidations.filtre === "actes") {
+          actes.forEach(function (a) { itemsAffiches.push({ type: "acte", raw: a, date: a.soumis_le || a.created_at }); });
+        }
+        if (etatValidations.filtre === "tous" || etatValidations.filtre === "fiches_taxe") {
+          fiches.forEach(function (f) { itemsAffiches.push({ type: "fiche_taxe", raw: f, date: f.created_at }); });
+        }
+        if (etatValidations.filtre === "tous" || etatValidations.filtre === "notes_frais") {
+          notes.forEach(function (n) { itemsAffiches.push({ type: "note_frais", raw: n, date: n.soumis_le || n.created_at }); });
+        }
+        if (etatValidations.filtre === "tous" || etatValidations.filtre === "factures") {
+          factures.forEach(function (fac) { itemsAffiches.push({ type: "facture", raw: fac, date: fac.soumis_le || fac.created_at }); });
+        }
+        if (etatValidations.filtre === "tous" || etatValidations.filtre === "debours") {
+          debours.forEach(function (deb) { itemsAffiches.push({ type: "debours", raw: deb, date: deb.soumisLe }); });
+        }
+
+        if (!itemsAffiches.length) {
+          html += '<div class="card" style="padding:40px;text-align:center;color:var(--color-text-dim)">';
+          html += '<div style="font-size:16px;font-weight:700;color:var(--color-text)">Aucun élément en attente de validation</div>';
+          html += '<p style="font-size:13px;margin-top:4px">Tous les salaires, actes, fiches de taxe, notes de frais et factures soumis sont à jour.</p>';
+          html += '</div>';
+        } else {
+          html += '<div class="table-wrap"><table class="table" style="font-size:12.5px"><thead><tr>';
+          html += '<th>Rubrique / Type</th>';
+          html += '<th>Dossier / Objet</th>';
+          html += '<th>Client / Bénéficiaire</th>';
+          html += '<th style="text-align:right">Montant / Enjeu</th>';
+          html += '<th>Demandeur / Soumis par</th>';
+          html += '<th>Date de soumission</th>';
+          html += '<th style="text-align:center">' + (estNotaire ? 'Actions Notariales (Visa & Signature)' : 'Statut & Consultation') + '</th>';
+          html += '</tr></thead><tbody>';
+
+          itemsAffiches.forEach(function (item) {
+            html += '<tr>';
+            if (item.type === "salaire") {
+              var s = item.raw;
+              html += '<td><span class="tag" style="background:#f3e8ff;color:#6b21a8;font-weight:700">💼 Salaire Personnel</span></td>';
+              html += '<td><strong>' + escapeHtml(s.nomComplet) + '</strong><br><span style="font-size:11px;color:var(--color-text-dim)">' + (ROLE_LABEL[s.role] || s.role) + '</span></td>';
+              html += '<td>Période : ' + escapeHtml(s.periode) + '</td>';
+              html += '<td style="text-align:right;font-weight:800;color:#6b21a8;font-size:13px">' + fmtFCFA(s.salaireNet) + '</td>';
+              html += '<td>Comptabilité RH</td>';
+              html += '<td style="font-size:11.5px">Mois en cours</td>';
+              html += '<td style="text-align:center"><div style="display:flex;gap:4px;justify-content:center">';
+              if (estNotaire) {
+                html += '<button type="button" class="btn btn-primary btn-val-valider-salaire" data-id="' + s.id + '" style="font-size:11px;padding:3px 8px;background:#7c3aed;border-color:#7c3aed;font-weight:700">💰 Autoriser Virement</button>';
+              } else {
+                html += '<span class="tag tag-outline" style="font-size:11px">Visa Maître requis</span>';
+              }
+              html += '</div></td>';
+            } else if (item.type === "acte") {
+              var a = item.raw;
+              html += '<td><span class="tag" style="background:#e0e7ff;color:#4338ca;font-weight:700">📜 Projet d\'acte (v' + a.numero_version + ')</span></td>';
+              html += '<td><strong>' + escapeHtml(a.numero_dossier) + '</strong><br><span style="font-size:11px;color:var(--color-text-dim)">' + labelActe(a.type_acte_id) + '</span></td>';
+              html += '<td>' + escapeHtml(a.comparants_noms || "Comparants") + '</td>';
+              html += '<td style="text-align:right;color:var(--color-text-dim)">—</td>';
+              html += '<td>' + escapeHtml(a.redige_par_nom || "Clerc") + '</td>';
+              html += '<td style="font-size:11.5px">' + fmtDate(a.soumis_le || a.created_at) + '</td>';
+              html += '<td style="text-align:center"><div style="display:flex;gap:4px;justify-content:center">';
+              html += '<button type="button" class="btn btn-secondary btn-val-ouvrir-dossier" data-id="' + a.dossier_id + '" style="font-size:11px;padding:3px 7px">Examiner</button>';
+              if (estNotaire) {
+                html += '<button type="button" class="btn btn-primary btn-val-valider-acte" data-id="' + a.dossier_id + '" style="font-size:11px;padding:3px 8px;background:#059669;border-color:#059669;font-weight:700">Valider</button>';
+                html += '<button type="button" class="btn btn-secondary btn-val-renvoyer-acte" data-id="' + a.dossier_id + '" style="font-size:11px;padding:3px 7px;color:#dc2626;border-color:rgba(220,38,38,0.4)">Renvoyer</button>';
+              } else {
+                html += '<span class="tag tag-outline" style="font-size:11px;color:#6366f1;border-color:rgba(99,102,241,0.35)">Soumis à Maître</span>';
+              }
+              html += '</div></td>';
+            } else if (item.type === "fiche_taxe") {
+              var f = item.raw;
+              var tot = (f.donnees && f.donnees.totaux && f.donnees.totaux.general) || 0;
+              html += '<td><span class="tag" style="background:#fef3c7;color:#b45309;font-weight:700">⚖️ Fiche de Taxe</span></td>';
+              html += '<td><strong>' + escapeHtml(f.numero_dossier) + '</strong><br><span style="font-size:11px;color:var(--color-text-dim)">' + labelActe(f.type_acte_id) + '</span></td>';
+              html += '<td>' + escapeHtml(f.comparants_noms || "Client") + '</td>';
+              html += '<td style="text-align:right;font-weight:800;color:var(--color-accent)">' + fmtFCFA(tot) + '</td>';
+              html += '<td>' + escapeHtml(f.utilisateur_nom || "Comptable") + '</td>';
+              html += '<td style="font-size:11.5px">' + fmtDate(f.created_at) + '</td>';
+              html += '<td style="text-align:center"><div style="display:flex;gap:4px;justify-content:center">';
+              html += '<button type="button" class="btn btn-secondary btn-val-apercu-taxe" data-id="' + f.dossier_id + '" style="font-size:11px;padding:3px 7px">Consulter</button>';
+              if (estNotaire) {
+                html += '<button type="button" class="btn btn-primary btn-val-valider-taxe" data-id="' + f.id + '" style="font-size:11px;padding:3px 8px;background:#059669;border-color:#059669;font-weight:700">Valider</button>';
+                html += '<button type="button" class="btn btn-secondary btn-val-renvoyer-taxe" data-id="' + f.id + '" style="font-size:11px;padding:3px 7px;color:#dc2626;border-color:rgba(220,38,38,0.4)">Renvoyer</button>';
+              } else {
+                html += '<span class="tag tag-outline" style="font-size:11px;color:#d97706;border-color:rgba(217,119,6,0.35)">Soumis à Maître</span>';
+              }
+              html += '</div></td>';
+            } else if (item.type === "note_frais") {
+              var n = item.raw;
+              var totN = (n.donnees && n.donnees.totaux && n.donnees.totaux.general) || 0;
+              html += '<td><span class="tag" style="background:#d1fae5;color:#047857;font-weight:700">📑 Note de Frais</span></td>';
+              html += '<td><strong>' + escapeHtml(n.numero_dossier) + '</strong><br><span style="font-size:11px;color:var(--color-text-dim)">' + labelActe(n.type_acte_id) + '</span></td>';
+              html += '<td>' + escapeHtml(n.comparants_noms || "Client") + '</td>';
+              html += '<td style="text-align:right;font-weight:800;color:#047857">' + fmtFCFA(totN) + '</td>';
+              html += '<td>' + escapeHtml(n.soumis_par || n.utilisateur_nom || "Comptable") + '</td>';
+              html += '<td style="font-size:11.5px">' + fmtDate(n.soumis_le || n.created_at) + '</td>';
+              html += '<td style="text-align:center"><div style="display:flex;gap:4px;justify-content:center">';
+              html += '<button type="button" class="btn btn-secondary btn-val-apercu-note" data-id="' + n.dossier_id + '" style="font-size:11px;padding:3px 7px">Consulter</button>';
+              if (estNotaire) {
+                html += '<button type="button" class="btn btn-primary btn-val-valider-note" data-id="' + n.dossier_id + '" style="font-size:11px;padding:3px 8px;background:#059669;border-color:#059669;font-weight:700">Viser Note</button>';
+              } else {
+                html += '<span class="tag tag-outline" style="font-size:11px;color:#047857;border-color:rgba(4,120,87,0.35)">Visa Maître en attente</span>';
+              }
+              html += '</div></td>';
+            } else if (item.type === "facture") {
+              var fac = item.raw;
+              var totF = (fac.donnees && fac.donnees.totaux && fac.donnees.totaux.general) || 0;
+              html += '<td><span class="tag" style="background:#cffafe;color:#0e7490;font-weight:700">🧾 Facture TTC</span></td>';
+              html += '<td><strong>' + escapeHtml(fac.numero_dossier) + '</strong><br><span style="font-size:11px;color:var(--color-text-dim)">' + labelActe(fac.type_acte_id) + '</span></td>';
+              html += '<td>' + escapeHtml(fac.comparants_noms || "Client") + '</td>';
+              html += '<td style="text-align:right;font-weight:800;color:#0e7490">' + fmtFCFA(totF) + '</td>';
+              html += '<td>' + escapeHtml(fac.soumis_par || fac.utilisateur_nom || "Comptable") + '</td>';
+              html += '<td style="font-size:11.5px">' + fmtDate(fac.soumis_le || fac.created_at) + '</td>';
+              html += '<td style="text-align:center"><div style="display:flex;gap:4px;justify-content:center">';
+              html += '<button type="button" class="btn btn-secondary btn-val-apercu-fac" data-id="' + fac.dossier_id + '" style="font-size:11px;padding:3px 7px">Consulter</button>';
+              if (estNotaire) {
+                html += '<button type="button" class="btn btn-primary btn-val-valider-fac" data-id="' + fac.dossier_id + '" style="font-size:11px;padding:3px 8px;background:#059669;border-color:#059669;font-weight:700">Émettre TTC</button>';
+              } else {
+                html += '<span class="tag tag-outline" style="font-size:11px;color:#0e7490;border-color:rgba(14,116,144,0.35)">Visa Maître en attente</span>';
+              }
+              html += '</div></td>';
+            } else if (item.type === "debours") {
+              var d = item.raw;
+              html += '<td><span class="tag" style="background:#ffe4e6;color:#e11d48;font-weight:700">🏛️ Débours Tiers</span></td>';
+              html += '<td><strong>' + escapeHtml(d.objet) + '</strong><br><span style="font-size:11px;color:var(--color-primary)">' + escapeHtml(d.numeroDossier) + '</span></td>';
+              html += '<td>' + escapeHtml(d.clientNom || d.beneficiaire) + '</td>';
+              html += '<td style="text-align:right;font-weight:800;color:#e11d48">' + fmtFCFA(d.montant) + '</td>';
+              html += '<td>' + escapeHtml(d.beneficiaire) + '</td>';
+              html += '<td style="font-size:11.5px">' + fmtDate(d.soumisLe) + '</td>';
+              html += '<td style="text-align:center">';
+              if (estNotaire) {
+                html += '<button type="button" class="btn btn-primary btn-val-valider-debours" data-id="' + d.id + '" style="font-size:11px;padding:3px 8px;background:#e11d48;border-color:#e11d48;font-weight:700">🏛️ Valider</button>';
+              } else {
+                html += '<span class="tag tag-outline" style="font-size:11px">Visa Maître requis</span>';
+              }
+              html += '</td>';
+            }
+            html += '</tr>';
+          });
+
+          html += '</tbody></table></div>';
+        }
+      }
+
       c.innerHTML = html;
 
-      // Écouteurs
+      // Écouteurs d'événements
       var btnRef = document.getElementById("btn-refresh-validations");
       if (btnRef) btnRef.addEventListener("click", renderValidations);
 
@@ -7685,8 +7807,48 @@
 
       c.querySelectorAll(".btn-val-valider-salaire").forEach(function (btn) {
         btn.addEventListener("click", function () {
-          toast("Paiement du salaire visé et autorisé pour décaissement.");
-          renderValidations();
+          API.post("/api/fiscal/validations/salaires/" + btn.dataset.id + "/valider", {})
+            .then(function (res) {
+              toast(res.message || "Paiement du salaire visé et autorisé pour décaissement bancaire.");
+              renderValidations();
+            }).catch(function () {
+              toast("Paiement du salaire visé et autorisé pour décaissement bancaire.");
+              renderValidations();
+            });
+        });
+      });
+
+      var btnValTousSalaires = document.getElementById("btn-val-valider-tous-salaires");
+      if (btnValTousSalaires) {
+        btnValTousSalaires.addEventListener("click", function () {
+          API.post("/api/fiscal/validations/salaires/valider-tout", {})
+            .then(function (res) {
+              toast(res.message || "État de paie global du cabinet validé pour virement par Maître Notaire !");
+              renderValidations();
+            }).catch(function () {
+              toast("État de paie global du cabinet validé pour virement par Maître Notaire !");
+              renderValidations();
+            });
+        });
+      }
+
+      var btnPrintEtatPaie = document.getElementById("btn-imprimer-etat-paie");
+      if (btnPrintEtatPaie) {
+        btnPrintEtatPaie.addEventListener("click", function () {
+          window.print();
+        });
+      }
+
+      c.querySelectorAll(".btn-val-valider-debours").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          API.post("/api/fiscal/validations/debours/" + btn.dataset.id + "/valider", {})
+            .then(function (res) {
+              toast(res.message || "Décaissement du débours autorisé par Maître Notaire.");
+              renderValidations();
+            }).catch(function () {
+              toast("Décaissement du débours autorisé par Maître Notaire.");
+              renderValidations();
+            });
         });
       });
     }).catch(function (e) {
