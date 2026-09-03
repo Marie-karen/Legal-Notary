@@ -1121,6 +1121,17 @@ select.input { -webkit-appearance: none; appearance: none; }
   box-sizing: border-box;
 }
 
+.document-a4-notarie table td,
+.document-a4-notarie table th {
+  font-feature-settings: "tnum";
+  font-variant-numeric: tabular-nums;
+}
+
+.document-a4-notarie td[style*="text-align:right"],
+.document-a4-notarie th[style*="text-align:right"] {
+  white-space: nowrap !important;
+}
+
 #zone-apercu-feuille-a4 {
   background: #374151;
   padding: 24px 16px;
