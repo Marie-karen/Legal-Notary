@@ -183,21 +183,20 @@
         <div id="vue-validations" class="ecran"></div>
         <div id="vue-notifications" class="ecran"></div>
       </div>
-    </div>
-  </div>
-
-  <!-- Conteneur d'impression officielle (fiche de taxe / décompte notarié) -->
-  <div id="print-container" class="print-only"></div>
-
-  <!-- Racine pour les boîtes de dialogue et modales -->
-  <div id="modal-racine" style="display:none"></div>
-
-  <div id="toast" class="card elev-lg" style="display:none; position:fixed; bottom:var(--space-4); right:var(--space-4); max-width:340px; z-index:400;">
-    <div class="card-body" style="opacity:1" id="toast-texte"></div>
   </div>
 </div>
 
-<script src="js/api.js?v=2.9.7"></script>
-<script src="js/app.js?v=2.9.7"></script>
+<!-- Conteneur d'impression officielle (fiche de taxe / décompte notarié) -->
+<div id="print-container" class="print-only"></div>
+
+<!-- Racine globale pour les boîtes de dialogue et modales -->
+<div id="modal-racine" style="display:none;position:relative;z-index:999999"></div>
+
+<div id="toast" class="card elev-lg" style="display:none; position:fixed; bottom:var(--space-4); right:var(--space-4); max-width:340px; z-index:9999999;">
+  <div class="card-body" style="opacity:1" id="toast-texte"></div>
+</div>
+
+<script src="js/api.js?v=2.9.8"></script>
+<script src="js/app.js?v=2.9.8"></script>
 </body>
 </html>
