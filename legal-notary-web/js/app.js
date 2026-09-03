@@ -97,6 +97,16 @@
     toast._t = window.setTimeout(function () { t.style.display = "none"; }, 3000);
   }
 
+  function escapeHtml(str) {
+    if (str === null || str === undefined) return "";
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
   function majNomEtudeAffiche() {
     var nomEtude = (cache.parametres && cache.parametres.nomEtude && cache.parametres.nomEtude.trim() && cache.parametres.nomEtude !== "Office notarial — à renseigner" && cache.parametres.nomEtude !== "Étude Notariale")
       ? cache.parametres.nomEtude.trim()
@@ -9668,6 +9678,10 @@
 
     var chargement = document.getElementById("chargement-initial");
     if (chargement) chargement.style.display = "none";
+
+    window.LegalNotaryIrVers = irVers;
+    window.LegalNotaryRenderComptabilite = renderComptabilite;
+    window.LegalNotaryModalCreerFicheTaxe = modalCreerFicheTaxe;
 
     // Gestion propre du callback non-autorisé 401
     API.surNonAutorise(function () {
