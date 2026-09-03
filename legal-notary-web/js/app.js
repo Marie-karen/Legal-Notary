@@ -737,7 +737,6 @@
     ],
     clerc_redacteur: [
       { nav: "dashboard", label: "📊 Mon Tableau de bord", vueParDefaut: true },
-      { nav: "validations", label: "⏳ En attente de validation" },
       { nav: "dossiers", label: "📁 Mes Dossiers assignés" },
       { nav: "clients", label: "👥 Mes Clients & Pièces" },
       { nav: "actes", label: "✍️ Projets d'actes" },
@@ -745,7 +744,6 @@
     ],
     clerc_formaliste: [
       { nav: "dashboard", label: "📊 Formalités & Délais", vueParDefaut: true },
-      { nav: "validations", label: "⏳ En attente de validation" },
       { nav: "dossiers", label: "🏛️ Dossiers Formalités (DGI/CF)" },
       { nav: "archives", label: "📦 Minutier & Cartons" },
       { nav: "evolution", label: "📈 Mon évolution" },
@@ -760,7 +758,6 @@
     ],
     assistante: [
       { nav: "dashboard", label: "📊 Accueil & Réception", vueParDefaut: true },
-      { nav: "validations", label: "⏳ En attente de validation" },
       { nav: "nouveau-dossier", label: "📂 + Nouveau dossier" },
       { nav: "clients", label: "👥 Fichier Clients & KYC" },
       { nav: "dossiers", label: "📁 Dossiers assignés" },
@@ -808,7 +805,13 @@
 
     items.forEach(function (item) {
       var isActif = (etat.vue === item.nav) && (!item.sousOnglet || (item.nav === "superadmin" && item.sousOnglet === etatSuperadmin.onglet) || (item.nav === "archives" && item.sousOnglet === etatArchives.onglet));
-      html += '<div class="lnk-item ' + (isActif ? "actif" : "") + '" data-nav="' + item.nav + '" ' + (item.sousOnglet ? 'data-sous-onglet="' + item.sousOnglet + '"' : '') + '>' + item.label + '</div>';
+      if (item.nav === "validations") {
+        var totalVal = (cache.parapheurValidations && cache.parapheurValidations.totalEnAttente) || 0;
+        var badgeStyle = totalVal > 0 ? 'background:#d97706;color:#ffffff;font-size:10.5px;font-weight:700;padding:1px 7px;border-radius:12px;margin-left:auto;line-height:1.4' : 'display:none;margin-left:auto';
+        html += '<div class="lnk-item ' + (isActif ? "actif" : "") + '" data-nav="' + item.nav + '" style="display:flex;align-items:center;justify-content:space-between"><span>' + item.label + '</span><span id="badge-menu-validations" style="' + badgeStyle + '">' + totalVal + '</span></div>';
+      } else {
+        html += '<div class="lnk-item ' + (isActif ? "actif" : "") + '" data-nav="' + item.nav + '" ' + (item.sousOnglet ? 'data-sous-onglet="' + item.sousOnglet + '"' : '') + '>' + item.label + '</div>';
+      }
     });
 
     html += '<div style="flex:1"></div>';
@@ -7186,11 +7189,11 @@
     return API.get("/api/fiscal/validations/parapheur-global").then(function (data) {
       cache.parapheurValidations = data;
       var total = (data && data.totalEnAttente) || 0;
-      var badge = document.getElementById("validations-badge");
+      var badge = document.getElementById("badge-menu-validations");
       if (badge) {
         if (total > 0) {
           badge.style.display = "inline-block";
-          badge.textContent = "⏳ " + total + " en attente";
+          badge.textContent = String(total);
         } else {
           badge.style.display = "none";
         }
@@ -9567,11 +9570,6 @@
     var badgeNotif = document.getElementById("notif-badge");
     if (badgeNotif) {
       badgeNotif.addEventListener("click", function () { irVers("notifications"); });
-    }
-
-    var badgeVal = document.getElementById("validations-badge");
-    if (badgeVal) {
-      badgeVal.addEventListener("click", function () { irVers("validations"); });
     }
 
     actualiserAffichageBoutonTheme(document.documentElement.getAttribute("data-theme") || "dark");
