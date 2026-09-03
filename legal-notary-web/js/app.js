@@ -730,7 +730,7 @@
       { nav: "clients", label: "👥 Clients & KYC" },
       { nav: "actes", label: "📜 Actes & Référentiel" },
       { nav: "emoluments", label: "⚖️ Barèmes d'Émoluments" },
-      { nav: "comptabilite", label: "💰 Facturation" },
+      { nav: "comptabilite", label: "Facturation" },
       { nav: "archives", label: "🏛️ Minutier & Archives" },
       { nav: "equipe", label: "👔 Équipe & Salaires" },
       { nav: "evolution", label: "📈 Performance globale" },
@@ -764,7 +764,7 @@
     comptable_taxateur: [
       { nav: "dashboard", label: "📊 Tableau de bord Financier", vueParDefaut: true },
       { nav: "validations", label: "📂 Transmis au Notaire" },
-      { nav: "comptabilite", label: "💰 Facturation" },
+      { nav: "comptabilite", label: "Facturation" },
       { nav: "emoluments", label: "⚖️ Barèmes d'Émoluments" },
       { nav: "dossiers", label: "📁 Dossiers (Suivi Financier)" },
       { nav: "evolution", label: "📈 Mon évolution" },
@@ -4897,10 +4897,10 @@
       html += '<div><h1 style="margin:0">Facturation & Liquidation Notariale</h1>';
       html += '<p style="opacity:.65;font-size:14px;margin:2px 0 0">Établissement des fiches de taxe (internes), notes de frais (provisions client) et factures fiscales TTC (Décret 2013-279).</p></div>';
       html += '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">';
-      html += '<button type="button" class="btn btn-secondary" id="btn-gerer-modeles-excel" style="font-size:12.5px;padding:7px 12px;font-weight:600">📂 Modèles Excel (.xlsx)</button>';
-      html += '<button type="button" class="btn btn-secondary" id="btn-creer-fiche-taxe-top" style="font-size:12.5px;padding:7px 12px;font-weight:700;background:rgba(217,119,6,0.12);color:#d97706;border-color:rgba(217,119,6,0.35)">🖨️ + Établir une Fiche de Taxe</button>';
-      html += '<button type="button" class="btn btn-secondary" id="btn-creer-note-frais-top" style="font-size:12.5px;padding:7px 12px;font-weight:700;background:rgba(5,150,105,0.12);color:#059669;border-color:rgba(5,150,105,0.35)">📄 + Établir une Note de Frais</button>';
-      html += '<button type="button" class="btn btn-primary" id="btn-creer-facture-top" style="font-size:12.5px;padding:7px 14px;font-weight:700;background:#0891b2;border-color:#0891b2">🧾 + Établir une Facture</button>';
+      html += '<button type="button" class="btn btn-secondary" id="btn-gerer-modeles-excel" style="font-size:12.5px;padding:7px 12px;font-weight:600">Modèles Excel (.xlsx)</button>';
+      html += '<button type="button" class="btn btn-secondary" id="btn-creer-fiche-taxe-top" style="font-size:12.5px;padding:7px 12px;font-weight:700;background:rgba(217,119,6,0.12);color:#d97706;border-color:rgba(217,119,6,0.35)">+ Fiche de taxe</button>';
+      html += '<button type="button" class="btn btn-secondary" id="btn-creer-note-frais-top" style="font-size:12.5px;padding:7px 12px;font-weight:700;background:rgba(5,150,105,0.12);color:#059669;border-color:rgba(5,150,105,0.35)">+ Note de frais</button>';
+      html += '<button type="button" class="btn btn-primary" id="btn-creer-facture-top" style="font-size:12.5px;padding:7px 14px;font-weight:700;background:#0891b2;border-color:#0891b2">+ Facture</button>';
       html += '</div></div></div>';
 
       html += renderKpisGrid(kpis);
@@ -4910,26 +4910,26 @@
       
       html += '<div class="card" style="background:var(--color-surface);border:1.5px solid rgba(217,119,6,0.35);padding:14px;border-radius:var(--radius);display:flex;flex-direction:column;justify-content:space-between;box-shadow:var(--shadow-sm)">';
       html += '<div>';
-      html += '<div style="font-size:13px;font-weight:800;color:#d97706;display:flex;align-items:center;gap:6px">🖨️ 1. FICHE DE TAXE (INTERNE)</div>';
+      html += '<div style="font-size:13px;font-weight:800;color:#d97706;display:flex;align-items:center;gap:6px">1. FICHE DE TAXE (LIQUIDATION INTERNE)</div>';
       html += '<p style="font-size:12px;color:var(--color-text-dim);margin:6px 0 12px">Calcul technique en 4 colonnes (Trésor, Émoluments, Débours) pour liquidation déontologique et visa de Maître.</p>';
       html += '</div>';
-      html += '<button type="button" class="btn btn-secondary btn-creer-fiche-taxe-carte" style="background:rgba(217,119,6,0.1);color:#d97706;border-color:rgba(217,119,6,0.35);font-weight:700;font-size:12.5px;padding:8px">🖨️ Établir une Fiche de Taxe →</button>';
+      html += '<button type="button" class="btn btn-secondary btn-creer-fiche-taxe-carte" style="background:rgba(217,119,6,0.1);color:#d97706;border-color:rgba(217,119,6,0.35);font-weight:700;font-size:12.5px;padding:8px">Établir la fiche de taxe →</button>';
       html += '</div>';
 
       html += '<div class="card" style="background:var(--color-surface);border:1.5px solid rgba(5,150,105,0.35);padding:14px;border-radius:var(--radius);display:flex;flex-direction:column;justify-content:space-between;box-shadow:var(--shadow-sm)">';
       html += '<div>';
-      html += '<div style="font-size:13px;font-weight:800;color:#059669;display:flex;align-items:center;gap:6px">📄 2. NOTE DE FRAIS (CLIENT)</div>';
+      html += '<div style="font-size:13px;font-weight:800;color:#059669;display:flex;align-items:center;gap:6px">2. NOTE DE FRAIS (APPEL DE PROVISION)</div>';
       html += '<p style="font-size:12px;color:var(--color-text-dim);margin:6px 0 12px">Appel de provision pour frais client en 3 colonnes réglementaires (Droits, Débours, Émoluments) remis avant signature.</p>';
       html += '</div>';
-      html += '<button type="button" class="btn btn-secondary btn-creer-note-frais-carte" style="background:rgba(5,150,105,0.1);color:#059669;border-color:rgba(5,150,105,0.35);font-weight:700;font-size:12.5px;padding:8px">📄 Établir une Note de Frais →</button>';
+      html += '<button type="button" class="btn btn-secondary btn-creer-note-frais-carte" style="background:rgba(5,150,105,0.1);color:#059669;border-color:rgba(5,150,105,0.35);font-weight:700;font-size:12.5px;padding:8px">Établir la note de frais →</button>';
       html += '</div>';
 
       html += '<div class="card" style="background:var(--color-surface);border:1.5px solid rgba(8,145,178,0.35);padding:14px;border-radius:var(--radius);display:flex;flex-direction:column;justify-content:space-between;box-shadow:var(--shadow-sm)">';
       html += '<div>';
-      html += '<div style="font-size:13px;font-weight:800;color:#0891b2;display:flex;align-items:center;gap:6px">🧾 3. FACTURE NORMALISÉE (TTC)</div>';
+      html += '<div style="font-size:13px;font-weight:800;color:#0891b2;display:flex;align-items:center;gap:6px">3. FACTURE NORMALISÉE (TTC)</div>';
       html += '<p style="font-size:12px;color:var(--color-text-dim);margin:6px 0 12px">Facture fiscale définitive avec TVA 18 % sur honoraires et quittance libératoire après formalités.</p>';
       html += '</div>';
-      html += '<button type="button" class="btn btn-primary btn-creer-facture-carte" style="background:#0891b2;border-color:#0891b2;font-weight:700;font-size:12.5px;padding:8px">🧾 Établir une Facture →</button>';
+      html += '<button type="button" class="btn btn-primary btn-creer-facture-carte" style="background:#0891b2;border-color:#0891b2;font-weight:700;font-size:12.5px;padding:8px">Établir la facture →</button>';
       html += '</div>';
 
       html += '</div>';
@@ -4957,10 +4957,10 @@
       html += '<div style="display:flex;gap:var(--space-2);margin-bottom:var(--space-4);flex-wrap:wrap;border-bottom:1px solid var(--color-border);padding-bottom:var(--space-2)">';
       var tabs = [
         { id: "tous", label: "Tous les dossiers", count: cache.dossiers.length },
-        { id: "soumis", label: "⏳ En attente Visa Notaire", count: nbSoumis, color: "#d97706" },
-        { id: "valide", label: "✅ Validées", count: nbValides, color: "#059669" },
-        { id: "a_corriger", label: "⚠️ À Corriger", count: nbACorriger, color: "#dc2626" },
-        { id: "brouillon", label: "📝 Brouillons / À Établir", count: nbBrouillons },
+        { id: "soumis", label: "En attente du visa du notaire", count: nbSoumis, color: "#d97706" },
+        { id: "valide", label: "Validées", count: nbValides, color: "#059669" },
+        { id: "a_corriger", label: "À corriger", count: nbACorriger, color: "#dc2626" },
+        { id: "brouillon", label: "Brouillons / À établir", count: nbBrouillons },
       ];
 
       tabs.forEach(function (t) {
@@ -4975,7 +4975,7 @@
 
       // Barre de recherche client
       html += '<div style="display:flex;gap:var(--space-2);margin-bottom:var(--space-3);align-items:center">';
-      html += '<input type="text" id="filtre-client-compta" class="input" placeholder="🔍 Rechercher par client, affaire ou numéro de dossier…" value="' + escapeHtml(etatComptabilite.rechercheClient) + '" style="max-width:380px;font-size:13px">';
+      html += '<input type="text" id="filtre-client-compta" class="input" placeholder="Rechercher par client, affaire ou numéro de dossier…" value="' + escapeHtml(etatComptabilite.rechercheClient) + '" style="max-width:380px;font-size:13px">';
       if (etatComptabilite.rechercheClient) {
         html += '<button type="button" class="btn btn-ghost" id="btn-effacer-recherche-compta" style="font-size:12px">Effacer</button>';
       }
@@ -5032,14 +5032,14 @@
           // Statut Déontologique
           html += '<td>';
           if (statutFiche === "soumis") {
-            html += '<span class="tag" style="background:rgba(245,158,11,0.15);color:#d97706;font-weight:700;font-size:10.5px;padding:3px 6px;border:1px solid rgba(245,158,11,0.3)">⏳ Soumis Notaire</span>';
+            html += '<span class="tag" style="background:rgba(245,158,11,0.15);color:#d97706;font-weight:700;font-size:10.5px;padding:3px 6px;border:1px solid rgba(245,158,11,0.3)">Soumis au notaire</span>';
           } else if (statutFiche === "valide") {
-            html += '<span class="tag" style="background:rgba(16,185,129,0.15);color:#059669;font-weight:700;font-size:10.5px;padding:3px 6px;border:1px solid rgba(16,185,129,0.3)">✅ Validée</span>';
+            html += '<span class="tag" style="background:rgba(16,185,129,0.15);color:#059669;font-weight:700;font-size:10.5px;padding:3px 6px;border:1px solid rgba(16,185,129,0.3)">Validée</span>';
           } else if (statutFiche === "valide_corrige") {
-            html += '<span class="tag" style="background:rgba(6,182,212,0.15);color:#0891b2;font-weight:700;font-size:10.5px;padding:3px 6px;border:1px solid rgba(6,182,212,0.3)">✏️ Validée (Corrigée)</span>';
+            html += '<span class="tag" style="background:rgba(6,182,212,0.15);color:#0891b2;font-weight:700;font-size:10.5px;padding:3px 6px;border:1px solid rgba(6,182,212,0.3)">Validée avec corrections</span>';
           } else if (statutFiche === "a_corriger") {
             var commTooltip = ficheRecente && ficheRecente.commentaire_notaire ? escapeHtml(ficheRecente.commentaire_notaire) : "À corriger selon directives du Notaire";
-            html += '<span class="tag" style="background:rgba(239,68,68,0.15);color:#dc2626;font-weight:700;font-size:10.5px;padding:3px 6px;border:1px solid rgba(239,68,68,0.3);cursor:help" title="' + commTooltip + '">⚠️ À corriger</span>';
+            html += '<span class="tag" style="background:rgba(239,68,68,0.15);color:#dc2626;font-weight:700;font-size:10.5px;padding:3px 6px;border:1px solid rgba(239,68,68,0.3);cursor:help" title="' + commTooltip + '">À corriger</span>';
           } else if (statutFiche === "brouillon") {
             html += '<span class="tag tag-outline" style="font-size:10.5px;padding:3px 6px">Brouillon</span>';
           } else {
@@ -5049,14 +5049,14 @@
 
           // Actions
           html += '<td><div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">';
-          var libelleBtnAction = !ficheRecente ? '+ Établir Taxe' : (statutFiche === 'soumis' && estNotaire ? '⚖️ Examiner / Valider' : 'Modifier Taxe');
+          var libelleBtnAction = !ficheRecente ? '+ Établir taxe' : (statutFiche === 'soumis' && estNotaire ? 'Examiner / Valider' : 'Modifier la taxe');
           var classeBtnAction = (statutFiche === 'soumis' && estNotaire) ? 'btn btn-primary' : (ficheRecente ? 'btn btn-secondary' : 'btn btn-primary');
 
           html += '<button type="button" class="' + classeBtnAction + ' btn-ouvrir-modal-taxe" data-id="' + d.id + '" style="font-size:11px;padding:3px 7px;font-weight:700">' + libelleBtnAction + '</button>';
-          html += '<button type="button" class="btn btn-secondary btn-imprimer-fiche-taxe-row" data-id="' + d.id + '" style="font-size:11px;padding:3px 6px" title="Consulter et imprimer la Fiche de Taxe Interne">🖨️ Taxe</button>';
-          html += '<button type="button" class="btn btn-secondary btn-imprimer-note-frais-row" data-id="' + d.id + '" style="font-size:11px;padding:3px 6px" title="Consulter et imprimer la Note de Frais client">📄 Note Frais</button>';
-          html += '<button type="button" class="btn btn-secondary btn-imprimer-facture-row" data-id="' + d.id + '" style="font-size:11px;padding:3px 6px" title="Consulter et imprimer la Facture Normalisée avec TVA 18%">🧾 Facture</button>';
-          html += '<button type="button" class="btn btn-secondary btn-export-excel-row" data-id="' + d.id + '" style="font-size:11px;padding:3px 6px;background:rgba(16,185,129,0.1);color:#059669;border-color:rgba(16,185,129,0.3);font-weight:700" title="Télécharger le fichier Excel officiel (.xlsx) complété">📊 Excel</button>';
+          html += '<button type="button" class="btn btn-secondary btn-imprimer-fiche-taxe-row" data-id="' + d.id + '" style="font-size:11px;padding:3px 6px" title="Consulter et imprimer la Fiche de Taxe Interne">Fiche de taxe</button>';
+          html += '<button type="button" class="btn btn-secondary btn-imprimer-note-frais-row" data-id="' + d.id + '" style="font-size:11px;padding:3px 6px" title="Consulter et imprimer la Note de Frais client">Note de frais</button>';
+          html += '<button type="button" class="btn btn-secondary btn-imprimer-facture-row" data-id="' + d.id + '" style="font-size:11px;padding:3px 6px" title="Consulter et imprimer la Facture Normalisée avec TVA 18%">Facture</button>';
+          html += '<button type="button" class="btn btn-secondary btn-export-excel-row" data-id="' + d.id + '" style="font-size:11px;padding:3px 6px;background:rgba(16,185,129,0.1);color:#059669;border-color:rgba(16,185,129,0.3);font-weight:700" title="Télécharger le fichier Excel officiel (.xlsx) complété">Excel</button>';
           html += '<button type="button" class="btn btn-ghost btn-voir-dossier-direct" data-id="' + d.id + '" style="font-size:11px;padding:3px 6px" title="Voir le dossier">Dossier →</button>';
           html += '</div></td>';
           html += '</tr>';
@@ -5245,10 +5245,10 @@
       
       // Zone d'importation de fichier Excel d'étude
       corps += '<div class="card" style="background:var(--color-surface-2);border:1.5px dashed var(--color-accent);padding:14px;border-radius:var(--radius);text-align:center">';
-      corps += '<div style="font-size:14px;font-weight:700;color:var(--color-text)">📥 Importer un modèle Excel personnalisé (.xlsx)</div>';
+      corps += '<div style="font-size:14px;font-weight:700;color:var(--color-text)">Importer un modèle Excel personnalisé (.xlsx)</div>';
       corps += '<p style="font-size:12px;color:var(--color-text-dim);margin:4px 0 10px">Déposez ici la feuille de calcul Excel (.xlsx) habituelle de votre étude. Le système l\'adoptera immédiatement avec sa mise en page, ses colonnes, ses formules et ses styles.</p>';
       corps += '<input type="file" id="input-upload-excel-file" accept=".xlsx,.xls" style="display:none">';
-      corps += '<button type="button" class="btn btn-primary" id="btn-choisir-excel-file" style="font-size:12.5px;padding:6px 14px;font-weight:700">📤 Choisir un fichier Excel (.xlsx) sur mon ordinateur</button>';
+      corps += '<button type="button" class="btn btn-primary" id="btn-choisir-excel-file" style="font-size:12.5px;padding:6px 14px;font-weight:700">Choisir un fichier Excel (.xlsx) sur mon ordinateur</button>';
       corps += '</div>';
 
       // Liste des modèles disponibles
@@ -5266,7 +5266,7 @@
         corps += '<td>' + badge + '</td>';
         corps += '<td>' + tailleKo + '</td>';
         corps += '<td><div style="display:flex;gap:4px">';
-        corps += '<button type="button" class="btn btn-secondary btn-apercu-excel-modele" data-id="' + m.id + '" style="font-size:11px;padding:3px 7px;font-weight:600">👁️ Voir Mise en Page</button>';
+        corps += '<button type="button" class="btn btn-secondary btn-apercu-excel-modele" data-id="' + m.id + '" style="font-size:11px;padding:3px 7px;font-weight:600">Voir la mise en page</button>';
         corps += '</div></td>';
         corps += '</tr>';
       });
@@ -5276,7 +5276,7 @@
       corps += '</div>';
 
       ouvrirModal({
-        titre: "📂 Modèles Excel du Cabinet & Mise en Page",
+        titre: "Modèles Excel du Cabinet & Mise en Page",
         largeur: "820px",
         corps: corps,
         footer: '<button class="btn btn-secondary" id="modal-excel-fermer">Fermer</button>',
@@ -5381,9 +5381,9 @@
 
       var montantInitialVal = dossierInitial ? (Number(dossierInitial.montantAssiette) || 10000000) : 10000000;
 
-      var titreForm = "🖨️ Établissement de la Fiche de Taxe (Liquidation Interne)";
-      if (formatInitial === "note_frais") titreForm = "📄 Établissement de la Note de Frais Client (Provisions Décret 2013-279)";
-      if (formatInitial === "facture") titreForm = "🧾 Établissement de la Facture Normalisée TTC (Document Fiscal)";
+      var titreForm = "Établissement de la Fiche de Taxe (Liquidation Interne)";
+      if (formatInitial === "note_frais") titreForm = "Établissement de la Note de Frais Client (Provisions Décret 2013-279)";
+      if (formatInitial === "facture") titreForm = "Établissement de la Facture Normalisée TTC (Document Fiscal)";
 
       var html = '<form id="form-modal-creer-taxe" style="display:flex;flex-direction:column;gap:var(--space-3)">';
 
@@ -5392,22 +5392,19 @@
         var st = derniereFiche.statut || "valide";
         if (st === "a_corriger") {
           html += '<div style="background:rgba(239,68,68,0.08);border:1.5px solid rgba(239,68,68,0.4);border-radius:6px;padding:10px 14px;display:flex;align-items:flex-start;gap:10px">';
-          html += '<span style="font-size:22px">⚠️</span>';
           html += '<div style="flex:1">';
           html += '<div style="font-weight:800;color:#dc2626;font-size:12.5px;text-transform:uppercase">Fiche Renvoyée pour Correction par le Notaire</div>';
           html += '<div style="font-size:12px;color:var(--color-text);margin-top:3px;background:var(--color-bg);padding:6px 10px;border-radius:4px;border:1px solid rgba(239,68,68,0.3)"><strong>Observations de Maître :</strong> « ' + escapeHtml(derniereFiche.commentaire_notaire || "Veuillez ajuster les formalités et ré-adresser pour visa.") + ' »</div>';
-          html += '<div style="font-size:11px;color:var(--color-text-dim);margin-top:4px">Ajustez les éléments ci-dessous puis cliquez sur <strong>« 📤 Re-soumettre au Notaire »</strong>.</div>';
+          html += '<div style="font-size:11px;color:var(--color-text-dim);margin-top:4px">Ajustez les éléments ci-dessous puis cliquez sur <strong>« Re-soumettre au Notaire »</strong>.</div>';
           html += '</div></div>';
         } else if (st === "soumis") {
           html += '<div style="background:rgba(245,158,11,0.08);border:1.5px solid rgba(245,158,11,0.4);border-radius:6px;padding:10px 14px;display:flex;align-items:center;gap:10px">';
-          html += '<span style="font-size:22px">⏳</span>';
           html += '<div style="flex:1">';
           html += '<div style="font-weight:800;color:#d97706;font-size:12.5px;text-transform:uppercase">Fiche en Attente de Visa du Notaire</div>';
           html += '<div style="font-size:11.5px;color:var(--color-text);margin-top:2px">Transmise pour contrôle et visa officiel. ' + (estNotaire ? 'Vous pouvez valider ou corriger ci-dessous.' : 'En attente de validation par Maître.') + '</div>';
           html += '</div></div>';
         } else if (st === "valide" || st === "valide_corrige") {
           html += '<div style="background:rgba(16,185,129,0.08);border:1.5px solid rgba(16,185,129,0.4);border-radius:6px;padding:10px 14px;display:flex;align-items:center;gap:10px">';
-          html += '<span style="font-size:22px">✅</span>';
           html += '<div style="flex:1">';
           html += '<div style="font-weight:800;color:#059669;font-size:12.5px;text-transform:uppercase">Fiche Certifiée & Validée par le Notaire ' + (st === "valide_corrige" ? '(avec corrections)' : '') + '</div>';
           html += '<div style="font-size:11.5px;color:var(--color-text);margin-top:2px">Fiche fiscale définitive. La note de frais client et la facture peuvent être délivrées.</div>';
@@ -5454,7 +5451,7 @@
       // 4. Catalogue Interactif des Émoluments & Formalités (Chiffre d'Affaires de l'Étude)
       html += '<div style="border:1px solid var(--color-border);border-radius:var(--radius);background:var(--color-surface);padding:10px 12px">';
       html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">';
-      html += '<div><span style="font-size:12px;font-weight:700;color:var(--color-accent);text-transform:uppercase">💼 Émoluments de Formalités & Diligences (CA Notaire)</span><div style="font-size:11px;color:var(--color-text-dim)">Cochez les formalités accomplies pour ce dossier (montants modifiables en direct) :</div></div>';
+      html += '<div><span style="font-size:12px;font-weight:700;color:var(--color-accent);text-transform:uppercase">Émoluments de Formalités & Diligences (CA Notaire)</span><div style="font-size:11px;color:var(--color-text-dim)">Cochez les formalités accomplies pour ce dossier (montants modifiables en direct) :</div></div>';
       html += '<div style="display:flex;gap:6px">';
       html += '<button type="button" class="btn btn-ghost" id="btn-ajouter-formalite-libre" style="font-size:11px;padding:2px 8px;font-weight:600;color:var(--color-accent)">+ Ajouter une formalité</button>';
       html += '<button type="button" class="btn btn-ghost" id="btn-toggle-toutes-formalites" style="font-size:11px;padding:2px 6px">Tout cocher / décocher</button>';
@@ -5497,7 +5494,7 @@
       // Section Débours Tiers
       html += '<div style="margin-top:8px;border-top:1px dashed var(--color-border);padding-top:6px">';
       html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">';
-      html += '<div style="font-size:11px;font-weight:700;color:var(--color-warning);text-transform:uppercase">🤝 Débours Tiers (Frais Réels Géomètre / Tribunal / Divers)</div>';
+      html += '<div style="font-size:11px;font-weight:700;color:var(--color-warning);text-transform:uppercase">Débours Tiers (Frais Réels Géomètre / Tribunal / Divers)</div>';
       html += '<button type="button" class="btn btn-ghost" id="btn-ajouter-debours-libre" style="font-size:11px;padding:2px 8px;font-weight:600;color:var(--color-warning)">+ Ajouter un débours</button>';
       html += '</div>';
 
@@ -5532,7 +5529,7 @@
       // 6. Section Observations du Notaire (si Notaire)
       if (estNotaire) {
         html += '<div style="background:var(--color-surface-2);border:1px solid var(--color-border);padding:8px 12px;border-radius:var(--radius);margin-top:4px">';
-        html += '<label style="font-size:11.5px;font-weight:700;color:var(--color-accent);margin-bottom:4px;display:block">📝 Observations / Remarques du Notaire (obligatoire en cas de renvoi pour correction) :</label>';
+        html += '<label style="font-size:11.5px;font-weight:700;color:var(--color-accent);margin-bottom:4px;display:block">Observations / Remarques du Notaire (obligatoire en cas de renvoi pour correction) :</label>';
         html += '<textarea id="taxe-modal-commentaire-notaire" class="input" style="min-height:50px;font-size:12px" placeholder="Ex: Majorer les vacations de 50 000 F suite au déplacement à Grand-Bassam ou corriger le droit foncier…">' + (derniereFiche && derniereFiche.commentaire_notaire ? escapeHtml(derniereFiche.commentaire_notaire) : '') + '</textarea>';
         html += '</div>';
       }
@@ -5546,24 +5543,24 @@
       
       // Bouton d'aperçu / impression dédié au type de document ouvert
       if (formatInitial === "note_frais") {
-        html += '<button type="button" class="btn btn-secondary" id="btn-imprimer-document-actuel" style="font-weight:700;background:rgba(5,150,105,0.12);color:#059669;border-color:rgba(5,150,105,0.35)" title="Consulter et imprimer la Note de Frais Prévisionnelle Client">📄 Aperçu & Imprimer Note de Frais</button>';
+        html += '<button type="button" class="btn btn-secondary" id="btn-imprimer-document-actuel" style="font-weight:700;background:rgba(5,150,105,0.12);color:#059669;border-color:rgba(5,150,105,0.35)" title="Consulter et imprimer la Note de Frais Prévisionnelle Client">Aperçu & Impression (Note de Frais)</button>';
       } else if (formatInitial === "facture") {
-        html += '<button type="button" class="btn btn-secondary" id="btn-imprimer-document-actuel" style="font-weight:700;background:rgba(8,145,178,0.12);color:#0891b2;border-color:rgba(8,145,178,0.35)" title="Consulter et imprimer la Facture Normalisée TTC avec TVA 18%">🧾 Aperçu & Imprimer Facture TTC</button>';
+        html += '<button type="button" class="btn btn-secondary" id="btn-imprimer-document-actuel" style="font-weight:700;background:rgba(8,145,178,0.12);color:#0891b2;border-color:rgba(8,145,178,0.35)" title="Consulter et imprimer la Facture Normalisée TTC avec TVA 18%">Aperçu & Impression (Facture TTC)</button>';
       } else {
-        html += '<button type="button" class="btn btn-secondary" id="btn-imprimer-document-actuel" style="font-weight:700;background:rgba(217,119,6,0.12);color:#d97706;border-color:rgba(217,119,6,0.35)" title="Consulter et imprimer la Fiche de Taxe Interne de liquidation">🖨️ Aperçu & Imprimer Fiche de Taxe</button>';
+        html += '<button type="button" class="btn btn-secondary" id="btn-imprimer-document-actuel" style="font-weight:700;background:rgba(217,119,6,0.12);color:#d97706;border-color:rgba(217,119,6,0.35)" title="Consulter et imprimer la Fiche de Taxe Interne de liquidation">Aperçu & Impression (Fiche de Taxe)</button>';
       }
 
       if (estNotaire) {
         // Actions Notaire
         if (derniereFiche && (derniereFiche.statut === "soumis" || derniereFiche.statut === "a_corriger")) {
-          html += '<button type="button" class="btn btn-secondary" id="btn-notaire-renvoyer" style="color:#dc2626;border-color:rgba(239,68,68,0.4);font-weight:700">↩️ Renvoyer au Comptable</button>';
-          html += '<button type="button" class="btn btn-secondary" id="btn-notaire-corriger-valider" style="color:#0891b2;border-color:rgba(6,182,212,0.4);font-weight:700">✏️ Valider avec Corrections</button>';
+          html += '<button type="button" class="btn btn-secondary" id="btn-notaire-renvoyer" style="color:#dc2626;border-color:rgba(239,68,68,0.4);font-weight:700">Renvoyer au Comptable</button>';
+          html += '<button type="button" class="btn btn-secondary" id="btn-notaire-corriger-valider" style="color:#0891b2;border-color:rgba(6,182,212,0.4);font-weight:700">Valider avec Corrections</button>';
         }
-        html += '<button type="button" class="btn btn-primary" id="btn-notaire-valider" style="background:#059669;border-color:#059669;font-weight:700">✅ Valider</button>';
+        html += '<button type="button" class="btn btn-primary" id="btn-notaire-valider" style="background:#059669;border-color:#059669;font-weight:700">Valider la Taxe</button>';
       } else {
         // Actions Comptable / Clerc
-        html += '<button type="button" class="btn btn-secondary" id="btn-enregistrer-brouillon-taxe" style="font-weight:600">💾 Enregistrer Brouillon</button>';
-        html += '<button type="button" class="btn btn-primary" id="btn-soumettre-notaire-taxe" style="font-weight:700">📤 Soumettre au Notaire</button>';
+        html += '<button type="button" class="btn btn-secondary" id="btn-enregistrer-brouillon-taxe" style="font-weight:600">Enregistrer Brouillon</button>';
+        html += '<button type="button" class="btn btn-primary" id="btn-soumettre-notaire-taxe" style="font-weight:700">Soumettre au Notaire</button>';
       }
 
       html += '</div>';
@@ -5658,17 +5655,17 @@
                 // 3 Cartes de synthèse des 3 piliers
                 h += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px">';
                 h += '<div style="background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.3);border-radius:6px;padding:8px;text-align:center">';
-                h += '<div style="font-size:10.5px;font-weight:700;color:var(--color-accent);text-transform:uppercase">🏛️ CA Émoluments Notaire (HT)</div>';
+                h += '<div style="font-size:10.5px;font-weight:700;color:var(--color-accent);text-transform:uppercase">CA Émoluments Notaire (HT)</div>';
                 h += '<div style="font-size:15px;font-weight:800;color:var(--color-accent);margin-top:2px">' + fmtFCFA(totalCA) + '</div>';
                 h += '</div>';
 
                 h += '<div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-radius:6px;padding:8px;text-align:center">';
-                h += '<div style="font-size:10.5px;font-weight:700;color:var(--color-warning);text-transform:uppercase">🏢 Trésor (DGI & Foncier)</div>';
+                h += '<div style="font-size:10.5px;font-weight:700;color:var(--color-warning);text-transform:uppercase">Trésor (DGI & Foncier)</div>';
                 h += '<div style="font-size:15px;font-weight:800;color:var(--color-warning);margin-top:2px">' + fmtFCFA(totalTresor) + '</div>';
                 h += '</div>';
 
                 h += '<div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.3);border-radius:6px;padding:8px;text-align:center">';
-                h += '<div style="font-size:10.5px;font-weight:700;color:#10b981;text-transform:uppercase">🤝 Débours Tiers (Frais réels)</div>';
+                h += '<div style="font-size:10.5px;font-weight:700;color:#10b981;text-transform:uppercase">Débours Tiers (Frais réels)</div>';
                 h += '<div style="font-size:15px;font-weight:800;color:#10b981;margin-top:2px">' + fmtFCFA(totalDebours) + '</div>';
                 h += '</div>';
                 h += '</div>';
@@ -6533,18 +6530,17 @@
         // Document verrouillé tant que la Fiche de Taxe n'est pas validée par le Notaire
         html += '<div style="text-align:center;margin-bottom:16px">';
         html += '<div style="font-family:\'Space Grotesk\',Arial,sans-serif;font-weight:800;font-size:13pt;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1.5px solid #111;display:inline-block;padding-bottom:2px">NOTE DE FRAIS PRÉVISIONNELLE N° ' + (dossier.numeroDossier || "EN COURS") + '</div>';
-        html += '<div style="font-size:8.5pt;color:#dc2626;font-weight:700;margin-top:3px">⚠️ ÉMISSION CONDITIONNÉE AU VISA DU NOTAIRE</div>';
+        html += '<div style="font-size:8.5pt;color:#dc2626;font-weight:700;margin-top:3px">ÉMISSION CONDITIONNÉE AU VISA DU NOTAIRE</div>';
         html += '</div>';
 
         html += '<div style="background:#fff;border:1.5px dashed #dc2626;border-radius:6px;padding:32px 20px;text-align:center;margin:20px 0">';
-        html += '<div style="font-size:38px;margin-bottom:10px">🔒</div>';
         html += '<div style="font-family:\'Space Grotesk\',Arial,sans-serif;font-weight:800;font-size:13pt;color:#991b1b;text-transform:uppercase">Document Client Indisponible</div>';
         html += '<p style="font-size:9.5pt;color:#4b5563;max-width:520px;margin:10px auto 16px;line-height:1.5">';
         html += 'Conformément aux règles déontologiques du Notariat (Décret 2013-279), la <strong>Note de Frais (Appel de Provision Client)</strong> ne peut être délivrée tant que la <strong>Fiche de Taxe interne</strong> n\'a pas été formellement validée et signée par le Notaire.';
         html += '</p>';
         html += '<div style="display:inline-flex;align-items:center;gap:8px;background:#fef2f2;padding:8px 14px;border-radius:4px;border:1px solid #fca5a5;font-size:11.5px;color:#991b1b;font-weight:700">';
         html += '<span>État actuel de la Fiche de Taxe :</span> ';
-        html += '<span class="tag" style="background:#fee2e2;color:#991b1b;font-weight:800">' + ((f && f.statut === "soumis") ? "⏳ Soumise au Notaire (En attente de visa)" : ((f && f.statut === "a_corriger") ? "⚠️ Renvoyée pour correction" : "📝 Brouillon non validé")) + '</span>';
+        html += '<span class="tag" style="background:#fee2e2;color:#991b1b;font-weight:800">' + ((f && f.statut === "soumis") ? "Soumise au Notaire (En attente de visa)" : ((f && f.statut === "a_corriger") ? "Renvoyée pour correction" : "Brouillon non validé")) + '</span>';
         html += '</div>';
         html += '</div>';
       } else {
@@ -6622,18 +6618,17 @@
       if (!estTaxeValideeF) {
         html += '<div style="text-align:center;margin-bottom:16px">';
         html += '<div style="font-family:\'Space Grotesk\',Arial,sans-serif;font-weight:800;font-size:13pt;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1.5px solid #111;display:inline-block;padding-bottom:2px">FACTURE NORMALISÉE NOTARIÉE</div>';
-        html += '<div style="font-size:8.5pt;color:#dc2626;font-weight:700;margin-top:2px">⚠️ ÉMISSION CONDITIONNÉE AU VISA DU NOTAIRE</div>';
+        html += '<div style="font-size:8.5pt;color:#dc2626;font-weight:700;margin-top:2px">ÉMISSION CONDITIONNÉE AU VISA DU NOTAIRE</div>';
         html += '</div>';
 
         html += '<div style="background:#fff;border:1.5px dashed #dc2626;border-radius:6px;padding:32px 20px;text-align:center;margin:20px 0">';
-        html += '<div style="font-size:38px;margin-bottom:10px">🔒</div>';
         html += '<div style="font-family:\'Space Grotesk\',Arial,sans-serif;font-weight:800;font-size:13pt;color:#991b1b;text-transform:uppercase">Facture Fiscale Indisponible</div>';
         html += '<p style="font-size:9.5pt;color:#4b5563;max-width:520px;margin:10px auto 16px;line-height:1.5">';
         html += 'La <strong>Facture Normalisée (TTC avec quittance fiscale)</strong> ne peut être émise qu\'après validation définitive de la liquidation des droits et honoraires par Maître.';
         html += '</p>';
         html += '<div style="display:inline-flex;align-items:center;gap:8px;background:#fef2f2;padding:8px 14px;border-radius:4px;border:1px solid #fca5a5;font-size:11.5px;color:#991b1b;font-weight:700">';
         html += '<span>État de la Fiche de Taxe :</span> ';
-        html += '<span class="tag" style="background:#fee2e2;color:#991b1b;font-weight:800">' + ((f && f.statut === "soumis") ? "⏳ Soumise au Notaire (En attente de visa)" : ((f && f.statut === "a_corriger") ? "⚠️ Renvoyée pour correction" : "📝 Brouillon non validé")) + '</span>';
+        html += '<span class="tag" style="background:#fee2e2;color:#991b1b;font-weight:800">' + ((f && f.statut === "soumis") ? "Soumise au Notaire (En attente de visa)" : ((f && f.statut === "a_corriger") ? "Renvoyée pour correction" : "Brouillon non validé")) + '</span>';
         html += '</div>';
         html += '</div>';
       } else {
@@ -6715,10 +6710,10 @@
     var estNotaire = cache.utilisateur && (cache.utilisateur.role === "notaire" || cache.utilisateur.role === "superadmin");
 
     function titreModal(fmt) {
-      if (fmt === "fiche_taxe") return "🖨️ Fiche de Taxe (Document Interne de Liquidation)";
-      if (fmt === "note_frais") return "📄 Note de Frais Prévisionnelle (Appel de Provision Client)";
-      if (fmt === "facture") return "🧾 Facture Normalisée Notariée (Document Fiscal TTC)";
-      return "📊 Rendu Direct du Fichier Excel de l'Étude (.xlsx)";
+      if (fmt === "fiche_taxe") return "Fiche de Taxe (Document Interne de Liquidation)";
+      if (fmt === "note_frais") return "Note de Frais Prévisionnelle (Appel de Provision Client)";
+      if (fmt === "facture") return "Facture Normalisée Notariée (Document Fiscal TTC)";
+      return "Rendu Direct du Fichier Excel de l'Étude (.xlsx)";
     }
 
     // Charger paramètres, modèles Excel et la dernière fiche officielle du dossier
@@ -6772,7 +6767,7 @@
             resExcel.feuillesDisponibles.forEach(function (sh) {
               var isShAct = sh === resExcel.feuilleActive;
               var btnCls = isShAct ? 'background:#10b981;color:#fff;font-weight:700' : 'background:#4b5563;color:#d1d5db';
-              h += '<button type="button" class="btn btn-sm btn-select-sheet-excel" data-sheet="' + escapeHtml(sh) + '" style="font-size:11px;padding:3px 8px;border:none;border-radius:3px;cursor:pointer;' + btnCls + '">📑 ' + escapeHtml(sh) + '</button>';
+              h += '<button type="button" class="btn btn-sm btn-select-sheet-excel" data-sheet="' + escapeHtml(sh) + '" style="font-size:11px;padding:3px 8px;border:none;border-radius:3px;cursor:pointer;' + btnCls + '">' + escapeHtml(sh) + '</button>';
             });
             h += '</div>';
           }
@@ -6807,25 +6802,25 @@
           h += '<div style="display:flex;align-items:center;gap:8px">';
           h += '<span style="font-size:12px;font-weight:700">Statut Taxe :</span>';
           if (stTaxe === "soumis") {
-            h += '<span class="tag" style="background:#fef3c7;color:#b45309;font-weight:800">⏳ Soumise au Notaire (En attente de visa)</span>';
+            h += '<span class="tag" style="background:#fef3c7;color:#b45309;font-weight:800">Soumise au Notaire (En attente de visa)</span>';
           } else if (stTaxe === "a_corriger") {
-            h += '<span class="tag" style="background:#fee2e2;color:#b91c1c;font-weight:800">⚠️ Renvoyée pour correction</span>';
+            h += '<span class="tag" style="background:#fee2e2;color:#b91c1c;font-weight:800">Renvoyée pour correction</span>';
           } else if (estTaxeValide) {
-            h += '<span class="tag" style="background:#d1fae5;color:#047857;font-weight:800">✅ Fiche Certifiée & Validée par le Notaire</span>';
+            h += '<span class="tag" style="background:#d1fae5;color:#047857;font-weight:800">Fiche Certifiée & Validée par le Notaire</span>';
           } else {
-            h += '<span class="tag tag-outline">📝 Brouillon</span>';
+            h += '<span class="tag tag-outline">Brouillon</span>';
           }
           h += '</div>';
 
           // Actions Taxe
           h += '<div style="display:flex;gap:6px;flex-wrap:wrap">';
-          h += '<button type="button" class="btn btn-secondary" id="btn-wf-modifier-taxe" style="font-size:11.5px;padding:4px 9px;font-weight:700">⚙️ Modifier les Chiffres</button>';
-          h += '<button type="button" class="btn btn-secondary" id="btn-wf-save-brouillon-taxe" style="font-size:11.5px;padding:4px 9px">💾 Enregistrer Brouillon</button>';
-          h += '<button type="button" class="btn btn-primary" id="btn-wf-soumettre-taxe" style="font-size:11.5px;padding:4px 10px;background:#d97706;border-color:#d97706;font-weight:700">📤 Soumettre au Notaire</button>';
+          h += '<button type="button" class="btn btn-secondary" id="btn-wf-modifier-taxe" style="font-size:11.5px;padding:4px 9px;font-weight:700">Modifier les Chiffres</button>';
+          h += '<button type="button" class="btn btn-secondary" id="btn-wf-save-brouillon-taxe" style="font-size:11.5px;padding:4px 9px">Enregistrer Brouillon</button>';
+          h += '<button type="button" class="btn btn-primary" id="btn-wf-soumettre-taxe" style="font-size:11.5px;padding:4px 10px;background:#d97706;border-color:#d97706;font-weight:700">Soumettre au Notaire</button>';
           
           if (estNotaire) {
-            h += '<button type="button" class="btn btn-primary" id="btn-wf-valider-taxe" style="font-size:11.5px;padding:4px 10px;background:#059669;border-color:#059669;font-weight:700">✅ Valider la Fiche de Taxe</button>';
-            h += '<button type="button" class="btn btn-secondary" id="btn-wf-renvoyer-taxe" style="font-size:11.5px;padding:4px 9px;color:#dc2626;border-color:rgba(220,38,38,0.4)">↩️ Renvoyer pour Correction</button>';
+            h += '<button type="button" class="btn btn-primary" id="btn-wf-valider-taxe" style="font-size:11.5px;padding:4px 10px;background:#059669;border-color:#059669;font-weight:700">Valider la Fiche de Taxe</button>';
+            h += '<button type="button" class="btn btn-secondary" id="btn-wf-renvoyer-taxe" style="font-size:11.5px;padding:4px 9px;color:#dc2626;border-color:rgba(220,38,38,0.4)">Renvoyer pour Correction</button>';
           }
           h += '</div>';
 
@@ -6841,26 +6836,26 @@
           
           if (!estTaxeValide) {
             h += '<div style="display:flex;align-items:center;gap:8px;color:#dc2626;font-size:12px;font-weight:700">';
-            h += '<span>🔒 Note de Frais Verrouillée : La Fiche de Taxe doit être validée par le Notaire avant délivrance.</span>';
+            h += '<span>Note de Frais Verrouillée : La Fiche de Taxe doit être validée par le Notaire avant délivrance.</span>';
             h += '</div>';
-            h += '<div><button type="button" class="btn btn-primary btn-aller-valider-taxe" style="font-size:11.5px;padding:4px 10px;background:#059669;border-color:#059669">🖨️ Ouvrir la Fiche de Taxe pour validation →</button></div>';
+            h += '<div><button type="button" class="btn btn-primary btn-aller-valider-taxe" style="font-size:11.5px;padding:4px 10px;background:#059669;border-color:#059669">Ouvrir la Fiche de Taxe pour validation →</button></div>';
           } else {
             var stNote = donneesFiche.statutNoteFrais || "brouillon";
             h += '<div style="display:flex;align-items:center;gap:8px">';
             h += '<span style="font-size:12px;font-weight:700">Note de Frais Client :</span>';
             if (stNote === "valide") {
-              h += '<span class="tag" style="background:#d1fae5;color:#047857;font-weight:800">✅ Visée & Prête pour remise client</span>';
+              h += '<span class="tag" style="background:#d1fae5;color:#047857;font-weight:800">Visée & Prête pour remise client</span>';
             } else if (stNote === "soumis") {
-              h += '<span class="tag" style="background:#fef3c7;color:#b45309;font-weight:800">⏳ Soumise au Notaire</span>';
+              h += '<span class="tag" style="background:#fef3c7;color:#b45309;font-weight:800">Soumise au Notaire</span>';
             } else {
-              h += '<span class="tag" style="background:rgba(16,185,129,0.1);color:#059669;font-weight:700">📝 Prête (Taxe Validée)</span>';
+              h += '<span class="tag" style="background:rgba(16,185,129,0.1);color:#059669;font-weight:700">Prête (Taxe Validée)</span>';
             }
             h += '</div>';
 
             h += '<div style="display:flex;gap:6px">';
-            h += '<button type="button" class="btn btn-primary" id="btn-wf-soumettre-note-frais" style="font-size:11.5px;padding:4px 10px;background:#d97706;border-color:#d97706;font-weight:700">📤 Soumettre la Note au Notaire</button>';
+            h += '<button type="button" class="btn btn-primary" id="btn-wf-soumettre-note-frais" style="font-size:11.5px;padding:4px 10px;background:#d97706;border-color:#d97706;font-weight:700">Soumettre la Note au Notaire</button>';
             if (estNotaire) {
-              h += '<button type="button" class="btn btn-primary" id="btn-wf-valider-note-frais" style="font-size:11.5px;padding:4px 10px;background:#059669;border-color:#059669;font-weight:700">✅ Viser & Autoriser Remise Client</button>';
+              h += '<button type="button" class="btn btn-primary" id="btn-wf-valider-note-frais" style="font-size:11.5px;padding:4px 10px;background:#059669;border-color:#059669;font-weight:700">Viser & Autoriser Remise Client</button>';
             }
             h += '</div>';
           }
@@ -6870,26 +6865,26 @@
           
           if (!estTaxeValide) {
             h += '<div style="display:flex;align-items:center;gap:8px;color:#dc2626;font-size:12px;font-weight:700">';
-            h += '<span>🔒 Facture Verrouillée : La Fiche de Taxe doit être validée par le Notaire avant émission.</span>';
+            h += '<span>Facture Verrouillée : La Fiche de Taxe doit être validée par le Notaire avant émission.</span>';
             h += '</div>';
-            h += '<div><button type="button" class="btn btn-primary btn-aller-valider-taxe" style="font-size:11.5px;padding:4px 10px;background:#059669;border-color:#059669">🖨️ Ouvrir la Fiche de Taxe pour validation →</button></div>';
+            h += '<div><button type="button" class="btn btn-primary btn-aller-valider-taxe" style="font-size:11.5px;padding:4px 10px;background:#059669;border-color:#059669">Ouvrir la Fiche de Taxe pour validation →</button></div>';
           } else {
             var stFac = donneesFiche.statutFacture || "brouillon";
             h += '<div style="display:flex;align-items:center;gap:8px">';
             h += '<span style="font-size:12px;font-weight:700">Facture Normalisée :</span>';
             if (stFac === "valide") {
-              h += '<span class="tag" style="background:#d1fae5;color:#047857;font-weight:800">✅ Facture TTC Émise & Quittancée</span>';
+              h += '<span class="tag" style="background:#d1fae5;color:#047857;font-weight:800">Facture TTC Émise & Quittancée</span>';
             } else if (stFac === "soumis") {
-              h += '<span class="tag" style="background:#fef3c7;color:#b45309;font-weight:800">⏳ Soumise pour émission</span>';
+              h += '<span class="tag" style="background:#fef3c7;color:#b45309;font-weight:800">Soumise pour émission</span>';
             } else {
-              h += '<span class="tag" style="background:rgba(16,185,129,0.1);color:#059669;font-weight:700">📝 Prête pour émission</span>';
+              h += '<span class="tag" style="background:rgba(16,185,129,0.1);color:#059669;font-weight:700">Prête pour émission</span>';
             }
             h += '</div>';
 
             h += '<div style="display:flex;gap:6px">';
-            h += '<button type="button" class="btn btn-primary" id="btn-wf-soumettre-facture" style="font-size:11.5px;padding:4px 10px;background:#d97706;border-color:#d97706;font-weight:700">📤 Soumettre la Facture au Notaire</button>';
+            h += '<button type="button" class="btn btn-primary" id="btn-wf-soumettre-facture" style="font-size:11.5px;padding:4px 10px;background:#d97706;border-color:#d97706;font-weight:700">Soumettre la Facture au Notaire</button>';
             if (estNotaire) {
-              h += '<button type="button" class="btn btn-primary" id="btn-wf-valider-facture" style="font-size:11.5px;padding:4px 10px;background:#059669;border-color:#059669;font-weight:700">✅ Émettre & Quittancer la Facture TTC</button>';
+              h += '<button type="button" class="btn btn-primary" id="btn-wf-valider-facture" style="font-size:11.5px;padding:4px 10px;background:#059669;border-color:#059669;font-weight:700">Émettre & Quittancer la Facture TTC</button>';
             }
             h += '</div>';
           }
@@ -6906,10 +6901,10 @@
         
         // Onglets
         html += '<div style="display:flex;gap:4px;flex-wrap:wrap">';
-        html += '<button type="button" class="btn ' + (fmt === "fiche_taxe" ? "btn-primary" : "btn-ghost") + ' btn-switch-doc-fmt" data-fmt="fiche_taxe" style="font-size:11.5px;padding:4px 8px">🖨️ Fiche de Taxe</button>';
-        html += '<button type="button" class="btn ' + (fmt === "note_frais" ? "btn-primary" : "btn-ghost") + ' btn-switch-doc-fmt" data-fmt="note_frais" style="font-size:11.5px;padding:4px 8px">📄 Note de Frais</button>';
-        html += '<button type="button" class="btn ' + (fmt === "facture" ? "btn-primary" : "btn-ghost") + ' btn-switch-doc-fmt" data-fmt="facture" style="font-size:11.5px;padding:4px 8px">🧾 Facture Normalisée</button>';
-        html += '<button type="button" class="btn ' + (fmt === "excel_natif" ? "btn-primary" : "btn-ghost") + ' btn-switch-doc-fmt" data-fmt="excel_natif" style="font-size:11.5px;padding:4px 8px;background:' + (fmt === "excel_natif" ? '#059669' : 'transparent') + ';color:' + (fmt === "excel_natif" ? '#fff' : '#059669') + ';font-weight:700">📊 Rendu Fichier Excel (.xlsx)</button>';
+        html += '<button type="button" class="btn ' + (fmt === "fiche_taxe" ? "btn-primary" : "btn-ghost") + ' btn-switch-doc-fmt" data-fmt="fiche_taxe" style="font-size:11.5px;padding:4px 8px">Fiche de Taxe</button>';
+        html += '<button type="button" class="btn ' + (fmt === "note_frais" ? "btn-primary" : "btn-ghost") + ' btn-switch-doc-fmt" data-fmt="note_frais" style="font-size:11.5px;padding:4px 8px">Note de Frais</button>';
+        html += '<button type="button" class="btn ' + (fmt === "facture" ? "btn-primary" : "btn-ghost") + ' btn-switch-doc-fmt" data-fmt="facture" style="font-size:11.5px;padding:4px 8px">Facture Normalisée</button>';
+        html += '<button type="button" class="btn ' + (fmt === "excel_natif" ? "btn-primary" : "btn-ghost") + ' btn-switch-doc-fmt" data-fmt="excel_natif" style="font-size:11.5px;padding:4px 8px;background:' + (fmt === "excel_natif" ? '#059669' : 'transparent') + ';color:' + (fmt === "excel_natif" ? '#fff' : '#059669') + ';font-weight:700">Rendu Fichier Excel (.xlsx)</button>';
         html += '</div>';
 
         // Sélecteur & Export Excel
@@ -6921,7 +6916,7 @@
           html += '<option value="' + m.id + '"' + isSel + '>' + escapeHtml(m.nom) + '</option>';
         });
         html += '</select>';
-        html += '<button type="button" class="btn btn-secondary" id="modal-btn-export-excel" style="font-size:12px;padding:4px 10px;background:rgba(16,185,129,0.12);color:#059669;border-color:rgba(16,185,129,0.35);font-weight:700" title="Télécharger le classeur Excel (.xlsx) pré-rempli">📊 Télécharger Excel (.xlsx)</button>';
+        html += '<button type="button" class="btn btn-secondary" id="modal-btn-export-excel" style="font-size:12px;padding:4px 10px;background:rgba(16,185,129,0.12);color:#059669;border-color:rgba(16,185,129,0.35);font-weight:700" title="Télécharger le classeur Excel (.xlsx) pré-rempli">Télécharger Excel (.xlsx)</button>';
         html += '</div>';
 
         html += '</div>';
@@ -7141,8 +7136,8 @@
         corps: construireCorps(formatActuel),
         footer: 
           '<button class="btn btn-secondary" id="modal-doc-fermer">Fermer</button>' +
-          '<button class="btn btn-secondary" id="modal-doc-footer-excel" style="background:rgba(16,185,129,0.12);color:#059669;border-color:rgba(16,185,129,0.35);font-weight:700">📊 Télécharger Excel (.xlsx)</button>' +
-          '<button class="btn btn-primary" id="modal-doc-imprimer" style="background:#059669;border-color:#059669;font-weight:700">🖨️ Imprimer / Télécharger en PDF (A4)</button>',
+          '<button class="btn btn-secondary" id="modal-doc-footer-excel" style="background:rgba(16,185,129,0.12);color:#059669;border-color:rgba(16,185,129,0.35);font-weight:700">Télécharger Excel (.xlsx)</button>' +
+          '<button class="btn btn-primary" id="modal-doc-imprimer" style="background:#059669;border-color:#059669;font-weight:700">Imprimer / Télécharger en PDF (A4)</button>',
         apresOuverture: function () {
           var modalDom = document.getElementById("modal-racine");
           if (!modalDom) return;
@@ -7288,8 +7283,8 @@
       var total = fiches.length + notes.length + factures.length + actes.length;
 
       var titrePrincipal = estNotaire 
-        ? '⏳ Parapheur & Éléments en Attente de Validation' 
-        : '📂 Parapheur Transmis (Suivi des Pièces Soumises à Maître)';
+        ? 'Parapheur & Éléments en Attente de Validation' 
+        : 'Parapheur Transmis (Suivi des Pièces Soumises à Maître)';
       var sousTitrePrincipal = estNotaire 
         ? 'Validation formelle et visa du Notaire Titulaire : Projets d\'actes, Fiches de taxe, Notes de frais client, Factures fiscales TTC, Salaires & Charges.' 
         : 'Vue de consultation et suivi du circuit des pièces et actes transmis à Maître pour visa et validation officielle.';
@@ -7299,7 +7294,7 @@
       html += '<div><h1 style="margin:0">' + titrePrincipal + '</h1>';
       html += '<p style="opacity:.65;font-size:14px;margin:2px 0 0">' + sousTitrePrincipal + '</p></div>';
       html += '<div style="display:flex;gap:8px">';
-      html += '<button type="button" class="btn btn-secondary" id="btn-refresh-validations">🔄 Actualiser</button>';
+      html += '<button type="button" class="btn btn-secondary" id="btn-refresh-validations">Actualiser</button>';
       html += '</div></div></div>';
 
       // 5 Cartes KPI
@@ -7316,11 +7311,11 @@
       html += '<div style="display:flex;gap:var(--space-2);margin-bottom:var(--space-4);flex-wrap:wrap;border-bottom:1px solid var(--color-border);padding-bottom:var(--space-2)">';
       var tabs = [
         { id: "tous", label: "Tous les éléments", count: total },
-        { id: "actes", label: "📜 Projets d'actes", count: actes.length, color: "#6366f1" },
-        { id: "fiches_taxe", label: "🖨️ Fiches de Taxe", count: fiches.length, color: "#d97706" },
-        { id: "notes_frais", label: "📄 Notes de Frais", count: notes.length, color: "#059669" },
-        { id: "factures", label: "🧾 Factures TTC", count: factures.length, color: "#0891b2" },
-        { id: "salaires", label: "💳 Salaires & Charges", count: salaires.length, color: "#8b5cf6" },
+        { id: "actes", label: "Projets d'actes", count: actes.length, color: "#6366f1" },
+        { id: "fiches_taxe", label: "Fiches de Taxe", count: fiches.length, color: "#d97706" },
+        { id: "notes_frais", label: "Notes de Frais", count: notes.length, color: "#059669" },
+        { id: "factures", label: "Factures TTC", count: factures.length, color: "#0891b2" },
+        { id: "salaires", label: "Salaires & Charges", count: salaires.length, color: "#8b5cf6" },
       ];
 
       tabs.forEach(function (t) {
@@ -7353,7 +7348,6 @@
 
       if (!itemsAffiches.length) {
         html += '<div class="card" style="padding:40px;text-align:center;color:var(--color-text-dim)">';
-        html += '<div style="font-size:36px;margin-bottom:8px">🎉</div>';
         html += '<div style="font-size:16px;font-weight:700;color:var(--color-text)">Aucun élément en attente de validation</div>';
         html += '<p style="font-size:13px;margin-top:4px">Tous les actes, fiches de taxe, notes de frais et factures soumis sont à jour.</p>';
         html += '</div>';
@@ -7372,76 +7366,76 @@
           html += '<tr>';
           if (item.type === "acte") {
             var a = item.raw;
-            html += '<td><span class="tag" style="background:#e0e7ff;color:#4338ca;font-weight:700">📜 Projet d\'acte (v' + a.numero_version + ')</span></td>';
+            html += '<td><span class="tag" style="background:#e0e7ff;color:#4338ca;font-weight:700">Projet d\'acte (v' + a.numero_version + ')</span></td>';
             html += '<td><strong>' + escapeHtml(a.numero_dossier) + '</strong><br><span style="font-size:11px;color:var(--color-text-dim)">' + labelActe(a.type_acte_id) + '</span></td>';
             html += '<td>' + escapeHtml(a.comparants_noms || "Comparants") + '</td>';
             html += '<td style="text-align:right;color:var(--color-text-dim)">—</td>';
             html += '<td>' + escapeHtml(a.redige_par_nom || "Clerc") + '</td>';
             html += '<td style="font-size:11.5px">' + fmtDate(a.soumis_le || a.created_at) + '</td>';
             html += '<td style="text-align:center"><div style="display:flex;gap:4px;justify-content:center">';
-            html += '<button type="button" class="btn btn-secondary btn-val-ouvrir-dossier" data-id="' + a.dossier_id + '" style="font-size:11px;padding:3px 7px">👁️ Examiner</button>';
+            html += '<button type="button" class="btn btn-secondary btn-val-ouvrir-dossier" data-id="' + a.dossier_id + '" style="font-size:11px;padding:3px 7px">Examiner</button>';
             if (estNotaire) {
-              html += '<button type="button" class="btn btn-primary btn-val-valider-acte" data-id="' + a.dossier_id + '" style="font-size:11px;padding:3px 8px;background:#059669;border-color:#059669;font-weight:700">✅ Valider</button>';
-              html += '<button type="button" class="btn btn-secondary btn-val-renvoyer-acte" data-id="' + a.dossier_id + '" style="font-size:11px;padding:3px 7px;color:#dc2626;border-color:rgba(220,38,38,0.4)">↩️ Renvoyer</button>';
+              html += '<button type="button" class="btn btn-primary btn-val-valider-acte" data-id="' + a.dossier_id + '" style="font-size:11px;padding:3px 8px;background:#059669;border-color:#059669;font-weight:700">Valider</button>';
+              html += '<button type="button" class="btn btn-secondary btn-val-renvoyer-acte" data-id="' + a.dossier_id + '" style="font-size:11px;padding:3px 7px;color:#dc2626;border-color:rgba(220,38,38,0.4)">Renvoyer</button>';
             } else {
-              html += '<span class="tag tag-outline" style="font-size:11px;color:#6366f1;border-color:rgba(99,102,241,0.35)">⏳ Soumis à Maître</span>';
+              html += '<span class="tag tag-outline" style="font-size:11px;color:#6366f1;border-color:rgba(99,102,241,0.35)">Soumis à Maître</span>';
             }
             html += '</div></td>';
           } else if (item.type === "fiche_taxe") {
             var f = item.raw;
             var tot = (f.donnees && f.donnees.totaux && f.donnees.totaux.general) || 0;
-            html += '<td><span class="tag" style="background:#fef3c7;color:#b45309;font-weight:700">🖨️ Fiche de Taxe</span></td>';
+            html += '<td><span class="tag" style="background:#fef3c7;color:#b45309;font-weight:700">Fiche de Taxe</span></td>';
             html += '<td><strong>' + escapeHtml(f.numero_dossier) + '</strong><br><span style="font-size:11px;color:var(--color-text-dim)">' + labelActe(f.type_acte_id) + '</span></td>';
             html += '<td>' + escapeHtml(f.comparants_noms || "Client") + '</td>';
             html += '<td style="text-align:right;font-weight:800;color:var(--color-accent)">' + fmtFCFA(tot) + '</td>';
             html += '<td>' + escapeHtml(f.utilisateur_nom || "Comptable") + '</td>';
             html += '<td style="font-size:11.5px">' + fmtDate(f.created_at) + '</td>';
             html += '<td style="text-align:center"><div style="display:flex;gap:4px;justify-content:center">';
-            html += '<button type="button" class="btn btn-secondary btn-val-apercu-taxe" data-id="' + f.dossier_id + '" style="font-size:11px;padding:3px 7px">👁️ Consulter</button>';
+            html += '<button type="button" class="btn btn-secondary btn-val-apercu-taxe" data-id="' + f.dossier_id + '" style="font-size:11px;padding:3px 7px">Consulter</button>';
             if (estNotaire) {
-              html += '<button type="button" class="btn btn-primary btn-val-valider-taxe" data-id="' + f.id + '" style="font-size:11px;padding:3px 8px;background:#059669;border-color:#059669;font-weight:700">✅ Valider</button>';
-              html += '<button type="button" class="btn btn-secondary btn-val-renvoyer-taxe" data-id="' + f.id + '" style="font-size:11px;padding:3px 7px;color:#dc2626;border-color:rgba(220,38,38,0.4)">↩️ Renvoyer</button>';
+              html += '<button type="button" class="btn btn-primary btn-val-valider-taxe" data-id="' + f.id + '" style="font-size:11px;padding:3px 8px;background:#059669;border-color:#059669;font-weight:700">Valider</button>';
+              html += '<button type="button" class="btn btn-secondary btn-val-renvoyer-taxe" data-id="' + f.id + '" style="font-size:11px;padding:3px 7px;color:#dc2626;border-color:rgba(220,38,38,0.4)">Renvoyer</button>';
             } else {
-              html += '<span class="tag tag-outline" style="font-size:11px;color:#d97706;border-color:rgba(217,119,6,0.35)">⏳ Soumis à Maître</span>';
+              html += '<span class="tag tag-outline" style="font-size:11px;color:#d97706;border-color:rgba(217,119,6,0.35)">Soumis à Maître</span>';
             }
             html += '</div></td>';
           } else if (item.type === "note_frais") {
             var n = item.raw;
             var totN = (n.donnees && n.donnees.totaux && n.donnees.totaux.general) || 0;
-            html += '<td><span class="tag" style="background:#d1fae5;color:#047857;font-weight:700">📄 Note de Frais</span></td>';
+            html += '<td><span class="tag" style="background:#d1fae5;color:#047857;font-weight:700">Note de Frais</span></td>';
             html += '<td><strong>' + escapeHtml(n.numero_dossier) + '</strong><br><span style="font-size:11px;color:var(--color-text-dim)">' + labelActe(n.type_acte_id) + '</span></td>';
             html += '<td>' + escapeHtml(n.comparants_noms || "Client") + '</td>';
             html += '<td style="text-align:right;font-weight:800;color:#047857">' + fmtFCFA(totN) + '</td>';
             html += '<td>' + escapeHtml(n.soumis_par || n.utilisateur_nom || "Comptable") + '</td>';
             html += '<td style="font-size:11.5px">' + fmtDate(n.soumis_le || n.created_at) + '</td>';
             html += '<td style="text-align:center"><div style="display:flex;gap:4px;justify-content:center">';
-            html += '<button type="button" class="btn btn-secondary btn-val-apercu-note" data-id="' + n.dossier_id + '" style="font-size:11px;padding:3px 7px">👁️ Consulter</button>';
+            html += '<button type="button" class="btn btn-secondary btn-val-apercu-note" data-id="' + n.dossier_id + '" style="font-size:11px;padding:3px 7px">Consulter</button>';
             if (estNotaire) {
-              html += '<button type="button" class="btn btn-primary btn-val-valider-note" data-id="' + n.dossier_id + '" style="font-size:11px;padding:3px 8px;background:#059669;border-color:#059669;font-weight:700">✅ Viser Note</button>';
+              html += '<button type="button" class="btn btn-primary btn-val-valider-note" data-id="' + n.dossier_id + '" style="font-size:11px;padding:3px 8px;background:#059669;border-color:#059669;font-weight:700">Viser Note</button>';
             } else {
-              html += '<span class="tag tag-outline" style="font-size:11px;color:#047857;border-color:rgba(4,120,87,0.35)">⏳ Visa Maître en attente</span>';
+              html += '<span class="tag tag-outline" style="font-size:11px;color:#047857;border-color:rgba(4,120,87,0.35)">Visa Maître en attente</span>';
             }
             html += '</div></td>';
           } else if (item.type === "facture") {
             var fac = item.raw;
             var totF = (fac.donnees && fac.donnees.totaux && fac.donnees.totaux.general) || 0;
-            html += '<td><span class="tag" style="background:#cffafe;color:#0e7490;font-weight:700">🧾 Facture TTC</span></td>';
+            html += '<td><span class="tag" style="background:#cffafe;color:#0e7490;font-weight:700">Facture TTC</span></td>';
             html += '<td><strong>' + escapeHtml(fac.numero_dossier) + '</strong><br><span style="font-size:11px;color:var(--color-text-dim)">' + labelActe(fac.type_acte_id) + '</span></td>';
             html += '<td>' + escapeHtml(fac.comparants_noms || "Client") + '</td>';
             html += '<td style="text-align:right;font-weight:800;color:#0e7490">' + fmtFCFA(totF) + '</td>';
             html += '<td>' + escapeHtml(fac.soumis_par || fac.utilisateur_nom || "Comptable") + '</td>';
             html += '<td style="font-size:11.5px">' + fmtDate(fac.soumis_le || fac.created_at) + '</td>';
             html += '<td style="text-align:center"><div style="display:flex;gap:4px;justify-content:center">';
-            html += '<button type="button" class="btn btn-secondary btn-val-apercu-fac" data-id="' + fac.dossier_id + '" style="font-size:11px;padding:3px 7px">👁️ Consulter</button>';
+            html += '<button type="button" class="btn btn-secondary btn-val-apercu-fac" data-id="' + fac.dossier_id + '" style="font-size:11px;padding:3px 7px">Consulter</button>';
             if (estNotaire) {
-              html += '<button type="button" class="btn btn-primary btn-val-valider-fac" data-id="' + fac.dossier_id + '" style="font-size:11px;padding:3px 8px;background:#059669;border-color:#059669;font-weight:700">✅ Émettre TTC</button>';
+              html += '<button type="button" class="btn btn-primary btn-val-valider-fac" data-id="' + fac.dossier_id + '" style="font-size:11px;padding:3px 8px;background:#059669;border-color:#059669;font-weight:700">Émettre TTC</button>';
             } else {
-              html += '<span class="tag tag-outline" style="font-size:11px;color:#0e7490;border-color:rgba(14,116,144,0.35)">⏳ Visa Maître en attente</span>';
+              html += '<span class="tag tag-outline" style="font-size:11px;color:#0e7490;border-color:rgba(14,116,144,0.35)">Visa Maître en attente</span>';
             }
             html += '</div></td>';
           } else if (item.type === "salaire") {
             var s = item.raw;
-            html += '<td><span class="tag" style="background:#f3e8ff;color:#6b21a8;font-weight:700">💳 Salaire Collaborateur</span></td>';
+            html += '<td><span class="tag" style="background:#f3e8ff;color:#6b21a8;font-weight:700">Salaire Collaborateur</span></td>';
             html += '<td><strong>' + escapeHtml(s.nomComplet) + '</strong><br><span style="font-size:11px;color:var(--color-text-dim)">' + (ROLE_LABEL[s.role] || s.role) + '</span></td>';
             html += '<td>Période : ' + escapeHtml(s.periode) + '</td>';
             html += '<td style="text-align:right;font-weight:800;color:#6b21a8">' + fmtFCFA(s.salaireNet) + '</td>';
@@ -7449,7 +7443,7 @@
             html += '<td style="font-size:11.5px">Mois en cours</td>';
             html += '<td style="text-align:center"><div style="display:flex;gap:4px;justify-content:center">';
             if (estNotaire) {
-              html += '<button type="button" class="btn btn-primary btn-val-valider-salaire" data-id="' + s.id + '" style="font-size:11px;padding:3px 8px;background:#7c3aed;border-color:#7c3aed;font-weight:700">💳 Autoriser Décaissement</button>';
+              html += '<button type="button" class="btn btn-primary btn-val-valider-salaire" data-id="' + s.id + '" style="font-size:11px;padding:3px 8px;background:#7c3aed;border-color:#7c3aed;font-weight:700">Autoriser Décaissement</button>';
             } else {
               html += '<span class="tag tag-outline" style="font-size:11px">Visa Maître requis</span>';
             }
