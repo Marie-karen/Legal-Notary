@@ -31,6 +31,10 @@ window.LegalNotaryAPI = (function () {
   var CLE_JETON = "legalnotary_jeton";
   var CLE_UTILISATEUR = "legalnotary_utilisateur";
 
+  // Cache en mémoire ultra-rapide (0ms) avec Stale-While-Revalidate (SWR)
+  var _cacheMemoire = new Map();
+  var _requetesEnVol = new Map();
+
   function getJeton() {
     return window.localStorage.getItem(CLE_JETON);
   }
@@ -48,17 +52,26 @@ window.LegalNotaryAPI = (function () {
   function clearSession() {
     window.localStorage.removeItem(CLE_JETON);
     window.localStorage.removeItem(CLE_UTILISATEUR);
+    _cacheMemoire.clear();
+    _requetesEnVol.clear();
   }
 
-  /**
-   * Requête générique. `onNonAutorise` est appelée (par app.js) si l'API
-   * répond 401 — pour renvoyer l'utilisateur à l'écran de connexion sans
-   * dupliquer cette logique dans chaque appel.
-   */
+  function invaliderCache(prefixe) {
+    if (!prefixe) {
+      _cacheMemoire.clear();
+      return;
+    }
+    for (var k of _cacheMemoire.keys()) {
+      if (k.indexOf(prefixe) !== -1) {
+        _cacheMemoire.delete(k);
+      }
+    }
+  }
+
   var onNonAutorise = null;
   function surNonAutorise(callback) { onNonAutorise = callback; }
 
-  function requete(methode, chemin, corps) {
+  function requeteReseau(methode, chemin, corps) {
     var options = {
       method: methode,
       headers: { "Content-Type": "application/json" },
@@ -84,15 +97,75 @@ window.LegalNotaryAPI = (function () {
     });
   }
 
+  function requeteGetAvecCache(chemin, options) {
+    options = options || {};
+    var jeton = getJeton();
+    var cleCache = (jeton ? "auth_" : "anon_") + chemin;
+
+    // 1. Si cache en mémoire frais (< 30s pour listes, < 5min pour référentiel)
+    var cacheEntry = _cacheMemoire.get(cleCache);
+    var now = Date.now();
+    var ttl = chemin.indexOf("/referentiel") !== -1 || chemin.indexOf("/parametres") !== -1 ? 300000 : 25000;
+
+    if (cacheEntry && (now - cacheEntry.ts < ttl) && !options.bypassCache) {
+      return Promise.resolve(cacheEntry.data);
+    }
+
+    // 2. Déduplication de requêtes en vol simultanées
+    if (_requetesEnVol.has(cleCache) && !options.bypassCache) {
+      return _requetesEnVol.get(cleCache);
+    }
+
+    var promesseReseau = requeteReseau("GET", chemin).then(function (donnees) {
+      _requetesEnVol.delete(cleCache);
+      if (donnees !== null && donnees !== undefined) {
+        _cacheMemoire.set(cleCache, { data: donnees, ts: Date.now() });
+      }
+      return donnees;
+    }).catch(function (err) {
+      _requetesEnVol.delete(cleCache);
+      // En cas d'échec réseau sur connexion faible/offline, retourner le cache périmé si disponible
+      if (cacheEntry && cacheEntry.data) {
+        console.warn("Connexion faible : données servies depuis le cache local pour", chemin);
+        return cacheEntry.data;
+      }
+      throw err;
+    });
+
+    _requetesEnVol.set(cleCache, promesseReseau);
+
+    // Si on a un cache périmé (stale-while-revalidate), le renvoyer immédiatement et rafraîchir en tâche de fond
+    if (cacheEntry && cacheEntry.data && !options.bypassCache) {
+      return Promise.resolve(cacheEntry.data);
+    }
+
+    return promesseReseau;
+  }
+
+  function requeteMutation(methode, chemin, corps) {
+    // Invalidation préventive du cache sur toute écriture
+    if (chemin.indexOf("/fiscal") !== -1) invaliderCache("/fiscal");
+    if (chemin.indexOf("/dossiers") !== -1) { invaliderCache("/dossiers"); invaliderCache("/statistiques"); }
+    if (chemin.indexOf("/clients") !== -1) invaliderCache("/clients");
+    if (chemin.indexOf("/notifications") !== -1) invaliderCache("/notifications");
+    if (chemin.indexOf("/parametres") !== -1) invaliderCache("/parametres");
+
+    return requeteReseau(methode, chemin, corps).then(function (res) {
+      return res;
+    });
+  }
+
   return {
-    get: function (chemin) { return requete("GET", chemin); },
-    post: function (chemin, corps) { return requete("POST", chemin, corps); },
-    put: function (chemin, corps) { return requete("PUT", chemin, corps); },
-    patch: function (chemin, corps) { return requete("PATCH", chemin, corps); },
-    del: function (chemin) { return requete("DELETE", chemin); },
+    get: function (chemin, options) { return requeteGetAvecCache(chemin, options); },
+    post: function (chemin, corps) { return requeteMutation("POST", chemin, corps); },
+    put: function (chemin, corps) { return requeteMutation("PUT", chemin, corps); },
+    patch: function (chemin, corps) { return requeteMutation("PATCH", chemin, corps); },
+    del: function (chemin) { return requeteMutation("DELETE", chemin); },
+    invaliderCache: invaliderCache,
 
     connecter: function (email, motDePasse) {
-      return requete("POST", "/api/auth/connexion", { email: email, motDePasse: motDePasse }).then(function (r) {
+      _cacheMemoire.clear();
+      return requeteReseau("POST", "/api/auth/connexion", { email: email, motDePasse: motDePasse }).then(function (r) {
         setSession(r.jeton, r.utilisateur);
         return r.utilisateur;
       });
