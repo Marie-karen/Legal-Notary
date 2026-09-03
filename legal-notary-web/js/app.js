@@ -108,6 +108,8 @@
   }
 
   function calculerSyntheseEtude(dossiers) {
+    dossiers = Array.isArray(dossiers) ? dossiers : [];
+    cache.typesActesParId = cache.typesActesParId || {};
     var totalAssiettes = 0;
     var totalEmolumentsHT = 0;
     var totalDroitsEnregistrement = 0;
@@ -122,7 +124,8 @@
     };
 
     dossiers.forEach(function (d) {
-      var assiette = d.montantAssiette || 0;
+      if (!d) return;
+      var assiette = Number(d.montantAssiette) || 0;
       totalAssiettes += assiette;
 
       var typeActe = cache.typesActesParId[d.typeActeId] || {};
@@ -4836,12 +4839,35 @@
 
   function renderComptabilite() {
     var c = document.getElementById("vue-comptabilite");
-    c.innerHTML = '<p class="text-muted">Chargement de la comptabilité & facturation…</p>';
+    if (!c) return;
+    c.innerHTML = '<div style="padding:40px;text-align:center"><div class="spinner"></div><p style="margin-top:10px;color:var(--color-text-dim)">Chargement de la facturation & comptabilité…</p></div>';
 
-    API.get("/api/fiscal/toutes-fiches").catch(function () { return []; }).then(function (fichesToutes) {
+    var chargerDossiers = (cache.dossiers && cache.dossiers.length > 0)
+      ? Promise.resolve(cache.dossiers)
+      : API.get("/api/dossiers/mes-dossiers").then(function (d) {
+          cache.dossiers = Array.isArray(d) ? d : [];
+          return cache.dossiers;
+        }).catch(function () { return []; });
+
+    var chargerFiches = API.get("/api/fiscal/toutes-fiches").catch(function () { return []; });
+
+    var chargerTypes = (cache.typesActesListe && cache.typesActesListe.length > 0)
+      ? Promise.resolve(cache.typesActesListe)
+      : API.get("/api/referentiel/types-actes").then(function (r) {
+          cache.typesActesListe = Array.isArray(r) ? r : [];
+          cache.typesActesParId = cache.typesActesParId || {};
+          (cache.typesActesListe || []).forEach(function (t) { cache.typesActesParId[t.id] = t; });
+          return cache.typesActesListe;
+        }).catch(function () { return []; });
+
+    Promise.all([chargerDossiers, chargerFiches, chargerTypes]).then(function (res) {
+      var dossiers = Array.isArray(res[0]) ? res[0] : (cache.dossiers || []);
+      cache.dossiers = dossiers;
+      var fichesToutes = Array.isArray(res[1]) ? res[1] : [];
+
       var fichesParDossier = {};
       (fichesToutes || []).forEach(function (f) {
-        if (f.dossier_id && !fichesParDossier[f.dossier_id]) {
+        if (f && f.dossier_id && !fichesParDossier[f.dossier_id]) {
           fichesParDossier[f.dossier_id] = f;
         }
       });
@@ -5194,6 +5220,9 @@
           ouvrirDossier(btn.dataset.id, "comptabilite");
         });
       });
+    }).catch(function (err) {
+      console.error("Erreur renderComptabilite :", err);
+      c.innerHTML = '<div class="alert alert-danger" style="margin:20px;padding:16px"><h4 style="margin:0 0 8px">Impossible de charger la facturation</h4><p style="margin:0 0 10px;font-size:12.5px">' + escapeHtml(err.message || String(err)) + '</p><button type="button" class="btn btn-secondary" onclick="irVers(\'comptabilite\')">🔄 Réessayer</button></div>';
     });
   }
 
