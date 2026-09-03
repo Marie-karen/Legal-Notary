@@ -725,7 +725,7 @@
     ],
     premier_clerc: [
       { nav: "dashboard", label: "📊 Tableau de bord", vueParDefaut: true },
-      { nav: "validations", label: "⏳ En attente de validation" },
+      { nav: "validations", label: "📂 Parapheur transmis" },
       { nav: "kanban", label: "📋 Circuit d'instruction" },
       { nav: "dossiers", label: "📁 Tous les dossiers" },
       { nav: "clients", label: "👥 Clients & KYC" },
@@ -750,7 +750,7 @@
     ],
     comptable_taxateur: [
       { nav: "dashboard", label: "📊 Tableau de bord Financier", vueParDefaut: true },
-      { nav: "validations", label: "⏳ En attente de validation" },
+      { nav: "validations", label: "📂 Transmis au Notaire" },
       { nav: "comptabilite", label: "💰 Fiches de Taxe & Calculs" },
       { nav: "emoluments", label: "⚖️ Barèmes d'Émoluments" },
       { nav: "dossiers", label: "📁 Dossiers (Suivi Financier)" },
@@ -6643,7 +6643,7 @@
     dossier = dossier || {};
     donneesFiche = donneesFiche || {};
 
-    var estNotaire = cache.utilisateur && (cache.utilisateur.role === "notaire" || cache.utilisateur.role === "premier_clerc" || cache.utilisateur.role === "superadmin");
+    var estNotaire = cache.utilisateur && (cache.utilisateur.role === "notaire" || cache.utilisateur.role === "superadmin");
 
     function titreModal(fmt) {
       if (fmt === "fiche_taxe") return "🖨️ Fiche de Taxe (Document Interne de Liquidation)";
@@ -7206,7 +7206,8 @@
     if (!c) return;
     c.innerHTML = '<div style="padding:40px;text-align:center"><div class="spinner"></div><p style="margin-top:8px">Chargement du Parapheur de Validations…</p></div>';
 
-    var estNotaire = cache.utilisateur && (cache.utilisateur.role === "notaire" || cache.utilisateur.role === "premier_clerc" || cache.utilisateur.role === "superadmin");
+    var estNotaire = cache.utilisateur && (cache.utilisateur.role === "notaire" || cache.utilisateur.role === "superadmin");
+    var isPremierClerc = cache.utilisateur && cache.utilisateur.role === "premier_clerc";
 
     API.get("/api/fiscal/validations/parapheur-global").then(function (data) {
       cache.parapheurValidations = data;
@@ -7218,10 +7219,17 @@
 
       var total = fiches.length + notes.length + factures.length + actes.length;
 
+      var titrePrincipal = estNotaire 
+        ? '⏳ Parapheur & Éléments en Attente de Validation' 
+        : '📂 Parapheur Transmis (Suivi des Pièces Soumises à Maître)';
+      var sousTitrePrincipal = estNotaire 
+        ? 'Validation formelle et visa du Notaire Titulaire : Projets d\'actes, Fiches de taxe, Notes de frais client, Factures fiscales TTC, Salaires & Charges.' 
+        : 'Vue de consultation et suivi du circuit des pièces et actes transmis à Maître pour visa et validation officielle.';
+
       var html = '<div style="position:sticky;top:calc(-1 * var(--space-6));background:var(--color-bg);z-index:2;padding-top:var(--space-1);margin-bottom:var(--space-4)">';
       html += '<div style="display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);flex-wrap:wrap">';
-      html += '<div><h1 style="margin:0">⏳ Parapheur & Éléments en Attente de Validation</h1>';
-      html += '<p style="opacity:.65;font-size:14px;margin:2px 0 0">Validation formelle du Notaire : Projets d\'actes, Fiches de taxe, Notes de frais client, Factures fiscales TTC, Salaires & Charges.</p></div>';
+      html += '<div><h1 style="margin:0">' + titrePrincipal + '</h1>';
+      html += '<p style="opacity:.65;font-size:14px;margin:2px 0 0">' + sousTitrePrincipal + '</p></div>';
       html += '<div style="display:flex;gap:8px">';
       html += '<button type="button" class="btn btn-secondary" id="btn-refresh-validations">🔄 Actualiser</button>';
       html += '</div></div></div>';
@@ -7289,7 +7297,7 @@
         html += '<th style="text-align:right">Montant / Enjeu</th>';
         html += '<th>Demandeur / Soumis par</th>';
         html += '<th>Date de soumission</th>';
-        html += '<th style="text-align:center">Actions Notariales</th>';
+        html += '<th style="text-align:center">' + (estNotaire ? 'Actions Notariales (Visa & Signature)' : 'Statut & Consultation') + '</th>';
         html += '</tr></thead><tbody>';
 
         itemsAffiches.forEach(function (item) {
@@ -7307,6 +7315,8 @@
             if (estNotaire) {
               html += '<button type="button" class="btn btn-primary btn-val-valider-acte" data-id="' + a.dossier_id + '" style="font-size:11px;padding:3px 8px;background:#059669;border-color:#059669;font-weight:700">✅ Valider</button>';
               html += '<button type="button" class="btn btn-secondary btn-val-renvoyer-acte" data-id="' + a.dossier_id + '" style="font-size:11px;padding:3px 7px;color:#dc2626;border-color:rgba(220,38,38,0.4)">↩️ Renvoyer</button>';
+            } else {
+              html += '<span class="tag tag-outline" style="font-size:11px;color:#6366f1;border-color:rgba(99,102,241,0.35)">⏳ Soumis à Maître</span>';
             }
             html += '</div></td>';
           } else if (item.type === "fiche_taxe") {
@@ -7323,6 +7333,8 @@
             if (estNotaire) {
               html += '<button type="button" class="btn btn-primary btn-val-valider-taxe" data-id="' + f.id + '" style="font-size:11px;padding:3px 8px;background:#059669;border-color:#059669;font-weight:700">✅ Valider</button>';
               html += '<button type="button" class="btn btn-secondary btn-val-renvoyer-taxe" data-id="' + f.id + '" style="font-size:11px;padding:3px 7px;color:#dc2626;border-color:rgba(220,38,38,0.4)">↩️ Renvoyer</button>';
+            } else {
+              html += '<span class="tag tag-outline" style="font-size:11px;color:#d97706;border-color:rgba(217,119,6,0.35)">⏳ Soumis à Maître</span>';
             }
             html += '</div></td>';
           } else if (item.type === "note_frais") {
@@ -7338,6 +7350,8 @@
             html += '<button type="button" class="btn btn-secondary btn-val-apercu-note" data-id="' + n.dossier_id + '" style="font-size:11px;padding:3px 7px">👁️ Consulter</button>';
             if (estNotaire) {
               html += '<button type="button" class="btn btn-primary btn-val-valider-note" data-id="' + n.dossier_id + '" style="font-size:11px;padding:3px 8px;background:#059669;border-color:#059669;font-weight:700">✅ Viser Note</button>';
+            } else {
+              html += '<span class="tag tag-outline" style="font-size:11px;color:#047857;border-color:rgba(4,120,87,0.35)">⏳ Visa Maître en attente</span>';
             }
             html += '</div></td>';
           } else if (item.type === "facture") {
@@ -7353,6 +7367,8 @@
             html += '<button type="button" class="btn btn-secondary btn-val-apercu-fac" data-id="' + fac.dossier_id + '" style="font-size:11px;padding:3px 7px">👁️ Consulter</button>';
             if (estNotaire) {
               html += '<button type="button" class="btn btn-primary btn-val-valider-fac" data-id="' + fac.dossier_id + '" style="font-size:11px;padding:3px 8px;background:#059669;border-color:#059669;font-weight:700">✅ Émettre TTC</button>';
+            } else {
+              html += '<span class="tag tag-outline" style="font-size:11px;color:#0e7490;border-color:rgba(14,116,144,0.35)">⏳ Visa Maître en attente</span>';
             }
             html += '</div></td>';
           } else if (item.type === "salaire") {
