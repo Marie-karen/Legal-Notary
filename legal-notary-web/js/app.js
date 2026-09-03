@@ -6667,11 +6667,11 @@
       html += '</div>';
 
       // Tableau 6 colonnes (Chaque rubrique divisée en Désignation + Montant avec trait séparateur)
-      html += '<table style="width:100%;border-collapse:collapse;margin-top:' + ecartCartoucheTableau + ';margin-bottom:' + ecartTableauArrete + ';font-size:' + tableFontSize + ';line-height:' + tableLineHeight + '">';
+      html += '<table style="width:100%;border-collapse:collapse;margin-top:' + ecartCartoucheTableau + ';margin-bottom:' + ecartTableauArrete + ';font-size:9pt;line-height:' + tableLineHeight + '">';
       html += '<thead><tr style="background:#f3f4f6;font-weight:800;border-top:1.5px solid #111;border-bottom:1.5px solid #111">';
-      html += '<th colspan="2" style="border:1px solid #9ca3af;border-right:1.5px solid #9ca3af;padding:' + tableCellPadding + ';text-align:center;width:33.33%;font-size:' + tableHeaderFontSize + '">DROITS / ÉTAT (TRÉSOR)</th>';
-      html += '<th colspan="2" style="border:1px solid #9ca3af;border-right:1.5px solid #9ca3af;padding:' + tableCellPadding + ';text-align:center;width:33.33%;font-size:' + tableHeaderFontSize + '">DÉBOURS & FORMALITÉS TIERS</th>';
-      html += '<th colspan="2" style="border:1px solid #9ca3af;padding:' + tableCellPadding + ';text-align:center;width:33.34%;font-size:' + tableHeaderFontSize + '">ÉMOLUMENTS & HONORAIRES ÉTUDE</th>';
+      html += '<th colspan="2" style="border:1px solid #9ca3af;border-right:1.5px solid #9ca3af;padding:' + tableCellPadding + ';text-align:center;width:33.33%;font-size:10pt;color:#111827">DROITS / ÉTAT (TRÉSOR)</th>';
+      html += '<th colspan="2" style="border:1px solid #9ca3af;border-right:1.5px solid #9ca3af;padding:' + tableCellPadding + ';text-align:center;width:33.33%;font-size:10pt;color:#111827">DÉBOURS & FORMALITÉS TIERS</th>';
+      html += '<th colspan="2" style="border:1px solid #9ca3af;padding:' + tableCellPadding + ';text-align:center;width:33.34%;font-size:10pt;color:#1e3a8a">ÉMOLUMENTS & HONORAIRES ÉTUDE</th>';
       html += '</tr></thead><tbody>';
 
       var tresorList = [];
@@ -6703,39 +6703,39 @@
 
         html += '<tr>';
         // Rubrique 1 : Droits (Désignation | Montant)
-        html += '<td style="border:1px solid #d1d5db;padding:' + tableCellPadding + ';width:20%">' + (tItem ? tItem.libelle : '') + '</td>';
-        html += '<td style="border:1px solid #d1d5db;border-right:1.5px solid #9ca3af;padding:' + tableCellPadding + ';text-align:right;font-weight:600;width:13.33%;white-space:nowrap">' + (tItem ? fmtFCFA(tItem.montant) : '') + '</td>';
+        html += '<td style="border:1px solid #d1d5db;padding:' + tableCellPadding + ';width:20%;font-size:9pt">' + (tItem ? tItem.libelle : '') + '</td>';
+        html += '<td style="border:1px solid #d1d5db;border-right:1.5px solid #9ca3af;padding:' + tableCellPadding + ';text-align:right;font-weight:700;font-size:9.5pt;width:13.33%;white-space:nowrap">' + (tItem ? fmtFCFA(tItem.montant) : '') + '</td>';
 
         // Rubrique 2 : Débours (Désignation | Montant)
-        html += '<td style="border:1px solid #d1d5db;padding:' + tableCellPadding + ';width:20%">' + (dItem ? dItem.libelle : '') + '</td>';
-        html += '<td style="border:1px solid #d1d5db;border-right:1.5px solid #9ca3af;padding:' + tableCellPadding + ';text-align:right;font-weight:600;width:13.33%;white-space:nowrap">' + (dItem ? fmtFCFA(dItem.montant) : '') + '</td>';
+        html += '<td style="border:1px solid #d1d5db;padding:' + tableCellPadding + ';width:20%;font-size:9pt">' + (dItem ? dItem.libelle : '') + '</td>';
+        html += '<td style="border:1px solid #d1d5db;border-right:1.5px solid #9ca3af;padding:' + tableCellPadding + ';text-align:right;font-weight:700;font-size:9.5pt;width:13.33%;white-space:nowrap">' + (dItem ? fmtFCFA(dItem.montant) : '') + '</td>';
 
         // Rubrique 3 : Émoluments (Désignation | Montant)
-        html += '<td style="border:1px solid #d1d5db;padding:' + tableCellPadding + ';width:20%">' + (eItem ? eItem.libelle : '') + '</td>';
-        html += '<td style="border:1px solid #d1d5db;padding:' + tableCellPadding + ';text-align:right;font-weight:700;color:#1e3a8a;width:13.34%;white-space:nowrap">' + (eItem ? fmtFCFA(eItem.montant) : '') + '</td>';
+        html += '<td style="border:1px solid #d1d5db;padding:' + tableCellPadding + ';width:20%;font-size:9pt">' + (eItem ? eItem.libelle : '') + '</td>';
+        html += '<td style="border:1px solid #d1d5db;padding:' + tableCellPadding + ';text-align:right;font-weight:800;color:#1e3a8a;font-size:9.5pt;width:13.34%;white-space:nowrap">' + (eItem ? fmtFCFA(eItem.montant) : '') + '</td>';
         html += '</tr>';
       }
 
-      // Sous-totaux par rubrique avec alignement parfait
-      html += '<tr style="background:#f3f4f6;font-weight:800;border-top:1.5px solid #111;font-size:' + tableHeaderFontSize + '">';
-      html += '<td style="border:1px solid #9ca3af;padding:' + tableCellPadding + '">Total Droits :</td>';
-      html += '<td style="border:1px solid #9ca3af;border-right:1.5px solid #9ca3af;padding:' + tableCellPadding + ';text-align:right;color:#92400e;white-space:nowrap">' + fmtFCFA(totalTresor) + '</td>';
-      html += '<td style="border:1px solid #9ca3af;padding:' + tableCellPadding + '">Total Débours :</td>';
-      html += '<td style="border:1px solid #9ca3af;border-right:1.5px solid #9ca3af;padding:' + tableCellPadding + ';text-align:right;color:#92400e;white-space:nowrap">' + fmtFCFA(totalDebours) + '</td>';
-      html += '<td style="border:1px solid #9ca3af;padding:' + tableCellPadding + '">Total Émoluments :</td>';
-      html += '<td style="border:1px solid #9ca3af;padding:' + tableCellPadding + ';text-align:right;color:#1e3a8a;white-space:nowrap">' + fmtFCFA(totalCA) + '</td>';
+      // Sous-totaux par rubrique avec police agrandie et très lisible
+      html += '<tr style="background:#f3f4f6;font-weight:800;border-top:1.5px solid #111;font-size:9.5pt">';
+      html += '<td style="border:1px solid #9ca3af;padding:' + tableCellPadding + ';font-weight:800">Total Droits :</td>';
+      html += '<td style="border:1px solid #9ca3af;border-right:1.5px solid #9ca3af;padding:' + tableCellPadding + ';text-align:right;color:#92400e;font-size:10pt;font-weight:800;white-space:nowrap">' + fmtFCFA(totalTresor) + '</td>';
+      html += '<td style="border:1px solid #9ca3af;padding:' + tableCellPadding + ';font-weight:800">Total Débours :</td>';
+      html += '<td style="border:1px solid #9ca3af;border-right:1.5px solid #9ca3af;padding:' + tableCellPadding + ';text-align:right;color:#92400e;font-size:10pt;font-weight:800;white-space:nowrap">' + fmtFCFA(totalDebours) + '</td>';
+      html += '<td style="border:1px solid #9ca3af;padding:' + tableCellPadding + ';font-weight:800">Total Émoluments :</td>';
+      html += '<td style="border:1px solid #9ca3af;padding:' + tableCellPadding + ';text-align:right;color:#1e3a8a;font-size:10pt;font-weight:800;white-space:nowrap">' + fmtFCFA(totalCA) + '</td>';
       html += '</tr>';
 
       // Total Général
-      html += '<tr style="background:#111827;color:#fff;font-weight:800;font-size:10pt">';
+      html += '<tr style="background:#111827;color:#fff;font-weight:800;font-size:10.5pt">';
       html += '<td colspan="4" style="border:1px solid #111827;padding:5px 8px;text-transform:uppercase">TOTAL GÉNÉRAL DE LA NOTE DE FRAIS</td>';
-      html += '<td colspan="2" style="border:1px solid #111827;padding:5px 8px;text-align:right;font-size:11pt;white-space:nowrap">' + fmtFCFA(totalGeneral) + '</td>';
+      html += '<td colspan="2" style="border:1px solid #111827;padding:5px 8px;text-align:right;font-size:11.5pt;white-space:nowrap">' + fmtFCFA(totalGeneral) + '</td>';
       html += '</tr>';
       html += '</tbody></table>';
 
-      html += '<div style="background:#f9fafb;border:1px solid #d1d5db;padding:6px 10px;border-radius:4px;font-size:8.5pt;margin-top:' + ecartTableauArrete + ';margin-bottom:' + ecartTableauArrete + ';line-height:1.35">';
+      html += '<div style="background:#f9fafb;border:1px solid #d1d5db;padding:6px 10px;border-radius:4px;font-size:9pt;margin-top:' + ecartTableauArrete + ';margin-bottom:' + ecartTableauArrete + ';line-height:1.35">';
       html += 'Arrêtée la présente note de frais à la somme de :<br>';
-      html += '<strong style="font-size:9pt;color:#111827">' + enLettres + '</strong>.';
+      html += '<strong style="font-size:9.5pt;color:#111827">' + enLettres + '</strong>.';
       html += '</div>';
     }
 
