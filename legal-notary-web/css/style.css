@@ -800,7 +800,7 @@ select.input { -webkit-appearance: none; appearance: none; }
     margin: 0 !important;
     padding: 0 !important;
     width: 100% !important;
-    height: auto !important;
+    height: 100% !important;
     overflow: visible !important;
   }
   #app,
@@ -824,6 +824,7 @@ select.input { -webkit-appearance: none; appearance: none; }
     display: block !important;
     position: relative !important;
     width: 100% !important;
+    height: 100% !important;
     margin: 0 auto !important;
     padding: 0 !important;
     background: #fff !important;
@@ -1102,7 +1103,7 @@ select.input { -webkit-appearance: none; appearance: none; }
   min-height: 297mm;
   background-color: #ffffff !important;
   color: #111827 !important;
-  padding: 10mm 12mm;
+  padding: 12mm 14mm;
   margin: 0 auto;
   box-sizing: border-box;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.28);
@@ -1129,18 +1130,24 @@ select.input { -webkit-appearance: none; appearance: none; }
 }
 
 @media print {
+  @page {
+    margin: 8mm 10mm;
+    size: A4 portrait;
+  }
   .document-a4-notarie {
     width: 100% !important;
     max-width: 100% !important;
-    min-height: auto !important;
-    height: auto !important;
-    max-height: 100% !important;
+    height: 278mm !important;
+    min-height: 278mm !important;
     box-shadow: none !important;
     border: none !important;
     border-radius: 0 !important;
     padding: 0 !important;
     margin: 0 !important;
     background: #ffffff !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
     page-break-after: avoid !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
