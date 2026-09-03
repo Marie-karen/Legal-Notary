@@ -217,9 +217,23 @@ function enregistrerModelePersonnalise(nomFichier, buffer) {
   };
 }
 
+/**
+ * Supprime un modèle Excel personnalisé
+ */
+function supprimerModelePersonnalise(nomFichier) {
+  const nomSecurise = String(nomFichier).replace(/^perso_/, "").replace(/[^a-zA-Z0-9._-]/g, "_");
+  const destination = path.join(DOSSIER_MODELES_PERSO, nomSecurise);
+  if (fs.existsSync(destination)) {
+    fs.unlinkSync(destination);
+    return true;
+  }
+  return false;
+}
+
 module.exports = {
   listerModelesExcel,
   obtenirCheminModele,
   genererFichierExcelLiquidation,
   enregistrerModelePersonnalise,
+  supprimerModelePersonnalise,
 };

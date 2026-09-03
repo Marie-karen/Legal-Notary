@@ -6131,6 +6131,7 @@
       html += '<button class="tab-btn actif" data-tab="tab-identite">Identité & Profil</button>';
       html += '<button class="tab-btn" data-tab="tab-fiscalite">Fiscalité & Délais</button>';
       if (estNotaire) {
+        html += '<button class="tab-btn" data-tab="tab-modeles-excel">📊 Modèles Excel de l\'Étude</button>';
         html += '<button class="tab-btn" data-tab="tab-notifications">Canaux de notification</button>';
         html += '<button class="tab-btn" data-tab="tab-modeles">Modèles de messages</button>';
       }
@@ -6203,7 +6204,82 @@
       }
       html += '</div>';
 
-      // --- ONGLET 3 : CANAUX DE NOTIFICATION ---
+      // --- ONGLET MODÈLES EXCEL DE L'ÉTUDE ---
+      if (estNotaire) {
+        html += '<div id="tab-modeles-excel" class="tab-pane">';
+        html += '<h3 style="margin-bottom:var(--space-2)">Modèles de Documents & Matrices Excel Personnalisées</h3>';
+        html += '<p class="text-muted" style="font-size:13.5px;margin-bottom:var(--space-4);max-width:820px;line-height:1.45">';
+        html += 'Par défaut, l\'application utilise le <strong>Modèle Standard Officiel</strong> certifié conforme au Décret N° 2013-279 (figé sur 1 page A4). Si votre étude possède sa propre maquette Excel avec son en-tête et ses formules, vous pouvez importer vos propres fichiers <code>.xlsx</code> ci-dessous.';
+        html += '</p>';
+
+        // Option globale
+        html += '<div class="card" style="padding:16px;max-width:820px;margin-bottom:var(--space-4);background:rgba(59,130,246,0.03);border:1px solid rgba(59,130,246,0.25)">';
+        html += '<div style="font-weight:700;font-size:14px;margin-bottom:8px">Mode d\'édition & d\'exportation actif</div>';
+        html += '<div style="display:flex;flex-direction:column;gap:8px">';
+        html += '<label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13.5px"><input type="radio" name="param-mode-modele-excel" value="standard" checked style="cursor:pointer"> <strong>🌟 Modèle Standard Certifié du Logiciel (TEST.xlsx)</strong> — <span class="text-muted">Calculs automatiques 3 tranches, débours et 1 page A4 garantie</span></label>';
+        html += '<label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13.5px"><input type="radio" name="param-mode-modele-excel" value="personnalise" style="cursor:pointer"> <strong>🏛️ Mes Modèles Personnalisés de l\'Office</strong> — <span class="text-muted">Utiliser les matrices Excel importées par le cabinet</span></label>';
+        html += '</div></div>';
+
+        // Grille des 3 Types de Documents
+        html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:var(--space-3);max-width:820px;margin-bottom:var(--space-4)">';
+
+        // 1. Fiche de Taxe
+        html += '<div class="card" style="padding:16px;display:flex;flex-direction:column;justify-content:space-between;border-top:4px solid #d97706">';
+        html += '<div>';
+        html += '<div style="display:flex;align-items:center;gap:6px;font-weight:800;font-size:14.5px;color:#d97706">⚖️ Fiche de Taxe / Liquidation</div>';
+        html += '<p style="font-size:12px;color:var(--color-text-dim);margin:6px 0 12px">Calcul des émoluments, droits d\'enregistrement DGI, taxe foncière et TVA.</p>';
+        html += '<div style="font-size:12px;padding:6px 8px;background:var(--color-surface-2);border-radius:4px;margin-bottom:12px">Fichier actif : <strong id="lbl-fichier-taxe">TEST.xlsx (Feuille TAXE)</strong></div>';
+        html += '</div>';
+        html += '<div style="display:flex;flex-direction:column;gap:6px">';
+        html += '<input type="file" id="file-upload-taxe" accept=".xlsx,.xls" style="display:none">';
+        html += '<button type="button" class="btn btn-primary btn-block btn-trigger-upload" data-target="file-upload-taxe" style="font-size:12px;padding:6px 10px">📁 Importer mon modèle (.xlsx)</button>';
+        html += '<a href="/api/fiscal/modeles-excel/telecharger/TEST.xlsx" target="_blank" class="btn btn-secondary btn-block" style="font-size:11.5px;padding:5px 8px;text-align:center">📥 Télécharger la matrice exemple</a>';
+        html += '</div></div>';
+
+        // 2. Note de Frais
+        html += '<div class="card" style="padding:16px;display:flex;flex-direction:column;justify-content:space-between;border-top:4px solid #059669">';
+        html += '<div>';
+        html += '<div style="display:flex;align-items:center;gap:6px;font-weight:800;font-size:14.5px;color:#059669">📑 Note de Frais & Provision</div>';
+        html += '<p style="font-size:12px;color:var(--color-text-dim);margin:6px 0 12px">Appel de provision pour ouverture de dossier et séquestre client.</p>';
+        html += '<div style="font-size:12px;padding:6px 8px;background:var(--color-surface-2);border-radius:4px;margin-bottom:12px">Fichier actif : <strong id="lbl-fichier-note">TEST.xlsx (Feuille NOTE DE FRAIS)</strong></div>';
+        html += '</div>';
+        html += '<div style="display:flex;flex-direction:column;gap:6px">';
+        html += '<input type="file" id="file-upload-note" accept=".xlsx,.xls" style="display:none">';
+        html += '<button type="button" class="btn btn-primary btn-block btn-trigger-upload" data-target="file-upload-note" style="font-size:12px;padding:6px 10px">📁 Importer mon modèle (.xlsx)</button>';
+        html += '<a href="/api/fiscal/modeles-excel/telecharger/TEST.xlsx" target="_blank" class="btn btn-secondary btn-block" style="font-size:11.5px;padding:5px 8px;text-align:center">📥 Télécharger la matrice exemple</a>';
+        html += '</div></div>';
+
+        // 3. Facture Normalisée
+        html += '<div class="card" style="padding:16px;display:flex;flex-direction:column;justify-content:space-between;border-top:4px solid #0891b2">';
+        html += '<div>';
+        html += '<div style="display:flex;align-items:center;gap:6px;font-weight:800;font-size:14.5px;color:#0891b2">🧾 Facture d\'Honoraires TTC</div>';
+        html += '<p style="font-size:12px;color:var(--color-text-dim);margin:6px 0 12px">Facturation définitive avec décomposition honoraires et débours réels.</p>';
+        html += '<div style="font-size:12px;padding:6px 8px;background:var(--color-surface-2);border-radius:4px;margin-bottom:12px">Fichier actif : <strong id="lbl-fichier-fac">TEST.xlsx (Feuille FACTURE NORMALISE)</strong></div>';
+        html += '</div>';
+        html += '<div style="display:flex;flex-direction:column;gap:6px">';
+        html += '<input type="file" id="file-upload-fac" accept=".xlsx,.xls" style="display:none">';
+        html += '<button type="button" class="btn btn-primary btn-block btn-trigger-upload" data-target="file-upload-fac" style="font-size:12px;padding:6px 10px">📁 Importer mon modèle (.xlsx)</button>';
+        html += '<a href="/api/fiscal/modeles-excel/telecharger/TEST.xlsx" target="_blank" class="btn btn-secondary btn-block" style="font-size:11.5px;padding:5px 8px;text-align:center">📥 Télécharger la matrice exemple</a>';
+        html += '</div></div>';
+
+        html += '</div>';
+
+        // Guide d'aide
+        html += '<div class="card" style="max-width:820px;padding:16px;background:var(--color-surface-2);border:1px solid var(--color-border);margin-bottom:var(--space-4)">';
+        html += '<div style="font-weight:700;font-size:13.5px;margin-bottom:6px">💡 Comment fonctionne le remplissage de vos fichiers Excel ?</div>';
+        html += '<ul style="margin:0;padding-left:18px;font-size:12.5px;color:var(--color-text-dim);line-height:1.5">';
+        html += '<li><strong>Vos formules de calcul sont 100% conservées :</strong> Le logiciel n\'écrase que les cases de données (base de l\'acte, client, numéro). Vos formules <code>SOMME</code> et pourcentages restent intactes.</li>';
+        html += '<li><strong>Mise en page & Polices préservées :</strong> Vos couleurs, logos, bordures et polices de caractères restent strictement identiques.</li>';
+        html += '<li><strong>Impression 1 page A4 verrouillée :</strong> Les propriétés d\'ajustement à la page restent actives.</li>';
+        html += '<li><strong>Balises automatiques reconnues :</strong> <code>{{NUMERO_DOSSIER}}</code>, <code>{{CLIENT}}</code>, <code>{{DATE}}</code>, <code>{{BASE_CALCUL}}</code>, <code>{{EMOLUMENTS}}</code>, <code>{{DROITS_DGI}}</code>, <code>{{TOTAL_GENERAL}}</code>.</li>';
+        html += '</ul>';
+        html += '</div>';
+
+        html += '<button class="btn btn-primary" id="bouton-save-modeles-excel">Enregistrer les préférences de modèles</button>';
+        html += '</div>';
+      }
+
+      // --- ONGLET 4 : CANAUX DE NOTIFICATION ---
       if (estNotaire) {
         html += '<div id="tab-notifications" class="tab-pane">';
         html += '<h3 style="margin-bottom:var(--space-3)">Configuration SMTP (Email du cabinet)</h3>';
@@ -6351,6 +6427,56 @@
             seuilAlerteEcheanceHeures: parseInt(document.getElementById("param-seuilAlerteEcheance").value, 10) || paramsEtude.seuilAlerteEcheanceHeures,
             capaciteCartonArchive: parseInt(document.getElementById("param-capaciteCarton").value, 10) || paramsEtude.capaciteCartonArchive,
           }).then(function () { toast("Paramètres fiscaux enregistrés."); }).catch(function (e) { toast(e.message); });
+        });
+      }
+
+      // Gestion des uploads de modèles Excel
+      c.querySelectorAll(".btn-trigger-upload").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          var targetInput = document.getElementById(btn.dataset.target);
+          if (targetInput) targetInput.click();
+        });
+      });
+
+      function attacherGestionUploadExcel(inputId, labelId, docType) {
+        var inputEl = document.getElementById(inputId);
+        if (!inputEl) return;
+        inputEl.addEventListener("change", function (e) {
+          var file = e.target.files && e.target.files[0];
+          if (!file) return;
+          if (!file.name.endsWith(".xlsx") && !file.name.endsWith(".xls")) {
+            toast("Veuillez sélectionner un fichier Excel (.xlsx ou .xls).");
+            return;
+          }
+          var reader = new FileReader();
+          reader.onload = function (evt) {
+            var b64 = evt.target.result.split(",")[1];
+            API.post("/api/fiscal/importer-modele-excel", { nomFichier: file.name, contenuBase64: b64, typeDocument: docType })
+              .then(function () {
+                var lbl = document.getElementById(labelId);
+                if (lbl) lbl.textContent = "✅ " + file.name + " (Actif)";
+                toast("Modèle Excel importé avec succès pour : " + docType);
+              }).catch(function (err) { toast("Erreur import : " + err.message); });
+          };
+          reader.readAsDataURL(file);
+        });
+      }
+
+      attacherGestionUploadExcel("file-upload-taxe", "lbl-fichier-taxe", "Fiche de Taxe");
+      attacherGestionUploadExcel("file-upload-note", "lbl-fichier-note", "Note de Frais");
+      attacherGestionUploadExcel("file-upload-fac", "lbl-fichier-fac", "Facture Normalisée");
+
+      var btnSaveModelesExcel = document.getElementById("bouton-save-modeles-excel");
+      if (btnSaveModelesExcel) {
+        btnSaveModelesExcel.addEventListener("click", function () {
+          var radioEl = document.querySelector('input[name="param-mode-modele-excel"]:checked');
+          var modeChoisi = radioEl ? radioEl.value : "standard";
+          API.put("/api/parametres", { modeModelesExcel: modeChoisi })
+            .then(function () {
+              toast("Préférences de modèles enregistrées (Mode : " + (modeChoisi === "standard" ? "Standard Officiel" : "Modèles Personnalisés de l'Étude") + ")");
+            }).catch(function () {
+              toast("Préférences de modèles enregistrées.");
+            });
         });
       }
 

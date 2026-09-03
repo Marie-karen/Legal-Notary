@@ -779,6 +779,33 @@ router.post("/importer-modele-excel", exigerPermission("parametres:modifier"), e
   } catch (e) { next(e); }
 });
 
+// Supprimer un modèle Excel personnalisé
+router.delete("/modeles-excel/:id", exigerPermission("parametres:modifier"), async (req, res, next) => {
+  try {
+    const supprime = excelService.supprimerModelePersonnalise(req.params.id);
+    if (supprime) {
+      res.json({ message: "Modèle supprimé avec succès." });
+    } else {
+      res.status(404).json({ erreur: "Modèle introuvable ou non supprimable." });
+    }
+  } catch (e) { next(e); }
+});
+
+// Télécharger un modèle type officiel (.xlsx)
+router.get("/modeles-excel/telecharger/:id", async (req, res, next) => {
+  try {
+    const chemin = excelService.obtenirCheminModele(req.params.id);
+    if (!fs.existsSync(chemin)) {
+      return res.status(404).json({ erreur: "Fichier modèle introuvable." });
+    }
+    const nomFichier = path.basename(chemin);
+    res.setHeader("Content-Disposition", `attachment; filename="${nomFichier}"`);
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    const stream = fs.createReadStream(chemin);
+    stream.pipe(res);
+  } catch (e) { next(e); }
+});
+
 // Exporter la liquidation complète dans le modèle Excel de l'étude (.xlsx)
 router.post("/export-excel", async (req, res, next) => {
   try {
