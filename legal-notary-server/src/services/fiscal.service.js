@@ -363,7 +363,7 @@ function calculerFicheDeTaxe(typeActe, montant, parametresEtude = {}, tranchesBa
     {
       code: "emolument_proportionnel_acte",
       categorie: "acte",
-      libelle: `1- Émoluments proportionnels (${emolumentsProportionnels.libelleRegle || "Décret 2013-279"})`,
+      libelle: "Émoluments proportionnels",
       montant: emolumentsProportionnels.montantHT,
       actif: true,
       fixe: false,

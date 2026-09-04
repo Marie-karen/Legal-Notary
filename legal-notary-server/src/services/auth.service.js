@@ -15,6 +15,7 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { pool } = require("../db/pool");
+const { notifyControlHub } = require("./webhook-dispatcher.service");
 
 const TOURS_HACHAGE = 12;
 
@@ -48,7 +49,9 @@ async function creerUtilisateur({ nomComplet, email, motDePasse, role, telephone
      VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
     [nomComplet, email.toLowerCase(), hash, role, telephone || "", dateEmbauche || null, typeContrat || null, salaireNet || null]
   );
-  return utilisateurVersCamel(rows[0], { avecSalaire });
+  const u = rows[0];
+  notifyControlHub("user.created", { id: u.id, email: u.email, name: u.nom_complet, role: u.role }).catch(() => {});
+  return utilisateurVersCamel(u, { avecSalaire });
 }
 
 async function modifierUtilisateur(id, champs, { avecSalaire = false } = {}) {

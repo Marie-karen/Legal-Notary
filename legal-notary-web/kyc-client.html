@@ -1,0 +1,648 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Fiche d'Identification KYC — Office Notarial</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #0f172a;
+      --accent: #10b981;
+      --accent-hover: #059669;
+      --navy: #1e3a8a;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --radius: 12px;
+      --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); line-height: 1.5; padding-bottom: 40px; }
+    
+    .container { max-width: 680px; margin: 0 auto; padding: 16px; }
+    
+    /* En-tête Étude */
+    .header-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 20px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      margin-bottom: 20px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .header-card::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 5px;
+      background: linear-gradient(90deg, #10b981, #1e3a8a);
+    }
+    .etude-nom { font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 800; text-transform: uppercase; color: var(--primary); }
+    .notaire-titre { font-size: 14px; font-weight: 700; color: var(--navy); margin-top: 4px; }
+    .etude-coordonnees { font-size: 12px; color: var(--text-muted); margin-top: 6px; line-height: 1.4; }
+    .badge-loi {
+      display: inline-block;
+      background: #ecfdf5;
+      color: #065f46;
+      border: 1px solid #a7f3d0;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+      margin-top: 10px;
+    }
+    
+    /* Section Formulaire */
+    .section-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 22px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      margin-bottom: 18px;
+    }
+    .section-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1.5px solid var(--border);
+      padding-bottom: 10px;
+      margin-bottom: 16px;
+    }
+    .section-title span.step {
+      background: var(--primary);
+      color: white;
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+    }
+    
+    /* Form elements */
+    .form-group { margin-bottom: 14px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 500px) { .form-row { grid-template-columns: 1fr; } }
+    
+    label { display: block; font-size: 12.5px; font-weight: 700; color: #334155; margin-bottom: 5px; }
+    label span.req { color: #ef4444; margin-left: 2px; }
+    
+    input[type="text"], input[type="email"], input[type="tel"], input[type="date"], select, textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      background: #fff;
+      color: var(--text);
+      transition: all 0.2s ease;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+    }
+    
+    /* Radio & Checkboxes cards */
+    .choices-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; margin-top: 6px; }
+    .choice-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      background: #fff;
+      transition: all 0.15s;
+    }
+    .choice-label:hover { border-color: var(--accent); background: #f0fdf4; }
+    .choice-label input[type="radio"], .choice-label input[type="checkbox"] { accent-color: var(--accent); width: 16px; height: 16px; }
+    
+    /* Zone de signature */
+    .signature-container {
+      border: 2px dashed #cbd5e1;
+      border-radius: 10px;
+      background: #ffffff;
+      position: relative;
+      margin-top: 10px;
+      touch-action: none;
+    }
+    canvas#signature-pad {
+      width: 100%;
+      height: 180px;
+      display: block;
+      border-radius: 8px;
+      cursor: crosshair;
+    }
+    .signature-tools {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      background: #f8fafc;
+      border-top: 1px solid var(--border);
+      border-radius: 0 0 8px 8px;
+    }
+    .btn-clear {
+      background: transparent;
+      border: none;
+      color: #ef4444;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 4px 8px;
+    }
+    .signature-hint { font-size: 11.5px; color: var(--text-muted); }
+    
+    /* Bouton de soumission */
+    .btn-submit {
+      width: 100%;
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 15px 24px;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .btn-submit:hover { background: var(--accent-hover); transform: translateY(-1px); }
+    .btn-submit:disabled { background: #94a3b8; cursor: not-allowed; transform: none; box-shadow: none; }
+    
+    /* Écran de succès */
+    .success-card {
+      text-align: center;
+      padding: 40px 20px;
+      background: white;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      display: none;
+    }
+    .success-icon {
+      width: 64px; height: 64px;
+      background: #d1fae5; color: #059669;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 32px; margin: 0 auto 16px;
+    }
+    .success-title { font-size: 20px; font-weight: 800; color: var(--primary); margin-bottom: 8px; }
+    .success-desc { font-size: 14px; color: var(--text-muted); line-height: 1.5; margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- En-tête de l'Office Notarial -->
+  <div class="header-card">
+    <div id="etude-nom" class="etude-nom">ÉTUDE NOTARIALE</div>
+    <div id="notaire-titre" class="notaire-titre">Notaire Titulaire</div>
+    <div id="etude-coordonnees" class="etude-coordonnees">Abidjan, Côte d'Ivoire</div>
+    <div class="badge-loi">FICHE KYC OFFICIELLE — LOI N°2024-363 (LBC/FT/FP)</div>
+    <div style="margin-top:8px;font-size:12.5px;font-weight:700;color:var(--primary)">
+      Dossier N° : <span id="dossier-num" style="color:var(--navy)">...</span> | Acte : <span id="dossier-acte" style="color:var(--text)">...</span>
+    </div>
+  </div>
+
+  <!-- Formulaire Client -->
+  <form id="kyc-form">
+
+    <!-- 1. IDENTIFICATION CLIENT -->
+    <div class="section-card">
+      <div class="section-title"><span class="step">1</span> Renseignements & État Civil</div>
+      
+      <div class="form-group">
+        <label>Nom et Prénoms complets <span class="req">*</span></label>
+        <input type="text" id="nomPrenoms" required placeholder="Ex : KOUADIO Jean-Marc">
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nom de Jeune Fille (si applicable)</label>
+          <input type="text" id="nomJeuneFille" placeholder="Nom de naissance">
+        </div>
+        <div class="form-group">
+          <label>Statut Matrimonial <span class="req">*</span></label>
+          <select id="statutMatrimonial" required>
+            <option value="Célibataire">Célibataire</option>
+            <option value="Marié(e) — Communauté de biens">Marié(e) — Communauté de biens</option>
+            <option value="Marié(e) — Séparation de biens">Marié(e) — Séparation de biens</option>
+            <option value="Concubinage">Concubinage</option>
+            <option value="Divorcé(e)">Divorcé(e)</option>
+            <option value="Veuf / Veuve">Veuf / Veuve</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nom et Prénoms du Père <span class="req">*</span></label>
+          <input type="text" id="nomPere" required placeholder="Filiation paternelle">
+        </div>
+        <div class="form-group">
+          <label>Nom et Prénoms de la Mère <span class="req">*</span></label>
+          <input type="text" id="nomMere" required placeholder="Filiation maternelle">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Date de Naissance <span class="req">*</span></label>
+          <input type="date" id="dateNaissance" required>
+        </div>
+        <div class="form-group">
+          <label>Lieu de Naissance <span class="req">*</span></label>
+          <input type="text" id="lieuNaissance" required placeholder="Ex : Abidjan / Bouaké">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nationalité Actuelle <span class="req">*</span></label>
+          <input type="text" id="nationalite" required value="Ivoirienne">
+        </div>
+        <div class="form-group">
+          <label>Autres Nationalités</label>
+          <input type="text" id="autresNationalites" placeholder="Néant si aucune">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nature & N° Pièce d'Identité <span class="req">*</span></label>
+          <input type="text" id="pieceIdentite" required placeholder="CNI / Passeport N° C0...">
+        </div>
+        <div class="form-group">
+          <label>N° Compte Contribuable (DGI)</label>
+          <input type="text" id="compteContribuable" placeholder="Numéro fiscal si existant">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Adresse Géographique & Domicile <span class="req">*</span></label>
+        <input type="text" id="adresseGeographique" required placeholder="Ex : Cocody Angré 8ème Tranche, Rue L12">
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Téléphone <span class="req">*</span></label>
+          <input type="tel" id="telephone" required placeholder="07 00 00 00 00">
+        </div>
+        <div class="form-group">
+          <label>N° WhatsApp <span class="req">*</span></label>
+          <input type="tel" id="whatsapp" required placeholder="07 00 00 00 00">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>E-mail</label>
+        <input type="email" id="email" placeholder="client@domaine.com">
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Profession Actuelle <span class="req">*</span></label>
+          <input type="text" id="profession" required placeholder="Ex : Cadre bancaire / Chef d'entreprise">
+        </div>
+        <div class="form-group">
+          <label>Employeur / Entreprise <span class="req">*</span></label>
+          <input type="text" id="employeur" required placeholder="Nom de l'employeur / Société">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Secteur d'Activité <span class="req">*</span></label>
+        <input type="text" id="secteurActivite" required placeholder="Ex : BTP / Banque / Commerce / NTIC">
+      </div>
+      
+      <div class="form-group">
+        <label>Professions exercées durant les 5 dernières années</label>
+        <input type="text" id="professions5Ans" placeholder="Précisez si changement récent">
+      </div>
+    </div>
+
+    <!-- 2. PPE (Personnes Politiquement Exposées) -->
+    <div class="section-card">
+      <div class="section-title"><span class="step">2</span> Déclaration Personne Politiquement Exposée (PPE)</div>
+      <p style="font-size:12.5px;color:var(--text-muted);margin-bottom:12px">
+        Exercez-vous ou avez-vous exercé (ou un membre proche de votre famille) une haute fonction publique (Ministre, Député, Magistrat, Haut gradé, Ambassadeur, Directeur Général d'entreprise publique) ?
+      </p>
+      
+      <div class="choices-grid">
+        <label class="choice-label">
+          <input type="radio" name="estPPE" value="non" checked> NON (Non PPE)
+        </label>
+        <label class="choice-label">
+          <input type="radio" name="estPPE" value="oui"> OUI (PPE ou proche de PPE)
+        </label>
+      </div>
+      <div id="details-ppe" style="display:none;margin-top:12px">
+        <label>Précisez la fonction ou le lien de parenté :</label>
+        <input type="text" id="fonctionPPE" placeholder="Ex : Député / Conjoint de Haut Fonctionnaire">
+      </div>
+    </div>
+
+    <!-- 3. ORIGINE DES FONDS -->
+    <div class="section-card">
+      <div class="section-title"><span class="step">3</span> Origine et Provenance des Fonds</div>
+      
+      <div class="form-group">
+        <label>Provenance principale des fonds finançant l'opération <span class="req">*</span></label>
+        <div class="choices-grid">
+          <label class="choice-label"><input type="radio" name="origineFonds" value="De votre activité" checked> De votre activité</label>
+          <label class="choice-label"><input type="radio" name="origineFonds" value="Prêt Bancaire"> Prêt Bancaire</label>
+          <label class="choice-label"><input type="radio" name="origineFonds" value="Vente d'un bien immobilier"> Vente immobilière</label>
+          <label class="choice-label"><input type="radio" name="origineFonds" value="Des associés / Épargne"> Épargne / Associés</label>
+          <label class="choice-label"><input type="radio" name="origineFonds" value="Autre"> Autre</label>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-top:14px">
+        <label>Les fonds proviennent-ils du territoire Ivoirien ? <span class="req">*</span></label>
+        <div class="choices-grid">
+          <label class="choice-label"><input type="radio" name="provenanceCI" value="OUI" checked> OUI (Côte d'Ivoire)</label>
+          <label class="choice-label"><input type="radio" name="provenanceCI" value="NON"> NON (Étranger)</label>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-top:14px">
+        <label>Ancienneté Professionnelle <span class="req">*</span></label>
+        <div class="choices-grid">
+          <label class="choice-label"><input type="radio" name="anciennetePro" value="Inférieure à un an"> Moins d'un an</label>
+          <label class="choice-label"><input type="radio" name="anciennetePro" value="De 1 à 10 ans" checked> 1 à 10 ans</label>
+          <label class="choice-label"><input type="radio" name="anciennetePro" value="Plus de 10 ans"> Plus de 10 ans</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. SIGNATURE DU CLIENT -->
+    <div class="section-card">
+      <div class="section-title"><span class="step">4</span> Déclaration sur l'honneur & Signature</div>
+      
+      <div style="background:#f8fafc;padding:12px;border-radius:8px;font-size:11.5px;color:#475569;line-height:1.45;border:1px solid #e2e8f0;margin-bottom:14px">
+        <strong>Je soussigné(e), déclare :</strong><br>
+        • Que toutes les informations fournies dans le présent formulaire sont vraies et véridiques ; j'autorise également l'Étude à vérifier et, le cas échéant, à compléter les données ci-dessus.<br>
+        • N'être ni n'avoir été impliqué dans aucune procédure de vérification fiscale ou d'infraction financière.<br>
+        • Que les fonds utilisés pour la présente transaction ainsi que l'origine de mon patrimoine sont tout à fait licites.
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Fait à <span class="req">*</span></label>
+          <input type="text" id="signeA" required value="Abidjan">
+        </div>
+        <div class="form-group">
+          <label>Date du jour</label>
+          <input type="text" id="dateJourAff" readonly style="background:#f1f5f9">
+        </div>
+      </div>
+
+      <label>Apposez votre signature au doigt ou au stylet <span class="req">*</span></label>
+      <div class="signature-container">
+        <canvas id="signature-pad"></canvas>
+        <div class="signature-tools">
+          <span class="signature-hint">✍️ Signez à l'intérieur du cadre</span>
+          <button type="button" class="btn-clear" id="btn-effacer-signature">Effacer ↺</button>
+        </div>
+      </div>
+    </div>
+
+    <button type="submit" class="btn-submit" id="btn-soumettre">
+      <span>Valider et Transmettre à l'Étude</span> ➔
+    </button>
+  </form>
+
+  <!-- Message de Succès -->
+  <div id="ecran-succes" class="success-card">
+    <div class="success-icon">✓</div>
+    <div class="success-title">Fiche KYC Validée avec Succès !</div>
+    <div class="success-desc">
+      Vos informations et votre signature ont été transmises en toute sécurité à l'Office Notarial.<br>
+      Votre fiche d'identification réglementaire de 5 pages a été générée et rattachée à votre dossier.
+    </div>
+    <div style="font-size:12px;color:#64748b">
+      Vous pouvez maintenant fermer cette page ou vous adresser au clerc de l'étude.
+    </div>
+  </div>
+
+</div>
+
+<script>
+  (function () {
+    var params = new URLSearchParams(window.location.search);
+    var token = params.get("token") || window.location.pathname.split("/").pop();
+    var apiBase = window.location.origin;
+
+    var canvas = document.getElementById("signature-pad");
+    var ctx = canvas.getContext("2d");
+    var isDrawing = false;
+    var hasSigned = false;
+
+    // Redimensionner le canvas de signature
+    function resizeCanvas() {
+      var ratio = Math.max(window.devicePixelRatio || 1, 1);
+      canvas.width = canvas.offsetWidth * ratio;
+      canvas.height = canvas.offsetHeight * ratio;
+      ctx.scale(ratio, ratio);
+      ctx.lineWidth = 2.5;
+      ctx.lineCap = "round";
+      ctx.strokeStyle = "#0f172a";
+    }
+    window.addEventListener("resize", resizeCanvas);
+    setTimeout(resizeCanvas, 200);
+
+    function getTouchPos(e) {
+      var rect = canvas.getBoundingClientRect();
+      var touch = e.touches ? e.touches[0] : e;
+      return { x: touch.clientX - rect.left, y: touch.clientY - rect.top };
+    }
+
+    function startDraw(e) {
+      e.preventDefault();
+      isDrawing = true;
+      hasSigned = true;
+      var pos = getTouchPos(e);
+      ctx.beginPath();
+      ctx.moveTo(pos.x, pos.y);
+    }
+
+    function draw(e) {
+      if (!isDrawing) return;
+      e.preventDefault();
+      var pos = getTouchPos(e);
+      ctx.lineTo(pos.x, pos.y);
+      ctx.stroke();
+    }
+
+    function endDraw(e) {
+      if (!isDrawing) return;
+      e.preventDefault();
+      isDrawing = false;
+    }
+
+    canvas.addEventListener("mousedown", startDraw);
+    canvas.addEventListener("mousemove", draw);
+    window.addEventListener("mouseup", endDraw);
+
+    canvas.addEventListener("touchstart", startDraw, { passive: false });
+    canvas.addEventListener("touchmove", draw, { passive: false });
+    window.addEventListener("touchend", endDraw, { passive: false });
+
+    document.getElementById("btn-effacer-signature").addEventListener("click", function () {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      hasSigned = false;
+    });
+
+    document.querySelectorAll('input[name="estPPE"]').forEach(function (radio) {
+      radio.addEventListener("change", function () {
+        document.getElementById("details-ppe").style.display = this.value === "oui" ? "block" : "none";
+      });
+    });
+
+    document.getElementById("dateJourAff").value = new Date().toLocaleDateString("fr-CI", { day: "numeric", month: "long", year: "numeric" });
+
+    // Charger les infos du dossier et de l'étude
+    fetch(apiBase + "/api/kyc/public/" + token)
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (data.erreur) {
+          alert("Erreur : " + data.erreur);
+          return;
+        }
+        if (data.etude) {
+          document.getElementById("etude-nom").textContent = data.etude.nomEtude || "ÉTUDE NOTARIALE";
+          document.getElementById("notaire-titre").textContent = (data.etude.titreNotaire || "Maître") + " " + (data.etude.nomNotaire || "") + " — " + (data.etude.numeroOffice || "NOTAIRE");
+          document.getElementById("etude-coordonnees").textContent = (data.etude.adresse || "") + (data.etude.telephone ? " • Tél : " + data.etude.telephone : "");
+        }
+        if (data.dossier) {
+          document.getElementById("dossier-num").textContent = data.dossier.numeroDossier || "—";
+          document.getElementById("dossier-acte").textContent = data.dossier.typeActe || "Acte notarié";
+          if (data.dossier.comparantsNoms) {
+            document.getElementById("nomPrenoms").value = data.dossier.comparantsNoms;
+          }
+        }
+        // Préremplir les données si déjà saisies
+        if (data.donnees && Object.keys(data.donnees).length) {
+          var d = data.donnees;
+          if (d.nomPrenoms) document.getElementById("nomPrenoms").value = d.nomPrenoms;
+          if (d.nomJeuneFille) document.getElementById("nomJeuneFille").value = d.nomJeuneFille;
+          if (d.nomPere) document.getElementById("nomPere").value = d.nomPere;
+          if (d.nomMere) document.getElementById("nomMere").value = d.nomMere;
+          if (d.dateNaissance) document.getElementById("dateNaissance").value = d.dateNaissance;
+          if (d.lieuNaissance) document.getElementById("lieuNaissance").value = d.lieuNaissance;
+          if (d.statutMatrimonial) document.getElementById("statutMatrimonial").value = d.statutMatrimonial;
+          if (d.nationalite) document.getElementById("nationalite").value = d.nationalite;
+          if (d.pieceIdentite) document.getElementById("pieceIdentite").value = d.pieceIdentite;
+          if (d.compteContribuable) document.getElementById("compteContribuable").value = d.compteContribuable;
+          if (d.adresseGeographique) document.getElementById("adresseGeographique").value = d.adresseGeographique;
+          if (d.telephone) document.getElementById("telephone").value = d.telephone;
+          if (d.whatsapp) document.getElementById("whatsapp").value = d.whatsapp;
+          if (d.email) document.getElementById("email").value = d.email;
+          if (d.profession) document.getElementById("profession").value = d.profession;
+          if (d.employeur) document.getElementById("employeur").value = d.employeur;
+          if (d.secteurActivite) document.getElementById("secteurActivite").value = d.secteurActivite;
+          if (d.signeA) document.getElementById("signeA").value = d.signeA;
+        }
+      })
+      .catch(function (err) {
+        console.error(err);
+      });
+
+    // Soumission du formulaire
+    document.getElementById("kyc-form").addEventListener("submit", function (e) {
+      e.preventDefault();
+      if (!hasSigned) {
+        alert("Veuillez apposer votre signature dans le cadre prévu avant de valider.");
+        return;
+      }
+
+      var signatureBase64 = canvas.toDataURL("image/png");
+      var btn = document.getElementById("btn-soumettre");
+      btn.disabled = true;
+      btn.innerHTML = "Transmission en cours...";
+
+      var payload = {
+        typePersonne: "physique",
+        signeA: document.getElementById("signeA").value || "Abidjan",
+        signature: signatureBase64,
+        donnees: {
+          nomPrenoms: document.getElementById("nomPrenoms").value,
+          nomJeuneFille: document.getElementById("nomJeuneFille").value,
+          nomPere: document.getElementById("nomPere").value,
+          nomMere: document.getElementById("nomMere").value,
+          dateNaissance: document.getElementById("dateNaissance").value,
+          lieuNaissance: document.getElementById("lieuNaissance").value,
+          statutMatrimonial: document.getElementById("statutMatrimonial").value,
+          nationalite: document.getElementById("nationalite").value,
+          autresNationalites: document.getElementById("autresNationalites").value,
+          pieceIdentite: document.getElementById("pieceIdentite").value,
+          compteContribuable: document.getElementById("compteContribuable").value,
+          adresseGeographique: document.getElementById("adresseGeographique").value,
+          telephone: document.getElementById("telephone").value,
+          whatsapp: document.getElementById("whatsapp").value,
+          email: document.getElementById("email").value,
+          profession: document.getElementById("profession").value,
+          employeur: document.getElementById("employeur").value,
+          secteurActivite: document.getElementById("secteurActivite").value,
+          professions5Ans: document.getElementById("professions5Ans").value,
+          estPPE: document.querySelector('input[name="estPPE"]:checked') ? document.querySelector('input[name="estPPE"]:checked').value : "non",
+          fonctionPPE: document.getElementById("fonctionPPE").value,
+          origineFonds: document.querySelector('input[name="origineFonds"]:checked') ? document.querySelector('input[name="origineFonds"]:checked').value : "De votre activité",
+          provenanceCI: document.querySelector('input[name="provenanceCI"]:checked') ? document.querySelector('input[name="provenanceCI"]:checked').value : "OUI",
+          anciennetePro: document.querySelector('input[name="anciennetePro"]:checked') ? document.querySelector('input[name="anciennetePro"]:checked').value : "De 1 à 10 ans",
+          signeA: document.getElementById("signeA").value,
+          dateSignature: new Date().toISOString()
+        }
+      };
+
+      fetch(apiBase + "/api/kyc/public/" + token + "/soumettre", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      })
+        .then(function (res) { return res.json(); })
+        .then(function (res) {
+          if (res.erreur) {
+            alert("Erreur lors de la validation : " + res.erreur);
+            btn.disabled = false;
+            btn.innerHTML = "Valider et Transmettre à l'Étude ➔";
+            return;
+          }
+          document.getElementById("kyc-form").style.display = "none";
+          document.getElementById("ecran-succes").style.display = "block";
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        })
+        .catch(function (err) {
+          alert("Erreur réseau : " + err.message);
+          btn.disabled = false;
+          btn.innerHTML = "Valider et Transmettre à l'Étude ➔";
+        });
+    });
+  })();
+</script>
+
+</body>
+</html>

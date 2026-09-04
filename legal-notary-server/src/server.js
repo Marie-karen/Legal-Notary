@@ -39,12 +39,15 @@ const superadminRoutes = require("./api/superadmin.routes");
 const telemetrieRoutes = require("./api/telemetrie.routes");
 const rapportsRoutes = require("./api/rapports.routes");
 const agendaRoutes = require("./api/agenda.routes");
+const kycRoutes = require("./api/kyc.routes");
+const internalRoutes = require("./api/internal.routes");
 const telemetrieService = require("./services/telemetrie.service");
+const { notifyControlHub } = require("./services/webhook-dispatcher.service");
 const { appliquerEnTetesSecurite } = require("./middleware/securite.middleware");
 
 const app = express();
 app.use(appliquerEnTetesSecurite);
-app.use(express.json());
+app.use(express.json({ limit: "10mb" })); // Support des signatures base64 et documents
 
 // CORS minimal, écrit à la main plutôt que d'ajouter une dépendance : le
 // frontend (Claude Design) et l'API ne sont pas forcément servis depuis la
@@ -53,7 +56,7 @@ app.use(express.json());
 // docs/DEPLOIEMENT.md.
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", process.env.ORIGINE_FRONTEND || "*");
-  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization, x-control-hub-secret");
   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
   if (req.method === "OPTIONS") return res.sendStatus(204);
   next();
@@ -63,6 +66,8 @@ app.get("/api/sante", (req, res) => res.json({ etat: "ok" }));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/telemetrie", telemetrieRoutes);
+app.use("/api/kyc", kycRoutes); // Gère les routes publiques /public/* et privées /dossier/*
+app.use("/api/internal", internalRoutes); // Routes réservées au SaaS de Contrôle (Master Super Admin Hub)
 
 // Tout ce qui suit exige d'être connecté.
 app.use("/api", authentifier);
@@ -105,15 +110,28 @@ app.get(/^(?!\/api).*/, (req, res) => {
 // Gestionnaire d'erreur générique avec capture télémétrique automatique
 app.use((erreur, req, res, next) => {
   console.error("[UnhandledError]", erreur);
+  const status = erreur.status || 500;
   telemetrieService.enregistrerErreur({
     source: "express-api-global",
     typeErreur: erreur.name || "InternalServerError",
     message: erreur.message,
     stackTrace: erreur.stack,
-    niveau: (erreur.status && erreur.status < 500) ? "warning" : "error",
+    niveau: status < 500 ? "warning" : "error",
     meta: { url: req.originalUrl, methode: req.method, ip: req.ip },
   }).catch(() => {});
-  res.status(erreur.status || 500).json({ erreur: erreur.message || "Erreur interne du serveur." });
+
+  if (status >= 500) {
+    notifyControlHub("system.critical_error", {
+      message: erreur.message,
+      type: erreur.name || "InternalServerError",
+      url: req.originalUrl,
+      method: req.method,
+      ip: req.ip,
+      timestamp: new Date().toISOString(),
+    }).catch(() => {});
+  }
+
+  res.status(status).json({ erreur: erreur.message || "Erreur interne du serveur." });
 });
 
 const PORT = process.env.PORT || 4000;

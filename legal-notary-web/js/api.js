@@ -184,6 +184,8 @@ window.LegalNotaryAPI = (function () {
         return r.utilisateur;
       });
     },
+    setSession: setSession,
+    getJeton: getJeton,
     deconnecter: clearSession,
     getUtilisateur: getUtilisateur,
     estConnecte: function () { return !!getJeton(); },

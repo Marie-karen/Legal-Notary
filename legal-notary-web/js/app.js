@@ -2336,6 +2336,7 @@
 
             html += '<div style="display:flex;align-items:center;gap:10px">';
             html += '<span style="font-size:11px;color:var(--color-text-dim)">Ouvert le ' + dateAff + '</span>';
+            html += '<button type="button" class="btn btn-secondary btn-sm carte-client-kyc" data-id="' + d.dossierId + '" style="padding:3px 8px;font-size:11.5px" title="Générer QR Code et Fiche KYC">📱 KYC & QR</button>';
             html += '<button type="button" class="btn btn-ghost carte-client-dossier" data-id="' + d.dossierId + '" style="padding:4px 8px;font-size:12px">Consulter dossier →</button>';
             html += '</div>';
             html += '</div>';
@@ -2362,6 +2363,12 @@
       });
       c.querySelectorAll(".carte-client-dossier").forEach(function (e) {
         e.addEventListener("click", function () { ouvrirDossier(e.dataset.id, "clients"); });
+      });
+      c.querySelectorAll(".carte-client-kyc").forEach(function (e) {
+        e.addEventListener("click", function (ev) {
+          ev.stopPropagation();
+          modalKycDossier(e.dataset.id);
+        });
       });
     }).catch(function (e) { c.innerHTML = '<p class="erreur-inline">' + e.message + '</p>'; });
   }
@@ -5765,10 +5772,10 @@
                 if (emo.lignesDetaillees && emo.lignesDetaillees.length) {
                   emo.lignesDetaillees.filter(function (l) { return l.actif; }).forEach(function (l) {
                     h += '<tr>';
-                    h += '<td style="padding:3px 8px">' + l.libelle + '</td>';
+                    h += '<td style="padding:3px 8px">' + (l.libelle || "") + '</td>';
                     h += '<td style="padding:3px 8px;text-align:right;font-weight:700;color:var(--color-accent)">' + fmtFCFA(l.montant) + '</td>';
-                    h += '<td style="padding:3px 8px;text-align:right;color:var(--color-text-dim)">—</td>';
-                    h += '<td style="padding:3px 8px;text-align:right;color:var(--color-text-dim)">—</td>';
+                    h += '<td style="padding:3px 8px;text-align:right;color:var(--color-text-dim)"></td>';
+                    h += '<td style="padding:3px 8px;text-align:right;color:var(--color-text-dim)"></td>';
                     h += '</tr>';
                   });
                 }
@@ -5777,10 +5784,10 @@
                 if (f.lignesTresor && f.lignesTresor.length) {
                   f.lignesTresor.forEach(function (tr) {
                     h += '<tr>';
-                    h += '<td style="padding:3px 8px;color:var(--color-text)">' + tr.libelle + '</td>';
-                    h += '<td style="padding:3px 8px;text-align:right;color:var(--color-text-dim)">—</td>';
+                    h += '<td style="padding:3px 8px;color:var(--color-text)">' + (tr.libelle || "") + '</td>';
+                    h += '<td style="padding:3px 8px;text-align:right;color:var(--color-text-dim)"></td>';
                     h += '<td style="padding:3px 8px;text-align:right;font-weight:700;color:var(--color-warning)">' + fmtFCFA(tr.montant) + '</td>';
-                    h += '<td style="padding:3px 8px;text-align:right;color:var(--color-text-dim)">—</td>';
+                    h += '<td style="padding:3px 8px;text-align:right;color:var(--color-text-dim)"></td>';
                     h += '</tr>';
                   });
                 }
@@ -5789,9 +5796,9 @@
                 if (f.lignesDebours && f.lignesDebours.length) {
                   f.lignesDebours.filter(function (d) { return d.actif; }).forEach(function (deb) {
                     h += '<tr>';
-                    h += '<td style="padding:3px 8px;color:var(--color-text)">' + deb.libelle + '</td>';
-                    h += '<td style="padding:3px 8px;text-align:right;color:var(--color-text-dim)">—</td>';
-                    h += '<td style="padding:3px 8px;text-align:right;color:var(--color-text-dim)">—</td>';
+                    h += '<td style="padding:3px 8px;color:var(--color-text)">' + (deb.libelle || "") + '</td>';
+                    h += '<td style="padding:3px 8px;text-align:right;color:var(--color-text-dim)"></td>';
+                    h += '<td style="padding:3px 8px;text-align:right;color:var(--color-text-dim)"></td>';
                     h += '<td style="padding:3px 8px;text-align:right;font-weight:700;color:#10b981">' + fmtFCFA(deb.montant) + '</td>';
                     h += '</tr>';
                   });
@@ -6591,8 +6598,18 @@
     var rolesLignes = emoLignes.filter(function (l) { return l.code && (l.code.indexOf("roles_") === 0 || l.code.indexOf("role_") === 0); });
     var honorairesLignes = emoLignes.filter(function (l) { return !l.code || (l.code.indexOf("roles_") !== 0 && l.code.indexOf("role_") !== 0); });
 
+    function formaterLibelleLigne(lib) {
+      if (!lib) return "";
+      var net = String(lib).trim();
+      var low = net.toLowerCase();
+      if (low.indexOf("émoluments proportionnels") !== -1 || low.indexOf("emoluments proportionnels") !== -1) {
+        return "Émoluments proportionnels";
+      }
+      return net.replace(/\s*\([^)]*(?:Décret|Minimum|forfaitaire|Barème)[^)]*\)/gi, "").trim();
+    }
+
     var formGauche = (f.lignesDebours && f.lignesDebours.length) ? f.lignesDebours : [{ libelle: "Réquisition d'État", montant: 6000 }];
-    var formDroite = honorairesLignes.filter(function (l) { return l.code !== "emolument_proportionnel"; });
+    var formDroite = honorairesLignes.filter(function (l) { return l.code !== "emolument_proportionnel" && l.code !== "emolument_proportionnel_acte"; });
     if (!formDroite.length) {
       formDroite = [
         { libelle: "Dépôt à la banque", montant: 15000 },
@@ -6613,10 +6630,10 @@
       totalLignesEstime = 6;
     }
 
-    // Réglages des dimensions & polices (Parfaitement lisibles et garanties sur 1 page A4)
-    var ecartTitreCartouche = "6px";
-    var ecartCartoucheTableau = "10px";
-    var ecartTableauArrete = "5px";
+    // Réglages des dimensions & polices (Parfaitement calibrées)
+    var ecartTitreCartouche = "15px";
+    var ecartCartoucheTableau = "20px";
+    var ecartTableauArrete = "15px";
     var tableCellPadding = "3.5px 6px";
     var tableFontSize = "9pt";
     var tableHeaderFontSize = "9.5pt";
@@ -6624,17 +6641,17 @@
     var tableLineHeight = "1.25";
     var signatureGap = "10px";
 
-    if (totalLignesEstime > 15) {
+    if (totalLignesEstime > 20) {
       // Cas exceptionnel avec un très grand nombre de formalités
-      ecartTitreCartouche = "4px";
-      ecartCartoucheTableau = "6px";
-      ecartTableauArrete = "3px";
-      tableCellPadding = "2px 4px";
-      tableFontSize = "8pt";
-      tableHeaderFontSize = "8.5pt";
-      tableSubHeaderFontSize = "8pt";
-      tableLineHeight = "1.18";
-      signatureGap = "6px";
+      ecartTitreCartouche = "10px";
+      ecartCartoucheTableau = "12px";
+      ecartTableauArrete = "10px";
+      tableCellPadding = "2.5px 5px";
+      tableFontSize = "8.5pt";
+      tableHeaderFontSize = "9pt";
+      tableSubHeaderFontSize = "8.5pt";
+      tableLineHeight = "1.2";
+      signatureGap = "8px";
     }
 
     var html = '<div class="document-a4-notarie" style="font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',Roboto,Helvetica,Arial,sans-serif;color:#111827">';
@@ -6667,19 +6684,19 @@
       html += '<div style="font-size:7.5pt;color:#6b7280;margin-top:2px">Document interne de liquidation des droits, émoluments et débours (Décret 2013-279)</div>';
       html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:3px 12px;font-size:8.5pt;margin-top:' + ecartTitreCartouche + ';background:#f9fafb;padding:6px 10px;border-radius:4px;border:1px solid #d1d5db;text-align:left">';
       html += '<div>DESIGNATION : <strong>' + comparantsAff + '</strong></div>';
-      html += '<div>DOSSIER N° : <strong>' + (dossier.numeroDossier || "—") + '</strong></div>';
+      html += '<div>DOSSIER N° : <strong>' + (dossier.numeroDossier || "") + '</strong></div>';
       html += '<div>NATURE DE L\'ACTE : <strong>' + labelActe(dossier.typeActeId) + '</strong></div>';
       html += '<div>BASE DE CALCUL : <strong>' + fmtFCFA(dossier.montantAssiette) + '</strong></div>';
       html += '</div>';
       html += '</div>';
 
-      // Tableau 4 colonnes (2 Blocs côte à côte : Gauche = Trésor / Droite = Étude)
-      html += '<table style="width:100%;border-collapse:collapse;margin-top:' + ecartCartoucheTableau + ';margin-bottom:' + ecartTableauArrete + ';font-size:' + tableFontSize + ';line-height:' + tableLineHeight + '">';
+      // Tableau 4 colonnes (2 Blocs côte à côte : Gauche = Trésor / Droite = Étude) avec min-height 400px
+      html += '<table style="width:100%;min-height:400px;border-collapse:collapse;margin-top:' + ecartCartoucheTableau + ';margin-bottom:' + ecartTableauArrete + ';font-size:' + tableFontSize + ';line-height:' + tableLineHeight + '">';
       html += '<thead><tr style="background:#f3f4f6;font-weight:800;border-top:1.5px solid #111;border-bottom:1.5px solid #111">';
-      html += '<th style="border:1px solid #9ca3af;padding:' + tableCellPadding + ';text-align:left;width:32%;font-size:' + tableHeaderFontSize + '">NATURE (TRÉSOR & FORMALITÉS)</th>';
-      html += '<th style="border:1px solid #9ca3af;padding:' + tableCellPadding + ';text-align:right;width:18%;font-size:' + tableHeaderFontSize + ';white-space:nowrap">MONTANT</th>';
-      html += '<th style="border:1px solid #9ca3af;padding:' + tableCellPadding + ';text-align:left;width:32%;font-size:' + tableHeaderFontSize + '">NATURE (ÉTUDE & HONORAIRES)</th>';
-      html += '<th style="border:1px solid #9ca3af;padding:' + tableCellPadding + ';text-align:right;width:18%;font-size:' + tableHeaderFontSize + ';white-space:nowrap">MONTANT</th>';
+      html += '<th style="border:1px solid #9ca3af;padding:' + tableCellPadding + ';text-align:left;width:35%;font-size:' + tableHeaderFontSize + '">NATURE (TRÉSOR & FORMALITÉS)</th>';
+      html += '<th style="border:1px solid #9ca3af;padding:' + tableCellPadding + ';text-align:right;width:15%;font-size:' + tableHeaderFontSize + ';white-space:nowrap">MONTANT</th>';
+      html += '<th style="border:1px solid #9ca3af;padding:' + tableCellPadding + ';text-align:left;width:35%;font-size:' + tableHeaderFontSize + '">NATURE (ÉTUDE & HONORAIRES)</th>';
+      html += '<th style="border:1px solid #9ca3af;padding:' + tableCellPadding + ';text-align:right;width:15%;font-size:' + tableHeaderFontSize + ';white-space:nowrap">MONTANT</th>';
       html += '</tr></thead><tbody>';
 
       // 1. Timbres Fiscaux (Gauche) vs Rôles (Droite)
@@ -6700,7 +6717,7 @@
       html += '<td style="border:1px solid #d1d5db;padding:' + tableCellPadding + '">Expédition (500 F/page)</td>';
       html += '<td style="border:1px solid #d1d5db;text-align:right;font-weight:600;white-space:nowrap">' + fmtFCFA((timbresLignes[1] && timbresLignes[1].montant) || 5000) + '</td>';
       html += '<td style="border:1px solid #d1d5db;padding:' + tableCellPadding + '">Expédition (500 F/page)</td>';
-      html += '<td style="border:1px solid #d1d5db;text-align:right;font-weight:600;color:#1e3a8a;white-space:nowrap">' + fmtFCFA((rolesLignes[1] && rolesLignes[1].montant) || 7500) + '</td>';
+      html += '<td style="border:1px solid #d1d5db;text-align:right;font-weight:600;color:#1e3a8a;white-space:nowrap">' + fmtFCFA((rolesLignes[1] && rolesLignes[1].montant) || 5000) + '</td>';
       html += '</tr>';
 
       html += '<tr>';
@@ -6723,7 +6740,7 @@
       html += '<tr>';
       html += '<td style="border:1px solid #d1d5db;padding:' + tableCellPadding + '">Droits d\'Enregistrement DGI</td>';
       html += '<td style="border:1px solid #d1d5db;text-align:right;font-weight:600;white-space:nowrap">' + fmtFCFA(droitEnr) + '</td>';
-      html += '<td style="border:1px solid #d1d5db;padding:' + tableCellPadding + '">Émolument Proportionnel d\'Acte</td>';
+      html += '<td style="border:1px solid #d1d5db;padding:' + tableCellPadding + '">Émoluments proportionnels</td>';
       html += '<td style="border:1px solid #d1d5db;text-align:right;font-weight:700;color:#1e3a8a;white-space:nowrap">' + fmtFCFA(emoProp) + '</td>';
       html += '</tr>';
 
@@ -6744,11 +6761,16 @@
       for (var i = 0; i < maxLignes; i++) {
         var g = formGauche[i];
         var d = formDroite[i];
+        var libG = g ? formaterLibelleLigne(g.libelle) : "";
+        var mtG = g && g.montant !== undefined && g.montant !== null ? fmtFCFA(g.montant) : "";
+        var libD = d ? formaterLibelleLigne(d.libelle) : "";
+        var mtD = d && d.montant !== undefined && d.montant !== null ? fmtFCFA(d.montant) : "";
+
         html += '<tr>';
-        html += '<td style="border:1px solid #d1d5db;padding:' + tableCellPadding + '">' + (g ? g.libelle : '') + '</td>';
-        html += '<td style="border:1px solid #d1d5db;text-align:right;font-weight:600;white-space:nowrap">' + (g ? fmtFCFA(g.montant) : '') + '</td>';
-        html += '<td style="border:1px solid #d1d5db;padding:' + tableCellPadding + '">' + (d ? d.libelle : '') + '</td>';
-        html += '<td style="border:1px solid #d1d5db;text-align:right;font-weight:600;color:#1e3a8a;white-space:nowrap">' + (d ? fmtFCFA(d.montant) : '') + '</td>';
+        html += '<td style="border:1px solid #d1d5db;padding:' + tableCellPadding + '">' + libG + '</td>';
+        html += '<td style="border:1px solid #d1d5db;text-align:right;font-weight:600;white-space:nowrap">' + mtG + '</td>';
+        html += '<td style="border:1px solid #d1d5db;padding:' + tableCellPadding + '">' + libD + '</td>';
+        html += '<td style="border:1px solid #d1d5db;text-align:right;font-weight:600;color:#1e3a8a;white-space:nowrap">' + mtD + '</td>';
         html += '</tr>';
       }
 
@@ -6760,10 +6782,10 @@
       html += '<td style="border:1px solid #9ca3af;padding:' + tableCellPadding + ';text-align:right;color:#1e3a8a;white-space:nowrap">' + fmtFCFA(totalCA) + '</td>';
       html += '</tr>';
 
-      // Total Général
-      html += '<tr style="background:#111827;color:#fff;font-weight:800;font-size:10pt">';
-      html += '<td colspan="2" style="border:1px solid #111827;padding:5px 8px;text-transform:uppercase">TOTAL GÉNÉRAL DE LA TAXE</td>';
-      html += '<td colspan="2" style="border:1px solid #111827;padding:5px 8px;text-align:right;font-size:11pt;white-space:nowrap">' + fmtFCFA(totalGeneral) + '</td>';
+      // Total Général (Encadrement net gris foncé sur fond blanc comme sur le modèle de référence)
+      html += '<tr style="background:#ffffff;font-weight:800;font-size:10pt">';
+      html += '<td colspan="2" style="border:1.5px solid #374151;padding:5px 8px;text-transform:uppercase;color:#374151;background:#fff">TOTAL GÉNÉRAL DE LA TAXE</td>';
+      html += '<td colspan="2" style="border:1.5px solid #374151;padding:5px 8px;text-align:right;font-size:11pt;color:#111827;white-space:nowrap;background:#fff">' + fmtFCFA(totalGeneral) + '</td>';
       html += '</tr>';
       html += '</tbody></table>';
 
@@ -6784,18 +6806,18 @@
         : '<span class="tag" style="background:#fef3c7;color:#92400e;font-weight:800;font-size:9px;padding:1px 6px;border-radius:8px;border:1px solid #fcd34d">Note de Frais Prévisionnelle (Appel de Provision Client)</span>';
 
       html += '<div style="text-align:center">';
-      html += '<div style="font-family:\'Space Grotesk\',Arial,sans-serif;font-weight:800;font-size:11pt;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1.5px solid #111;display:inline-block;padding-bottom:2px">NOTE DE FRAIS (APPEL DE PROVISION) N° ' + (dossier.numeroDossier || "EN COURS") + '</div>';
+      html += '<div style="font-family:\'Space Grotesk\',Arial,sans-serif;font-weight:800;font-size:11pt;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1.5px solid #111;display:inline-block;padding-bottom:2px">NOTE DE FRAIS (APPEL DE PROVISION) N° ' + (dossier.numeroDossier || "") + '</div>';
       html += '<div style="font-size:7.5pt;color:#6b7280;margin-top:2px">' + sousTitreBadge + '</div>';
       html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:3px 12px;font-size:8.5pt;margin-top:' + ecartTitreCartouche + ';background:#f9fafb;padding:6px 10px;border-radius:4px;border:1px solid #d1d5db;text-align:left">';
       html += '<div>Identité du client : <strong>' + comparantsAff + '</strong></div>';
       html += '<div>Affaire : <strong>' + labelActe(dossier.typeActeId) + '</strong></div>';
-      html += '<div>Numéro de dossier : <strong>' + (dossier.numeroDossier || "—") + '</strong></div>';
+      html += '<div>Numéro de dossier : <strong>' + (dossier.numeroDossier || "") + '</strong></div>';
       html += '<div>Base de calcul : <strong>' + fmtFCFA(dossier.montantAssiette) + '</strong></div>';
       html += '</div>';
       html += '</div>';
 
       // Tableau 6 colonnes (Chaque rubrique divisée en Désignation + Montant avec trait séparateur)
-      html += '<table style="width:100%;border-collapse:collapse;margin-top:' + ecartCartoucheTableau + ';margin-bottom:' + ecartTableauArrete + ';font-size:9pt;line-height:' + tableLineHeight + '">';
+      html += '<table style="width:100%;min-height:400px;border-collapse:collapse;margin-top:' + ecartCartoucheTableau + ';margin-bottom:' + ecartTableauArrete + ';font-size:9pt;line-height:' + tableLineHeight + '">';
       html += '<thead><tr style="background:#f3f4f6;font-weight:800;border-top:1.5px solid #111;border-bottom:1.5px solid #111">';
       html += '<th colspan="2" style="border:1px solid #9ca3af;border-right:1.5px solid #9ca3af;padding:' + tableCellPadding + ';text-align:center;width:33.33%;font-size:10pt;color:#111827">DROITS / ÉTAT (TRÉSOR)</th>';
       html += '<th colspan="2" style="border:1px solid #9ca3af;border-right:1.5px solid #9ca3af;padding:' + tableCellPadding + ';text-align:center;width:33.33%;font-size:10pt;color:#111827">DÉBOURS & FORMALITÉS TIERS</th>';
@@ -6829,18 +6851,25 @@
         var dItem = deboursList[n];
         var eItem = emoList[n];
 
+        var libT = tItem ? formaterLibelleLigne(tItem.libelle) : "";
+        var mtT = tItem && tItem.montant !== undefined && tItem.montant !== null ? fmtFCFA(tItem.montant) : "";
+        var libDeb = dItem ? formaterLibelleLigne(dItem.libelle) : "";
+        var mtDeb = dItem && dItem.montant !== undefined && dItem.montant !== null ? fmtFCFA(dItem.montant) : "";
+        var libE = eItem ? formaterLibelleLigne(eItem.libelle) : "";
+        var mtE = eItem && eItem.montant !== undefined && eItem.montant !== null ? fmtFCFA(eItem.montant) : "";
+
         html += '<tr>';
         // Rubrique 1 : Droits (Désignation | Montant)
-        html += '<td style="border:1px solid #d1d5db;padding:' + tableCellPadding + ';width:20%;font-size:9pt">' + (tItem ? tItem.libelle : '') + '</td>';
-        html += '<td style="border:1px solid #d1d5db;border-right:1.5px solid #9ca3af;padding:' + tableCellPadding + ';text-align:right;font-weight:700;font-size:9.5pt;width:13.33%;white-space:nowrap">' + (tItem ? fmtFCFA(tItem.montant) : '') + '</td>';
+        html += '<td style="border:1px solid #d1d5db;padding:' + tableCellPadding + ';width:20%;font-size:9pt">' + libT + '</td>';
+        html += '<td style="border:1px solid #d1d5db;border-right:1.5px solid #9ca3af;padding:' + tableCellPadding + ';text-align:right;font-weight:700;font-size:9.5pt;width:13.33%;white-space:nowrap">' + mtT + '</td>';
 
         // Rubrique 2 : Débours (Désignation | Montant)
-        html += '<td style="border:1px solid #d1d5db;padding:' + tableCellPadding + ';width:20%;font-size:9pt">' + (dItem ? dItem.libelle : '') + '</td>';
-        html += '<td style="border:1px solid #d1d5db;border-right:1.5px solid #9ca3af;padding:' + tableCellPadding + ';text-align:right;font-weight:700;font-size:9.5pt;width:13.33%;white-space:nowrap">' + (dItem ? fmtFCFA(dItem.montant) : '') + '</td>';
+        html += '<td style="border:1px solid #d1d5db;padding:' + tableCellPadding + ';width:20%;font-size:9pt">' + libDeb + '</td>';
+        html += '<td style="border:1px solid #d1d5db;border-right:1.5px solid #9ca3af;padding:' + tableCellPadding + ';text-align:right;font-weight:700;font-size:9.5pt;width:13.33%;white-space:nowrap">' + mtDeb + '</td>';
 
         // Rubrique 3 : Émoluments (Désignation | Montant)
-        html += '<td style="border:1px solid #d1d5db;padding:' + tableCellPadding + ';width:20%;font-size:9pt">' + (eItem ? eItem.libelle : '') + '</td>';
-        html += '<td style="border:1px solid #d1d5db;padding:' + tableCellPadding + ';text-align:right;font-weight:800;color:#1e3a8a;font-size:9.5pt;width:13.34%;white-space:nowrap">' + (eItem ? fmtFCFA(eItem.montant) : '') + '</td>';
+        html += '<td style="border:1px solid #d1d5db;padding:' + tableCellPadding + ';width:20%;font-size:9pt">' + libE + '</td>';
+        html += '<td style="border:1px solid #d1d5db;padding:' + tableCellPadding + ';text-align:right;font-weight:800;color:#1e3a8a;font-size:9.5pt;width:13.34%;white-space:nowrap">' + mtE + '</td>';
         html += '</tr>';
       }
 
@@ -6855,9 +6884,9 @@
       html += '</tr>';
 
       // Total Général
-      html += '<tr style="background:#111827;color:#fff;font-weight:800;font-size:10.5pt">';
-      html += '<td colspan="4" style="border:1px solid #111827;padding:5px 8px;text-transform:uppercase">TOTAL GÉNÉRAL DE LA NOTE DE FRAIS</td>';
-      html += '<td colspan="2" style="border:1px solid #111827;padding:5px 8px;text-align:right;font-size:11.5pt;white-space:nowrap">' + fmtFCFA(totalGeneral) + '</td>';
+      html += '<tr style="background:#ffffff;font-weight:800;font-size:10.5pt">';
+      html += '<td colspan="4" style="border:1.5px solid #374151;padding:5px 8px;text-transform:uppercase;color:#374151;background:#fff">TOTAL GÉNÉRAL DE LA NOTE DE FRAIS</td>';
+      html += '<td colspan="2" style="border:1.5px solid #374151;padding:5px 8px;text-align:right;font-size:11.5pt;color:#111827;white-space:nowrap;background:#fff">' + fmtFCFA(totalGeneral) + '</td>';
       html += '</tr>';
       html += '</tbody></table>';
 
@@ -6882,12 +6911,12 @@
       html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:3px 12px;font-size:8.5pt;margin-top:' + ecartTitreCartouche + ';background:#f9fafb;padding:6px 10px;border-radius:4px;border:1px solid #d1d5db;text-align:left">';
       html += '<div>Client : <strong>' + comparantsAff + '</strong></div>';
       html += '<div>Acte : <strong>' + labelActe(dossier.typeActeId) + '</strong></div>';
-      html += '<div>Dossier N° : <strong>' + (dossier.numeroDossier || "—") + '</strong></div>';
+      html += '<div>Dossier N° : <strong>' + (dossier.numeroDossier || "") + '</strong></div>';
       html += '<div>Assiette : <strong>' + fmtFCFA(dossier.montantAssiette) + '</strong></div>';
       html += '</div>';
       html += '</div>';
 
-      html += '<table style="width:100%;border-collapse:collapse;margin-top:' + ecartCartoucheTableau + ';margin-bottom:' + ecartTableauArrete + ';font-size:' + tableFontSize + ';line-height:' + tableLineHeight + '">';
+      html += '<table style="width:100%;min-height:400px;border-collapse:collapse;margin-top:' + ecartCartoucheTableau + ';margin-bottom:' + ecartTableauArrete + ';font-size:' + tableFontSize + ';line-height:' + tableLineHeight + '">';
       html += '<thead><tr style="background:#f3f4f6;font-weight:800;border-top:1.5px solid #111;border-bottom:1.5px solid #111">';
       html += '<th style="border:1px solid #9ca3af;padding:' + tableCellPadding + ';text-align:left;width:34%;font-size:' + tableHeaderFontSize + '">POSTES</th>';
       html += '<th style="border:1px solid #9ca3af;padding:' + tableCellPadding + ';text-align:right;width:22%;font-size:' + tableHeaderFontSize + ';white-space:nowrap">DROITS / ÉTAT</th>';
@@ -6895,17 +6924,17 @@
       html += '<th style="border:1px solid #9ca3af;padding:' + tableCellPadding + ';text-align:right;width:22%;font-size:' + tableHeaderFontSize + ';white-space:nowrap">HONORAIRES HT</th>';
       html += '</tr></thead><tbody>';
 
-      html += '<tr><td style="border:1px solid #d1d5db;padding:' + tableCellPadding + '">Enregistrement DGI & Timbres</td><td style="border:1px solid #d1d5db;text-align:right;font-weight:600;white-space:nowrap">' + fmtFCFA(totalTresor) + '</td><td style="border:1px solid #d1d5db;text-align:right;color:#9ca3af">—</td><td style="border:1px solid #d1d5db;text-align:right;color:#9ca3af">—</td></tr>';
-      html += '<tr><td style="border:1px solid #d1d5db;padding:' + tableCellPadding + '">Frais Débours & Géomètre</td><td style="border:1px solid #d1d5db;text-align:right;color:#9ca3af">—</td><td style="border:1px solid #d1d5db;text-align:right;font-weight:600;white-space:nowrap">' + fmtFCFA(totalDebours) + '</td><td style="border:1px solid #d1d5db;text-align:right;color:#9ca3af">—</td></tr>';
-      html += '<tr><td style="border:1px solid #d1d5db;padding:' + tableCellPadding + '">Émoluments & Honoraires Notaire</td><td style="border:1px solid #d1d5db;text-align:right;color:#9ca3af">—</td><td style="border:1px solid #d1d5db;text-align:right;color:#9ca3af">—</td><td style="border:1px solid #d1d5db;text-align:right;font-weight:700;color:#1e3a8a;white-space:nowrap">' + fmtFCFA(totalCA) + '</td></tr>';
-      html += '<tr style="background:#f9fafb"><td style="border:1px solid #d1d5db;padding:' + tableCellPadding + '">TVA légale (18 % sur Honoraires)</td><td style="border:1px solid #d1d5db;text-align:right;color:#9ca3af">—</td><td style="border:1px solid #d1d5db;text-align:right;color:#9ca3af">—</td><td style="border:1px solid #d1d5db;text-align:right;font-weight:600;white-space:nowrap">' + fmtFCFA(f.tva || (totalCA * 0.18)) + '</td></tr>';
+      html += '<tr><td style="border:1px solid #d1d5db;padding:' + tableCellPadding + '">Enregistrement DGI & Timbres</td><td style="border:1px solid #d1d5db;text-align:right;font-weight:600;white-space:nowrap">' + (totalTresor ? fmtFCFA(totalTresor) : '') + '</td><td style="border:1px solid #d1d5db;text-align:right;color:#9ca3af"></td><td style="border:1px solid #d1d5db;text-align:right;color:#9ca3af"></td></tr>';
+      html += '<tr><td style="border:1px solid #d1d5db;padding:' + tableCellPadding + '">Frais Débours & Géomètre</td><td style="border:1px solid #d1d5db;text-align:right;color:#9ca3af"></td><td style="border:1px solid #d1d5db;text-align:right;font-weight:600;white-space:nowrap">' + (totalDebours ? fmtFCFA(totalDebours) : '') + '</td><td style="border:1px solid #d1d5db;text-align:right;color:#9ca3af"></td></tr>';
+      html += '<tr><td style="border:1px solid #d1d5db;padding:' + tableCellPadding + '">Émoluments & Honoraires Notaire</td><td style="border:1px solid #d1d5db;text-align:right;color:#9ca3af"></td><td style="border:1px solid #d1d5db;text-align:right;color:#9ca3af"></td><td style="border:1px solid #d1d5db;text-align:right;font-weight:700;color:#1e3a8a;white-space:nowrap">' + (totalCA ? fmtFCFA(totalCA) : '') + '</td></tr>';
+      html += '<tr style="background:#f9fafb"><td style="border:1px solid #d1d5db;padding:' + tableCellPadding + '">TVA légale (18 % sur Honoraires)</td><td style="border:1px solid #d1d5db;text-align:right;color:#9ca3af"></td><td style="border:1px solid #d1d5db;text-align:right;color:#9ca3af"></td><td style="border:1px solid #d1d5db;text-align:right;font-weight:600;white-space:nowrap">' + fmtFCFA(f.tva || (totalCA * 0.18)) + '</td></tr>';
 
       var totalFactureTTC = totalTresor + totalDebours + totalCA + (f.tva || (totalCA * 0.18));
       var totalFactureEnLettres = nombreEnLettresFCFA(totalFactureTTC);
 
-      html += '<tr style="background:#111827;color:#fff;font-weight:800;font-size:10pt">';
-      html += '<td colspan="2" style="border:1px solid #111827;padding:5px 8px;text-transform:uppercase">TOTAL GÉNÉRAL FACTURE TTC</td>';
-      html += '<td colspan="2" style="border:1px solid #111827;padding:5px 8px;text-align:right;font-size:11pt;white-space:nowrap">' + fmtFCFA(totalFactureTTC) + '</td>';
+      html += '<tr style="background:#ffffff;font-weight:800;font-size:10pt">';
+      html += '<td colspan="2" style="border:1.5px solid #374151;padding:5px 8px;text-transform:uppercase;color:#374151;background:#fff">TOTAL GÉNÉRAL FACTURE TTC</td>';
+      html += '<td colspan="2" style="border:1.5px solid #374151;padding:5px 8px;text-align:right;font-size:11pt;color:#111827;white-space:nowrap;background:#fff">' + fmtFCFA(totalFactureTTC) + '</td>';
       html += '</tr>';
       html += '</tbody></table>';
 
@@ -6937,6 +6966,447 @@
 
     html += '</div>'; // Fin de .document-a4-notarie
     return html;
+  }
+
+  // -----------------------------------------------------------------
+  // GÉNÉRATEUR OFFICIEL FICHE KYC NOTARIÉE (5 PAGES A4 CONFORMES LOI 2024-363)
+  // Chambre des Notaires de Côte d'Ivoire
+  // -----------------------------------------------------------------
+  function genererHtmlFicheKycOfficielle(dossier, kycData, params) {
+    dossier = dossier || {};
+    kycData = kycData || {};
+    var d = kycData.donnees || kycData || {};
+    params = params || cache.parametres || {};
+
+    var dateJour = d.dateSignature 
+      ? new Date(d.dateSignature).toLocaleDateString("fr-CI", { day: "numeric", month: "long", year: "numeric" })
+      : new Date().toLocaleDateString("fr-CI", { day: "numeric", month: "long", year: "numeric" });
+    var dateJourCourt = d.dateSignature
+      ? new Date(d.dateSignature).toLocaleDateString("fr-CI")
+      : new Date().toLocaleDateString("fr-CI");
+
+    var nomEtude = (params.nomEtude || "ETUDE DE MAITRE NOTAIRE").toUpperCase();
+    var titreNotaire = (params.titreNotaire || "MAITRE").toUpperCase();
+    var nomNotaire = (params.nomNotaire || "").toUpperCase();
+    var numeroOffice = (params.numeroOffice || "NOTAIRE TITULAIRE").toUpperCase();
+    var adresse = params.adresse || "Plateau, Abidjan, Côte d'Ivoire";
+    var telephone = params.telephoneFixe || params.telephonePortable || "Tél: (225) 27 20 00 00 00";
+    var bp = params.boitePostale || "01 BP 0000 Abidjan";
+    var email = params.email || "etude@notaire.ci";
+
+    var nomComplet = d.nomPrenoms || dossier.comparantsNoms || dossier.clientNom || "";
+    var signatureImg = kycData.signature || d.signature || null;
+
+    var html = '<div class="document-kyc-container">';
+
+    // =========================================================================
+    // PAGE 1 : RENSEIGNEMENTS ET IDENTIFICATION DU CLIENT
+    // =========================================================================
+    html += '<div class="document-kyc-page">';
+    html += '<div>';
+
+    // En-tête Page 1
+    html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">';
+    
+    // Cadre Notaire gauche (Bordure noire double/épaisse)
+    html += '<div style="border:2px solid #000;padding:6px 12px;text-align:center;width:68%;box-shadow:inset 0 0 0 1px #000">';
+    html += '<div style="font-family:\'Space Grotesk\',Arial,sans-serif;font-weight:800;font-size:10pt;line-height:1.2">' + nomEtude + '</div>';
+    html += '<div style="font-weight:800;font-size:9pt;margin-top:2px">' + titreNotaire + ' ' + nomNotaire + ' — ' + numeroOffice + '</div>';
+    html += '<div style="font-size:7.5pt;margin-top:3px;color:#111;line-height:1.25">' + adresse + ' • ' + telephone + '<br>' + bp + ' • Mail : ' + email + '</div>';
+    html += '</div>';
+
+    // Logo Chambre des Notaires droite
+    html += '<div style="width:28%;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center">';
+    html += '<div style="width:48px;height:48px;border-radius:50%;border:2px solid #059669;display:flex;align-items:center;justify-content:center;color:#059669;font-weight:800;font-size:16px;margin:0 auto 4px">⚖️</div>';
+    html += '<div style="font-size:7.5pt;font-weight:800;color:#065f46;text-transform:uppercase;line-height:1.15">CHAMBRE DES NOTAIRES<br>DE CÔTE D\'IVOIRE</div>';
+    html += '</div>';
+    html += '</div>';
+
+    // Titre Document
+    html += '<div style="text-align:center;margin-bottom:10px">';
+    html += '<div style="font-family:\'Space Grotesk\',Arial,sans-serif;font-weight:800;font-size:11pt;letter-spacing:0.5px">FICHE D\'IDENTIFICATION ET CONNAISSANCE DU CLIENT (KYC)</div>';
+    html += '<div style="font-weight:800;font-size:10pt;letter-spacing:0.5px">PERSONNE PHYSIQUE</div>';
+    html += '<div style="font-size:6.8pt;color:#374151;margin-top:3px;line-height:1.25;font-style:italic">Collecte des informations conformément à l\'ordonnance 895 du 23 Novembre 2023 relative à la Lutte contre le Blanchissement des Capitaux et le Financement du Terrorisme et la Prolifération des Armes de Destruction Massive, ratifiée par la loi n°2024-363 du 11 Juin 2024</div>';
+    html += '</div>';
+
+    // Date & Relation
+    html += '<div style="display:flex;justify-content:space-between;font-size:8.5pt;font-weight:700;margin-bottom:8px">';
+    html += '<div>Date : <strong>' + (dateJourCourt || '…/…/……') + '</strong></div>';
+    html += '<div>Relation initiale : <span style="display:inline-block;width:12px;height:12px;border:1.5px solid #000;text-align:center;line-height:10px;font-size:9px;margin-left:4px">X</span></div>';
+    html += '<div>Actualisation / révision : <span style="display:inline-block;width:12px;height:12px;border:1.5px solid #000;text-align:center;line-height:10px;font-size:9px;margin-left:4px">&nbsp;</span></div>';
+    html += '</div>';
+
+    // Section 1 : DÉTAILS - CLIENT
+    html += '<div style="background:#e5e7eb;border:1px solid #9ca3af;padding:4px 8px;font-weight:800;font-size:9pt;margin-bottom:6px">1. DÉTAILS - CLIENT</div>';
+
+    // Photo à gauche & Nature client/opération à droite
+    html += '<div style="display:flex;gap:12px;margin-bottom:8px">';
+    
+    // Cadre Photo rectangulaire (laissé vide pour le dépôt de la photo physique)
+    html += '<div style="width:105px;height:125px;border:1.5px solid #4b5563;display:flex;align-items:center;justify-content:center;background:#fafafa;font-weight:800;font-size:9pt;color:#6b7280;letter-spacing:1px;flex-shrink:0">PHOTO</div>';
+
+    // Détails nature client & opération
+    var natClient = d.natureClient || "physique";
+    var natOp = d.natureOperation || (dossier.typeActeId === "vente_immobiliere" ? "vente" : (dossier.typeActeId === "constitution_societe" ? "societe" : ""));
+
+    html += '<div style="flex:1;font-size:8pt;line-height:1.5;display:flex;flex-direction:column;justify-content:center">';
+    html += '<div style="margin-bottom:6px"><strong>- Nature du Client :</strong> Personne Morale : [ ' + (natClient === "morale" ? "X" : "&nbsp;") + ' ] &nbsp;&nbsp; Personne Physique : [ ' + (natClient === "physique" ? "X" : "&nbsp;") + ' ] &nbsp;&nbsp; Association : [ ' + (natClient === "association" ? "X" : "&nbsp;") + ' ] &nbsp;&nbsp; Indivision : [ ' + (natClient === "indivision" ? "X" : "&nbsp;") + ' ]</div>';
+    html += '<div><strong>- Nature de l\'Opération :</strong> Vente Immobilière : [ ' + (natOp === "vente" || natOp === "vente_immobiliere" ? "X" : "&nbsp;") + ' ] &nbsp;&nbsp; Constitution de Société : [ ' + (natOp === "societe" || natOp === "constitution_societe" ? "X" : "&nbsp;") + ' ] &nbsp;&nbsp; Succession : [ ' + (natOp === "succession" ? "X" : "&nbsp;") + ' ]</div>';
+    html += '<div style="margin-top:4px">Autre, à préciser : <u>' + (natOp !== "vente" && natOp !== "societe" && natOp !== "succession" && labelActe(dossier.typeActeId) ? labelActe(dossier.typeActeId) : "........................................................") + '</u></div>';
+    html += '</div>';
+    html += '</div>';
+
+    // Grand Tableau 2 colonnes RENSEIGNEMENTS | CLIENT
+    html += '<table style="width:100%;border-collapse:collapse;font-size:8pt;line-height:1.25">';
+    html += '<thead><tr style="background:#f3f4f6;font-weight:800">';
+    html += '<th style="border:1px solid #6b7280;padding:3.5px 6px;text-align:left;width:38%">RENSEIGNEMENTS :</th>';
+    html += '<th style="border:1px solid #6b7280;padding:3.5px 6px;text-align:left;width:62%">CLIENT :</th>';
+    html += '</tr></thead><tbody>';
+
+    var lignesPage1 = [
+      ["Nom-Prénoms :", nomComplet],
+      ["Nom de Jeune fille :", d.nomJeuneFille || ""],
+      ["Nom et Prénoms du Père :", d.nomPere || ""],
+      ["Nom et Prénoms de la Mère :", d.nomMere || ""],
+      ["Date et Lieu de Naissance :", (d.dateNaissance ? fmtDate(d.dateNaissance) : "") + (d.lieuNaissance ? " à " + d.lieuNaissance : "")],
+      ["Adresse Géographique :", d.adresseGeographique || ""],
+      ["Adresse Postale :", d.adressePostale || ""],
+      ["Téléphone :", d.telephone || ""],
+      ["Nature et N° Pièce d'Identité :", d.pieceIdentite || ""],
+      ["Numéro Compte Contribuable ou Identité Fiscale :", d.compteContribuable || ""],
+      ["E-mail :", d.email || ""],
+      ["N° WhatsApp :", d.whatsapp || ""],
+      ["Non Résident :", d.nonResident === "oui" ? "OUI" : "NON"],
+      ["Pays de Résidence :", d.paysResidence || "Côte d'Ivoire"],
+      ["Statut Matrimonial : (mariage, concubinage à préciser)", d.statutMatrimonial || "Célibataire"],
+      ["Nationalité actuelle :", d.nationalite || "Ivoirienne"],
+      ["Autres Nationalités :", d.autresNationalites || "Néant"],
+      ["Profession actuellement exercée :", d.profession || ""],
+      ["Professions exercées durant les cinq (05) dernières années :", d.professions5Ans || d.profession || ""],
+      ["Employeur :", d.employeur || ""],
+      ["Secteur d'activité :", d.secteurActivite || ""]
+    ];
+
+    lignesPage1.forEach(function (l) {
+      html += '<tr>';
+      html += '<td style="border:1px solid #9ca3af;padding:2.5px 6px;font-weight:700">' + l[0] + '</td>';
+      html += '<td style="border:1px solid #9ca3af;padding:2.5px 6px;color:#111">' + (l[1] || '') + '</td>';
+      html += '</tr>';
+    });
+
+    html += '</tbody></table>';
+    html += '</div>'; // Fin haut page 1
+
+    // Numéro de page 1
+    html += '<div style="text-align:right;font-size:8pt;font-weight:700;margin-top:8px">1</div>';
+    html += '</div>'; // Fin page 1
+
+    // =========================================================================
+    // PAGE 2 : MANDATAIRE, PPE, DESCRIPTION DE L'OPÉRATION
+    // =========================================================================
+    html += '<div class="document-kyc-page">';
+    html += '<div>';
+
+    // Section 2 : DONNÉES DU MANDATAIRE
+    html += '<div style="background:#e5e7eb;border:1px solid #9ca3af;padding:4px 8px;font-weight:800;font-size:9pt;margin-bottom:10px">2. DONNÉES DU MANDATAIRE QUI TRAITE L\'OPÉRATION *</div>';
+    html += '<div style="font-size:8pt;line-height:1.6;margin-bottom:16px">';
+    html += '<div><strong>PRENOMS ET NOMS :</strong> ' + (d.mandataireNom || "………………………………………………………………………………………………………………………………………………………") + '</div>';
+    html += '<div style="display:flex;justify-content:space-between;margin-top:6px">';
+    html += '<div style="width:48%"><strong>PASSEPORT OU CNI :</strong> ' + (d.mandatairePiece || "…………………………………") + '</div>';
+    html += '<div style="width:48%"><strong>DATE DE NAISSANCE :</strong> ' + (d.mandataireDateNais || "…………………………………") + '</div>';
+    html += '</div>';
+    html += '<div style="display:flex;justify-content:space-between;margin-top:6px">';
+    html += '<div style="width:48%"><strong>NATIONALITE :</strong> ' + (d.mandataireNat || "…………………………………") + '</div>';
+    html += '<div style="width:48%"><strong>PAYS DE RESIDENCE :</strong> ' + (d.mandatairePays || "…………………………………") + '</div>';
+    html += '</div>';
+    html += '<div style="margin-top:8px"><strong>FONCTION :</strong> [ ] PDG &nbsp;&nbsp; [ ] DG &nbsp;&nbsp; [ ] DGA &nbsp;&nbsp; [ ] ADMINISTRATEUR GÉNÉRAL &nbsp;&nbsp; [ ] PRÉSIDENT &nbsp;&nbsp; [ ] GÉRANT &nbsp;&nbsp; [ ] MANDATAIRE</div>';
+    html += '<div style="margin-top:6px"><strong>AUTRES :</strong> ……………………………………………………………………………………………………………………………………</div>';
+    html += '</div>';
+
+    // Section 3 : DÉCLARATION DES PPE
+    var isPPE = d.estPPE === "oui";
+    html += '<div style="background:#e5e7eb;border:1px solid #9ca3af;padding:4px 8px;font-weight:800;font-size:9pt;margin-bottom:10px">3. DÉCLARATION DES PERSONNES POLITIQUEMENT EXPOSEES</div>';
+    html += '<div style="font-size:8.5pt;margin-bottom:16px">';
+    html += '<div style="margin-bottom:8px"><strong>Êtes-vous une personne politiquement exposée ? (Voir la définition en annexe)</strong></div>';
+    html += '<div>[ ' + (isPPE ? 'X' : '&nbsp;') + ' ] OUI &nbsp;&nbsp;&nbsp;&nbsp; [ ' + (!isPPE ? 'X' : '&nbsp;') + ' ] NON' + (isPPE && d.fonctionPPE ? ' — Précision : <u>' + d.fonctionPPE + '</u>' : '') + '</div>';
+    html += '</div>';
+
+    // Section 4 : DESCRIPTION DE L'OPÉRATION
+    html += '<div style="background:#e5e7eb;border:1px solid #9ca3af;padding:4px 8px;font-weight:800;font-size:9pt;margin-bottom:10px">4. DESCRIPTION DE L\'OPÉRATION</div>';
+    html += '<div style="font-size:8pt;line-height:1.6">';
+    html += '<div style="margin-bottom:6px"><strong>Nature de l\'opération :</strong></div>';
+    html += '<div>[ ' + (natOp === "vente" || natOp === "vente_immobiliere" ? "X" : "&nbsp;") + ' ] Achat et vente ou autres actes de disposition de biens immeubles.</div>';
+    html += '<div>[ ] Manipulation de fonds, de valeurs ou autres actifs des clients.</div>';
+    html += '<div>[ ' + (natOp === "societe" || natOp === "constitution_societe" ? "X" : "&nbsp;") + ' ] Organisation des apports nécessaires à la création, au fonctionnement ou à la gestion de Sociétés.</div>';
+    html += '<div>[ ] Création, fonctionnement ou gestion de fidéicommis, Sociétés, Associations, Fondations ou structures analogues.</div>';
+    html += '<div style="margin-top:4px">Autres : …………………………………………………………………………………………………………………………………………</div>';
+
+    html += '<div style="margin-top:16px;font-weight:800">FAITES UNE BREVE DESCRIPTION DETAILLEE DE L\'OPERATION (IMMEUBLE ACQUIS, MONTANT, ETC.)</div>';
+    html += '<div style="border-bottom:1px solid #9ca3af;padding-top:14px">' + (dossier.numeroDossier ? 'Acte : ' + labelActe(dossier.typeActeId) + ' — Dossier N° ' + dossier.numeroDossier + (dossier.montantAssiette ? ' — Assiette : ' + fmtFCFA(dossier.montantAssiette) : '') : '') + '</div>';
+    html += '<div style="border-bottom:1px solid #9ca3af;padding-top:18px"></div>';
+    html += '<div style="border-bottom:1px solid #9ca3af;padding-top:18px"></div>';
+    html += '<div style="border-bottom:1px solid #9ca3af;padding-top:18px"></div>';
+    html += '</div>';
+
+    html += '</div>'; // Fin haut page 2
+
+    // Numéro de page 2
+    html += '<div style="text-align:right;font-size:8pt;font-weight:700;margin-top:8px">2</div>';
+    html += '</div>'; // Fin page 2
+
+    // =========================================================================
+    // PAGE 3 : ORIGINE DES FONDS, DÉCLARATION SUR L'HONNEUR & SIGNATURE
+    // =========================================================================
+    html += '<div class="document-kyc-page">';
+    html += '<div>';
+
+    // Section 5 : ORIGINE DES FONDS
+    var origFonds = d.origineFonds || "De votre activité";
+    var provCI = d.provenanceCI || "OUI";
+    var ancPro = d.anciennetePro || "De 1 à 10 ans";
+
+    html += '<div style="background:#e5e7eb;border:1px solid #9ca3af;padding:4px 8px;font-weight:800;font-size:9pt;margin-bottom:10px">5. DÉCLARATION DE L\'ORIGINE DES FONDS *</div>';
+    html += '<div style="font-size:8pt;line-height:1.6">';
+    html += '<div style="margin-bottom:6px"><strong>Veuillez indiquer ci-dessous la provenance des fonds objet de l\'opération ou finançant l\'opération :</strong></div>';
+    html += '<div>[ ' + (origFonds === "De votre activité" ? "X" : "&nbsp;") + ' ] De votre activité &nbsp;&nbsp; [ ' + (origFonds === "Des associés / Épargne" ? "X" : "&nbsp;") + ' ] Des associés &nbsp;&nbsp; [ ' + (origFonds === "Vente d'un bien immobilier" ? "X" : "&nbsp;") + ' ] De la vente d\'un immeuble &nbsp;&nbsp; [ ' + (origFonds === "Autre" ? "X" : "&nbsp;") + ' ] Autres &nbsp;&nbsp; [ ' + (origFonds === "Prêt Bancaire" ? "X" : "&nbsp;") + ' ] Bancaire</div>';
+
+    html += '<div style="margin-top:12px;margin-bottom:6px"><strong>Les fonds propres qui seront investis dans l\'opération sont-ils la propriété de la Société ? Ou appartiennent-ils à des tierces personnes physiques ou morales ?</strong></div>';
+    html += '<div>[ X ] Propriété des intervenants &nbsp;&nbsp; [ ] Propriété de tiers. Si oui, intérêt pour le tiers : …………………………………</div>';
+
+    html += '<div style="margin-top:12px;margin-bottom:6px"><strong>Les fonds propres utilisés pour mener à terme l\'opération proviennent-ils du territoire Ivoirien ?</strong></div>';
+    html += '<div>[ ' + (provCI === "OUI" ? "X" : "&nbsp;") + ' ] OUI &nbsp;&nbsp; [ ' + (provCI === "NON" ? "X" : "&nbsp;") + ' ] NON – Indiquer le pays de provenance : ' + (provCI === "NON" ? (d.paysProvenance || "……………………") : "……………………") + '</div>';
+
+    html += '<div style="margin-top:12px;margin-bottom:6px"><strong>Ancienneté professionnelle :</strong></div>';
+    html += '<div>[ ' + (ancPro === "Inférieure à un an" ? "X" : "&nbsp;") + ' ] Inférieure à un an &nbsp;&nbsp;&nbsp;&nbsp; [ ' + (ancPro === "De 1 à 10 ans" ? "X" : "&nbsp;") + ' ] De 1 à 10 ans &nbsp;&nbsp;&nbsp;&nbsp; [ ' + (ancPro === "Plus de 10 ans" ? "X" : "&nbsp;") + ' ] Plus de 10 ans</div>';
+
+    html += '<div style="margin-top:20px;font-weight:800;font-size:8.5pt">Je soussigné(e), déclare :</div>';
+    html += '<div style="margin-top:8px;font-size:8pt;line-height:1.45;color:#1e293b">';
+    html += '<p style="margin-bottom:8px">• Que toutes les informations fournies dans le présent formulaire sont vraies et véridiques ; j\'autorise également l\'Étude à vérifier et, le cas échéant, à compléter les données ci-dessus.</p>';
+    html += '<p style="margin-bottom:8px">• N\'être ni n\'avoir été impliqué dans aucune procédure de vérification ou d\'inspection fiscale ; en cas de l\'être ou de l\'avoir été, je présente toute la documentation y ayant trait.</p>';
+    html += '<p>• Que les fonds que je serais susceptible d\'utiliser pour compléter une quelconque transaction, ainsi que l\'origine des fonds de mon patrimoine, sont tout à fait licites.</p>';
+    html += '</div>';
+
+    // Zone de signature en bas de page 3
+    html += '<div style="margin-top:30px;display:flex;justify-content:space-between;align-items:flex-start">';
+    html += '<div style="font-size:8.5pt">À <strong>' + (d.signeA || "Abidjan") + '</strong>, le <strong>' + (dateJourCourt || "……………………") + '</strong></div>';
+    html += '<div style="text-align:center;width:240px">';
+    html += '<div style="font-weight:800;font-size:9pt;text-decoration:underline;margin-bottom:6px">Signature du Représentant</div>';
+    if (signatureImg) {
+      html += '<div style="border:1px solid #cbd5e1;padding:4px;border-radius:4px;background:#fafafa"><img src="' + signatureImg + '" style="max-height:80px;max-width:220px;display:block;margin:0 auto" alt="Signature client"></div>';
+    } else {
+      html += '<div style="height:70px;border:1px dashed #9ca3af;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#9ca3af;font-size:8pt">[ Signature manuscrite ]</div>';
+    }
+    html += '</div>';
+    html += '</div>';
+
+    html += '</div>'; // Fin corps page 3
+    html += '</div>'; // Fin haut page 3
+
+    // Numéro de page 3
+    html += '<div style="text-align:right;font-size:8pt;font-weight:700;margin-top:8px">3</div>';
+    html += '</div>'; // Fin page 3
+
+    // =========================================================================
+    // PAGE 4 : ANNEXE PPE (PERSONNES POLITIQUEMENT EXPOSÉES)
+    // =========================================================================
+    html += '<div class="document-kyc-page">';
+    html += '<div>';
+    html += '<div style="text-align:center;font-weight:800;font-size:10pt;text-decoration:underline;margin-bottom:14px">Annexe PPE (Personnes Politiquement Exposées)</div>';
+    html += '<div style="font-size:7.5pt;line-height:1.4;color:#1e293b;text-align:justify">';
+    html += '<p><strong>a) PPE étrangères :</strong> les personnes physiques qui exercent ou qui ont exercé d\'importantes fonctions publiques dans un autre Etat membre ou un Etat tiers, notamment :</p>';
+    html += '<div style="margin-left:14px;margin-top:4px;margin-bottom:8px">';
+    html += '<div>i. Les Chefs d\'Etat ou de Gouvernement, les Ministres, les Ministres délégués et les Secrétaires d\'Etat ;</div>';
+    html += '<div>ii. Les Membres de Famille royales ;</div>';
+    html += '<div>iii. Les Secrétaires Généraux de la Présidence de la République, du Gouvernement ou des Ministères ainsi que les Directeurs Généraux des Ministères ;</div>';
+    html += '<div>iv. Les Parlementaires ;</div>';
+    html += '<div>v. Les membres des Cours Suprêmes, des Cours Constitutionnelles ou d\'autres hautes juridictions ne sont pas susceptibles de recours, sauf circonstances exceptionnelles ;</div>';
+    html += '<div>vi. Les membres des Cours des Comptes ou des Conseils ou supérieurs des Forces Armées ;</div>';
+    html += '<div>vii. Les Ambassadeurs, les Chargés d\'Affaires et les Officiers Supérieurs des Forces Armées ;</div>';
+    html += '<div>viii. Les membres des Organes d\'administration, de Direction ou de surveillance des entreprises publiques ;</div>';
+    html += '<div>ix. Les hauts responsables des partis politiques ;</div>';
+    html += '<div>x. Les membres de la famille d\'une PPE, en l\'occurrence : 1) Le conjoint ; 2) Les enfants et leurs conjoints ou partenaires ; 3) Les autres parents ;</div>';
+    html += '<div>xi. Les personnes connues pour être étroitement associées à une PPE ;</div>';
+    html += '<div>xii. Toute autre personne désignée par la personne assujettie sur la base de l\'analyse de son profil de risque ;</div>';
+    html += '</div>';
+
+    html += '<p style="margin-top:8px"><strong>b) PPE nationales :</strong> les personnes physiques qui exercent ou qui ont exercé d\'importantes fonctions publiques en Côte d\'Ivoire, notamment les personnes physiques visées aux points i à xii du point a) ci-dessus ;</p>';
+
+    html += '<p style="margin-top:8px"><strong>c) PPE des organisations internationales :</strong> les personnes qui exercent ou qui ont exercé d\'importantes fonctions au sein de ou pour le compte d\'une organisation internationale, notamment les membres de la haute direction et, le cas échéant, les personnes physiques visées aux points x à xii du point a) ci-dessus.</p>';
+    html += '</div>';
+    html += '</div>';
+
+    // Numéro de page 4
+    html += '<div style="text-align:right;font-size:8pt;font-weight:700;margin-top:8px">4</div>';
+    html += '</div>'; // Fin page 4
+
+    // =========================================================================
+    // PAGE 5 : AVERTISSEMENT LÉGAL LBC/FT/FP
+    // =========================================================================
+    html += '<div class="document-kyc-page">';
+    html += '<div>';
+    html += '<div style="text-align:center;font-weight:800;font-size:11pt;text-decoration:underline;letter-spacing:0.5px;margin-bottom:16px">AVERTISSEMENT LÉGAL</div>';
+    html += '<div style="font-size:8pt;line-height:1.5;color:#1e293b;text-align:justify">';
+    html += '<p style="margin-bottom:12px">Conformément à l\'ordonnance du 23 Novembre 2023 relative à la Lutte contre le Blanchissement des Capitaux et le Financement du Terrorisme (LBC/FT/FP) ratifiée par la loi n°2024-363 du 11 Juin 2024,</p>';
+    html += '<p style="margin-bottom:10px"><strong>Les Notaires sont tenus</strong>, en tant qu\'assujettis à ladite réglementation, lorsqu\'ils assistent leurs clients dans la préparation ou l\'exécution de transactions portant sur :</p>';
+    html += '<div style="margin-left:14px;margin-bottom:14px">';
+    html += '<div>• L\'achat et la vente de biens immeubles ou d\'entreprises commerciales ;</div>';
+    html += '<div>• La gestion de fonds, de titres ou d\'autres actifs appartenant au client ;</div>';
+    html += '<div>• L\'organisation des apports nécessaires à la constitution, à la gestion ou à la direction de Sociétés ;</div>';
+    html += '<div>• La constitution, la gestion ou la direction de sociétés, de fiducies ou de constructions juridiques similaires ;</div>';
+    html += '<div>• La constitution ou la gestion de fonds de dotation ;</div>';
+    html += '</div>';
+
+    html += '<p style="margin-bottom:10px"><strong>Entre autres obligations :</strong></p>';
+    html += '<div style="margin-left:14px">';
+    html += '<div>1. D\'identifier et vérifier l\'identité de ses clients.</div>';
+    html += '<div>2. D\'identifier les bénéficiaires effectifs des transactions et valider leur identité.</div>';
+    html += '<div>3. D\'évaluation, la compréhension et l\'obtention de l\'information relative au propos et à la nature de la relation d\'affaires.</div>';
+    html += '</div>';
+    html += '</div>';
+    html += '</div>';
+
+    // Numéro de page 5
+    html += '<div style="text-align:right;font-size:8pt;font-weight:700;margin-top:8px">5</div>';
+    html += '</div>'; // Fin page 5
+
+    html += '</div>'; // Fin .document-kyc-container
+    return html;
+  }
+
+  // -----------------------------------------------------------------
+  // Modale Portail KYC & Génération QR Code & Impression 5 Pages
+  // -----------------------------------------------------------------
+  function modalKycDossier(dossier) {
+    if (typeof dossier === "string") {
+      var dTrouve = (cache.dossiers || []).find(function (d) { return String(d.id) === String(dossier); });
+      dossier = dTrouve || { id: dossier, numeroDossier: dossier };
+    }
+    dossier = dossier || {};
+
+    var modal = document.getElementById("modal-racine");
+    modal.style.display = "block";
+    modal.innerHTML = '<div style="position:fixed;inset:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:999999;padding:16px"><div class="card elev-lg" style="width:720px;max-width:100%;max-height:92vh;overflow-y:auto;padding:24px;position:relative"><div class="spinner"></div><p style="text-align:center;margin-top:12px">Chargement du portail KYC…</p></div></div>';
+
+    var chargerToken = API.get("/api/kyc/dossier/" + dossier.id + "/token").catch(function () { return {}; });
+    var chargerParams = API.get("/api/parametres").catch(function () { return {}; });
+
+    Promise.all([chargerToken, chargerParams]).then(function (res) {
+      var kycInfo = res[0] || {};
+      var params = res[1] || {};
+      var token = kycInfo.token;
+      var baseUrl = window.location.origin;
+      var lienClient = baseUrl + "/kyc-client.html?token=" + token;
+
+      var qrSvg = window.QRCodeGenerator ? window.QRCodeGenerator.creerSvg(lienClient, 190) : '';
+
+      var h = '<div style="position:fixed;inset:0;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;z-index:999999;padding:16px">';
+      h += '<div class="card elev-lg" style="width:760px;max-width:100%;max-height:92vh;overflow-y:auto;padding:24px;position:relative;background:var(--color-surface)">';
+      
+      // Bouton Fermer
+      h += '<button type="button" class="btn btn-ghost" id="btn-fermer-modal-kyc" style="position:absolute;top:16px;right:16px;font-size:18px;line-height:1;padding:4px 8px">✕</button>';
+
+      h += '<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">';
+      h += '<div style="width:40px;height:40px;border-radius:8px;background:rgba(16,185,129,0.15);color:#10b981;display:flex;align-items:center;justify-content:center;font-size:22px">📱</div>';
+      h += '<div><h3 style="margin:0;font-size:17px">Fiche d\'Identification & Connaissance Client (KYC)</h3>';
+      h += '<p style="font-size:12px;opacity:0.7;margin:2px 0 0">Dossier N° <strong>' + (dossier.numeroDossier || "—") + '</strong> • ' + labelActe(dossier.typeActeId) + '</p></div>';
+      h += '</div>';
+
+      // Statut KYC
+      h += '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--color-surface-2);border-radius:var(--radius);border:1px solid var(--color-border);margin-bottom:18px">';
+      h += '<div><span style="font-size:12px;font-weight:700">Statut KYC : </span>';
+      if (kycInfo.statut === "renseigne" || kycInfo.statut === "valide") {
+        h += '<span class="tag" style="background:#d1fae5;color:#065f46;font-weight:800">✓ Fiche Renseignée & Signée par le client</span>';
+      } else {
+        h += '<span class="tag tag-outline">⏳ En attente de renseignement client</span>';
+      }
+      h += '</div>';
+
+      h += '<div style="display:flex;gap:6px">';
+      h += '<button type="button" class="btn btn-secondary btn-sm" id="btn-imprimer-kyc-vierge">📄 Formulaire Vierge (5p)</button>';
+      h += '<button type="button" class="btn btn-primary btn-sm" id="btn-imprimer-kyc-rempli" style="background:#0f766e;border-color:#0f766e;font-weight:700">🖨️ Imprimer Fiche (5p)</button>';
+      h += '</div>';
+      h += '</div>';
+
+      // Grille QR Code & Lien de Partage
+      h += '<div style="display:grid;grid-template-columns:210px 1fr;gap:20px;margin-bottom:20px;background:var(--color-bg);padding:18px;border-radius:var(--radius);border:1px solid var(--color-border)">';
+      
+      // QR Code
+      h += '<div style="text-align:center">';
+      h += '<div style="background:#fff;padding:8px;border-radius:8px;display:inline-block;box-shadow:0 2px 8px rgba(0,0,0,0.1)">' + qrSvg + '</div>';
+      h += '<div style="font-size:11px;font-weight:700;color:var(--color-text-dim);margin-top:6px">Scannez avec un smartphone</div>';
+      h += '</div>';
+
+      // Actions & Lien
+      h += '<div style="display:flex;flex-direction:column;justify-content:center;gap:10px">';
+      h += '<div style="font-size:13px;font-weight:700">Partager le portail KYC au client :</div>';
+      
+      h += '<div style="display:flex;gap:8px">';
+      h += '<input type="text" id="input-lien-kyc-client" readonly value="' + lienClient + '" class="input" style="font-size:12px;padding:6px 10px;flex:1">';
+      h += '<button type="button" class="btn btn-secondary btn-sm" id="btn-copier-lien-kyc">📋 Copier</button>';
+      h += '</div>';
+
+      var texteWhatsApp = encodeURIComponent("Bonjour, voici le lien sécurisé de l'Office Notarial pour renseigner votre fiche d'identification KYC (Dossier N° " + (dossier.numeroDossier || "") + ") : " + lienClient);
+      h += '<div style="display:flex;gap:8px;margin-top:4px">';
+      h += '<a href="https://wa.me/?text=' + texteWhatsApp + '" target="_blank" class="btn btn-primary btn-sm" style="background:#25D366;border-color:#25D366;text-decoration:none;font-weight:700">📲 Envoyer par WhatsApp</a>';
+      h += '<a href="' + lienClient + '" target="_blank" class="btn btn-secondary btn-sm" style="text-decoration:none">👁️ Ouvrir le formulaire</a>';
+      h += '</div>';
+
+      h += '<div style="font-size:11.5px;color:var(--color-text-dim);line-height:1.4;margin-top:4px">';
+      h += '💡 Le client remplit sa filiation, ses informations d\'état civil et signe directement sur son écran de téléphone. Le document officiel de 5 pages est généré instantanément.';
+      h += '</div>';
+      h += '</div>';
+
+      h += '</div>'; // Fin grille QR Code
+
+      // Zone d'aperçu du document officiel 5 pages
+      h += '<div style="border-top:1.5px solid var(--color-border);padding-top:16px">';
+      h += '<div style="font-size:13px;font-weight:800;margin-bottom:10px">Aperçu du Document Officiel (5 Pages A4) :</div>';
+      h += '<div id="zone-apercu-kyc-5pages" style="background:#374151;padding:20px 12px;border-radius:var(--radius);max-height:460px;overflow-y:auto;display:flex;justify-content:center">';
+      h += genererHtmlFicheKycOfficielle(dossier, kycInfo, params);
+      h += '</div>';
+      h += '</div>';
+
+      h += '</div></div>';
+      modal.innerHTML = h;
+
+      // Écouteurs d'événements
+      document.getElementById("btn-fermer-modal-kyc").addEventListener("click", function () {
+        modal.style.display = "none";
+        modal.innerHTML = "";
+      });
+
+      document.getElementById("btn-copier-lien-kyc").addEventListener("click", function () {
+        var input = document.getElementById("input-lien-kyc-client");
+        input.select();
+        navigator.clipboard.writeText(input.value).then(function () {
+          toast("Lien KYC copié dans le presse-papier !");
+        });
+      });
+
+      function lancerImpressionKyc(rempli) {
+        var printContainer = document.getElementById("print-container");
+        if (!printContainer) {
+          printContainer = document.createElement("div");
+          printContainer.id = "print-container";
+          printContainer.className = "print-only";
+          document.body.appendChild(printContainer);
+        }
+        var donneesPourPrint = rempli ? kycInfo : { donnees: {} };
+        printContainer.innerHTML = genererHtmlFicheKycOfficielle(dossier, donneesPourPrint, params);
+        window.print();
+      }
+
+      document.getElementById("btn-imprimer-kyc-rempli").addEventListener("click", function () {
+        lancerImpressionKyc(true);
+      });
+
+      document.getElementById("btn-imprimer-kyc-vierge").addEventListener("click", function () {
+        lancerImpressionKyc(false);
+      });
+
+    }).catch(function (err) {
+      modal.innerHTML = '<div style="padding:30px;color:#ef4444;background:#fff;border-radius:8px;max-width:400px;margin:100px auto;text-align:center">Erreur : ' + escapeHtml(err.message) + '<br><br><button type="button" class="btn btn-secondary" onclick="document.getElementById(\'modal-racine\').style.display=\'none\'">Fermer</button></div>';
+    });
   }
 
   // -----------------------------------------------------------------
@@ -8018,11 +8488,13 @@
     html += '</div>';
     html += '</div>';
 
+    html += '<div style="display:flex;gap:var(--space-2);margin-bottom:var(--space-6);flex-wrap:wrap;align-items:center">';
+    html += '<button type="button" class="btn btn-primary" id="bouton-dossier-kyc-qr" style="background:#0f766e;border-color:#0f766e;font-weight:700">📱 Fiche KYC & QR Code</button>';
     if ((cache.permissions.closeDossier) && d.statut === "actif") {
-      html += '<div style="display:flex;gap:var(--space-2);margin-bottom:var(--space-6);flex-wrap:wrap">';
       html += '<button class="btn btn-secondary" id="bouton-etape-suivante" ' + (d.etapeActuelle >= 6 ? "disabled" : "") + '>Passer à l\'étape suivante</button>';
-      html += '<button class="btn btn-secondary" id="bouton-cloturer" ' + (d.etapeActuelle < 6 ? "disabled" : "") + '>Clôturer le dossier</button></div>';
+      html += '<button class="btn btn-secondary" id="bouton-cloturer" ' + (d.etapeActuelle < 6 ? "disabled" : "") + '>Clôturer le dossier</button>';
     }
+    html += '</div>';
 
     html += '<h3 style="margin-bottom:var(--space-3)">Checklist des tâches</h3>';
     var groupes = {};
@@ -8270,6 +8742,11 @@
         .then(function () { return refreshApresAction(); })
         .then(function () { ouvrirDossier(dossierId, etat.vuePrecedente); })
         .catch(function (e) { toast(e.message); });
+    });
+
+    var btnKycQr = document.getElementById("bouton-dossier-kyc-qr");
+    if (btnKycQr) btnKycQr.addEventListener("click", function () {
+      modalKycDossier(cache.dossierDetail || { id: dossierId });
     });
     function imprimerPourDossier(formatDoc) {
       var fiches = cache.fichesTaxeHistorique || [];
@@ -11117,6 +11594,32 @@
     API.surNonAutorise(function () {
       executerDeconnexion();
     });
+
+    // Support de l'accès direct par impersonation (SaaS de Contrôle Centralisé)
+    var paramsUrl = new URLSearchParams(window.location.search);
+    var tokenImpersonation = paramsUrl.get("impersonate_token");
+    if (tokenImpersonation) {
+      try {
+        var morceaux = tokenImpersonation.split(".");
+        if (morceaux.length === 3) {
+          var payloadJwt = JSON.parse(atob(morceaux[1]));
+          var userImpersonated = {
+            id: payloadJwt.id,
+            role: payloadJwt.role,
+            email: payloadJwt.email || "client@notaires.ci",
+            nomComplet: payloadJwt.nomComplet || (payloadJwt.role ? payloadJwt.role.toUpperCase() : "Utilisateur"),
+            modeSupport: true
+          };
+          API.setSession(tokenImpersonation, userImpersonated);
+          window.history.replaceState({}, document.title, window.location.pathname);
+          setTimeout(function () {
+            toast("🔐 Session ouverte via le SaaS de Contrôle (Mode Support)");
+          }, 600);
+        }
+      } catch (errImp) {
+        console.error("Erreur décodage jeton impersonation", errImp);
+      }
+    }
 
     if (API.estConnecte() && API.getUtilisateur()) {
       cache.utilisateur = API.getUtilisateur();
