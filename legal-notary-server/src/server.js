@@ -101,21 +101,47 @@ app.use("/api/agenda", agendaRoutes);
  * Le chemin est configurable (FRONTEND_DIR) pour les cabinets qui
  * préfèrent une autre disposition de dossiers.
  */
-const FRONTEND_DIR = process.env.FRONTEND_DIR || path.join(__dirname, "..", "..", "legal-notary-web");
+const fs = require("fs");
+let FRONTEND_DIR = process.env.FRONTEND_DIR || path.join(__dirname, "..", "..", "legal-notary-web");
+if (!fs.existsSync(FRONTEND_DIR)) {
+  const candidats = [
+    path.join(__dirname, "..", "legal-notary-web"),
+    path.join(__dirname, "..", "..", "legal-notary-web"),
+    path.join(process.cwd(), "legal-notary-web"),
+    path.join(process.cwd(), "..", "legal-notary-web"),
+    "/var/www/legal-notary/legal-notary-web"
+  ];
+  for (const c of candidats) {
+    if (fs.existsSync(c)) {
+      FRONTEND_DIR = c;
+      break;
+    }
+  }
+}
+
 app.use(express.static(FRONTEND_DIR));
 
 // Page vitrine commerciale pour site d'entreprise & marketing
-app.get(["/vitrine", "/landing", "/presentation"], (req, res) => {
+app.get(["/vitrine", "/landing", "/landing.html", "/presentation"], (req, res) => {
   res.sendFile(path.join(FRONTEND_DIR, "landing.html"));
 });
 
 // Espace de démonstration commerciale 1-clic (tous rôles démo)
-app.get(["/demo", "/demonstration"], (req, res) => {
+app.get(["/demo", "/demo.html", "/demonstration"], (req, res) => {
   res.sendFile(path.join(FRONTEND_DIR, "demo.html"));
 });
 
+// Espace Manuels & Formation interactifs (Style Glitter.io)
+app.get(["/docs", "/documentation", "/documentation.html", "/manuel"], (req, res) => {
+  res.sendFile(path.join(FRONTEND_DIR, "documentation.html"));
+});
+
 app.get(/^(?!\/api).*/, (req, res) => {
-  res.sendFile(path.join(FRONTEND_DIR, "index.html"));
+  const indexFile = path.join(FRONTEND_DIR, "index.html");
+  if (fs.existsSync(indexFile)) {
+    return res.sendFile(indexFile);
+  }
+  res.sendFile(path.join(__dirname, "..", "..", "legal-notary-web", "index.html"));
 });
 
 app.use((erreur, req, res, next) => {
