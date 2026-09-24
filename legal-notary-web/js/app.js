@@ -811,11 +811,25 @@
       }
     }
 
+    var nomUser = (cache.utilisateur && cache.utilisateur.nomComplet) ? cache.utilisateur.nomComplet : "Utilisateur";
+    var roleAffiche = (ROLE_LABEL[role] || "Collaborateur");
+
     var html = '';
 
-    // En-tête du menu contextuel avec libellé du rôle
-    html += '<div style="padding:4px 6px 10px;margin-bottom:6px;border-bottom:1px solid var(--color-border)">';
-    html += '<div style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--color-text-dim);font-weight:700">Menu ' + (ROLE_LABEL[role] || "Utilisateur") + '</div>';
+    // En-tête mobile (affiché uniquement sur mobile/tablette dans le drawer)
+    html += '<div class="drawer-mobile-header">';
+    html += '<div style="display:flex;align-items:center;gap:10px;min-width:0">';
+    html += '<div style="width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,#4f46e5,#06b6d4);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;flex-shrink:0">LN</div>';
+    html += '<div style="min-width:0">';
+    html += '<div style="font-weight:700;font-size:13.5px;color:var(--color-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + escapeHtml(nomUser) + '</div>';
+    html += '<div style="font-size:11px;color:var(--color-accent);font-weight:600">' + escapeHtml(roleAffiche) + '</div>';
+    html += '</div></div>';
+    html += '<button type="button" class="drawer-close-btn" onclick="window.LegalNotaryFermerMenuMobile()" aria-label="Fermer le menu" title="Fermer">✕</button>';
+    html += '</div>';
+
+    // En-tête desktop du menu contextuel avec libellé du rôle
+    html += '<div class="nav-user-desktop-badge" style="padding:4px 6px 10px;margin-bottom:6px;border-bottom:1px solid var(--color-border)">';
+    html += '<div style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--color-text-dim);font-weight:700">Menu ' + escapeHtml(roleAffiche) + '</div>';
     html += '</div>';
 
     items.forEach(function (item) {
@@ -830,7 +844,12 @@
     });
 
     html += '<div style="flex:1"></div>';
-    html += '<div class="lnk-item" id="bouton-deconnexion" style="padding:var(--space-2);font-size:13px;opacity:.75;cursor:pointer;border-top:1px solid var(--color-border);color:#94a3b8">Se déconnecter</div>';
+
+    // Raccourcis de bas de tiroir (Documentation & Déconnexion)
+    html += '<div style="border-top:1px solid var(--color-border);padding-top:10px;margin-top:12px;display:flex;flex-direction:column;gap:4px">';
+    html += '<a href="documentation.html" target="_blank" class="lnk-item" style="padding:8px 10px;font-size:12.5px;color:#38bdf8;text-decoration:none">📘 Manuels & Formations</a>';
+    html += '<div class="lnk-item" id="bouton-deconnexion" style="padding:8px 10px;font-size:12.5px;cursor:pointer;color:#ef4444;font-weight:600">🚪 Déconnexion</div>';
+    html += '</div>';
 
     conteneur.innerHTML = html;
 

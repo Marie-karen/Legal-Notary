@@ -909,19 +909,26 @@ select.input { -webkit-appearance: none; appearance: none; }
 .top-actes-bar {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  white-space: nowrap;
+  flex-wrap: nowrap !important;
   padding-bottom: 6px;
   margin-bottom: var(--space-4);
-  scrollbar-width: thin;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.top-actes-bar::-webkit-scrollbar {
+  display: none;
 }
 .top-acte-chip {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  background: #1e293b;
-  color: #f1f5f9;
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: var(--color-surface-2);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
   padding: 6px 14px;
   border-radius: 20px;
   font-size: 12.5px;
@@ -929,34 +936,35 @@ select.input { -webkit-appearance: none; appearance: none; }
   cursor: pointer;
   transition: all .15s ease;
   white-space: nowrap;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  flex-shrink: 0;
+  box-shadow: var(--shadow-sm);
 }
 .top-acte-chip span {
   font-size: 13px;
 }
 .top-acte-chip strong {
-  color: #94a3b8;
+  color: var(--color-text-dim);
   font-weight: 600;
 }
 .top-acte-chip:hover {
-  background: #334155;
-  border-color: #38bdf8;
-  color: #ffffff;
+  background: var(--color-surface);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
   transform: translateY(-1px);
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
+  box-shadow: var(--shadow-md);
 }
 .top-acte-chip:hover strong {
-  color: #e2e8f0;
+  color: var(--color-accent);
 }
 .top-acte-chip.actif {
-  background: rgba(22, 163, 74, 0.22);
-  border: 1.5px solid #22c55e;
-  color: #86efac;
+  background: var(--color-accent-dim);
+  border: 1.5px solid var(--color-accent);
+  color: var(--color-accent);
   font-weight: 700;
-  box-shadow: 0 0 12px rgba(34, 197, 94, 0.25);
+  box-shadow: 0 0 12px var(--color-accent-dim);
 }
 .top-acte-chip.actif strong {
-  color: #4ade80;
+  color: var(--color-accent);
   font-weight: 700;
 }
 
@@ -965,12 +973,16 @@ select.input { -webkit-appearance: none; appearance: none; }
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
-  padding: 8px 12px;
+  padding: 10px 14px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   margin-top: 6px;
+  transition: border-color .15s ease, background-color .15s ease;
+}
+.client-dossier-subitem:hover {
+  border-color: var(--color-border-hover);
 }
 
 /* Panneau latéral / Tiroir détaillé d'un acte */
@@ -1240,64 +1252,105 @@ select.input { -webkit-appearance: none; appearance: none; }
 }
 
 /* =========================================================================
-   SYSTÈME RESPONSIVE MOBILE & TABLETTE — LEGAL NOTARY ERP
+   SYSTÈME RESPONSIVE MOBILE & MULTI-ÉCRANS HAUTE FIDÉLITÉ (ODOO-GRADE ERP)
    ========================================================================= */
 
-/* Bouton Hamburger Mobile (Caché sur Desktop) */
+/* Reset tactile & Viewport dynamique */
+html, body {
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Bouton Hamburger Mobile (Caché sur grand écran Desktop) */
 .mobile-burger-btn {
   display: none;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-sm);
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  border-radius: var(--radius);
   background: var(--color-surface-2);
   border: 1px solid var(--color-border);
   color: var(--color-text);
-  font-size: 18px;
+  font-size: 19px;
   cursor: pointer;
   padding: 0;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   flex-shrink: 0;
+  box-shadow: var(--shadow-sm);
 }
 .mobile-burger-btn:hover {
   background: var(--color-accent-dim);
   border-color: var(--color-accent);
   color: var(--color-accent);
 }
+.mobile-burger-btn:active {
+  transform: scale(0.95);
+}
 
-/* Backdrop sombre pour le menu mobile */
+/* Backdrop sombre flouté pour le menu Off-Canvas Mobile */
 .mobile-menu-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
-  z-index: 998;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 9998;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.28s ease;
+  transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .mobile-menu-backdrop.actif {
   opacity: 1;
   pointer-events: auto;
 }
 
-/* Règles pour Écrans Mobiles et Tablettes (< 992px) */
+/* En-tête mobile interne au drawer de navigation */
+.drawer-mobile-header {
+  display: none;
+}
+
+/* Conteneur universel pour tableaux défilables */
+.table-wrap, .table-container, .table-wrapper {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  margin-bottom: var(--space-4);
+  scrollbar-width: thin;
+}
+
+.table-wrap table.table,
+.table-container table.table,
+.table-wrapper table.table {
+  min-width: 620px;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+/* =========================================================================
+   BREAKPOINT TABLETTES & MOBILES (Largeur <= 992px)
+   ========================================================================= */
 @media (max-width: 992px) {
+  /* Barre de navigation supérieure */
   .mobile-burger-btn {
     display: inline-flex !important;
   }
 
   .nav {
-    padding: 8px 12px !important;
+    padding: 0 12px !important;
     gap: 8px !important;
     height: 54px !important;
+    min-height: 54px !important;
   }
 
   .nav-brand {
-    font-size: 13.5px !important;
-    max-width: 135px !important;
+    font-size: 14px !important;
+    max-width: 140px !important;
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
@@ -1309,14 +1362,15 @@ select.input { -webkit-appearance: none; appearance: none; }
   }
 
   .nav-btn-doc {
-    padding: 4px 8px !important;
+    padding: 5px 8px !important;
+    font-size: 12px !important;
   }
   .nav-btn-doc .nav-doc-text {
     display: none !important;
   }
   .nav-btn-doc .nav-doc-icon {
     display: inline !important;
-    font-size: 14px;
+    font-size: 15px;
   }
 
   .theme-switch-btn {
@@ -1327,44 +1381,75 @@ select.input { -webkit-appearance: none; appearance: none; }
   }
 
   .btn-nav-deconnexion {
-    padding: 4px 8px !important;
+    padding: 5px 8px !important;
   }
   .btn-nav-deconnexion .deconnexion-text {
     display: none !important;
   }
   .btn-nav-deconnexion .deconnexion-icon {
     display: inline !important;
-    font-size: 13px;
+    font-size: 14px;
   }
 
-  /* Barre latérale transformée en Drawer Off-Canvas */
+  /* BARRE LATÉRALE TRANSFORMÉE EN TIROIR OFF-CANVAS NATIVE-LIKE */
   .barre-laterale {
     position: fixed !important;
     top: 0 !important;
     left: 0 !important;
     bottom: 0 !important;
-    width: 285px !important;
+    width: 295px !important;
     max-width: 86vw !important;
     height: 100vh !important;
     height: 100dvh !important;
-    z-index: 999 !important;
+    z-index: 9999 !important;
     background: var(--color-sidebar) !important;
     border-right: 1px solid var(--color-border) !important;
-    box-shadow: 0 0 35px rgba(0, 0, 0, 0.75) !important;
+    box-shadow: 4px 0 35px rgba(0, 0, 0, 0.75) !important;
     transform: translateX(-100%) !important;
     transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
-    padding: 24px 14px 20px !important;
+    padding: 16px 14px 28px !important;
     display: flex !important;
     flex-direction: column !important;
     overflow-y: auto !important;
-    -webkit-overflow-scrolling: touch;
+    -webkit-overflow-scrolling: touch !important;
+    gap: 4px !important;
   }
 
   .barre-laterale.menu-mobile-ouvert {
     transform: translateX(0) !important;
   }
 
-  /* Zone principale de contenu */
+  .drawer-mobile-header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 6px 4px 14px !important;
+    margin-bottom: 8px !important;
+    border-bottom: 1px solid var(--color-border) !important;
+  }
+
+  .drawer-close-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 34px !important;
+    height: 34px !important;
+    border-radius: var(--radius) !important;
+    background: var(--color-surface-2) !important;
+    border: 1px solid var(--color-border) !important;
+    color: var(--color-text) !important;
+    font-size: 16px !important;
+    cursor: pointer !important;
+  }
+
+  .barre-laterale .lnk-item {
+    min-height: 44px !important;
+    padding: 10px 14px !important;
+    font-size: 14px !important;
+    border-radius: 8px !important;
+  }
+
+  /* Disposition globale du contenu */
   .app-main-layout {
     flex-direction: column !important;
     height: calc(100vh - 54px) !important;
@@ -1372,70 +1457,199 @@ select.input { -webkit-appearance: none; appearance: none; }
   }
 
   .zone-scroll {
-    padding: 14px 12px 60px 12px !important;
+    padding: 14px 12px 64px 12px !important;
     min-width: 0 !important;
     width: 100% !important;
     height: 100% !important;
   }
 
-  /* Ajustements Typographiques & Grilles */
+  /* Ajustements typographiques et d'en-tête */
   h1, .ecran-titre {
     font-size: 20px !important;
     line-height: 1.25 !important;
   }
-  
+
+  /* Grille des KPIs */
   .grid-dashboard, .stats-grid, .kpi-grid {
-    grid-template-columns: repeat(auto-fit, minmax(135px, 1fr)) !important;
+    grid-template-columns: repeat(2, 1fr) !important;
     gap: 10px !important;
   }
-
-  .card-kpi, .stat-box {
-    padding: 12px !important;
+  .kpi-card {
+    padding: 12px 14px !important;
   }
-  .card-kpi .kpi-valeur, .stat-box .stat-valeur {
-    font-size: 20px !important;
+  .kpi-label {
+    font-size: 11px !important;
+  }
+  .kpi-valeur {
+    font-size: 22px !important;
   }
 
-  /* En-têtes d'écrans flexibles */
-  .ecran-header, .header-action-row {
+  /* En-têtes collants adaptés pour mobile */
+  div[style*="position:sticky"] {
+    top: -14px !important;
+    padding: 10px 0 6px 0 !important;
+  }
+
+  /* Cartes dossiers dans Kanban et Listes */
+  .carte-dossier {
+    flex: 1 1 100% !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  /* Grille d'agenda semaine */
+  div[style*="grid-template-columns:repeat(7, 1fr)"],
+  div[style*="grid-template-columns:repeat(7,1fr)"] {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  /* Grille 4 colonnes des rapports */
+  div[style*="grid-template-columns:repeat(4, 1fr)"],
+  div[style*="grid-template-columns:repeat(4,1fr)"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+}
+
+/* =========================================================================
+   BREAKPOINT SMARTPHONES (< 768px) — EXPÉRIENCE NATIVE MOBILE
+   ========================================================================= */
+@media (max-width: 768px) {
+  /* Éviter le zoom automatique intempestif sur iOS Safari lors du focus */
+  .input, input[type="text"], input[type="email"], input[type="password"], input[type="number"], input[type="search"], select.input, textarea.input {
+    font-size: 16px !important;
+    min-height: 44px !important;
+  }
+  .btn {
+    min-height: 42px !important;
+  }
+
+  /* Adaptation des formulaires en colonne unique */
+  div[style*="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))"],
+  div[style*="grid-template-columns:repeat(auto-fit,minmax(280px,1fr))"],
+  div[style*="grid-template-columns:repeat(auto-fit,minmax(300px,1fr))"],
+  div[style*="grid-template-columns:repeat(auto-fit,minmax(320px,1fr))"] {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  /* Alignement vertical des sous-éléments de comparants et clients */
+  .client-dossier-subitem {
     flex-direction: column !important;
     align-items: flex-start !important;
     gap: 10px !important;
   }
-  .ecran-header .btn, .header-action-row .btn {
+  .client-dossier-subitem > div:last-child {
+    width: 100% !important;
+    justify-content: flex-end !important;
+    border-top: 1px solid var(--color-divider);
+    padding-top: 8px;
+  }
+
+  /* Lignes de comparants dans le formulaire nouveau dossier */
+  #nd-comparants > div {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    background: var(--color-surface-2);
+    padding: 10px;
+    border-radius: var(--radius);
+    border: 1px solid var(--color-border);
+  }
+  #nd-comparants > div .input {
+    width: 100% !important;
+    flex: none !important;
+  }
+  #nd-comparants > div .nd-retirer-comparant {
+    align-self: flex-end !important;
+    color: var(--color-danger) !important;
+    font-weight: 600;
+  }
+
+  /* MODALES EN BOTTOM-SHEET SUR MOBILE */
+  .modal-backdrop {
+    align-items: flex-end !important;
+    padding: 0 !important;
+    z-index: 100000 !important;
+  }
+  .modal-conteneur {
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 20px 20px 0 0 !important;
+    max-height: 92vh !important;
+    max-height: 92dvh !important;
+    margin: 0 !important;
+    border-bottom: none !important;
+    border-left: none !important;
+    border-right: none !important;
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.6) !important;
+    animation: slideUpBottomSheet 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  }
+  @keyframes slideUpBottomSheet {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+  .modal-header {
+    padding: 16px 16px 12px !important;
+    position: relative !important;
+  }
+  .modal-header::before {
+    content: "";
+    position: absolute;
+    top: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 36px;
+    height: 4px;
+    background: var(--color-divider);
+    border-radius: 2px;
+  }
+  .modal-body {
+    padding: 14px 16px 20px !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    gap: 12px !important;
+  }
+  .modal-footer {
+    padding: 12px 16px 24px !important;
+    flex-direction: column-reverse !important;
+    gap: 8px !important;
+  }
+  .modal-footer .btn {
     width: 100% !important;
     justify-content: center !important;
-  }
-
-  /* Tableaux scrollables horizontalement */
-  .table-container, .table-wrapper {
-    overflow-x: auto !important;
-    -webkit-overflow-scrolling: touch !important;
-    width: 100% !important;
-    margin-bottom: 14px !important;
-  }
-  table {
-    min-width: 580px !important;
-  }
-
-  /* Modales et Dialogues */
-  .modal-dialog, .modal-content {
-    width: 95vw !important;
-    max-width: 500px !important;
-    margin: 10px auto !important;
-    padding: 16px !important;
+    padding: 11px !important;
   }
 }
 
+/* =========================================================================
+   BREAKPOINT TRÈS PETITS ÉCRANS (< 480px)
+   ========================================================================= */
 @media (max-width: 480px) {
   .nav-brand {
-    font-size: 12px !important;
-    max-width: 110px !important;
+    font-size: 13px !important;
+    max-width: 120px !important;
   }
 
   .grid-dashboard, .stats-grid, .kpi-grid {
     grid-template-columns: 1fr 1fr !important;
     gap: 8px !important;
   }
+
+  .kpi-card {
+    padding: 10px 10px !important;
+  }
+  .kpi-label {
+    font-size: 10px !important;
+  }
+  .kpi-valeur {
+    font-size: 19px !important;
+  }
+
+  /* Boutons d'action dans les barres supérieures */
+  .ecran-header .btn, .header-action-row .btn {
+    width: 100% !important;
+  }
 }
+
 
