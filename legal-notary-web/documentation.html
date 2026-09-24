@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Legal Notary — Manuels Interactifs & Guides Métiers Personnalisés</title>
+  <meta name="description" content="Centre de manuels interactifs personnalisés par rôle (Notaire, Clercs, Comptable, Formaliste, Archiviste) inspiré des standards Glitter.io / ISO 26514:2022.">
+
+  <!-- Polices Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:wght@700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css?v=3.4.2">
+
+  <script>
+    (function () {
+      var theme = "dark";
+      try { theme = localStorage.getItem("legal_notary_theme") || "dark"; } catch (e) {}
+      document.documentElement.setAttribute("data-theme", theme);
+    })();
+  </script>
+
+  <style>
+    body {
+      background-color: var(--color-bg);
+      color: var(--color-text);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      margin: 0;
+      padding: 0;
+      line-height: 1.6;
+    }
+
+    .doc-nav-header {
+      background: var(--color-surface);
+      border-bottom: 1px solid var(--color-border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 12px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      backdrop-filter: blur(14px);
+    }
+
+    .doc-layout {
+      display: flex;
+      max-width: 1440px;
+      margin: 0 auto;
+      min-height: calc(100vh - 65px);
+    }
+
+    .doc-sidebar {
+      width: 320px;
+      border-right: 1px solid var(--color-border);
+      padding: 24px 16px;
+      position: sticky;
+      top: 65px;
+      height: calc(100vh - 65px);
+      overflow-y: auto;
+      background: var(--color-surface-2);
+      flex-shrink: 0;
+    }
+
+    .doc-content {
+      flex: 1;
+      padding: 36px 48px;
+      max-width: 960px;
+    }
+
+    .role-selector-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .role-pill-btn {
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid var(--color-border);
+      background: var(--color-surface);
+      color: var(--color-text-dim);
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .role-pill-btn:hover {
+      border-color: #38bdf8;
+      color: var(--color-text);
+      transform: translateY(-1px);
+    }
+
+    .role-pill-btn.active {
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(16, 185, 129, 0.2));
+      border-color: #38bdf8;
+      color: #38bdf8;
+      font-weight: 700;
+      box-shadow: 0 4px 12px rgba(56, 189, 248, 0.15);
+    }
+
+    .glitter-step-card {
+      background: var(--color-surface-2);
+      border: 1px solid var(--color-border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+      position: relative;
+      transition: all 0.2s ease;
+    }
+
+    .glitter-step-card:hover {
+      border-color: rgba(56, 189, 248, 0.4);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    }
+
+    .step-number-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #38bdf8;
+      color: #0b0f19;
+      font-weight: 800;
+      font-size: 15px;
+      margin-right: 12px;
+      flex-shrink: 0;
+    }
+
+    .step-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .step-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--color-text);
+      margin: 0;
+    }
+
+    .step-screenshot-mockup {
+      background: #090d16;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      padding: 16px;
+      margin: 16px 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      color: #94a3b8;
+      position: relative;
+      overflow-x: auto;
+    }
+
+    .step-screenshot-mockup .cursor-pointer-hint {
+      display: inline-block;
+      background: rgba(16, 185, 129, 0.2);
+      border: 1px solid #10b981;
+      color: #34d399;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+
+    .interactive-checklist {
+      list-style: none;
+      padding: 0;
+      margin: 14px 0;
+    }
+
+    .interactive-checklist li {
+      padding: 8px 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 6px;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13.5px;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s;
+    }
+
+    .interactive-checklist li:hover {
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .interactive-checklist input[type="checkbox"] {
+      width: 17px;
+      height: 17px;
+      accent-color: #10b981;
+      cursor: pointer;
+    }
+
+    .norm-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #34d399;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11.5px;
+      font-weight: 700;
+    }
+
+    .prose h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 32px;
+      margin-top: 0;
+      margin-bottom: 12px;
+    }
+
+    .prose h2 {
+      font-size: 22px;
+      margin-top: 32px;
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .prose table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 18px 0;
+      font-size: 13.5px;
+    }
+
+    .prose th, .prose td {
+      border: 1px solid var(--color-border);
+      padding: 10px 14px;
+      text-align: left;
+    }
+
+    .prose th {
+      background: var(--color-surface);
+      font-weight: 700;
+    }
+
+    .callout-pro {
+      background: rgba(56, 189, 248, 0.08);
+      border-left: 4px solid #38bdf8;
+      padding: 14px 18px;
+      border-radius: 0 8px 8px 0;
+      margin: 18px 0;
+      font-size: 13.5px;
+    }
+
+    .search-doc-input {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--color-border);
+      background: var(--color-surface);
+      color: var(--color-text);
+      font-size: 13px;
+      margin-bottom: 16px;
+      box-sizing: border-box;
+    }
+
+    .search-doc-input:focus {
+      border-color: #38bdf8;
+      outline: none;
+    }
+
+    @media print {
+      .doc-nav-header, .doc-sidebar, .role-selector-bar, .no-print {
+        display: none !important;
+      }
+      .doc-content {
+        padding: 0 !important;
+        max-width: 100% !important;
+      }
+      body {
+        background: white !important;
+        color: black !important;
+      }
+      .glitter-step-card {
+        border: 1px solid #ccc !important;
+        break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="doc-nav-header">
+    <div style="display:flex;align-items:center;gap:14px">
+      <a href="index.html" style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--color-text);text-decoration:none">
+        Legal Notary <span style="font-size:12px;font-family:'Plus Jakarta Sans';color:#38bdf8;font-weight:600">Guides Interactifs Métiers</span>
+      </a>
+      <span class="norm-badge">✨ Style Glitter.io • ISO 26514:2022</span>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:12px">
+      <button type="button" onclick="imprimerManuelRole()" class="btn btn-outline" style="padding:6px 14px;font-size:12.5px;cursor:pointer">
+        🖨️ Imprimer ce Guide Métier
+      </button>
+      <a href="demo.html" class="btn btn-primary" style="padding:6px 14px;font-size:12.5px;text-decoration:none">
+        ⚡ Tester dans la Démo
+      </a>
+    </div>
+  </header>
+
+  <!-- LAYOUT -->
+  <div class="doc-layout">
+    <!-- SIDEBAR -->
+    <aside class="doc-sidebar">
+      <input type="text" id="input-filtre-doc" class="search-doc-input" placeholder="🔍 Rechercher une tâche ou un article…" onkeyup="filtrerDocumentation(this.value)">
+
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-dim);font-weight:700;margin-bottom:10px">
+        Parcours par Rôle dans l'Étude
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <button type="button" class="role-pill-btn active" style="width:100%;justify-content:flex-start" onclick="selectionnerRole('notaire', this)">
+          👑 Notaire Titulaire (Maître)
+        </button>
+        <button type="button" class="role-pill-btn" style="width:100%;justify-content:flex-start" onclick="selectionnerRole('premier_clerc', this)">
+          👔 Premier Clerc
+        </button>
+        <button type="button" class="role-pill-btn" style="width:100%;justify-content:flex-start" onclick="selectionnerRole('clerc_redacteur', this)">
+          ✍️ Clerc Rédacteur
+        </button>
+        <button type="button" class="role-pill-btn" style="width:100%;justify-content:flex-start" onclick="selectionnerRole('comptable', this)">
+          💳 Comptable Taxateur
+        </button>
+        <button type="button" class="role-pill-btn" style="width:100%;justify-content:flex-start" onclick="selectionnerRole('formaliste', this)">
+          🏛️ Clerc Formaliste
+        </button>
+        <button type="button" class="role-pill-btn" style="width:100%;justify-content:flex-start" onclick="selectionnerRole('archiviste', this)">
+          📦 Archiviste & Minutier
+        </button>
+        <button type="button" class="role-pill-btn" style="width:100%;justify-content:flex-start" onclick="selectionnerRole('assistante', this)">
+          🛎️ Assistante d'Accueil
+        </button>
+        <button type="button" class="role-pill-btn" style="width:100%;justify-content:flex-start" onclick="selectionnerRole('superadmin', this)">
+          🛠️ SuperAdmin SaaS / IT
+        </button>
+      </div>
+
+      <div style="margin-top:24px;padding-top:16px;border-top:1px solid var(--color-border)">
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-dim);font-weight:700;margin-bottom:8px">
+          Documentation Générale
+        </div>
+        <a href="#loi-decret" class="role-pill-btn" style="width:100%;justify-content:flex-start;text-decoration:none;margin-bottom:4px" onclick="afficherSectionGenerale('loi-decret')">
+          📜 Décret 2013-279 & Barèmes
+        </a>
+        <a href="#securite-sha" class="role-pill-btn" style="width:100%;justify-content:flex-start;text-decoration:none" onclick="afficherSectionGenerale('securite-sha')">
+          🔒 Sécurité SHA-256 & Hybride
+        </a>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="doc-content">
+      
+      <!-- SÉLECTEUR RAPIDE SUPÉRIEUR -->
+      <div class="role-selector-bar no-print">
+        <span style="font-size:12.5px;font-weight:700;color:var(--color-text-dim);align-self:center;margin-right:4px">
+          Afficher le guide pour :
+        </span>
+        <button type="button" class="role-pill-btn active" onclick="selectionnerRole('notaire')">👑 Notaire</button>
+        <button type="button" class="role-pill-btn" onclick="selectionnerRole('premier_clerc')">👔 1er Clerc</button>
+        <button type="button" class="role-pill-btn" onclick="selectionnerRole('clerc_redacteur')">✍️ Rédacteur</button>
+        <button type="button" class="role-pill-btn" onclick="selectionnerRole('comptable')">💳 Comptable</button>
+        <button type="button" class="role-pill-btn" onclick="selectionnerRole('formaliste')">🏛️ Formaliste</button>
+        <button type="button" class="role-pill-btn" onclick="selectionnerRole('archiviste')">📦 Archiviste</button>
+      </div>
+
+      <!-- CONTENU DYNAMIQUE PAR RÔLE -->
+      <div id="conteneur-guide-role">
+        <!-- Rempli dynamiquement par renderRoleGuide() -->
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    // BASE DE CONNAISSANCE DES GUIDES INTERACTIFS (STYLE GLITTER.IO / WORKFLOWS)
+    var GUIDES_PAR_ROLE = {
+      notaire: {
+        roleLabel: "Notaire Titulaire (Maître de l'Étude)",
+        roleIcon: "👑",
+        badge: "Accès & Pouvoir Suprême",
+        resume: "Ce guide détaille les flux stratégiques réservés au Notaire : supervision des rentabilités, validation juridique dans le parapheur électronique, signature numérique et scellement des minutes.",
+        steps: [
+          {
+            num: 1,
+            title: "Supervision du Tableau de Bord & Pilotage Financier",
+            desc: "Dès votre connexion, visualisez la rentabilité globale de l'office, le nombre d'actes en cours d'instruction et les alertes de forclusion.",
+            action: "Cliquer sur 'Tableau de bord' dans la barre latérale.",
+            mockup: "📊 Encaissements du mois : 42 500 000 FCFA | Dossiers en cours : 18 | Actes à signer aujourd'hui : 3",
+            checklist: [
+              "Vérifier les dossiers urgents nécessitant un arbitrage juridique",
+              "Contrôler le montant total des provisions reçues en compte séquestre",
+              "Consulter les alertes des formalités approchant les 30 jours légaux"
+            ]
+          },
+          {
+            num: 2,
+            title: "Revue & Validation dans le Parapheur Électronique",
+            desc: "Les actes préparés par les clercs arrivent dans votre Parapheur pour vérification des clauses et accord final.",
+            action: "Ouvrir 'Parapheur & Validations' -> Sélectionner l'acte à contrôler.",
+            mockup: "📑 Acte #DOS-2026-0042 (Vente Immobilière 120M FCFA) -> Statut : <span class='cursor-pointer-hint'>En attente Signature Notaire</span>",
+            checklist: [
+              "Contrôler l'identité des comparants et la fiche KYC / LCB-FT",
+              "Vérifier la concordance de la description cadastrale et des servitudes",
+              "Cliquer sur 'Valider l'Acte & Autoriser la Signature'"
+            ]
+          },
+          {
+            num: 3,
+            title: "Attribution de Minute & Scellement Cryptographique SHA-256",
+            desc: "Après signature des parties, l'acte est officiellement converti en minute inaltérable avec calcul d'empreinte.",
+            action: "Cliquer sur 'Clôturer en Minute Officielle'.",
+            mockup: "🏛️ Minute Numéro : <strong>MIN-2026-0128</strong> | Empreinte SHA-256 : <span style='color:#38bdf8'>e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855</span>",
+            checklist: [
+              "Vérifier la génération séquentielle du numéro de minute",
+              "Confirmer l'inscription automatique au Répertoire Général des Actes",
+              "Transmettre le dossier scellé au service des formalités pour enregistrement DGI"
+            ]
+          }
+        ]
+      },
+
+      premier_clerc: {
+        roleLabel: "Premier Clerc de l'Étude",
+        roleIcon: "👔",
+        badge: "Supervision Juridique & Répartition",
+        resume: "Le Premier Clerc coordonne l'équipe de rédaction, répartit les affaires entrantes et effectue la première relecture des actes avant transmission au Notaire.",
+        steps: [
+          {
+            num: 1,
+            title: "Répartition & Assignation des Dossiers Entrants",
+            desc: "Affectez les nouveaux dossiers aux clercs rédacteurs selon leur charge de travail et leur spécialité (Immobilier, Sociétés, Famille).",
+            action: "Dans 'Dossiers', cliquer sur l'affaire puis 'Assigner à un Rédacteur'.",
+            mockup: "Dossier DOS-2026-0055 -> Assigner à : <span class='cursor-pointer-hint'>M. Jean Clerc (Rédacteur Immobilier)</span>",
+            checklist: [
+              "Vérifier l'exhaustivité des pièces fournies par le client lors du premier rendez-vous",
+              "Fixer l'échéance de finalisation du premier projet d'acte",
+              "Notifier le clerc par alerte interne"
+            ]
+          },
+          {
+            num: 2,
+            title: "Relecture Contradictoire & Contrôle des Pièces",
+            desc: "Vérifier que toutes les pièces obligatoires sont validées et conformes avant transmission au parapheur du Notaire.",
+            action: "Cliquer sur 'Valider pour Parapheur Notaire'.",
+            mockup: "Checklist : 6/6 Pièces Validées ✅ | Projet d'acte conforme aux modèles homologués ✅",
+            checklist: [
+              "Vérifier l'état des droits réels (hypothèque, gage, servitude)",
+              "Confirmer le calcul de l'état prévisionnel de frais avec la comptabilité"
+            ]
+          }
+        ]
+      },
+
+      clerc_redacteur: {
+        roleLabel: "Clerc Rédacteur",
+        roleIcon: "✍️",
+        badge: "Instruction & Rédaction d'Actes",
+        resume: "Le Clerc Rédacteur instruit le dossier de A à Z : saisie des comparants, conformité KYC/LCB-FT, pointage des pièces et rédaction de l'acte authentique.",
+        steps: [
+          {
+            num: 1,
+            title: "Ouverture & Qualification du Dossier",
+            desc: "Créez l'affaire en sélectionnant le type d'acte (Vente, Prêt, Statuts SARL, Donation) et renseignez les valeurs de transaction.",
+            action: "Bouton '+ Nouveau Dossier' -> Renseigner l'intitulé et la valeur.",
+            mockup: "📁 Titre : Vente Villa M. KOUAME / SCI HORIZON | Type : Vente Immobilière | Valeur : 85 000 000 FCFA",
+            checklist: [
+              "Renseigner l'intitulé clair avec les noms des parties",
+              "Saisir le montant exact de la transaction pour la taxation automatique",
+              "Sélectionner les pièces requises selon le type d'acte"
+            ]
+          },
+          {
+            num: 2,
+            title: "Saisie des Comparants & Contrôle KYC / LCB-FT",
+            desc: "Renseignez l'état civil rigoureux de chaque partie et téléversez les pièces d'identité scannées.",
+            action: "Onglet 'Comparants' -> Ajouter Acquéreur et Vendeur.",
+            mockup: "👤 M. KOUAME Koffi (Vendeur) - CNI N° CI00392819 -> <span class='cursor-pointer-hint'>Vérification CENTIF : Conforme ✅</span>",
+            checklist: [
+              "Vérifier le régime matrimonial (Séparation de biens vs Communauté)",
+              "Importer la copie scannée de la CNI / Passeport valide",
+              "Générer la fiche de diligence LCB-FT obligatoire"
+            ]
+          },
+          {
+            num: 3,
+            title: "Rédaction avec Modèles Certifiés & Checklist Pièces",
+            desc: "Rédigez l'acte en utilisant les matrices certifiées pré-remplies et cochez les pièces au fur et à mesure de leur réception.",
+            action: "Onglet 'Rédaction' -> Générer le projet d'acte.",
+            mockup: "📝 Modèle appliqué : Vente_Immobiliere_Urbaine_v2.docx -> Fusion des données comparants terminée.",
+            checklist: [
+              "Vérifier le CMPF (Certificat de Mutation sur Propriété Foncière)",
+              "S'assurer du quitus fiscal et des quittances CIE/SODECI",
+              "Soumettre le projet d'acte à la révision du Premier Clerc"
+            ]
+          }
+        ]
+      },
+
+      comptable: {
+        roleLabel: "Comptable & Taxateur de l'Étude",
+        roleIcon: "💳",
+        badge: "Fiscalité & Sécurité Financière",
+        resume: "Le Comptable Taxateur maîtrise le calcul d'émoluments (Décret 2013-279), gère les provisions sur frais, émet les quittances et assure le rapprochement des comptes clients.",
+        steps: [
+          {
+            num: 1,
+            title: "Calcul Automatisé des Émoluments (Décret N° 2013-279)",
+            desc: "Le système applique les 4 tranches dégressives légales instantanément dès saisie de la valeur de l'acte.",
+            action: "Onglet 'Taxation' du dossier -> Vérifier le détail des tranches.",
+            mockup: "Valeur : 100M FCFA -> Tranche 1 (4%): 800k | Tranche 2 (3%): 1,2M | Tranche 3 (1.5%): 600k = <strong style='color:#34d399'>Total Émoluments HT : 2 600 000 FCFA</strong>",
+            checklist: [
+              "Vérifier la TVA (18%) appliquée uniquement sur les émoluments notariés",
+              "Calculer les droits d'enregistrement DGI (4% vente ou forfait)",
+              "Intégrer les frais de Conservation Foncière (1% + 2 100 FCFA)"
+            ]
+          },
+          {
+            num: 2,
+            title: "Émission du Compte Provisoire de Frais & Reçus de Provision",
+            desc: "Générez le document d'appel de fonds avant signature et enregistrez les versements par virement ou chèque de banque.",
+            action: "Cliquer sur 'Imprimer le Compte Provisoire de Frais'.",
+            mockup: "📄 Compte de Frais N° CPF-2026-0089 | Montant Total à Percevoir : <strong>8 250 100 FCFA</strong>",
+            checklist: [
+              "Émettre le reçu de provision horodaté pour le client",
+              "Ventiler les sommes versées sur le compte séquestre de l'affaire",
+              "Autoriser la signature dès couverture complète des droits du Trésor"
+            ]
+          }
+        ]
+      },
+
+      formaliste: {
+        roleLabel: "Clerc Formaliste",
+        roleIcon: "🏛️",
+        badge: "DGI, Conservation Foncière & RCCM",
+        resume: "Le Formaliste prend en charge l'acte signé : enregistrement fiscal dans les délais légaux (30 jours), dépôt à la Conservation Foncière ou au Greffe du Tribunal.",
+        steps: [
+          {
+            num: 1,
+            title: "Bordereau de Dépôt & Enregistrement Fiscal (DGI)",
+            desc: "Préparez les bordereaux de dépôt groupés pour la recette des impôts et suivez le compte à rebours des délais de forclusion.",
+            action: "Menu 'Formalités' -> Sélectionner les actes à enregistrer.",
+            mockup: "⏳ Acte MIN-2026-0128 -> Délai restant : <span class='cursor-pointer-hint'>18 Jours avant pénalités</span>",
+            checklist: [
+              "Éditer le bordereau officiel de présentation à l'enregistrement",
+              "Déposer les exemplaires timbrés au centre des impôts compétent",
+              "Payer les droits d'enregistrement calculés par l'ERP"
+            ]
+          },
+          {
+            num: 2,
+            title: "Inscription des Mentions Légales de Retour",
+            desc: "Dès récupération de l'acte enregistré, saisissez les références fiscales et foncières dans l'ERP.",
+            action: "Cliquer sur 'Enregistrer les Mentions DGI / Conservation'.",
+            mockup: "Enregistré à Cocody le 18/09/2026 | Vol: 45 | Folio: 12 | Bordereau: 991/04",
+            checklist: [
+              "Saisir le numéro de quittance et de volume d'enregistrement",
+              "Déposer l'expédition à la Conservation Foncière pour mutation du titre",
+              "Clôturer la phase formalités pour mise à disposition de l'expédition"
+            ]
+          }
+        ]
+      },
+
+      archiviste: {
+        roleLabel: "Archiviste & Documentaliste",
+        roleIcon: "📦",
+        badge: "Conservation Trentenaire & Magasin",
+        resume: "L'Archiviste gère le Minutier Centralisé, attribue les cotes de rangement physiques et assure la traçabilité des sorties de dossiers.",
+        steps: [
+          {
+            num: 1,
+            title: "Cotation & Rangement Physique en Boîte d'Archives",
+            desc: "Affectez le dossier physique clos à son carton et son rayon selon la norme de classement de l'Étude.",
+            action: "Dans 'Archives & Minutier' -> Cliquer sur 'Affecter une Cote'.",
+            mockup: "📦 Cote de Rangement : <strong>RAYON-B / TRAVEE-02 / CARTON-2026-08 / DOS-042</strong>",
+            checklist: [
+              "Imprimer l'étiquette code-barres / QR Code du carton",
+              "Placer la chemise physique dans la boîte dédiée",
+              "Vérifier la présence de la minute originale et de ses annexes"
+            ]
+          },
+          {
+            num: 2,
+            title: "Enregistrement d'une Sortie de Dossier avec Décharge",
+            desc: "Tout emprunt de dossier pour rendez-vous ou expertise est tracé avec date limite de restitution.",
+            action: "Bouton 'Déclarer une Sortie de Dossier'.",
+            mockup: "Sortie Dossier DOS-042 -> Emprunteur : Maître KOUASSI | Retour prévu : <span style='color:#f59e0b'>J+5</span>",
+            checklist: [
+              "Indiquer le motif de sortie et l'identité de l'emprunteur",
+              "Fixer la date de retour maximale",
+              "Pointer la restitution physique lors du retour en magasin"
+            ]
+          }
+        ]
+      },
+
+      assistante: {
+        roleLabel: "Assistante & Standardiste d'Accueil",
+        roleIcon: "🛎️",
+        badge: "Accueil & Communication Clients",
+        resume: "L'Assistante accueille les clients, crée la fiche préliminaire de contact et déclenche les notifications WhatsApp/SMS pour les rendez-vous et pièces manquantes.",
+        steps: [
+          {
+            num: 1,
+            title: "Création de la Fiche de Contact Préliminaire",
+            desc: "Enregistrez le client dès son arrivée à l'accueil pour faciliter le travail du clerc.",
+            action: "Menu 'Annuaire Clients' -> '+ Nouveau Client'.",
+            mockup: "👤 Nom : MME TOURE Fatou | Téléphone : +225 07 08 09 10 11 | Motif : Conseil Création Société",
+            checklist: [
+              "Vérifier le numéro de téléphone pour les notifications WhatsApp",
+              "Renseigner l'adresse email et la pièce d'identité",
+              "Transmettre la fiche au clerc de permanence"
+            ]
+          },
+          {
+            num: 2,
+            title: "Envoi de Rappels Automatiques WhatsApp / SMS",
+            desc: "Relancez les clients pour les pièces manquantes ou rappelez la date de signature de l'acte en 1 clic.",
+            action: "Bouton 'Envoyer Rappel WhatsApp' sur le dossier.",
+            mockup: "📱 Message envoyé : <em>« Bonjour MME TOURE, votre acte est prêt pour signature ce jeudi à 15h à l'Étude. »</em>",
+            checklist: [
+              "Sélectionner le modèle de notification homologué par l'Étude",
+              "Vérifier la confirmation de remise du message"
+            ]
+          }
+        ]
+      },
+
+      superadmin: {
+        roleLabel: "SuperAdmin SaaS & Référent Informatique",
+        roleIcon: "🛠️",
+        badge: "Infrastructure, Licences & Sauvegardes",
+        resume: "L'Administrateur gère les accès des utilisateurs (postes illimités), surveille la santé du serveur, les sauvegardes automatiques et la résilience hors-ligne.",
+        steps: [
+          {
+            num: 1,
+            title: "Gestion des Utilisateurs & Postes Illimités",
+            desc: "Créez autant de comptes de clercs, comptables et stagiaires que nécessaire sans surcoût de licence.",
+            action: "Menu 'Paramètres Étude' -> 'Utilisateurs & Collaborateurs'.",
+            mockup: "👥 Collaborateurs actifs : 14 | Postes autorisés : <strong>ILLIMITÉS (Offre Étude)</strong>",
+            checklist: [
+              "Créer le compte avec l'adresse email professionnelle de l'Étude",
+              "Attribuer le rôle RBAC correspondant avec précision",
+              "Activer l'authentification sécurisée"
+            ]
+          },
+          {
+            num: 2,
+            title: "Surveillance de la Synchronisation & Sauvegardes",
+            desc: "Contrôlez l'état de la base de données PostgreSQL et les sauvegardes automatiques quotidiennes chiffrées.",
+            action: "Menu 'Supervision & Contrôle Interne'.",
+            mockup: "🛡️ Latence API : <strong style='color:#34d399'>1.2 ms</strong> | Santé Base de données : <strong style='color:#34d399'>100% Opérationnelle</strong>",
+            checklist: [
+              "Vérifier l'exécution de la sauvegarde nocturne quotidienne",
+              "Tester la résilience en mode déconnecté (Cache SWR)",
+              "Consulter les journaux d'audit de sécurité"
+            ]
+          }
+        ]
+      }
+    };
+
+    var roleActuel = 'notaire';
+
+    function selectionnerRole(roleKey, btnElement) {
+      roleActuel = roleKey;
+      var data = GUIDES_PAR_ROLE[roleKey];
+      if (!data) return;
+
+      // Mise à jour des boutons actifs
+      document.querySelectorAll('.role-pill-btn').forEach(function(btn) {
+        btn.classList.remove('active');
+      });
+      if (btnElement) {
+        btnElement.classList.add('active');
+      } else {
+        document.querySelectorAll('.role-pill-btn').forEach(function(btn) {
+          if (btn.textContent.toLowerCase().includes(data.roleLabel.toLowerCase().split(' ')[0])) {
+            btn.classList.add('active');
+          }
+        });
+      }
+
+      renderRoleGuide(data);
+    }
+
+    function renderRoleGuide(data) {
+      var conteneur = document.getElementById("conteneur-guide-role");
+      if (!conteneur) return;
+
+      var html = '';
+
+      // En-tête du rôle
+      html += '<div style="margin-bottom:28px">';
+      html += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">';
+      html += '<span class="norm-badge">' + data.badge + '</span>';
+      html += '<span style="font-size:12px;color:var(--color-text-dim)">Norme ISO/IEC/IEEE 26514:2022</span>';
+      html += '</div>';
+      html += '<h1 style="margin:0 0 10px 0;font-family:\'Playfair Display\',serif;font-size:30px;color:var(--color-text)">';
+      html += data.roleIcon + ' ' + data.roleLabel;
+      html += '</h1>';
+      html += '<p style="font-size:14.5px;color:var(--color-text-dim);margin:0;line-height:1.6">' + data.resume + '</p>';
+      html += '</div>';
+
+      // Alert info Glitter
+      html += '<div class="callout-pro">';
+      html += '<strong>✨ Guide d\'Action Pas à Pas :</strong> Suivez les étapes ci-dessous dans l\'ordre chronologique pour accomplir vos missions quotidiennes sur <em>Legal Notary ERP</em> avec une conformité totale.';
+      html += '</div>';
+
+      // Étapes Glitter
+      data.steps.forEach(function(step) {
+        html += '<div class="glitter-step-card">';
+        html += '<div class="step-header">';
+        html += '<div class="step-number-badge">' + step.num + '</div>';
+        html += '<h2 class="step-title">' + step.title + '</h2>';
+        html += '</div>';
+
+        html += '<p style="font-size:14px;color:var(--color-text);margin-bottom:12px">' + step.desc + '</p>';
+
+        html += '<div style="font-size:13px;font-weight:600;color:#38bdf8;margin-bottom:8px">🎯 Action Requise : ' + step.action + '</div>';
+
+        if (step.mockup) {
+          html += '<div class="step-screenshot-mockup">';
+          html += '<div style="font-size:10.5px;text-transform:uppercase;color:#64748b;margin-bottom:6px">Aperçu Visuel Écran ERP :</div>';
+          html += '<div>' + step.mockup + '</div>';
+          html += '</div>';
+        }
+
+        if (step.checklist && step.checklist.length > 0) {
+          html += '<div style="font-size:12.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--color-text-dim);margin-top:14px">Checklist de Conformité à Cocher :</div>';
+          html += '<ul class="interactive-checklist">';
+          step.checklist.forEach(function(chk, idx) {
+            var chkId = 'chk-' + roleActuel + '-' + step.num + '-' + idx;
+            html += '<li onclick="toggleCheckbox(\'' + chkId + '\')">';
+            html += '<input type="checkbox" id="' + chkId + '" onclick="event.stopPropagation()">';
+            html += '<label for="' + chkId + '" style="cursor:pointer">' + chk + '</label>';
+            html += '</li>';
+          });
+          html += '</ul>';
+        }
+
+        html += '</div>';
+      });
+
+      // Pied de page du guide
+      html += '<div style="margin-top:32px;padding-top:20px;border-top:1px solid var(--color-border);display:flex;justify-content:space-between;align-items:center">';
+      html += '<div style="font-size:13px;color:var(--color-text-dim)">Besoin d\'aide sur ce module ? Contactez votre référent interne ou le support 24/7.</div>';
+      html += '<button type="button" onclick="imprimerManuelRole()" class="btn btn-secondary" style="padding:8px 16px;font-size:13px;cursor:pointer">🖨️ Imprimer la Fiche ' + data.roleLabel.split(' ')[0] + '</button>';
+      html += '</div>';
+
+      conteneur.innerHTML = html;
+    }
+
+    function toggleCheckbox(id) {
+      var el = document.getElementById(id);
+      if (el) el.checked = !el.checked;
+    }
+
+    function imprimerManuelRole() {
+      window.print();
+    }
+
+    function filtrerDocumentation(texte) {
+      if (!texte) return;
+      texte = texte.toLowerCase().trim();
+      var foundRole = null;
+      Object.keys(GUIDES_PAR_ROLE).forEach(function(key) {
+        var g = GUIDES_PAR_ROLE[key];
+        if (g.roleLabel.toLowerCase().includes(texte) || g.resume.toLowerCase().includes(texte)) {
+          foundRole = key;
+        }
+        g.steps.forEach(function(st) {
+          if (st.title.toLowerCase().includes(texte) || st.desc.toLowerCase().includes(texte)) {
+            foundRole = key;
+          }
+        });
+      });
+
+      if (foundRole && foundRole !== roleActuel) {
+        selectionnerRole(foundRole);
+      }
+    }
+
+    function afficherSectionGenerale(sectionId) {
+      var conteneur = document.getElementById("conteneur-guide-role");
+      if (!conteneur) return;
+
+      if (sectionId === 'loi-decret') {
+        conteneur.innerHTML = `
+          <div class="prose">
+            <span class="norm-badge">Référentiel Légal National</span>
+            <h1>Décret N° 2013-279 du 24 avril 2013</h1>
+            <p>Tarification officielle des actes notariés en République de Côte d'Ivoire.</p>
+            <table>
+              <thead>
+                <tr>
+                  <th>Tranches de Valeur (FCFA)</th>
+                  <th>Ventes Immobilières</th>
+                  <th>Prêts / Hypothèques</th>
+                  <th>Capital de Sociétés</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>De 1 à 20 000 000 FCFA</td>
+                  <td><strong>4,00 %</strong></td>
+                  <td>2,00 %</td>
+                  <td>3,00 %</td>
+                </tr>
+                <tr>
+                  <td>De 20 000 001 à 60 000 000 FCFA</td>
+                  <td><strong>3,00 %</strong></td>
+                  <td>1,50 %</td>
+                  <td>1,50 %</td>
+                </tr>
+                <tr>
+                  <td>De 60 000 001 à 150 000 000 FCFA</td>
+                  <td><strong>1,50 %</strong></td>
+                  <td>0,75 %</td>
+                  <td>0,75 %</td>
+                </tr>
+                <tr>
+                  <td>Au-delà de 150 000 000 FCFA</td>
+                  <td><strong>0,75 %</strong></td>
+                  <td>0,35 %</td>
+                  <td>0,35 %</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="callout-pro">
+              <strong>Règle Fiscale d'Application :</strong> La TVA de 18% s'applique strictement sur les émoluments calculés ci-dessus, et non sur les droits de timbre ou d'enregistrement du Trésor Public.
+            </div>
+          </div>
+        `;
+      } else if (sectionId === 'securite-sha') {
+        conteneur.innerHTML = `
+          <div class="prose">
+            <span class="norm-badge">Intégrité & Sécurité</span>
+            <h1>Scellement SHA-256 & Mode Hybride Hors-Ligne</h1>
+            <p>Legal Notary garantit l'inaltérabilité des actes et une disponibilité 100% continue même sans internet.</p>
+            <div class="callout-pro">
+              <strong>⚡ Accélération SWR & Tolérance Zéro Panne :</strong> En cas de coupure de fibre ou de réseau local, le système bascule sur son magasin mémoire haute vitesse (< 1.2 ms) sans perte de données.
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    // Initialisation au chargement
+    document.addEventListener('DOMContentLoaded', function() {
+      selectionnerRole('notaire');
+    });
+  </script>
+</body>
+</html>

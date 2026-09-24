@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Legal Notary — L'ERP Notarial Nouvelle Génération (Côte d'Ivoire & OHADA)</title>
+  <meta name="description" content="Solution logicielle complète pour les offices notariaux. Calculateur fiscal Décret 2013-279, minutier numérique scellé SHA-256, KYC digitalisé et mode hybride sans coupure internet.">
+
+  <!-- Polices Google Fonts Premium -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --bg-card: rgba(18, 26, 43, 0.75);
+      --bg-card-hover: rgba(26, 38, 64, 0.9);
+      --primary: #10b981;
+      --primary-glow: rgba(16, 185, 129, 0.35);
+      --accent-gold: #f59e0b;
+      --accent-blue: #38bdf8;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --border: rgba(255, 255, 255, 0.08);
+      --border-glow: rgba(16, 185, 129, 0.3);
+      --radius: 16px;
+      --radius-sm: 8px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(circle at 20% 15%, rgba(16, 185, 129, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 80% 30%, rgba(56, 189, 248, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 50% 80%, rgba(245, 158, 11, 0.05) 0%, transparent 50%);
+    }
+
+    a { text-decoration: none; color: inherit; }
+
+    /* Barre de navigation */
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(16px);
+      background: rgba(11, 15, 25, 0.85);
+      border-bottom: 1px solid var(--border);
+      padding: 18px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      font-size: 20px;
+      letter-spacing: -0.5px;
+    }
+    .nav-brand span.logo-icon {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #fff;
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      box-shadow: 0 4px 12px var(--primary-glow);
+    }
+    .nav-links {
+      display: flex;
+      gap: 28px;
+      align-items: center;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+    .nav-links a:hover { color: #fff; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: 1px solid transparent;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #fff;
+      box-shadow: 0 4px 16px var(--primary-glow);
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
+    }
+    .btn-secondary {
+      background: var(--bg-card);
+      border-color: var(--border);
+      color: var(--text);
+    }
+    .btn-secondary:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--border-glow);
+    }
+    .btn-lg {
+      padding: 14px 28px;
+      font-size: 16px;
+      border-radius: 12px;
+    }
+
+    /* Container */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* Hero */
+    .hero {
+      padding: 90px 0 60px;
+      text-align: center;
+      position: relative;
+    }
+    .badge-hero {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: 30px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #34d399;
+      margin-bottom: 24px;
+    }
+    .hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 56px;
+      line-height: 1.15;
+      margin-bottom: 20px;
+      font-weight: 700;
+      letter-spacing: -1px;
+    }
+    .hero h1 span.gradient-text {
+      background: linear-gradient(135deg, #34d399 0%, #38bdf8 50%, #f59e0b 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero p.subtitle {
+      font-size: 19px;
+      color: var(--text-muted);
+      max-width: 780px;
+      margin: 0 auto 36px;
+      font-weight: 400;
+    }
+    .hero-actions {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      margin-bottom: 50px;
+      flex-wrap: wrap;
+    }
+
+    /* Preview Mockup */
+    .mockup-wrap {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 12px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(16, 185, 129, 0.1);
+      position: relative;
+      margin-bottom: 80px;
+    }
+    .mockup-inner {
+      background: #090d16;
+      border-radius: 14px;
+      padding: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      text-align: left;
+    }
+    .mockup-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 14px;
+      margin-bottom: 20px;
+    }
+    .mockup-dots { display: flex; gap: 6px; }
+    .mockup-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .mockup-dot.red { background: #ef4444; }
+    .mockup-dot.yellow { background: #f59e0b; }
+    .mockup-dot.green { background: #10b981; }
+
+    .grid-kpis {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+    .kpi-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      padding: 14px 18px;
+      border-radius: 12px;
+    }
+    .kpi-box .val { font-size: 22px; font-weight: 700; color: #fff; margin: 4px 0; }
+    .kpi-box .sub { font-size: 11px; color: var(--text-dim); }
+
+    /* Section Titres */
+    .section-head {
+      text-align: center;
+      margin-bottom: 50px;
+    }
+    .section-head h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 38px;
+      margin-bottom: 12px;
+      letter-spacing: -0.5px;
+    }
+    .section-head p {
+      color: var(--text-muted);
+      font-size: 16px;
+      max-width: 620px;
+      margin: 0 auto;
+    }
+
+    /* Piliers / Features */
+    .grid-features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 24px;
+      margin-bottom: 90px;
+    }
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 30px;
+      transition: all 0.3s ease;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+    .feature-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--border-glow);
+      background: var(--bg-card-hover);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+    }
+    .feature-icon {
+      font-size: 32px;
+      margin-bottom: 16px;
+      display: inline-block;
+      width: 56px;
+      height: 56px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .feature-card h3 {
+      font-size: 19px;
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
+    .feature-card p {
+      color: var(--text-muted);
+      font-size: 14px;
+      line-height: 1.6;
+      flex: 1;
+    }
+    .feature-tag {
+      margin-top: 18px;
+      display: inline-block;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.1);
+      padding: 4px 10px;
+      border-radius: 20px;
+      align-self: flex-start;
+    }
+
+    /* Section Mode Hybride & Offline */
+    .box-hybride {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(56, 189, 248, 0.08));
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: 24px;
+      padding: 44px;
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 40px;
+      align-items: center;
+      margin-bottom: 90px;
+    }
+    .box-hybride h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 32px;
+      margin-bottom: 14px;
+    }
+    .box-hybride p {
+      color: var(--text-muted);
+      font-size: 15px;
+      margin-bottom: 20px;
+    }
+    .list-checks { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .list-checks li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      color: #e2e8f0;
+    }
+    .list-checks li span { color: #10b981; font-weight: bold; }
+
+    /* Tarifs / Formules */
+    .grid-plans {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+      margin-bottom: 90px;
+    }
+    .plan-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 34px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+    .plan-card.featured {
+      border-color: #10b981;
+      background: linear-gradient(180deg, rgba(16, 185, 129, 0.15) 0%, var(--bg-card) 60%);
+      box-shadow: 0 12px 36px rgba(16, 185, 129, 0.15);
+    }
+    .plan-badge {
+      position: absolute;
+      top: -12px;
+      right: 24px;
+      background: #10b981;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 20px;
+      letter-spacing: 0.5px;
+    }
+    .plan-card h3 { font-size: 20px; margin-bottom: 8px; }
+    .plan-card .price { font-size: 32px; font-weight: 800; color: #fff; margin: 12px 0 20px; }
+    .plan-card .price span { font-size: 14px; color: var(--text-dim); font-weight: 400; }
+    .plan-card ul { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; flex: 1; }
+    .plan-card ul li { font-size: 13.5px; color: var(--text-muted); display: flex; gap: 8px; }
+
+    /* CTA Bottom */
+    .cta-banner {
+      background: radial-gradient(circle at center, rgba(16, 185, 129, 0.2) 0%, rgba(11, 15, 25, 0.9) 70%);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: 24px;
+      padding: 60px 40px;
+      text-align: center;
+      margin-bottom: 80px;
+    }
+    .cta-banner h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 40px;
+      margin-bottom: 16px;
+    }
+    .cta-banner p {
+      color: var(--text-muted);
+      font-size: 17px;
+      max-width: 640px;
+      margin: 0 auto 30px;
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 40px 0;
+      color: var(--text-dim);
+      font-size: 13px;
+      text-align: center;
+    }
+    footer a { color: var(--text-muted); margin: 0 10px; }
+    footer a:hover { color: #fff; }
+
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 38px; }
+      .box-hybride { grid-template-columns: 1fr; padding: 24px; }
+      .nav { padding: 14px 20px; }
+      .nav-links { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <header class="nav">
+    <div class="nav-brand">
+      <span class="logo-icon">⚖️</span>
+      <div>
+        <span>Legal Notary</span>
+        <span style="font-size: 10px; font-weight: 600; color: #38bdf8; display: block; letter-spacing: 0.5px;">BY BT.TECH</span>
+      </div>
+    </div>
+    <nav class="nav-links">
+      <a href="#fonctionnalites">Fonctionnalités</a>
+      <a href="#iso-securite">Normes ISO & Sécurité</a>
+      <a href="#fiscalite">Calculateur Fiscal</a>
+      <a href="#hybride">Mode Hybride</a>
+      <a href="documentation.html">📘 Manuels & Formations</a>
+      <a href="#tarifs">Offres</a>
+    </nav>
+    <div style="display: flex; gap: 12px; align-items: center;">
+      <a href="documentation.html" class="btn btn-secondary" style="font-size: 13px;" title="Consulter les manuels d'utilisation et de formation officiels">📖 Manuels Officiels</a>
+      <a href="/demo" class="btn btn-primary" title="Accéder à la démonstration 1-clic">🚀 Tester la Démo</a>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero container">
+    <div class="badge-hero">
+      <span>🛡️</span> Conforme Décret n° 2013-279 • Traité OHADA • Normes ISO 27001 & ISO 14641
+    </div>
+    <h1>
+      L'ERP Notarial d'Excellence Conforme<br>
+      <span class="gradient-text">aux Normes ISO & Standards OHADA</span>
+    </h1>
+    <p class="subtitle">
+      Conçu par <strong>BT.TECH</strong> pour les offices d'élite : rédaction d'actes, calculs d'émoluments officiels, minutier numérique scellé SHA-256 (ISO 14641), sécurité bancaire (ISO 27001), KYC instantané et résilience totale aux coupures internet.
+    </p>
+
+    <div class="hero-actions">
+      <a href="/demo" class="btn btn-primary btn-lg">
+        <span>🚀</span> Lancer la Démo Immédiate (1-Clic)
+      </a>
+      <a href="#iso-securite" class="btn btn-secondary btn-lg">
+        <span>🛡️</span> Découvrir les garanties ISO
+      </a>
+    </div>
+
+    <!-- Mockup Preview Dashboard -->
+    <div class="mockup-wrap">
+      <div class="mockup-inner">
+        <div class="mockup-topbar">
+          <div class="mockup-dots">
+            <div class="mockup-dot red"></div>
+            <div class="mockup-dot yellow"></div>
+            <div class="mockup-dot green"></div>
+          </div>
+          <div style="font-family: monospace; font-size: 11px; color: var(--text-dim);">
+            https://etude-principale.notaires.ci — Session Notaire Titulaire (Chiffrée AES-256)
+          </div>
+          <span style="font-size: 11px; color: #10b981; font-weight: 700;">🟢 Mode Hybride Synchronisé</span>
+        </div>
+
+        <div class="grid-kpis">
+          <div class="kpi-box" style="border-left: 3px solid #10b981;">
+            <div class="sub">Dossiers en Instruction</div>
+            <div class="val">24 dossiers</div>
+            <div class="sub">Ventes, Successions, Statuts</div>
+          </div>
+          <div class="kpi-box" style="border-left: 3px solid #38bdf8;">
+            <div class="sub">Minutes Numériques Scellées</div>
+            <div class="val">142 actes</div>
+            <div class="sub">Empreinte SHA-256 certifiée</div>
+          </div>
+          <div class="kpi-box" style="border-left: 3px solid #f59e0b;">
+            <div class="sub">Parapheur en Attente</div>
+            <div class="val">3 visas</div>
+            <div class="sub">Salaires, Débours & Actes</div>
+          </div>
+          <div class="kpi-box" style="border-left: 3px solid #8b5cf6;">
+            <div class="sub">Fiches KYC Traitées</div>
+            <div class="val">98.4%</div>
+            <div class="sub">Signatures & Pièces vérifiées</div>
+          </div>
+        </div>
+
+        <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 10px; padding: 14px; font-size: 12px; display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <strong>Dernier Acte Scellé :</strong> Vente Immobilière Rivière Golf (Réf: <code>DOS-2026-089</code>) — Maître Kouamé
+          </div>
+          <span style="background: rgba(16,185,129,0.2); color: #34d399; padding: 3px 8px; border-radius: 6px; font-weight: bold; font-family: monospace;">
+            SHA-256: e3b0c442...991b7852
+          </span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 Piliers Fonctionnels -->
+  <section id="fonctionnalites" class="container" style="padding: 40px 0;">
+    <div class="section-head">
+      <h2>Conçu Sur-Mesure pour les Notaires et leurs Collaborateurs</h2>
+      <p>Un ensemble d'outils interconnectés pour chaque rôle de l'étude : Notaire, Premier Clerc, Rédacteur, Formaliste, Comptable et Archiviste.</p>
+    </div>
+
+    <div class="grid-features">
+      <!-- 1 -->
+      <div class="feature-card" id="fiscalite">
+        <div class="feature-icon">⚖️</div>
+        <h3>Calculateur Fiscal Décret 2013-279</h3>
+        <p>Génération automatique et instantanée des fiches de taxe et décomptes notariés. Application stricte des barèmes dégressifs par tranches, droits d'enregistrement DGI, conservation foncière, TVA et débours.</p>
+        <span class="feature-tag">Conformité DGI & Trésor</span>
+      </div>
+
+      <!-- 2 -->
+      <div class="feature-card">
+        <div class="feature-icon">📜</div>
+        <h3>Minutier Numérique & Scellement SHA-256</h3>
+        <p>Registre légal infalsifiable des actes authentiques et sous seing privé. Empreinte cryptographique immuable WORM, traçabilité des dépôts de cartons physiques et registre des numéros d'ordre.</p>
+        <span class="feature-tag">Archivage Légal Certifié</span>
+      </div>
+
+      <!-- 3 -->
+      <div class="feature-card">
+        <div class="feature-icon">📱</div>
+        <h3>Fiche KYC Interactive par QR Code</h3>
+        <p>Le client remplit sa fiche d'identification sur son smartphone à l'accueil de l'étude. Capture photo, pièces d'identité, signature tactile et génération instantanée du PDF officiel de l'étude.</p>
+        <span class="feature-tag">Zéro Saisie Manuelle</span>
+      </div>
+
+      <!-- 4 -->
+      <div class="feature-card">
+        <div class="feature-icon">📋</div>
+        <h3>Parapheur Électronique & Salaires</h3>
+        <p>Circuit de validation hiérarchique : transmission des projets d'actes par les clercs, visa des états de salaires et ordres de débours avec signature et annotations du notaire titulaire.</p>
+        <span class="feature-tag">Supervision Notaire Titulaire</span>
+      </div>
+
+      <!-- 5 -->
+      <div class="feature-card">
+        <div class="feature-icon">📅</div>
+        <h3>Agenda Notarial & Délégation</h3>
+        <p>Gestion intelligente des rendez-vous et signatures d'actes. Planning partagé géré par l'assistante d'accueil avec délégation notaire et To-Do list interactive assignée par dossier.</p>
+        <span class="feature-tag">Coordination d'Équipe</span>
+      </div>
+
+      <!-- 6 -->
+      <div class="feature-card">
+        <div class="feature-icon">💳</div>
+        <h3>Comptabilité Notariale & Frais</h3>
+        <p>Gestion complète des comptes clients, suivi des provisions reçues, génération des factures d'honoraires et décomptes de liquidation conformes aux exigences de la Chambre.</p>
+        <span class="feature-tag">Rapprochement Financier</span>
+      </div>
+    </div>
+
+    <!-- Simulateur Interactif Décret 2013-279 en Direct -->
+    <div id="simulateur-fiscal" style="background: linear-gradient(180deg, rgba(18, 26, 43, 0.9) 0%, rgba(11, 15, 25, 0.95) 100%); border: 1px solid var(--border-glow); border-radius: var(--radius); padding: 36px; margin-bottom: 70px; box-shadow: 0 16px 40px rgba(0,0,0,0.5);">
+      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; margin-bottom: 24px; border-bottom: 1px solid var(--border); padding-bottom: 18px;">
+        <div>
+          <div style="display: inline-flex; align-items: center; gap: 6px; color: #10b981; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">
+            <span>⚡</span> Simulateur Officiel en Direct
+          </div>
+          <h3 style="font-size: 22px; font-weight: 700; color: #fff; margin-top: 4px;">Testez la Liquidation Fiscale Instantanée</h3>
+        </div>
+        <span style="font-size: 12px; color: var(--text-dim); background: rgba(255,255,255,0.04); padding: 6px 12px; border-radius: 20px; border: 1px solid var(--border);">
+          Barème Décret n° 2013-279 & DGI Côte d'Ivoire
+        </span>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; align-items: center;">
+        <!-- Formulaire de saisie -->
+        <div>
+          <div style="margin-bottom: 16px;">
+            <label style="font-size: 12px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 6px;">Type d'acte notarié :</label>
+            <select id="sim-type-acte" onchange="calculerSimulation()" style="width: 100%; background: #0b0f19; border: 1px solid var(--border); color: #fff; padding: 12px 14px; border-radius: 8px; font-size: 14px; outline: none;">
+              <option value="vente">🏛️ Vente Immobilière / Terrain</option>
+              <option value="promesse">📝 Promesse de Vente (Règle des 3/4)</option>
+              <option value="societe">🏢 Constitution de Société (SARL / SAS)</option>
+              <option value="mainlevee">🏦 Mainlevée d'Hypothèque Bancaire</option>
+              <option value="donation">🎁 Donation Entre Vifs</option>
+            </select>
+          </div>
+
+          <div>
+            <label style="font-size: 12px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 6px;">Montant / Assiette de l'opération (FCFA) :</label>
+            <div style="position: relative;">
+              <input type="number" id="sim-montant" value="50000000" step="5000000" oninput="calculerSimulation()" style="width: 100%; background: #0b0f19; border: 1px solid var(--border); color: #fff; padding: 12px 14px; border-radius: 8px; font-size: 15px; font-weight: 700; outline: none;">
+              <span style="position: absolute; right: 14px; top: 12px; font-size: 12px; color: var(--text-dim); font-weight: 700;">FCFA</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Décomposition des résultats fiscaux en direct -->
+        <div style="background: rgba(0, 0, 0, 0.4); border: 1px solid var(--border); border-radius: 12px; padding: 20px;">
+          <div style="display: flex; justify-content: space-between; font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">
+            <span>Émoluments Notaire HT (Dégressifs) :</span>
+            <strong id="sim-res-emoluments" style="color: #fff;">1 600 000 FCFA</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">
+            <span>Droits d'Enregistrement DGI (4%) :</span>
+            <strong id="sim-res-dgi" style="color: #38bdf8;">2 000 000 FCFA</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">
+            <span>Livre Foncier (1,2% + 3 000 F) :</span>
+            <strong id="sim-res-foncier" style="color: #38bdf8;">603 000 FCFA</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            <span>TVA 18% & Timbres légaux :</span>
+            <strong id="sim-res-tva" style="color: #fff;">295 500 FCFA</strong>
+          </div>
+          <div style="border-top: 1px solid var(--border); padding-top: 12px; display: flex; justify-content: space-between; align-items: baseline;">
+            <span style="font-size: 13px; font-weight: 700; color: #34d399;">PROVISION GLOBALE CLIENT :</span>
+            <span id="sim-res-total" style="font-size: 20px; font-weight: 800; color: #34d399; font-family: monospace;">4 498 500 FCFA</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top: 20px; text-align: right;">
+        <a href="/demo" class="btn btn-primary" style="font-size: 13px;">
+          <span>🚀</span> Voir ce dossier complet dans l'espace Démo ➜
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    function calculerSimulation() {
+      var type = document.getElementById("sim-type-acte").value;
+      var montant = parseFloat(document.getElementById("sim-montant").value) || 0;
+      var emoluments = 0;
+      var dgi = 0;
+      var foncier = 0;
+
+      // Barème Décret 2013-279 Vente (4 tranches)
+      if (type === "vente" || type === "donation") {
+        if (montant <= 20000000) {
+          emoluments = montant * 0.04;
+        } else if (montant <= 60000000) {
+          emoluments = (20000000 * 0.04) + ((montant - 20000000) * 0.03);
+        } else if (montant <= 150000000) {
+          emoluments = (20000000 * 0.04) + (40000000 * 0.03) + ((montant - 60000000) * 0.015);
+        } else {
+          emoluments = (20000000 * 0.04) + (40000000 * 0.03) + (90000000 * 0.015) + ((montant - 150000000) * 0.0075);
+        }
+        if (emoluments < 100000) emoluments = 100000;
+        dgi = Math.round(montant * 0.04);
+        foncier = Math.round(montant * 0.012 + 3000);
+      } else if (type === "promesse") {
+        var baseVente = (montant <= 20000000) ? montant * 0.04 : (montant <= 60000000 ? 800000 + (montant - 20000000) * 0.03 : 2000000 + (montant - 60000000) * 0.015);
+        emoluments = Math.round(baseVente * 0.75);
+        dgi = 18000;
+        foncier = 0;
+      } else if (type === "societe") {
+        emoluments = Math.round(Math.max(150000, montant * 0.015));
+        dgi = Math.round(montant * 0.003 + 18000);
+        foncier = 0;
+      } else if (type === "mainlevee") {
+        emoluments = Math.round(Math.max(100000, montant * 0.005));
+        dgi = 18000;
+        foncier = Math.round(montant * 0.012 + 3000);
+      }
+
+      var tva = Math.round(emoluments * 0.18);
+      var timbres = 7500;
+      var total = emoluments + tva + dgi + foncier + timbres;
+
+      function fmt(n) { return n.toLocaleString("fr-FR") + " FCFA"; }
+      document.getElementById("sim-res-emoluments").textContent = fmt(emoluments);
+      document.getElementById("sim-res-dgi").textContent = fmt(dgi);
+      document.getElementById("sim-res-foncier").textContent = fmt(foncier);
+      document.getElementById("sim-res-tva").textContent = fmt(tva + timbres);
+      document.getElementById("sim-res-total").textContent = fmt(total);
+    }
+  </script>
+
+  <!-- Mode Hybride & Zéro Coupure -->
+  <section id="hybride" class="container">
+    <div class="box-hybride">
+      <div>
+        <h3>🖥️ Mode Hybride : Travaillez en Continu, Même Sans Internet</h3>
+        <p>
+          Parce qu'une coupure de fibre ou de réseau électrique ne doit jamais paralyser la signature d'un acte authentique, <strong>Legal Notary</strong> propose une architecture hybride unique au monde pour les cabinets notariaux.
+        </p>
+        <ul class="list-checks">
+          <li><span>✓</span> <strong>Moteur Local à 0 ms</strong> : L'instance tourne sur votre mini-serveur d'office en réseau local.</li>
+          <li><span>✓</span> <strong>Offline-First Total</strong> : Rédigez vos actes et enregistrez vos fiches KYC même hors ligne.</li>
+          <li><span>✓</span> <strong>Sync Cloud Vault Automatique</strong> : Réplication chiffrée AES-256 dès que la connexion internet est rétablie.</li>
+          <li><span>✓</span> <strong>Zéro Port Ouvert</strong> : Connexion sortante sécurisée sans risque pour la box internet de l'étude.</li>
+        </ul>
+      </div>
+      <div style="background: #090d16; padding: 24px; border-radius: 16px; border: 1px solid var(--border); font-family: monospace; font-size: 12px; line-height: 1.8;">
+        <div style="color: #34d399;"># Installation Serveur d'Office en 1 ligne</div>
+        <div style="color: #94a3b8;">curl -sSL https://get.notaires.ci/node-agent.sh \</div>
+        <div style="color: #94a3b8; padding-left: 20px;">| sudo bash -s -- --token=PAIR-ETD-ABJ --mode=hybride</div>
+        <div style="margin-top: 14px; color: #38bdf8;">[OK] Base PostgreSQL locale partitionnée</div>
+        <div style="color: #38bdf8;">[OK] Tunnel WSS chiffré vers Cloud Vault</div>
+        <div style="color: #38bdf8;">[OK] Certificat SSL TLS 1.3 activé</div>
+        <div style="color: #10b981; font-weight: bold; margin-top: 8px;">🟢 Serveur de l'étude prêt à l'emploi.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section Normes ISO & Sécurité Bancaire -->
+  <section id="iso-securite" class="container" style="padding: 60px 0 30px;">
+    <div class="section-head">
+      <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.3); color: #38bdf8; padding: 4px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; margin-bottom: 12px;">
+        🛡️ Standards Mondiaux de Sécurité & Déontologie
+      </div>
+      <h2>Conformité aux Normes Internationales ISO</h2>
+      <p>L'assurance pour le Notaire d'une solution inviolable, conforme au secret professionnel et aux exigences des auditeurs juridiques et bancaires.</p>
+    </div>
+
+    <div class="grid-features" style="margin-bottom: 50px;">
+      <!-- ISO 27001 -->
+      <div class="feature-card" style="border-color: rgba(56, 189, 248, 0.3);">
+        <div class="feature-icon" style="background: rgba(56, 189, 248, 0.1); color: #38bdf8;">🔒</div>
+        <h3>ISO/IEC 27001</h3>
+        <p><strong>Sécurité de l'Information & Secret Professionnel :</strong> Chiffrement des données sensibles au repos en AES-256-GCM, flux réseau TLS 1.3 256-bit, contrôle d'accès strict (RBAC) et journalisation d'audit inaltérable.</p>
+        <span class="feature-tag" style="color: #38bdf8; background: rgba(56, 189, 248, 0.1);">Sécurité Niveau Bancaire</span>
+      </div>
+
+      <!-- ISO 14641-1 -->
+      <div class="feature-card" style="border-color: rgba(16, 185, 129, 0.3);">
+        <div class="feature-icon" style="background: rgba(16, 185, 129, 0.1); color: #34d399;">🏛️</div>
+        <h3>ISO 14641-1 & OAIS</h3>
+        <p><strong>Archivage Électronique & Minutier Numérique :</strong> Scellement d'intégrité cryptographique SHA-256 garantissant la valeur probante de l'acte authentique sans aucune altération possible après signature.</p>
+        <span class="feature-tag" style="color: #34d399; background: rgba(16, 185, 129, 0.1);">Inviolabilité des Actes</span>
+      </div>
+
+      <!-- ISO 27701 -->
+      <div class="feature-card" style="border-color: rgba(245, 158, 11, 0.3);">
+        <div class="feature-icon" style="background: rgba(245, 158, 11, 0.1); color: #fbbf24;">👤</div>
+        <h3>ISO/IEC 27701 & ARTCI</h3>
+        <p><strong>Protection des Données Personnelles (KYC) :</strong> Collecte sécurisée des pièces d'identité et signatures comparants conforme aux exigences de l'ARTCI (Côte d'Ivoire), de la CDP (Sénégal) et du RGPD.</p>
+        <span class="feature-tag" style="color: #fbbf24; background: rgba(245, 158, 11, 0.1);">Conformité Vie Privée</span>
+      </div>
+
+      <!-- ISO 22301 & 9001 -->
+      <div class="feature-card" style="border-color: rgba(139, 92, 246, 0.3);">
+        <div class="feature-icon" style="background: rgba(139, 92, 246, 0.1); color: #a78bfa;">⚡</div>
+        <h3>ISO 22301 & ISO 9001</h3>
+        <p><strong>Continuité d'Activité & Qualité Logicielle :</strong> Mode Hybride Zéro Coupure face aux pannes internet, Plan de Reprise d'Activité (PRA < 15s) et 47 tests unitaires de non-régression fiscale certifiés.</p>
+        <span class="feature-tag" style="color: #a78bfa; background: rgba(139, 92, 246, 0.1);">Résilience Sans Coupure</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Simulateur Fiscal 1-Clic Interactif (Lead Magnet B2B) -->
+  <section id="simulateur" class="container" style="padding: 40px 0;">
+    <div class="section-head">
+      <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.3);padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700;color:var(--primary);margin-bottom:12px">
+        <span>⚡</span> TESTEUR FISCAL EN DIRECT — 100 % CONFORME DÉCRET 2013-279
+      </div>
+      <h2>Simulez en 1 Clic la Taxe & les Frais de N'importe Quel Acte Notarié</h2>
+      <p>Prouvez l'exactitude des calculs fiscaux, émoluments dégressifs, droits d'enregistrement DGI et conservation foncière en temps réel.</p>
+    </div>
+
+    <div style="background:var(--bg-card);border:1.5px solid var(--border-glow);border-radius:var(--radius);padding:24px;box-shadow:0 12px 36px rgba(0,0,0,0.4);max-width:960px;margin:0 auto">
+      <!-- Chips 1-Clic -->
+      <div style="margin-bottom:16px">
+        <div style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:8px">1. Choisissez un scénario notarié préconfiguré :</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap" id="sim-presets-chips">
+          <button type="button" class="btn btn-secondary sim-chip active" data-type="vente_immobiliere" data-montant="50000000" style="font-size:12px;padding:6px 12px;background:var(--primary);color:#fff;border-color:var(--primary)">🏡 Vente 50M</button>
+          <button type="button" class="btn btn-secondary sim-chip" data-type="constitution_sarl" data-montant="1000000" style="font-size:12px;padding:6px 12px">🏢 SARL 1M (Art. 19 Min)</button>
+          <button type="button" class="btn btn-secondary sim-chip" data-type="promesse_vente" data-montant="30000000" style="font-size:12px;padding:6px 12px">🤝 Promesse 30M (3/4)</button>
+          <button type="button" class="btn btn-secondary sim-chip" data-type="donation" data-montant="40000000" style="font-size:12px;padding:6px 12px">🎁 Donation 40M</button>
+          <button type="button" class="btn btn-secondary sim-chip" data-type="pret_hypothecaire" data-montant="100000000" style="font-size:12px;padding:6px 12px">🏦 Prêt 100M</button>
+          <button type="button" class="btn btn-secondary sim-chip" data-type="bail_commercial" data-montant="12000000" style="font-size:12px;padding:6px 12px">🏬 Bail 12M</button>
+        </div>
+      </div>
+
+      <!-- Saisie personnalisée -->
+      <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:16px;margin-bottom:20px">
+        <div>
+          <label style="font-size:12px;font-weight:700;color:var(--text-muted);display:block;margin-bottom:6px">Type d'acte notarié</label>
+          <select id="sim-select-acte" style="width:100%;padding:10px 12px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:var(--radius-sm);color:#fff;font-weight:600;font-size:14px">
+            <option value="vente_immobiliere">Vente Immobilière (Tranches Décret 2013-279)</option>
+            <option value="constitution_sarl">Constitution SARL / SAS (OHADA & Min. Art 19)</option>
+            <option value="promesse_vente">Promesse Synallagmatique de Vente (Règle 3/4)</option>
+            <option value="realisation_vente">Réalisation de Promesse (Règle 1/4)</option>
+            <option value="donation">Donation entre Vifs (0,5% + 850 000 F)</option>
+            <option value="pret_hypothecaire">Prêt Bancaire & Convention d'Hypothèque</option>
+            <option value="augmentation_capital">Augmentation de Capital Social</option>
+            <option value="bail_commercial">Bail Commercial & Professionnel</option>
+            <option value="mainlevee_hypotheque">Mainlevée d'Hypothèque & Radiation</option>
+            <option value="procuration">Procuration Notariée Authentique</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:700;color:var(--text-muted);display:block;margin-bottom:6px">Assiette financière (FCFA)</label>
+          <input type="text" id="sim-input-montant" value="50 000 000" style="width:100%;padding:10px 12px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--primary);font-weight:800;font-size:16px;letter-spacing:0.5px">
+        </div>
+      </div>
+
+      <!-- Résultat Dynamique du Simulateur -->
+      <div id="sim-zone-resultat" style="background:rgba(11,15,25,0.8);border:1px solid var(--border);border-radius:var(--radius-sm);padding:18px">
+        <!-- Rempli par JavaScript -->
+      </div>
+
+      <!-- CTA du Simulateur -->
+      <div style="margin-top:20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;border-top:1px solid var(--border);padding-top:16px">
+        <div style="font-size:13px;color:var(--text-muted)">
+          ⚖️ Calcul 100 % garanti conforme au barème officiel de la Chambre des Notaires.
+        </div>
+        <div style="display:flex;gap:10px">
+          <a href="/demo.html" class="btn btn-primary" style="font-weight:700">
+            <span>🚀</span> Tester la Démo Complète (1-Clic)
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Offres & Formules (CLERCS ET UTILISATEURS ILLIMITÉS) -->
+  <section id="tarifs" class="container" style="padding: 40px 0;">
+    <div class="section-head">
+      <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700;color:var(--accent-gold);margin-bottom:12px">
+        <span>💎</span> TOUTES VOS ÉQUIPES CONNECTÉES — ZÉRO SURFACTURATION PAR UTILISATEUR
+      </div>
+      <h2>Une Formule Globale pour Votre Étude : Collaborateurs & Clercs Illimités</h2>
+      <p>Aucun décompte du nombre de clercs. Notaires associés, premiers clercs, rédacteurs, formalistes, comptables et archivistes travaillent tous ensemble sans aucune restriction de siège.</p>
+    </div>
+
+    <div class="grid-plans">
+      <!-- Plan 1 -->
+      <div class="plan-card">
+        <h3>Formule Cloud Étude</h3>
+        <p style="color: var(--text-dim); font-size: 13px;">Accès Cloud sécurisé clé en main pour toute l'équipe de l'Office.</p>
+        <div class="price" style="font-size:22px;font-weight:800;color:var(--text)">Clercs & Postes Illimités</div>
+        <ul>
+          <li><span>✓</span> <strong>Nombre d'utilisateurs illimité</strong> (Notaire, Clercs, Comptable, Accueil)</li>
+          <li><span>✓</span> Fiches de taxe 4 colonnes & Notes de frais illimitées</li>
+          <li><span>✓</span> Sous-domaine dédié (ex. <code>etude-nom.notaires.ci</code>)</li>
+          <li><span>✓</span> KYC interactif QR Code & Minutier numérique</li>
+          <li><span>✓</span> Sauvegardes quotidiennes Cloud Vault cryptées</li>
+          <li><span>✓</span> Support client dédié L1 - L2</li>
+        </ul>
+        <a href="/demo.html" class="btn btn-secondary" style="justify-content: center;">Découvrir la formule</a>
+      </div>
+
+      <!-- Plan 2 -->
+      <div class="plan-card featured">
+        <div class="plan-badge">Recommandé — Sérénité Totale</div>
+        <h3>Formule Hybride Sérénité</h3>
+        <p style="color: var(--text-dim); font-size: 13px;">Serveur local au sein de votre étude + Cloud miroir temps réel.</p>
+        <div class="price" style="font-size:22px;font-weight:800;color:var(--primary)">Clercs & Postes Illimités</div>
+        <ul>
+          <li><span>✓</span> <strong>Nombre d'utilisateurs illimité sur le réseau local et cloud</strong></li>
+          <li><span>✓</span> <strong>Moteur Hybride Local Zéro Coupure (Latence 0 ms sans internet)</strong></li>
+          <li><span>✓</span> Parapheur souverain Notaire & Circuit de visa déontologique</li>
+          <li><span>✓</span> Clé d'appairage sécurisée & Watchdog Proactif 24/7</li>
+          <li><span>✓</span> Plan de Reprise d'Activité Immédiat (PRA < 15s)</li>
+          <li><span>✓</span> Support technique prioritaire L1 - L4 & Déploiement sur site</li>
+        </ul>
+        <a href="/demo.html" class="btn btn-primary" style="justify-content: center;">Déployer pour mon Étude</a>
+      </div>
+
+      <!-- Plan 3 -->
+      <div class="plan-card">
+        <h3>Grand Office & Multi-Sites</h3>
+        <p style="color: var(--text-dim); font-size: 13px;">Pour les grands cabinets multi-notaires et réseaux d'études.</p>
+        <div class="price" style="font-size:22px;font-weight:800;color:var(--text)">Multi-Études & Notaires</div>
+        <ul>
+          <li><span>✓</span> <strong>Multi-notaires associés & filiales régionales</strong></li>
+          <li><span>✓</span> Utilisateurs, clercs et archivistes illimités sur tous les sites</li>
+          <li><span>✓</span> Nom de domaine personnalisé propre (<code>notaire-nom.ci</code>)</li>
+          <li><span>✓</span> Stockage GED étendu / Intégration MinIO & S3 souverain</li>
+          <li><span>✓</span> Formation complète sur site de l'ensemble des équipes</li>
+          <li><span>✓</span> Accompagnement stratégique & ingénieur dédié</li>
+        </ul>
+        <a href="mailto:contact@editeur-legal.ci" class="btn btn-secondary" style="justify-content: center;">Demander un devis sur-mesure</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Banner -->
+  <section class="container" id="securite">
+    <div class="cta-banner">
+      <h2>Prêt à Moderniser Votre Office Notarial ?</h2>
+      <p>Rejoignez les notaires qui ont choisi la rapidité, la sécurité juridique et la sérénité au quotidien avec Legal Notary.</p>
+      <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+        <a href="/demo" class="btn btn-primary btn-lg">
+          <span>🚀</span> Tester la Démo en Direct (1-Clic)
+        </a>
+        <a href="mailto:contact@editeur-legal.ci" class="btn btn-secondary btn-lg">
+          <span>✉️</span> Demander un rendez-vous de démonstration
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div style="margin-bottom: 12px; font-weight: 700; color: #fff; font-size: 18px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+        <span>⚖️ Legal Notary</span>
+        <span style="font-size: 12px; font-weight: 600; color: #38bdf8; background: rgba(56,189,248,0.15); padding: 2px 8px; border-radius: 12px; border: 1px solid rgba(56,189,248,0.3);">Propulsé par BT.TECH</span>
+      </div>
+      <p style="margin-bottom: 20px; max-width: 600px; margin-left: auto; margin-right: auto;">
+        Solution logicielle notariale d'excellence conçue et éditée par <strong>BT.TECH Solutions</strong>. Conforme aux décrets nationaux de la République de Côte d'Ivoire, au Traité OHADA et aux normes internationales ISO 27001 & ISO 14641.
+      </p>
+      <div>
+        <a href="/demo">Portail Démo 1-Clic</a>
+        <a href="/">Connexion Étude</a>
+        <a href="#fonctionnalites">Fonctionnalités</a>
+        <a href="#iso-securite">Normes ISO</a>
+        <a href="#fiscalite">Calculateur Fiscal</a>
+        <a href="#hybride">Mode Hybride</a>
+        <a href="#tarifs">Offres</a>
+      </div>
+      <div style="margin-top: 24px; font-size: 12px; color: var(--text-dim);">
+        © 2026 BT.TECH Solutions. Tous droits réservés.
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      function fmtFCFA(n) {
+        return Math.round(Number(n) || 0).toLocaleString("fr-FR") + " FCFA";
+      }
+      function formaterEspaces(val) {
+        var str = String(val).replace(/\s/g, "").replace(/[^0-9]/g, "");
+        if (!str) return "0";
+        return str.replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+      }
+      function extraireNombre(str) {
+        var net = String(str).replace(/\s/g, "").replace(/[^0-9]/g, "");
+        return parseFloat(net) || 0;
+      }
+
+      var selectActe = document.getElementById("sim-select-acte");
+      var inputMontant = document.getElementById("sim-input-montant");
+      var zoneResultat = document.getElementById("sim-zone-resultat");
+      var chips = document.querySelectorAll(".sim-chip");
+
+      function calculerSimulation(typeActe, montant) {
+        var emolumentsHT = 0;
+        var regle = "Barème réglementaire (Décret 2013-279)";
+        var droitEnreg = 0;
+        var droitEnregLib = "4 %";
+        var taxeFonc = 0;
+        var formalites = 150000;
+        var timbresRoles = 20500;
+
+        if (typeActe === "vente_immobiliere") {
+          // Tranches vente : 4% (0-10M), 2.5% (10-30M), 1.5% (30-90M), 0.75% (>90M)
+          var t1 = Math.min(montant, 10000000) * 0.04;
+          var t2 = Math.max(0, Math.min(montant, 30000000) - 10000000) * 0.025;
+          var t3 = Math.max(0, Math.min(montant, 90000000) - 30000000) * 0.015;
+          var t4 = Math.max(0, montant - 90000000) * 0.0075;
+          emolumentsHT = t1 + t2 + t3 + t4;
+          droitEnreg = Math.round(montant * 0.04);
+          droitEnregLib = "4 % (DGI Vente)";
+          taxeFonc = Math.round(montant * 0.012 + 3000);
+          formalites = 200000;
+        } else if (typeActe === "constitution_sarl") {
+          var brut = Math.min(montant, 10000000) * 0.03;
+          emolumentsHT = Math.max(brut, 50000);
+          regle = emolumentsHT === 50000 ? "Minimum légal Art. 19 (50 000 FCFA)" : "Barème Sociétés OHADA 3%";
+          droitEnreg = Math.round(montant * 0.01);
+          droitEnregLib = "1 % (DGI Société)";
+          taxeFonc = 0;
+          formalites = 145000;
+        } else if (typeActe === "promesse_vente") {
+          var b = (montant * 0.005 + 850000) * 0.75;
+          emolumentsHT = Math.round(b);
+          regle = "Règle 3/4 Promesse : ((Base × 0,5%) + 850 000) × 75%";
+          droitEnreg = 18000;
+          droitEnregLib = "Droit fixe 18 000 FCFA";
+          taxeFonc = 0;
+          formalites = 100000;
+        } else if (typeActe === "realisation_vente") {
+          var b = (montant * 0.005 + 850000) * 0.25;
+          emolumentsHT = Math.round(b);
+          regle = "Règle 1/4 Réalisation : ((Base × 0,5%) + 850 000) × 25%";
+          droitEnreg = Math.round(montant * 0.04);
+          droitEnregLib = "4 % (DGI Vente Définitive)";
+          taxeFonc = Math.round(montant * 0.012 + 3000);
+          formalites = 150000;
+        } else if (typeActe === "donation") {
+          emolumentsHT = Math.round(montant * 0.005 + 850000);
+          regle = "Donation : (Base × 0,5%) + 850 000 FCFA";
+          droitEnreg = Math.round(montant * 0.025);
+          droitEnregLib = "2,5 % (DGI Donation)";
+          taxeFonc = Math.round(montant * 0.012 + 3000);
+          formalites = 180000;
+        } else if (typeActe === "pret_hypothecaire") {
+          var t1 = Math.min(montant, 10000000) * 0.02;
+          var t2 = Math.max(0, Math.min(montant, 30000000) - 10000000) * 0.01;
+          var t3 = Math.max(0, Math.min(montant, 90000000) - 30000000) * 0.005;
+          var t4 = Math.max(0, montant - 90000000) * 0.0025;
+          emolumentsHT = t1 + t2 + t3 + t4;
+          droitEnreg = Math.round(montant * 0.015);
+          droitEnregLib = "1,5 % (DGI Prêt)";
+          taxeFonc = Math.round(montant * 0.012 + 3000);
+          formalites = 250000;
+        } else if (typeActe === "bail_commercial") {
+          var t1 = Math.min(montant, 10000000) * 0.02;
+          var t2 = Math.max(0, montant - 10000000) * 0.01;
+          emolumentsHT = t1 + t2;
+          droitEnreg = Math.round(montant * 0.025);
+          droitEnregLib = "2,5 % (DGI Bail)";
+          taxeFonc = 0;
+          formalites = 120000;
+        } else {
+          emolumentsHT = Math.max(50000, Math.round(montant * 0.01));
+          droitEnreg = 18000;
+          droitEnregLib = "18 000 FCFA";
+          taxeFonc = 0;
+          formalites = 80000;
+        }
+
+        var tva = Math.round(emolumentsHT * 0.18);
+        var totalTresor = droitEnreg + taxeFonc + timbresRoles;
+        var totalGeneral = emolumentsHT + tva + totalTresor + formalites;
+
+        var pctTresor = totalGeneral > 0 ? ((totalTresor / totalGeneral) * 100).toFixed(1) : 0;
+        var pctCA = totalGeneral > 0 ? ((emolumentsHT / totalGeneral) * 100).toFixed(1) : 0;
+        var pctTva = totalGeneral > 0 ? ((tva / totalGeneral) * 100).toFixed(1) : 0;
+        var pctDeb = totalGeneral > 0 ? ((formalites / totalGeneral) * 100).toFixed(1) : 0;
+
+        return {
+          emolumentsHT: emolumentsHT,
+          regle: regle,
+          droitEnreg: droitEnreg,
+          droitEnregLib: droitEnregLib,
+          taxeFonc: taxeFonc,
+          tva: tva,
+          formalites: formalites,
+          totalTresor: totalTresor,
+          totalGeneral: totalGeneral,
+          pctTresor: pctTresor,
+          pctCA: pctCA,
+          pctTva: pctTva,
+          pctDeb: pctDeb
+        };
+      }
+
+      function actualiserSimulateur() {
+        if (!selectActe || !inputMontant || !zoneResultat) return;
+        var typeActe = selectActe.value;
+        var montant = extraireNombre(inputMontant.value);
+        var res = calculerSimulation(typeActe, montant);
+
+        var h = '';
+        // 1. Synthèse Chiffrée 3 Pôles
+        h += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:16px">';
+        h += '<div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);padding:10px;border-radius:8px;text-align:center">';
+        h += '<div style="font-size:11px;font-weight:700;color:var(--accent-gold);text-transform:uppercase">🏛️ Trésor Public (DGI/Foncier)</div>';
+        h += '<div style="font-size:18px;font-weight:800;color:#fff;margin-top:4px">' + fmtFCFA(res.totalTresor) + '</div>';
+        h += '</div>';
+
+        h += '<div style="background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.3);padding:10px;border-radius:8px;text-align:center">';
+        h += '<div style="font-size:11px;font-weight:700;color:var(--accent-blue);text-transform:uppercase">⚖️ Émoluments Notaire (HT)</div>';
+        h += '<div style="font-size:18px;font-weight:800;color:#fff;margin-top:4px">' + fmtFCFA(res.emolumentsHT) + '</div>';
+        h += '</div>';
+
+        h += '<div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.3);padding:10px;border-radius:8px;text-align:center">';
+        h += '<div style="font-size:11px;font-weight:700;color:var(--primary);text-transform:uppercase">💼 Formalités & Débours</div>';
+        h += '<div style="font-size:18px;font-weight:800;color:#fff;margin-top:4px">' + fmtFCFA(res.formalites) + '</div>';
+        h += '</div>';
+
+        h += '<div style="background:rgba(16,185,129,0.15);border:1.5px solid var(--primary);padding:10px;border-radius:8px;text-align:center">';
+        h += '<div style="font-size:11px;font-weight:800;color:var(--primary);text-transform:uppercase">💎 Total Provision Client (TTC)</div>';
+        h += '<div style="font-size:20px;font-weight:900;color:var(--primary);margin-top:2px">' + fmtFCFA(res.totalGeneral) + '</div>';
+        h += '</div>';
+        h += '</div>';
+
+        // 2. Barre Visuelle de Répartition
+        h += '<div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:12px">';
+        h += '<div style="display:flex;justify-content:space-between;font-size:11.5px;font-weight:700;margin-bottom:6px">';
+        h += '<span style="color:var(--text-muted)">VENTILATION DES FLUX :</span>';
+        h += '<span style="color:var(--primary)">Base légale : ' + escapeHtml(res.regle) + '</span>';
+        h += '</div>';
+        h += '<div style="display:flex;height:12px;border-radius:6px;overflow:hidden;background:rgba(255,255,255,0.05);margin-bottom:8px">';
+        h += '<div style="width:' + res.pctTresor + '%;background:#f59e0b" title="Trésor : ' + res.pctTresor + '%"></div>';
+        h += '<div style="width:' + res.pctCA + '%;background:#6366f1" title="Émoluments HT : ' + res.pctCA + '%"></div>';
+        h += '<div style="width:' + res.pctTva + '%;background:#ec4899" title="TVA 18% : ' + res.pctTva + '%"></div>';
+        h += '<div style="width:' + res.pctDeb + '%;background:#10b981" title="Débours : ' + res.pctDeb + '%"></div>';
+        h += '</div>';
+        h += '<div style="display:flex;gap:12px;flex-wrap:wrap;font-size:11px">';
+        h += '<div><span style="color:#f59e0b">■</span> Trésor : <strong>' + res.pctTresor + '%</strong></div>';
+        h += '<div><span style="color:#6366f1">■</span> Émoluments HT : <strong>' + res.pctCA + '%</strong></div>';
+        h += '<div><span style="color:#ec4899">■</span> TVA 18% : <strong>' + res.pctTva + '%</strong></div>';
+        h += '<div><span style="color:#10b981">■</span> Débours : <strong>' + res.pctDeb + '%</strong></div>';
+        h += '</div>';
+        h += '</div>';
+
+        zoneResultat.innerHTML = h;
+      }
+
+      function escapeHtml(s) {
+        return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      }
+
+      chips.forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          chips.forEach(function (b) {
+            b.classList.remove("active");
+            b.style.background = "transparent";
+            b.style.color = "var(--text)";
+            b.style.borderColor = "var(--border)";
+          });
+          btn.classList.add("active");
+          btn.style.background = "var(--primary)";
+          btn.style.color = "#fff";
+          btn.style.borderColor = "var(--primary)";
+
+          selectActe.value = btn.dataset.type;
+          inputMontant.value = formaterEspaces(btn.dataset.montant);
+          actualiserSimulateur();
+        });
+      });
+
+      inputMontant.addEventListener("input", function () {
+        inputMontant.value = formaterEspaces(extraireNombre(inputMontant.value));
+        actualiserSimulateur();
+      });
+
+      selectActe.addEventListener("change", actualiserSimulateur);
+
+      // Calcul initial
+      actualiserSimulateur();
+    })();
+  </script>
+</body>
+</html>

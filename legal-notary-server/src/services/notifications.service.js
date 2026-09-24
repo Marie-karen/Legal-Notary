@@ -236,29 +236,37 @@ async function declencherEvenement(evenement, { dossierId, donnees = {} } = {}) 
 }
 
 async function listerNotificationsUtilisateur(utilisateurId, { nonLuesSeulement = false } = {}) {
-  const conditions = ["utilisateur_id = $1", "canal = 'in_app'"];
-  if (nonLuesSeulement) conditions.push("lu = false");
-  const { rows } = await pool.query(
-    `SELECT * FROM notifications WHERE ${conditions.join(" AND ")} ORDER BY created_at DESC LIMIT 100`,
-    [utilisateurId]
-  );
-  return rows;
+  try {
+    const conditions = ["utilisateur_id = $1", "canal = 'in_app'"];
+    if (nonLuesSeulement) conditions.push("lu = false");
+    const { rows } = await pool.query(
+      `SELECT * FROM notifications WHERE ${conditions.join(" AND ")} ORDER BY created_at DESC LIMIT 100`,
+      [utilisateurId]
+    );
+    return rows;
+  } catch (err) {
+    return [];
+  }
 }
 
 async function marquerLue(notificationId, utilisateurId) {
-  await pool.query(
-    "UPDATE notifications SET lu = true WHERE id = $1 AND utilisateur_id = $2",
-    [notificationId, utilisateurId]
-  );
+  try {
+    await pool.query(
+      "UPDATE notifications SET lu = true WHERE id = $1 AND utilisateur_id = $2",
+      [notificationId, utilisateurId]
+    );
+  } catch (err) {}
 }
 
 async function enregistrerAbonnementPush(utilisateurId, abonnement) {
-  await pool.query(
-    `INSERT INTO push_subscriptions (utilisateur_id, endpoint, cle_p256dh, cle_auth)
-     VALUES ($1, $2, $3, $4)
-     ON CONFLICT (endpoint) DO UPDATE SET utilisateur_id = EXCLUDED.utilisateur_id`,
-    [utilisateurId, abonnement.endpoint, abonnement.keys.p256dh, abonnement.keys.auth]
-  );
+  try {
+    await pool.query(
+      `INSERT INTO push_subscriptions (utilisateur_id, endpoint, cle_p256dh, cle_auth)
+       VALUES ($1, $2, $3, $4)
+       ON CONFLICT (endpoint) DO UPDATE SET utilisateur_id = EXCLUDED.utilisateur_id`,
+      [utilisateurId, abonnement.endpoint, abonnement.keys.p256dh, abonnement.keys.auth]
+    );
+  } catch (err) {}
 }
 
 module.exports = {

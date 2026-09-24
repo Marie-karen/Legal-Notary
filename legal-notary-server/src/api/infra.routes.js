@@ -11,7 +11,7 @@ const sauvegardeImmuableService = require("../services/sauvegarde-immuable.servi
 const router = express.Router();
 
 // Synchronisation hybride & offline
-router.get("/sync-status", exigerPermission("archives:acceder"), async (req, res, next) => {
+router.get(["/sync-status", "/sync-statut"], exigerPermission("archives:acceder"), async (req, res, next) => {
   try {
     const statut = await syncEngineService.obtenirStatutSynchronisation();
     res.json(statut);

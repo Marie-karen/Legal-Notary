@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Legal Notary — Espace Démonstration Commerciale 1-Clic</title>
+  <meta name="description" content="Espace de démonstration et pitch commercial pour Legal Notary. Accès direct à tous les profils de l'étude notariale et de l'éditeur SaaS sans mot de passe.">
+
+  <!-- Polices Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:wght@700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css?v=3.4.2">
+
+  <script>
+    (function () {
+      var theme = "dark";
+      try { theme = localStorage.getItem("legal_notary_theme") || "dark"; } catch (e) {}
+      document.documentElement.setAttribute("data-theme", theme);
+    })();
+    (function () {
+      var port = window.location.port;
+      var host = window.location.hostname;
+      if (port === "4000" || (host !== "localhost" && host !== "127.0.0.1" && host !== "" && !window.location.protocol.startsWith("file:"))) {
+        window.LEGAL_NOTARY_API_URL = window.location.origin;
+      } else {
+        window.LEGAL_NOTARY_API_URL = "http://localhost:4000";
+      }
+    })();
+  </script>
+
+  <style>
+    body {
+      background-color: var(--color-bg);
+      color: var(--color-text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 40px 20px;
+      background-image: 
+        radial-gradient(circle at 15% 20%, rgba(16, 185, 129, 0.1) 0%, transparent 40%),
+        radial-gradient(circle at 85% 30%, rgba(56, 189, 248, 0.1) 0%, transparent 40%);
+    }
+
+    .demo-container {
+      width: 100%;
+      max-width: 960px;
+    }
+
+    .demo-header {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+
+    .demo-header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 36px;
+      margin-bottom: 8px;
+    }
+
+    .demo-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #34d399;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .grid-demo-roles {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      margin-bottom: 30px;
+    }
+
+    .card-demo-role {
+      background: var(--color-surface-2);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 12px;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .card-demo-role:hover {
+      border-color: #38bdf8;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+
+    .card-demo-role.featured {
+      border-color: #10b981;
+      background: linear-gradient(180deg, rgba(16, 185, 129, 0.12) 0%, var(--color-surface-2) 100%);
+    }
+
+    .role-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .role-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--color-text);
+    }
+
+    .role-desc {
+      font-size: 12px;
+      color: var(--color-text-dim);
+      margin-top: 2px;
+    }
+
+    .role-creds {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      padding: 8px 10px;
+      border-radius: 8px;
+      font-size: 11.5px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--color-text-dim);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .role-creds strong {
+      color: var(--color-text);
+    }
+
+    .btn-connect-role {
+      width: 100%;
+      padding: 8px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      background: var(--color-surface);
+      color: var(--color-text);
+      border: 1px solid var(--color-border);
+      transition: all 0.2s ease;
+    }
+
+    .card-demo-role:hover .btn-connect-role {
+      background: #10b981;
+      color: #fff;
+      border-color: #10b981;
+    }
+
+    .card-demo-role.featured .btn-connect-role {
+      background: #10b981;
+      color: #fff;
+      border-color: #10b981;
+    }
+
+    .section-title-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 30px 0 16px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--color-text-dim);
+    }
+
+    .section-title-divider::before,
+    .section-title-divider::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: var(--color-divider);
+    }
+
+    #chargement-demo {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(11, 15, 25, 0.85);
+      backdrop-filter: blur(8px);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      font-weight: 600;
+      color: #38bdf8;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="chargement-demo">Connexion à l'espace de démonstration…</div>
+
+  <div class="demo-container">
+    <div class="demo-header">
+      <div class="demo-badge">🎭 Espace de Démonstration & Pitch Commercial</div>
+      <h1>Portail d'Accès Démo 1-Clic</h1>
+      <p style="color: var(--color-text-dim); font-size: 14px; max-width: 600px; margin: 0 auto 18px;">
+        Sélectionnez un profil pour ouvrir instantanément l'application avec des données de simulation riches (dossiers, minutes scellées SHA-256, calculs fiscaux et factures).
+      </p>
+
+      <div style="display:flex; justify-content:center; gap:12px; margin-bottom: 20px;">
+        <a href="documentation.html" class="btn btn-secondary" style="font-size: 13px; text-decoration:none; padding: 8px 16px; border-radius: 8px; border: 1px solid rgba(56,189,248,0.4); color: #38bdf8; background: rgba(56,189,248,0.1); font-weight:600;">
+          📘 Consulter le Manuel d'Utilisation & Formation (ISO 26514)
+        </a>
+      </div>
+
+      <div style="background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 12px; padding: 14px 18px; text-align: left; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; max-width: 800px; margin: 0 auto;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <span style="font-size: 24px;">🌐</span>
+          <div style="font-size: 13px;">
+            <strong style="color: #38bdf8;">Prêt pour tout changement de nom de domaine :</strong>
+            <div style="color: var(--color-text-dim); margin-top: 2px;">
+              Que vous soyez sur <code>localhost:4000</code> ou sur votre domaine personnalisé (ex: <code>app.legalnotary.ci</code>), ces accès 1-clic et identifiants fonctionnent immédiatement sans configuration.
+            </div>
+          </div>
+        </div>
+        <button type="button" class="btn btn-ghost" onclick="copierTousLesAcces()" style="font-size: 12px; border: 1px solid var(--color-border); padding: 6px 12px; color: #38bdf8; background: rgba(56,189,248,0.1); cursor: pointer;">
+          📋 Copier tous les identifiants
+        </button>
+      </div>
+    </div>
+
+    <!-- 1. PROFILS ÉTUDE NOTARIALE -->
+    <div class="section-title-divider">🏛️ Profils Métiers — Étude Notariale</div>
+
+    <div class="grid-demo-roles">
+      <!-- Notaire Titulaire -->
+      <div class="card-demo-role featured" onclick="connexionDemo('notaire@notaire.ci', 'notaire123', 'Notaire Titulaire')">
+        <div class="role-top">
+          <div>
+            <div class="role-title">👑 Notaire Titulaire (Maître)</div>
+            <div class="role-desc">Accès absolu : Parapheur, Salaires, Validation d'actes, Minutier & Pilotage</div>
+          </div>
+          <span class="tag tag-accent" style="background:#10b981;color:#fff">Accès Total</span>
+        </div>
+        <div class="role-creds">
+          <span><code>notaire@notaire.ci</code></span>
+          <span>MDP: <strong>notaire123</strong></span>
+        </div>
+        <button type="button" class="btn-connect-role">Lancer la session Notaire ➜</button>
+      </div>
+
+      <!-- Premier Clerc -->
+      <div class="card-demo-role" onclick="connexionDemo('premier.clerc@notaire.ci', 'notaire123', 'Premier Clerc')">
+        <div class="role-top">
+          <div>
+            <div class="role-title">👔 Premier Clerc</div>
+            <div class="role-desc">Supervision des clercs, parapheur transmis, constitution des dossiers</div>
+          </div>
+        </div>
+        <div class="role-creds">
+          <span><code>premier.clerc@notaire.ci</code></span>
+          <span>MDP: <strong>notaire123</strong></span>
+        </div>
+        <button type="button" class="btn-connect-role">Lancer la session 1er Clerc ➜</button>
+      </div>
+
+      <!-- Clerc Rédacteur -->
+      <div class="card-demo-role" onclick="connexionDemo('clerc1@notaire.ci', 'notaire123', 'Clerc Rédacteur')">
+        <div class="role-top">
+          <div>
+            <div class="role-title">✍️ Clerc Rédacteur</div>
+            <div class="role-desc">Rédaction des projets d'actes, gestion des pièces clients & dossiers assignés</div>
+          </div>
+        </div>
+        <div class="role-creds">
+          <span><code>clerc1@notaire.ci</code></span>
+          <span>MDP: <strong>notaire123</strong></span>
+        </div>
+        <button type="button" class="btn-connect-role">Lancer la session Rédacteur ➜</button>
+      </div>
+
+      <!-- Clerc Formaliste -->
+      <div class="card-demo-role" onclick="connexionDemo('formalites@notaire.ci', 'notaire123', 'Clerc Formaliste')">
+        <div class="role-top">
+          <div>
+            <div class="role-title">🏛️ Clerc Formaliste</div>
+            <div class="role-desc">Dépôts DGI, Conservation Foncière, suivi des délais légaux & cartons</div>
+          </div>
+        </div>
+        <div class="role-creds">
+          <span><code>formalites@notaire.ci</code></span>
+          <span>MDP: <strong>notaire123</strong></span>
+        </div>
+        <button type="button" class="btn-connect-role">Lancer la session Formaliste ➜</button>
+      </div>
+
+      <!-- Comptable Taxateur -->
+      <div class="card-demo-role" onclick="connexionDemo('comptable@notaire.ci', 'notaire123', 'Comptable Taxateur')">
+        <div class="role-top">
+          <div>
+            <div class="role-title">💳 Comptable Taxateur</div>
+            <div class="role-desc">Fiches de taxe Décret 2013-279, factures de frais, émoluments & débours</div>
+          </div>
+        </div>
+        <div class="role-creds">
+          <span><code>comptable@notaire.ci</code></span>
+          <span>MDP: <strong>notaire123</strong></span>
+        </div>
+        <button type="button" class="btn-connect-role">Lancer la session Comptable ➜</button>
+      </div>
+
+      <!-- Assistante Accueil -->
+      <div class="card-demo-role" onclick="connexionDemo('accueil@notaire.ci', 'notaire123', 'Assistante Accueil')">
+        <div class="role-top">
+          <div>
+            <div class="role-title">🛎️ Assistante d'Accueil</div>
+            <div class="role-desc">Accueil des clients, QR Code KYC, agenda notaire & création de dossiers</div>
+          </div>
+        </div>
+        <div class="role-creds">
+          <span><code>accueil@notaire.ci</code></span>
+          <span>MDP: <strong>notaire123</strong></span>
+        </div>
+        <button type="button" class="btn-connect-role">Lancer la session Assistante ➜</button>
+      </div>
+
+      <!-- Archiviste Minutier -->
+      <div class="card-demo-role" onclick="connexionDemo('archiviste@notaire.ci', 'notaire123', 'Archiviste')">
+        <div class="role-top">
+          <div>
+            <div class="role-title">📦 Archiviste / Minutier</div>
+            <div class="role-desc">Scellement numérique SHA-256, registre d'ordre et inventaire physique des cartons</div>
+          </div>
+        </div>
+        <div class="role-creds">
+          <span><code>archiviste@notaire.ci</code></span>
+          <span>MDP: <strong>notaire123</strong></span>
+        </div>
+        <button type="button" class="btn-connect-role">Lancer la session Archiviste ➜</button>
+      </div>
+    </div>
+
+    <!-- 2. ÉQUIPE ÉDITEUR SAAS (POUR VOS DÉMOS INTERNES & DEVOPS) -->
+    <div class="section-title-divider">⚙️ Équipe Éditeur SaaS (Direction & Supervision)</div>
+
+    <div class="grid-demo-roles">
+      <!-- SuperAdmin SaaS -->
+      <div class="card-demo-role" style="border-color: rgba(56,189,248,0.4);" onclick="connexionDemo('admin@editeur-legal.ci', 'admin123', 'Direction SaaS / SuperAdmin')">
+        <div class="role-top">
+          <div>
+            <div class="role-title" style="color:#38bdf8">🌐 Direction SaaS / SuperAdmin</div>
+            <div class="role-desc">Supervision multi-études, déploiement d'offices, sauvegardes WORM & PRA</div>
+          </div>
+        </div>
+        <div class="role-creds">
+          <span><code>admin@editeur-legal.ci</code></span>
+          <span>MDP: <strong>admin123</strong></span>
+        </div>
+        <button type="button" class="btn-connect-role" style="color:#38bdf8">Ouvrir la Console Super Admin ➜</button>
+      </div>
+
+      <!-- DevOps / Développeur -->
+      <div class="card-demo-role" style="border-color: rgba(139,92,246,0.4);" onclick="connexionDemo('dev@editeur-legal.ci', 'admin123', 'Développeur / DevOps')">
+        <div class="role-top">
+          <div>
+            <div class="role-title" style="color:#a78bfa">💻 Développeur / DevOps</div>
+            <div class="role-desc">Watchdog serveurs locaux, clusters PostgreSQL, métriques Sentry & logs</div>
+          </div>
+        </div>
+        <div class="role-creds">
+          <span><code>dev@editeur-legal.ci</code></span>
+          <span>MDP: <strong>admin123</strong></span>
+        </div>
+        <button type="button" class="btn-connect-role" style="color:#a78bfa">Ouvrir la session Dev ➜</button>
+      </div>
+
+      <!-- Commercial & Sales -->
+      <div class="card-demo-role" style="border-color: rgba(16,185,129,0.4);" onclick="connexionDemo('commercial@editeur-legal.ci', 'admin123', 'Commercial & Onboarding')">
+        <div class="role-top">
+          <div>
+            <div class="role-title" style="color:#34d399">📈 Commercial & Onboarding</div>
+            <div class="role-desc">Provisionnement de nouvelles études, quotas de stockage & sous-domaines</div>
+          </div>
+        </div>
+        <div class="role-creds">
+          <span><code>commercial@editeur-legal.ci</code></span>
+          <span>MDP: <strong>admin123</strong></span>
+        </div>
+        <button type="button" class="btn-connect-role" style="color:#34d399">Ouvrir la session Commercial ➜</button>
+      </div>
+
+      <!-- Support Client L1-L4 -->
+      <div class="card-demo-role" style="border-color: rgba(245,158,11,0.4);" onclick="connexionDemo('support@editeur-legal.ci', 'admin123', 'Support Client L1-L4')">
+        <div class="role-top">
+          <div>
+            <div class="role-title" style="color:#fbbf24">🎫 Support Client (L1 - L4)</div>
+            <div class="role-desc">Traitement des tickets d'assistance et demandes d'accès temporaires audités</div>
+          </div>
+        </div>
+        <div class="role-creds">
+          <span><code>support@editeur-legal.ci</code></span>
+          <span>MDP: <strong>admin123</strong></span>
+        </div>
+        <button type="button" class="btn-connect-role" style="color:#fbbf24">Ouvrir la session Support ➜</button>
+      </div>
+    </div>
+
+    <!-- Liens retour -->
+    <div style="text-align: center; margin-top: 30px; display: flex; justify-content: center; gap: 20px; font-size: 13px;">
+      <a href="/" style="color: var(--color-text-dim); text-decoration: none;">➜ Retourner à la page de connexion standard</a>
+      <a href="/vitrine" style="color: #38bdf8; text-decoration: none;">➜ Voir la Landing Page Vitrine Commerciale</a>
+    </div>
+  </div>
+
+  <script src="js/api.js?v=3.4.2"></script>
+  <script>
+    function connexionDemo(email, mdp, label) {
+      var loader = document.getElementById("chargement-demo");
+      if (loader) {
+        loader.textContent = "Connexion en cours : " + label + "…";
+        loader.style.display = "flex";
+      }
+
+      LegalNotaryAPI.connecter(email, mdp).then(function () {
+        window.location.href = "/";
+      }).catch(function (err) {
+        if (loader) loader.style.display = "none";
+        alert("Erreur de connexion démo : " + (err.message || "Serveur non disponible"));
+      });
+    }
+
+    function copierTousLesAcces() {
+      var texte = "=== IDENTIFIANTS DE DEMONSTRATION LEGAL NOTARY ===\n\n" +
+        "1. PROFILS ETUDE NOTARIALE (Mot de passe commun : notaire123)\n" +
+        "- Notaire Titulaire (Accès Total) : notaire@notaire.ci\n" +
+        "- Premier Clerc : premier.clerc@notaire.ci\n" +
+        "- Clerc Rédacteur : clerc1@notaire.ci\n" +
+        "- Clerc Formaliste : formalites@notaire.ci\n" +
+        "- Comptable Taxateur : comptable@notaire.ci\n" +
+        "- Assistante Accueil : accueil@notaire.ci\n" +
+        "- Archiviste / Minutier : archiviste@notaire.ci\n\n" +
+        "2. EQUIPE EDITEUR SAAS (Mot de passe commun : admin123)\n" +
+        "- Direction SaaS / SuperAdmin : admin@editeur-legal.ci\n" +
+        "- Développeur / DevOps : dev@editeur-legal.ci\n" +
+        "- Commercial & Sales : commercial@editeur-legal.ci\n" +
+        "- Support Client L1-L4 : support@editeur-legal.ci\n";
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(texte).then(function () {
+          alert("Tous les identifiants ont été copiés dans votre presse-papier !");
+        }).catch(function () {
+          prompt("Voici vos identifiants :", texte);
+        });
+      } else {
+        prompt("Voici vos identifiants :", texte);
+      }
+    }
+  </script>
+</body>
+</html>

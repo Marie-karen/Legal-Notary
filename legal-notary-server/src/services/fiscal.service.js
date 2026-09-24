@@ -198,12 +198,16 @@ function calculEmoluments(montant, tranches, minimumLegalMinute = 50000) {
  */
 function calculDroitEnregistrement(montant, regle) {
   if (!regle || regle.mode === "a_confirmer") {
-    return { montant: 0, confirme: false };
+    return { montant: 0, confirme: false, mode: "a_confirmer", tauxPercent: 0, libelle: "À confirmer" };
   }
   if (regle.mode === "fixe") {
-    return { montant: arrondi(regle.valeur), confirme: true };
+    const val = arrondi(regle.valeur);
+    return { montant: val, confirme: true, mode: "fixe", valeurFixe: val, tauxPercent: null, libelle: `Droit fixe (${val.toLocaleString("fr-FR")} FCFA)` };
   }
-  return { montant: arrondi((montant || 0) * (Number(regle.valeur) || 0)), confirme: true };
+  const taux = Number(regle.valeur) || 0;
+  const montantDroit = arrondi((montant || 0) * taux);
+  const percent = Math.round(taux * 1000) / 10;
+  return { montant: montantDroit, confirme: true, mode: "pourcentage", tauxPercent: percent, libelle: `${percent} % (${montantDroit.toLocaleString("fr-FR")} FCFA)` };
 }
 
 /**
@@ -241,37 +245,48 @@ function calculTVA(montantHT, tauxTVA = 0.18) {
 
 /**
  * Catalogue standard des lignes d'émoluments, formalités et débours
+ * S'adapte intelligemment à la nature de l'acte (Immobilier, Société, Prêt, Famille)
  */
 function obtenirCatalogueLignesStandard(typeActe = {}, montant = 0) {
+  const code = ((typeActe && (typeActe.id || typeActe.code || "")) || "").toLowerCase();
+  const libelle = ((typeActe && (typeActe.libelle || typeActe.nom || "")) || "").toLowerCase();
+
+  const estSociete = code.includes("societe") || code.includes("sarl") || code.includes("sas") || code.includes("capital") || code.includes("parts") || libelle.includes("société") || libelle.includes("entreprise") || libelle.includes("capital");
+  const estFoncier = typeActe.taxeFonciereApplicable || code.includes("vente") || code.includes("donation") || code.includes("promesse") || code.includes("hypotheque") || code.includes("morcellement") || code.includes("terrain") || libelle.includes("vente") || libelle.includes("foncier") || libelle.includes("donation") || libelle.includes("hypothèque");
+  const estPret = code.includes("pret") || code.includes("dette") || code.includes("credit") || libelle.includes("prêt") || libelle.includes("reconnaissance");
+  const estSimple = code.includes("procuration") || code.includes("testament") || code.includes("certificat") || libelle.includes("procuration") || libelle.includes("testament");
+
   return [
-    // ÉMOLUMENTS DE FORMALITÉS
-    { id: "emol_inscription_livre_foncier", code: "inscription_livre_foncier", categorie: "formalite", libelle: "Inscription au Livre Foncier", montantDefaut: 75000, actif: true },
-    { id: "emol_extrait_topographique", code: "extrait_topographique", categorie: "formalite", libelle: "Demande d'extrait topographique (Cadastre)", montantDefaut: 15000, actif: true },
-    { id: "emol_requisition_fonciere", code: "requisition_fonciere", categorie: "formalite", libelle: "Réquisitions foncières", montantDefaut: 10000, actif: true },
+    // ÉMOLUMENTS DE FORMALITÉS FONCIÈRES
+    { id: "emol_inscription_livre_foncier", code: "inscription_livre_foncier", categorie: "formalite", libelle: "Inscription au Livre Foncier", montantDefaut: 75000, actif: estFoncier && !estSimple },
+    { id: "emol_extrait_topographique", code: "extrait_topographique", categorie: "formalite", libelle: "Demande d'extrait topographique (Cadastre)", montantDefaut: 15000, actif: estFoncier && !estPret && !estSimple },
+    { id: "emol_requisition_fonciere", code: "requisition_fonciere", categorie: "formalite", libelle: "Réquisitions foncières", montantDefaut: 10000, actif: estFoncier && !estSimple },
     { id: "emol_bordereau_enregistrement", code: "bordereau_enregistrement", categorie: "formalite", libelle: "Émoluments de bordereau d'enregistrement", montantDefaut: 1000, actif: true },
-    { id: "emol_taxe_fonciere_formalite", code: "taxe_fonciere_formalite", categorie: "formalite", libelle: "Émolument de la taxe foncière", montantDefaut: 75000, actif: true },
-    { id: "emol_etats_fonciers", code: "etats_fonciers", categorie: "formalite", libelle: "Demande d'états fonciers (Conservation)", montantDefaut: 30000, actif: true },
-    { id: "emol_situation_fiscale", code: "situation_fiscale", categorie: "formalite", libelle: "Demande d'attestation de situation fiscale", montantDefaut: 15000, actif: true },
+    { id: "emol_taxe_fonciere_formalite", code: "taxe_fonciere_formalite", categorie: "formalite", libelle: "Émolument de la taxe foncière", montantDefaut: 75000, actif: estFoncier && !estSimple },
+    { id: "emol_etats_fonciers", code: "etats_fonciers", categorie: "formalite", libelle: "Demande d'états fonciers (Conservation)", montantDefaut: 30000, actif: estFoncier && !estSimple },
+    { id: "emol_situation_fiscale", code: "situation_fiscale", categorie: "formalite", libelle: "Demande d'attestation de situation fiscale", montantDefaut: 15000, actif: estFoncier && !estSimple },
     { id: "emol_certificat_mutation", code: "certificat_mutation", categorie: "formalite", libelle: "Certificat de mutation foncière", montantDefaut: 75000, actif: false },
     { id: "emol_certificat_localisation", code: "certificat_localisation", categorie: "formalite", libelle: "Émolument du certificat de localisation", montantDefaut: 15000, actif: false },
-    { id: "emol_depot_banque", code: "depot_banque", categorie: "formalite", libelle: "Dépôt à la banque", montantDefaut: 15000, actif: false },
-    { id: "emol_depot_enregistrement", code: "depot_enregistrement", categorie: "formalite", libelle: "Dépôt à l'enregistrement", montantDefaut: 15000, actif: false },
-    { id: "emol_modification_rccm", code: "modification_rccm", categorie: "formalite", libelle: "Modification RCCM (Greffe)", montantDefaut: 15000, actif: false },
-    { id: "emol_publication_legale", code: "publication_legale", categorie: "formalite", libelle: "Publication légale d'annonces", montantDefaut: 15000, actif: false },
-    { id: "emol_declaration_beneficiaires", code: "declaration_beneficiaires", categorie: "formalite", libelle: "Déclaration des bénéficiaires effectifs", montantDefaut: 15000, actif: false },
+
+    // FORMALITÉS SOCIÉTÉS & AFFAIRES
+    { id: "emol_depot_banque", code: "depot_banque", categorie: "formalite", libelle: "Dépôt à la banque", montantDefaut: 15000, actif: estSociete },
+    { id: "emol_depot_enregistrement", code: "depot_enregistrement", categorie: "formalite", libelle: "Dépôt à l'enregistrement", montantDefaut: 15000, actif: estSociete },
+    { id: "emol_modification_rccm", code: "modification_rccm", categorie: "formalite", libelle: "Immatriculation / Modification RCCM (Greffe)", montantDefaut: 15000, actif: estSociete },
+    { id: "emol_publication_legale", code: "publication_legale", categorie: "formalite", libelle: "Publication légale d'annonces (Journal d'annonces)", montantDefaut: 15000, actif: estSociete },
+    { id: "emol_declaration_beneficiaires", code: "declaration_beneficiaires", categorie: "formalite", libelle: "Déclaration des bénéficiaires effectifs", montantDefaut: 15000, actif: estSociete },
     { id: "emol_bulletins_souscription", code: "bulletins_souscription", categorie: "formalite", libelle: "Bulletins de souscription", montantDefaut: 100000, actif: false },
 
     // VACATIONS, DÉPLACEMENTS ET ART. 135
     { id: "emol_vacations", code: "vacations", categorie: "vacation", libelle: "Vacations du Notaire (Signature / Clôture)", montantDefaut: 150000, actif: false },
     { id: "emol_transport", code: "transport", categorie: "deplacement", libelle: "Frais de transport aller/retour", montantDefaut: 81000, actif: false },
     { id: "emol_deplacement_sejour", code: "deplacement_sejour", categorie: "deplacement", libelle: "Frais de déplacement et de séjour", montantDefaut: 40000, actif: false },
-    { id: "emol_art_135", code: "art_135", categorie: "art135", libelle: "Honoraires de conseil & diligence (Art. 135)", montantDefaut: 20000, actif: false },
-    { id: "emol_divers_papeterie", code: "divers_papeterie", categorie: "divers", libelle: "Frais de correspondance, affranchissement et papeterie", montantDefaut: 20000, actif: false },
+    { id: "emol_art_135", code: "art_135", categorie: "art135", libelle: "Honoraires de conseil & diligence (Art. 135)", montantDefaut: 20000, actif: !estSimple },
+    { id: "emol_divers_papeterie", code: "divers_papeterie", categorie: "divers", libelle: "Frais de correspondance, affranchissement et papeterie", montantDefaut: 20000, actif: true },
 
     // DÉBOURS TIERS
     { id: "debours_dossier_technique", code: "debours_dossier_technique", categorie: "debours", libelle: "Dossier technique / Morcellement géomètre", montantDefaut: 150000, actif: false },
     { id: "debours_certificat_localisation", code: "debours_certificat_localisation", categorie: "debours", libelle: "Certificat de localisation (Frais réels)", montantDefaut: 250000, actif: false },
-    { id: "debours_registres_tribunal", code: "debours_registres_tribunal", categorie: "debours", libelle: "Registres légaux & Paraphe Tribunal de Commerce", montantDefaut: 470000, actif: false },
+    { id: "debours_registres_tribunal", code: "debours_registres_tribunal", categorie: "debours", libelle: "Registres légaux & Paraphe Tribunal de Commerce", montantDefaut: 470000, actif: estSociete && montant > 10000000 },
     { id: "debours_divers_formalites", code: "debours_divers_formalites", categorie: "debours", libelle: "Débours divers de formalités", montantDefaut: 100000, actif: false },
   ];
 }

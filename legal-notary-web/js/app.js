@@ -365,43 +365,9 @@
   };
 
   function actualiserBarreSelecteurRoles(role) {
+    // Dans l'application en production, chaque utilisateur est strictement isolé dans son rôle (RBAC)
     var barre = document.getElementById("barre-selecteur-roles");
-    if (!barre) return;
-
-    var estSaaS = (role === "superadmin" || role === "dev" || role === "commercial" || role === "support" || role === "assistante_editeur");
-    var html = '<span style="font-size:10px;font-weight:700;color:var(--color-text-dim);text-transform:uppercase;padding:0 4px">Vue :</span>';
-
-    if (estSaaS) {
-      html += '<button type="button" class="btn-role-switch' + (role === "superadmin" ? " actif" : "") + '" data-role="superadmin" title="Console Direction SaaS" style="border-color:rgba(56,189,248,0.4);color:#38bdf8">Direction</button>';
-      html += '<button type="button" class="btn-role-switch' + (role === "dev" ? " actif" : "") + '" data-role="dev" title="Espace Développeur / DevOps" style="border-color:rgba(139,92,246,0.4);color:#a78bfa">Dev</button>';
-      html += '<button type="button" class="btn-role-switch' + (role === "commercial" ? " actif" : "") + '" data-role="commercial" title="Espace Commercial & Onboarding" style="border-color:rgba(16,185,129,0.4);color:#34d399">Commercial</button>';
-      html += '<button type="button" class="btn-role-switch' + (role === "support" ? " actif" : "") + '" data-role="support" title="Espace Support Client L1-L4" style="border-color:rgba(245,158,11,0.4);color:#fbbf24">Support</button>';
-      html += '<button type="button" class="btn-role-switch' + (role === "assistante_editeur" ? " actif" : "") + '" data-role="assistante_editeur" title="Espace Assistante Éditeur" style="border-color:rgba(236,72,153,0.4);color:#f472b6">Assistante</button>';
-      html += '<button type="button" class="btn-role-switch" data-role="notaire" title="Basculer sur la vue Étude" style="margin-left:4px;border-color:rgba(34,197,94,0.4);color:#22c55e">Vue Étude</button>';
-    } else {
-      // Pour les membres d'une étude notariale : UNIQUEMENT les rôles de l'étude. AUCUN rôle SaaS / Superadmin visible !
-      html += '<button type="button" class="btn-role-switch' + (role === "notaire" ? " actif" : "") + '" data-role="notaire" title="Espace Notaire Titulaire">Notaire</button>';
-      html += '<button type="button" class="btn-role-switch' + (role === "premier_clerc" ? " actif" : "") + '" data-role="premier_clerc" title="Espace Premier Clerc">1er Clerc</button>';
-      html += '<button type="button" class="btn-role-switch' + (role === "clerc_redacteur" ? " actif" : "") + '" data-role="clerc_redacteur" title="Espace Clerc Rédacteur">Rédacteur</button>';
-      html += '<button type="button" class="btn-role-switch' + (role === "clerc_formaliste" ? " actif" : "") + '" data-role="clerc_formaliste" title="Espace Clerc Formaliste">Formaliste</button>';
-      html += '<button type="button" class="btn-role-switch' + (role === "comptable_taxateur" ? " actif" : "") + '" data-role="comptable_taxateur" title="Espace Comptable Taxateur">Comptable</button>';
-      html += '<button type="button" class="btn-role-switch' + (role === "assistante" ? " actif" : "") + '" data-role="assistante" title="Espace Assistante Accueil">Assistante</button>';
-      if (!cache.parametres || cache.parametres.presenceArchiviste !== false) {
-        html += '<button type="button" class="btn-role-switch' + (role === "archiviste" ? " actif" : "") + '" data-role="archiviste" title="Espace Archiviste & Minutier">Archiviste</button>';
-      }
-    }
-
-    barre.innerHTML = html;
-
-    barre.querySelectorAll(".btn-role-switch").forEach(function (btn) {
-      btn.addEventListener("click", function () {
-        var targetRole = btn.dataset.role;
-        var compte = DEMO_COMPTES_PAR_ROLE[targetRole] || { email: "notaire@notaire.ci", mdp: "notaire123" };
-        effectuerConnexion(compte.email, compte.mdp).then(function () {
-          toast("Vue basculée : " + (ROLE_LABEL[targetRole] || targetRole));
-        });
-      });
-    });
+    if (barre) barre.style.display = "none";
   }
 
   function executerDeconnexion() {
@@ -4862,6 +4828,132 @@
   // =========================================================================
   // GESTION COMPTABILITÉ, FACTURATION & FICHES DE TAXE (DÉCRET 2013-279)
   // =========================================================================
+
+  // Référentiel des Scénarios Démonstrateur Multi-Actes (Simulation en 1-Clic)
+  var SCENARIOS_DEMO_NOTARIAUX = [
+    {
+      id: "vente_50m",
+      icon: "🏢",
+      badge: "Décret 2013-279",
+      badgeColor: "#2563eb",
+      titre: "Vente Immobilière (50M)",
+      typeActeId: "vente_immobiliere",
+      montant: 50000000,
+      client: "M. KOUASSI K. & MME KOFFI A.",
+      description: "Émoluments Dégressifs (1 200 000 F) + Droits DGI 4% (2 000 000 F) + Foncier 1,2% (603 000 F)",
+    },
+    {
+      id: "vente_usage_50m",
+      icon: "⚖️",
+      badge: "Formule d'usage",
+      badgeColor: "#d97706",
+      titre: "Vente Usage (50M)",
+      typeActeId: "vente_usage",
+      montant: 50000000,
+      client: "M. SANOGO IBRAHIM",
+      description: "Pratique réelle Étude : (Base × 1%) + 400 000 F = 900 000 FCFA HT",
+    },
+    {
+      id: "promesse_30m",
+      icon: "📑",
+      badge: "Formule 3/4",
+      badgeColor: "#059669",
+      titre: "Promesse de Vente (30M)",
+      typeActeId: "promesse_vente",
+      montant: 30000000,
+      client: "M. DIALLO AMADOU",
+      description: "Émolument 3/4 (585 000 F HT) + Droits fixes DGI 18 000 F",
+    },
+    {
+      id: "realisation_30m",
+      icon: "🔑",
+      badge: "Formule 1/4",
+      badgeColor: "#0891b2",
+      titre: "Réalisation Promesse (30M)",
+      typeActeId: "realisation_promesse",
+      montant: 30000000,
+      client: "M. ADJA SERGE",
+      description: "Émolument 1/4 (195 000 F HT) + Droits DGI 4% (1 200 000 F)",
+    },
+    {
+      id: "sarl_1m",
+      icon: "🏬",
+      badge: "Min. Légal Art. 19",
+      badgeColor: "#7c3aed",
+      titre: "Constitution SARL (1M)",
+      typeActeId: "constitution_societe",
+      montant: 1000000,
+      client: "GROUPE IVOIRE TECH SARL",
+      description: "Barème 3% < 50 000 F → Minimum Légal 50 000 F HT + DGI 1% (10k) + RCCM & CEPICI",
+    },
+    {
+      id: "augmentation_50m",
+      icon: "📈",
+      badge: "Barème OHADA",
+      badgeColor: "#0284c7",
+      titre: "Augmentation Capital (50M)",
+      typeActeId: "augmentation_capital",
+      montant: 50000000,
+      client: "SOCIÉTÉ BTP ATLANTIQUE SAS",
+      description: "Barème OHADA dégressif (800 000 F HT) + DGI 1% (500 000 F) + RCCM",
+    },
+    {
+      id: "donation_40m",
+      icon: "🎁",
+      badge: "DGI 2,5%",
+      badgeColor: "#db2777",
+      titre: "Donation entre vifs (40M)",
+      typeActeId: "donation",
+      montant: 40000000,
+      client: "FAMILLE KONE",
+      description: "Formule Donation (1 050 000 F HT) + Droits DGI 2,5% (1 000 000 F)",
+    },
+    {
+      id: "pret_100m",
+      icon: "🏦",
+      badge: "Barème Prêt",
+      badgeColor: "#4f46e5",
+      titre: "Prêt Hypothécaire (100M)",
+      typeActeId: "pret_hypothecaire",
+      montant: 100000000,
+      client: "M. & MME TOURE",
+      description: "Barème Prêt Décret (1 150 000 F HT) + DGI 1,5% (1,5M) + Inscription Hypothèque",
+    },
+    {
+      id: "bail_12m",
+      icon: "🏢",
+      badge: "Barème Bail",
+      badgeColor: "#b45309",
+      titre: "Bail Commercial (12M)",
+      typeActeId: "bail_commercial",
+      montant: 12000000,
+      client: "DISTRIBUTION PLUS SARL",
+      description: "Barème Bail (370 000 F HT) + DGI 2,5% (300 000 F)",
+    },
+    {
+      id: "mainlevee_20m",
+      icon: "🔓",
+      badge: "Barème 0,5%",
+      badgeColor: "#475569",
+      titre: "Mainlevée Hypothèque (20M)",
+      typeActeId: "mainlevee_hypotheque",
+      montant: 20000000,
+      client: "M. N'GUESSAN PASCAL",
+      description: "Barème 0,5% dégressif (100 000 F HT) + DGI fixe 18 000 F",
+    },
+    {
+      id: "procuration_500k",
+      icon: "📝",
+      badge: "Acte Courant",
+      badgeColor: "#64748b",
+      titre: "Procuration (500k)",
+      typeActeId: "procuration",
+      montant: 500000,
+      client: "MME OUATTARA FATOU",
+      description: "Minimum légal forfaitaire (50 000 F HT) + DGI fixe 18 000 F",
+    },
+  ];
+
   var etatComptabilite = {
     rechercheClient: "",
     filtre: "tous", // "tous", "soumis", "valide", "a_corriger", "brouillon"
@@ -4922,6 +5014,29 @@
       html += '<button type="button" class="btn btn-secondary" id="btn-creer-note-frais-top" style="font-size:12.5px;padding:7px 12px;font-weight:700;background:rgba(5,150,105,0.12);color:#059669;border-color:rgba(5,150,105,0.35)">+ Note de frais</button>';
       html += '<button type="button" class="btn btn-primary" id="btn-creer-facture-top" style="font-size:12.5px;padding:7px 14px;font-weight:700;background:#0891b2;border-color:#0891b2">+ Facture</button>';
       html += '</div></div></div>';
+
+      // BANDEAU DÉMONSTRATEUR FISCAL MULTI-ACTES (1-CLIC)
+      html += '<div class="card" style="background:linear-gradient(135deg, rgba(37,99,235,0.07) 0%, rgba(16,185,129,0.07) 100%);border:1.5px solid rgba(37,99,235,0.3);padding:12px 14px;border-radius:var(--radius);margin-bottom:var(--space-3);box-shadow:var(--shadow-sm)">';
+      html += '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px">';
+      html += '<div style="display:flex;align-items:center;gap:8px">';
+      html += '<span style="font-size:18px">⚡</span>';
+      html += '<div>';
+      html += '<div style="font-weight:800;font-size:12.5px;color:var(--color-accent);text-transform:uppercase;letter-spacing:0.5px">Démonstrateur Fiscal Multi-Actes — Calculs & Fiches 100% Conformes (1-Clic)</div>';
+      html += '<div style="font-size:11px;color:var(--color-text-dim)">Sélectionnez un acte notarié ci-dessous pour prouver en direct l\'exactitude des calculs (Tranches dégressives, DGI, Taxe Foncière, TVA) :</div>';
+      html += '</div></div>';
+      html += '<span class="tag tag-accent" style="font-size:10.5px;font-weight:700">Décret 2013-279 & CGI CI</span>';
+      html += '</div>';
+
+      html += '<div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin">';
+      SCENARIOS_DEMO_NOTARIAUX.forEach(function (sc) {
+        html += '<button type="button" class="btn btn-secondary btn-scenario-demo-compta" data-scenario-id="' + sc.id + '" style="font-size:11.5px;padding:5px 10px;white-space:nowrap;display:flex;align-items:center;gap:5px;border-radius:6px;background:var(--color-surface);border:1px solid var(--color-border);font-weight:700" title="' + escapeHtml(sc.description) + '">';
+        html += '<span>' + sc.icon + '</span>';
+        html += '<span>' + escapeHtml(sc.titre) + '</span>';
+        html += '<span style="font-size:9.5px;padding:1px 5px;border-radius:4px;background:' + sc.badgeColor + ';color:#fff;font-weight:800">' + escapeHtml(sc.badge) + '</span>';
+        html += '</button>';
+      });
+      html += '</div>';
+      html += '</div>';
 
       html += renderKpisGrid(kpis);
 
@@ -5118,6 +5233,18 @@
       html += '</div>';
 
       c.innerHTML = html;
+
+      // Écouteurs pour le bandeau des scénarios démo 1-clic
+      c.querySelectorAll(".btn-scenario-demo-compta").forEach(function (btn) {
+        btn.addEventListener("click", function (ev) {
+          ev.preventDefault();
+          var scId = btn.dataset.scenarioId;
+          var sc = SCENARIOS_DEMO_NOTARIAUX.find(function (it) { return it.id === scId; });
+          if (sc) {
+            modalCreerFicheTaxe(null, "fiche_taxe", sc);
+          }
+        });
+      });
 
       // Écouteurs d'événements
       var btnModelesExcel = document.getElementById("btn-gerer-modeles-excel");
@@ -5424,7 +5551,7 @@
   // =========================================================================
   // MODALE INTERACTIVE : CRÉER / ÉTABLIR UNE FICHE DE TAXE
   // =========================================================================
-  function modalCreerFicheTaxe(dossierIdSelectionne, formatInitial) {
+  function modalCreerFicheTaxe(dossierIdSelectionne, formatInitial, scenarioDemoSelectionne) {
     function formaterEspaces(val) {
       if (val === null || val === undefined || val === "") return "0";
       var str = String(val).replace(/\s/g, "").replace(/[^0-9]/g, "");
@@ -5435,6 +5562,13 @@
       if (!str) return 0;
       var net = String(str).replace(/\s/g, "").replace(/[^0-9]/g, "");
       return parseFloat(net) || 0;
+    }
+
+    var scenarioActif = null;
+    if (typeof scenarioDemoSelectionne === "string") {
+      scenarioActif = SCENARIOS_DEMO_NOTARIAUX.find(function (s) { return s.id === scenarioDemoSelectionne; });
+    } else if (scenarioDemoSelectionne && typeof scenarioDemoSelectionne === "object") {
+      scenarioActif = scenarioDemoSelectionne;
     }
 
     var estNotaire = cache.utilisateur && (cache.utilisateur.role === "notaire" || cache.utilisateur.role === "superadmin");
@@ -5454,7 +5588,10 @@
           return cache.dossiers;
         }).catch(function () { return []; });
 
-    var chargerCatalogue = API.get("/api/fiscal/catalogue-lignes").catch(function () { return []; });
+    var typeActeInitialId = scenarioActif ? scenarioActif.typeActeId : "vente_immobiliere";
+    var montantInitialVal = scenarioActif ? scenarioActif.montant : 10000000;
+
+    var chargerCatalogue = API.get("/api/fiscal/catalogue-lignes?typeActeId=" + typeActeInitialId + "&montant=" + montantInitialVal).catch(function () { return []; });
 
     var chargerHistoriqueDossier = dossierIdSelectionne
       ? API.get("/api/fiscal/dossiers/" + dossierIdSelectionne + "/historique").catch(function () { return []; })
@@ -5469,15 +5606,39 @@
 
       var dossierInitial = dossierIdSelectionne 
         ? dossiers.find(function (d) { return d.id === dossierIdSelectionne; })
-        : (dossiers.length > 0 ? dossiers[0] : null);
+        : null;
 
-      var montantInitialVal = dossierInitial ? (Number(dossierInitial.montantAssiette) || 10000000) : 10000000;
+      if (dossierInitial) {
+        typeActeInitialId = dossierInitial.typeActeId || "vente_immobiliere";
+        montantInitialVal = Number(dossierInitial.montantAssiette) || 10000000;
+      } else if (!scenarioActif && dossiers.length > 0) {
+        dossierInitial = dossiers[0];
+        typeActeInitialId = dossierInitial.typeActeId || "vente_immobiliere";
+        montantInitialVal = Number(dossierInitial.montantAssiette) || 10000000;
+      }
 
       var titreForm = "Établissement de la Fiche de Taxe (Liquidation Interne)";
       if (formatInitial === "note_frais") titreForm = "Établissement de la Note de Frais Client (Provisions Décret 2013-279)";
       if (formatInitial === "facture") titreForm = "Établissement de la Facture Normalisée TTC (Document Fiscal)";
 
       var html = '<form id="form-modal-creer-taxe" style="display:flex;flex-direction:column;gap:var(--space-3)">';
+
+      // BANDEAU SCÉNARIOS RAPIDES DÉMO 1-CLIC DANS LA MODALE
+      html += '<div style="background:var(--color-surface-2);border:1.5px solid var(--color-border);padding:8px 12px;border-radius:var(--radius)">';
+      html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;gap:4px">';
+      html += '<span style="font-size:11.5px;font-weight:800;color:var(--color-accent);text-transform:uppercase">⚡ Démo Rapide / Actes Exemples (1-Clic) :</span>';
+      html += '<span style="font-size:10.5px;color:var(--color-text-dim)">Passez d\'un acte à un autre pour vérifier l\'exactitude des règles</span>';
+      html += '</div>';
+      html += '<div style="display:flex;gap:5px;overflow-x:auto;padding-bottom:3px;scrollbar-width:thin" id="barre-presets-demo-modal">';
+      SCENARIOS_DEMO_NOTARIAUX.forEach(function (sc) {
+        var isScSel = (scenarioActif && scenarioActif.id === sc.id) || (typeActeInitialId === sc.typeActeId && montantInitialVal === sc.montant);
+        var clsBtn = isScSel ? 'btn-primary' : 'btn-secondary';
+        var styleBtn = isScSel ? 'background:var(--color-accent);color:#fff;border-color:var(--color-accent)' : 'background:var(--color-surface);border:1px solid var(--color-border)';
+        html += '<button type="button" class="btn ' + clsBtn + ' btn-preset-demo-chip" data-scenario-id="' + sc.id + '" style="font-size:11px;padding:3px 8px;white-space:nowrap;border-radius:4px;font-weight:700;' + styleBtn + '" title="' + escapeHtml(sc.description) + '">';
+        html += sc.icon + ' ' + escapeHtml(sc.titre);
+        html += '</button>';
+      });
+      html += '</div></div>';
 
       // Bandeau d'état déontologique (si fiche existante)
       if (derniereFiche) {
@@ -5517,7 +5678,7 @@
       html += '<div style="display:grid;grid-template-columns:1.2fr 1fr;gap:var(--space-2)">';
       html += '<div class="field"><div style="display:flex;justify-content:space-between;align-items:center"><label style="margin:0">Type d\'Acte Notarié (Barème)</label><button type="button" class="btn btn-ghost" id="btn-modal-taxe-voir-baremes" style="font-size:11px;padding:0 4px;color:var(--color-accent);text-decoration:underline;cursor:pointer" title="Consulter et gérer le référentiel des barèmes">Barèmes →</button></div><select class="input" id="taxe-modal-type-acte" style="font-weight:600;margin-top:4px">';
       typesActes.forEach(function (t) {
-        var isActSel = (dossierInitial && t.id === dossierInitial.typeActeId) ? " selected" : "";
+        var isActSel = (t.id === typeActeInitialId) ? " selected" : "";
         var libelleAff = t.libelle || t.nom || labelActe(t.id);
         html += '<option value="' + t.id + '"' + isActSel + '>' + libelleAff + '</option>';
       });
@@ -5550,38 +5711,7 @@
       html += '</div>';
       html += '</div>';
 
-      html += '<div id="conteneur-cases-emoluments" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:6px;max-height:180px;overflow-y:auto;padding-right:4px">';
-      
-      var formalitesListe = catalogueLignes.filter(function (l) { return l.categorie !== "debours"; });
-      if (!formalitesListe.length) {
-        formalitesListe = [
-          { code: "inscription_livre_foncier", libelle: "Inscription au Livre Foncier", montantDefaut: 75000, actif: true },
-          { code: "extrait_topographique", libelle: "Demande d'extrait topographique", montantDefaut: 15000, actif: true },
-          { code: "requisition_fonciere", libelle: "Réquisitions foncières", montantDefaut: 10000, actif: true },
-          { code: "bordereau_enregistrement", libelle: "Émolument bordereau d'enregistrement", montantDefaut: 1000, actif: true },
-          { code: "etats_fonciers", libelle: "Demande d'états fonciers", montantDefaut: 30000, actif: true },
-          { code: "situation_fiscale", libelle: "Demande situation fiscale", montantDefaut: 15000, actif: true },
-          { code: "certificat_mutation", libelle: "Certificat de mutation foncière", montantDefaut: 75000, actif: false },
-          { code: "certificat_localisation", libelle: "Émolument certificat localisation", montantDefaut: 15000, actif: false },
-          { code: "vacations", libelle: "Vacations du Notaire", montantDefaut: 150000, actif: false },
-          { code: "transport", libelle: "Frais de transport aller/retour", montantDefaut: 81000, actif: false },
-          { code: "deplacement_sejour", libelle: "Frais de déplacement et séjour", montantDefaut: 40000, actif: false },
-          { code: "art_135", libelle: "Honoraires de diligence (Art. 135)", montantDefaut: 20000, actif: true },
-          { code: "divers_papeterie", libelle: "Frais de correspondance & papeterie", montantDefaut: 20000, actif: true }
-        ];
-      }
-
-      formalitesListe.forEach(function (formItem) {
-        var isCheck = formItem.actif ? " checked" : "";
-        html += '<div class="item-formalite-row" style="display:flex;align-items:center;justify-content:space-between;gap:6px;background:var(--color-surface-2);padding:4px 8px;border-radius:4px;border:1px solid var(--color-border)">';
-        html += '<label style="display:flex;align-items:center;gap:6px;font-size:11.5px;margin:0;cursor:pointer;flex:1">';
-        html += '<input type="checkbox" class="chk-formalite-item" data-code="' + formItem.code + '"' + isCheck + '> ';
-        html += '<span class="label-formalite-nom">' + formItem.libelle + '</span>';
-        html += '</label>';
-        html += '<input type="number" class="input input-formalite-montant" data-code="' + formItem.code + '" value="' + formItem.montantDefaut + '" style="width:75px;font-size:11px;padding:2px 4px;text-align:right;height:24px">';
-        html += '</div>';
-      });
-      html += '</div>';
+      html += '<div id="conteneur-cases-emoluments" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:6px;max-height:180px;overflow-y:auto;padding-right:4px"></div>';
 
       // Section Débours Tiers
       html += '<div style="margin-top:8px;border-top:1px dashed var(--color-border);padding-top:6px">';
@@ -5590,28 +5720,7 @@
       html += '<button type="button" class="btn btn-ghost" id="btn-ajouter-debours-libre" style="font-size:11px;padding:2px 8px;font-weight:600;color:var(--color-warning)">+ Ajouter un débours</button>';
       html += '</div>';
 
-      html += '<div id="conteneur-cases-debours" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:6px">';
-      
-      var deboursListe = catalogueLignes.filter(function (l) { return l.categorie === "debours"; });
-      if (!deboursListe.length) {
-        deboursListe = [
-          { code: "debours_dossier_technique", libelle: "Dossier technique / Géomètre", montantDefaut: 150000, actif: false },
-          { code: "debours_certificat_localisation", libelle: "Certificat localisation (Frais réels)", montantDefaut: 250000, actif: false },
-          { code: "debours_divers_formalites", libelle: "Débours divers de formalités", montantDefaut: 100000, actif: true }
-        ];
-      }
-
-      deboursListe.forEach(function (debItem) {
-        var isDebCheck = debItem.actif ? " checked" : "";
-        html += '<div class="item-formalite-row" style="display:flex;align-items:center;justify-content:space-between;gap:6px;background:var(--color-surface-2);padding:4px 8px;border-radius:4px;border:1px solid var(--color-border)">';
-        html += '<label style="display:flex;align-items:center;gap:6px;font-size:11.5px;margin:0;cursor:pointer;flex:1">';
-        html += '<input type="checkbox" class="chk-debours-item" data-code="' + debItem.code + '"' + isDebCheck + '> ';
-        html += '<span class="label-debours-nom">' + debItem.libelle + '</span>';
-        html += '</label>';
-        html += '<input type="number" class="input input-debours-montant" data-code="' + debItem.code + '" value="' + debItem.montantDefaut + '" style="width:75px;font-size:11px;padding:2px 4px;text-align:right;height:24px">';
-        html += '</div>';
-      });
-      html += '</div>';
+      html += '<div id="conteneur-cases-debours" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:6px"></div>';
       html += '</div>';
       html += '</div>';
 
@@ -5664,7 +5773,7 @@
         titre: titreForm,
         corps: html,
         boutonFermer: true,
-        largeur: "900px",
+        largeur: "920px",
         apresOuverture: function () {
           document.getElementById("btn-annuler-modal-taxe").addEventListener("click", fermerModal);
 
@@ -5682,6 +5791,59 @@
           var affMontant = document.getElementById("taxe-modal-montant-aff");
 
           var dernierCalculResultat = null;
+
+          function remplirCasesCatalogue(lignes) {
+            var contEmol = document.getElementById("conteneur-cases-emoluments");
+            var contDeb = document.getElementById("conteneur-cases-debours");
+            if (!contEmol || !contDeb) return;
+
+            var formalites = lignes.filter(function (l) { return l.categorie !== "debours"; });
+            var debours = lignes.filter(function (l) { return l.categorie === "debours"; });
+
+            var hEmol = "";
+            formalites.forEach(function (formItem) {
+              var isCheck = formItem.actif ? " checked" : "";
+              hEmol += '<div class="item-formalite-row" style="display:flex;align-items:center;justify-content:space-between;gap:6px;background:var(--color-surface-2);padding:4px 8px;border-radius:4px;border:1px solid var(--color-border)">';
+              hEmol += '<label style="display:flex;align-items:center;gap:6px;font-size:11.5px;margin:0;cursor:pointer;flex:1">';
+              hEmol += '<input type="checkbox" class="chk-formalite-item" data-code="' + formItem.code + '"' + isCheck + '> ';
+              hEmol += '<span class="label-formalite-nom">' + escapeHtml(formItem.libelle) + '</span>';
+              hEmol += '</label>';
+              hEmol += '<input type="number" class="input input-formalite-montant" data-code="' + formItem.code + '" value="' + formItem.montantDefaut + '" style="width:75px;font-size:11px;padding:2px 4px;text-align:right;height:24px">';
+              hEmol += '</div>';
+            });
+            contEmol.innerHTML = hEmol;
+
+            var hDeb = "";
+            debours.forEach(function (debItem) {
+              var isDebCheck = debItem.actif ? " checked" : "";
+              hDeb += '<div class="item-formalite-row" style="display:flex;align-items:center;justify-content:space-between;gap:6px;background:var(--color-surface-2);padding:4px 8px;border-radius:4px;border:1px solid var(--color-border)">';
+              hDeb += '<label style="display:flex;align-items:center;gap:6px;font-size:11.5px;margin:0;cursor:pointer;flex:1">';
+              hDeb += '<input type="checkbox" class="chk-debours-item" data-code="' + debItem.code + '"' + isDebCheck + '> ';
+              hDeb += '<span class="label-debours-nom">' + escapeHtml(debItem.libelle) + '</span>';
+              hDeb += '</label>';
+              hDeb += '<input type="number" class="input input-debours-montant" data-code="' + debItem.code + '" value="' + debItem.montantDefaut + '" style="width:75px;font-size:11px;padding:2px 4px;text-align:right;height:24px">';
+              hDeb += '</div>';
+            });
+            contDeb.innerHTML = hDeb;
+
+            attacherEcouteursCases();
+          }
+
+          // Remplissage initial des cases
+          remplirCasesCatalogue(catalogueLignes);
+
+          function actualiserCataloguePourActe(typeActeId, montant) {
+            API.get("/api/fiscal/catalogue-lignes?typeActeId=" + encodeURIComponent(typeActeId) + "&montant=" + (montant || 0))
+              .then(function (lignes) {
+                if (Array.isArray(lignes) && lignes.length > 0) {
+                  remplirCasesCatalogue(lignes);
+                }
+                recalculerApercuModal();
+              })
+              .catch(function () {
+                recalculerApercuModal();
+              });
+          }
 
           function construireSaisies() {
             var pagesMin = parseInt(document.getElementById("taxe-m-timbres-min").value, 10) || 4;
@@ -5736,18 +5898,19 @@
                 if (!zoneApercu) return;
 
                 var emo = f.emoluments || {};
-                var totalCA = f.totaux.emolumentsHT || (emo.totalEmolumentsHT || emo.montantHT);
-                var totalTresor = f.totaux.tresor || f.totaux.droitsEtat;
+                var totalCA = f.totaux.emolumentsHT || (emo.totalEmolumentsHT || emo.montantHT || 0);
+                var totalTresor = f.totaux.tresor || f.totaux.droitsEtat || 0;
                 var totalDebours = f.totaux.debours || 0;
-                var totalGeneral = f.totaux.general;
+                var totalGeneral = f.totaux.general || 0;
+                var tva = f.totaux.tva || f.tva || Math.round(totalCA * 0.18);
                 var enLettres = f.totaux.generalEnLettres || "";
 
-                var h = '<div class="card" style="background:var(--color-surface);border:1.5px solid var(--color-border);padding:10px 12px;margin-top:4px">';
+                var h = '<div class="card" style="background:var(--color-surface);border:1.5px solid var(--color-border);padding:12px;margin-top:4px">';
                 
-                // 3 Cartes de synthèse des 3 piliers
+                // 1. 3 Cartes de synthèse des 3 Pôles
                 h += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px">';
                 h += '<div style="background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.3);border-radius:6px;padding:8px;text-align:center">';
-                h += '<div style="font-size:10.5px;font-weight:700;color:var(--color-accent);text-transform:uppercase">CA Émoluments Notaire (HT)</div>';
+                h += '<div style="font-size:10.5px;font-weight:700;color:var(--color-accent);text-transform:uppercase">CA Émoluments (HT)</div>';
                 h += '<div style="font-size:15px;font-weight:800;color:var(--color-accent);margin-top:2px">' + fmtFCFA(totalCA) + '</div>';
                 h += '</div>';
 
@@ -5759,6 +5922,77 @@
                 h += '<div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.3);border-radius:6px;padding:8px;text-align:center">';
                 h += '<div style="font-size:10.5px;font-weight:700;color:#10b981;text-transform:uppercase">Débours Tiers (Frais réels)</div>';
                 h += '<div style="font-size:15px;font-weight:800;color:#10b981;margin-top:2px">' + fmtFCFA(totalDebours) + '</div>';
+                h += '</div>';
+                h += '</div>';
+
+                // 2. Encadré de Preuve Fiscale & Conformité Décret
+                var regleLib = emo.libelleRegle || emo.baremeNom || "Barème réglementaire (Décret 2013-279)";
+                var minApplique = emo.minimumApplique;
+
+                h += '<div style="background:rgba(37,99,235,0.06);border:1.5px solid rgba(37,99,235,0.3);border-radius:6px;padding:10px 12px;margin-bottom:10px">';
+                h += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;gap:4px">';
+                h += '<div style="font-weight:800;font-size:12px;color:var(--color-accent);display:flex;align-items:center;gap:6px">⚖️ DÉMONSTRATION DU CALCUL & BASES LÉGALES :</div>';
+                h += '<span class="tag ' + (minApplique ? 'tag-warning' : 'tag-accent') + '" style="font-size:10.5px;font-weight:700">' + escapeHtml(regleLib) + '</span>';
+                h += '</div>';
+
+                // Tranches détaillées
+                if (emo.detailTranches && emo.detailTranches.length) {
+                  h += '<div style="font-size:11.5px;color:var(--color-text);margin-bottom:6px;background:var(--color-bg);padding:6px 10px;border-radius:4px;border:1px solid var(--color-border)">';
+                  h += '<div style="font-weight:700;margin-bottom:4px;color:var(--color-text-dim);font-size:10.5px;text-transform:uppercase">Décomposition des tranches d\'émoluments :</div>';
+                  emo.detailTranches.forEach(function (tr, idx) {
+                    var pct = (tr.taux * 100).toFixed(2).replace(".00", "");
+                    var borneA = (tr.a === null || tr.a === Infinity || tr.a === 0) ? "au-delà" : fmtFCFA(tr.a);
+                    h += '<div style="display:flex;justify-content:space-between;padding:2px 0;font-family:\'JetBrains Mono\',monospace;font-size:11px">';
+                    h += '<span>Tranche ' + (idx + 1) + ' [' + fmtFCFA(tr.de) + ' → ' + borneA + '] à ' + pct + ' % :</span>';
+                    h += '<strong style="color:var(--color-accent)">' + fmtFCFA(tr.montant) + '</strong>';
+                    h += '</div>';
+                  });
+                  h += '</div>';
+                }
+
+                // Paramètres DGI, Foncier, Timbres et TVA
+                h += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:6px;font-size:11px;color:var(--color-text-dim)">';
+                var dgiLib = "Droits DGI : " + fmtFCFA((f.droitEnregistrement && f.droitEnregistrement.montant) || 0);
+                if (f.droitEnregistrement && f.droitEnregistrement.taux) dgiLib += " (" + (f.droitEnregistrement.taux * 100).toFixed(1).replace('.0','') + " %)";
+                else if (f.droitEnregistrement && f.droitEnregistrement.mode === "fixe") dgiLib += " (Fixe)";
+                h += '<div>🏛️ ' + dgiLib + '</div>';
+
+                var foncLib = "Taxe Foncière : " + ((f.taxeFonciere && f.taxeFonciere.total) ? fmtFCFA(f.taxeFonciere.total) + " (1,2% + 3k)" : "0 FCFA (Non applicable)");
+                h += '<div>📜 ' + foncLib + '</div>';
+
+                var timbRoles = ((f.timbres && f.timbres.total) || 0) + ((f.roles && f.roles.total) || 0);
+                h += '<div>📑 Timbres & Rôles : ' + fmtFCFA(timbRoles) + ' (500 F/p)</div>';
+                h += '<div>📊 TVA 18 % sur émoluments : ' + fmtFCFA(tva) + '</div>';
+                h += '</div>';
+                h += '</div>';
+
+                var totalCalcul = totalGeneral || (totalCA + totalTresor + totalDebours + tva);
+                var pctCA = totalCalcul > 0 ? ((totalCA / totalCalcul) * 100).toFixed(1) : 0;
+                var pctTresor = totalCalcul > 0 ? ((totalTresor / totalCalcul) * 100).toFixed(1) : 0;
+                var pctDebours = totalCalcul > 0 ? ((totalDebours / totalCalcul) * 100).toFixed(1) : 0;
+                var pctTva = totalCalcul > 0 ? ((tva / totalCalcul) * 100).toFixed(1) : 0;
+
+                // BARRE VISUELLE DE RÉPARTITION FINANCIÈRE (SPLIT CHART)
+                h += '<div style="background:var(--color-surface-2);border:1px solid var(--color-border);border-radius:8px;padding:10px 12px;margin-bottom:10px">';
+                h += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;gap:4px">';
+                h += '<span style="font-size:11px;font-weight:800;color:var(--color-text-dim);text-transform:uppercase">📊 Répartition des Flux Financiers (Split Décret 2013-279) :</span>';
+                h += '<span style="font-size:11px;font-weight:700;color:var(--color-accent)">Total TTC : ' + fmtFCFA(totalGeneral) + '</span>';
+                h += '</div>';
+
+                // Barre segmentée proportionnelle
+                h += '<div style="display:flex;height:12px;border-radius:6px;overflow:hidden;background:rgba(255,255,255,0.05);margin-bottom:8px;box-shadow:inset 0 1px 2px rgba(0,0,0,0.2)">';
+                if (parseFloat(pctTresor) > 0) h += '<div style="width:' + pctTresor + '%;background:#f59e0b;transition:width 0.3s ease" title="Trésor Public (DGI & Foncier) : ' + pctTresor + '%"></div>';
+                if (parseFloat(pctCA) > 0) h += '<div style="width:' + pctCA + '%;background:#6366f1;transition:width 0.3s ease" title="Émoluments Notaire (HT) : ' + pctCA + '%"></div>';
+                if (parseFloat(pctTva) > 0) h += '<div style="width:' + pctTva + '%;background:#ec4899;transition:width 0.3s ease" title="TVA 18% : ' + pctTva + '%"></div>';
+                if (parseFloat(pctDebours) > 0) h += '<div style="width:' + pctDebours + '%;background:#10b981;transition:width 0.3s ease" title="Débours Tiers : ' + pctDebours + '%"></div>';
+                h += '</div>';
+
+                // Légende interactive avec pourcentages
+                h += '<div style="display:flex;gap:12px;flex-wrap:wrap;font-size:11px">';
+                h += '<div style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:#f59e0b;display:inline-block"></span><strong style="color:#f59e0b">Trésor : ' + pctTresor + '%</strong> (' + fmtFCFA(totalTresor) + ')</div>';
+                h += '<div style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:#6366f1;display:inline-block"></span><strong style="color:#6366f1">Émoluments HT : ' + pctCA + '%</strong> (' + fmtFCFA(totalCA) + ')</div>';
+                h += '<div style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:#ec4899;display:inline-block"></span><strong style="color:#ec4899">TVA 18% : ' + pctTva + '%</strong> (' + fmtFCFA(tva) + ')</div>';
+                h += '<div style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:#10b981;display:inline-block"></span><strong style="color:#10b981">Débours : ' + pctDebours + '%</strong> (' + fmtFCFA(totalDebours) + ')</div>';
                 h += '</div>';
                 h += '</div>';
 
@@ -5820,14 +6054,96 @@
                 h += '<div style="font-size:14px;font-weight:900;color:var(--color-accent)">Total TTC : ' + fmtFCFA(totalGeneral) + '</div>';
                 h += '</div>';
 
+                // BOUTONS D'ACCÈS DIRECT AUX 3 FORMATS + PARTAGE SÉCURISÉ WHATSAPP / LIEN
+                h += '<div style="display:flex;justify-content:space-between;align-items:center;gap:6px;margin-top:10px;padding-top:8px;border-top:1px dashed var(--color-border);flex-wrap:wrap">';
+                
+                // Outils de Partage Client
+                h += '<div style="display:flex;gap:6px;flex-wrap:wrap">';
+                h += '<button type="button" class="btn btn-secondary" id="btn-partager-taxe-whatsapp" style="font-size:11px;padding:4px 8px;font-weight:700;color:#25d366;border-color:rgba(37,211,102,0.4);background:rgba(37,211,102,0.08)" title="Envoyer le résumé de la note de frais par WhatsApp au client">📱 WhatsApp</button>';
+                h += '<button type="button" class="btn btn-secondary" id="btn-copier-lien-taxe" style="font-size:11px;padding:4px 8px;font-weight:700;color:var(--color-text-dim)" title="Copier le lien sécurisé de consultation client">🔗 Copier Lien Client</button>';
+                h += '</div>';
+
+                // Formats d'impression directe A4
+                h += '<div style="display:flex;gap:6px;flex-wrap:wrap">';
+                h += '<button type="button" class="btn btn-secondary btn-apercu-direct-doc" data-fmt="fiche_taxe" style="font-size:11px;padding:4px 9px;font-weight:700;color:#d97706;border-color:rgba(217,119,6,0.35);background:rgba(217,119,6,0.08)">🖨️ Fiche de Taxe (4 Col)</button>';
+                h += '<button type="button" class="btn btn-secondary btn-apercu-direct-doc" data-fmt="note_frais" style="font-size:11px;padding:4px 9px;font-weight:700;color:#059669;border-color:rgba(5,150,105,0.35);background:rgba(5,150,105,0.08)">🖨️ Note de Frais (3 Pôles)</button>';
+                h += '<button type="button" class="btn btn-secondary btn-apercu-direct-doc" data-fmt="facture" style="font-size:11px;padding:4px 9px;font-weight:700;color:#0891b2;border-color:rgba(8,145,178,0.35);background:rgba(8,145,178,0.08)">🖨️ Facture Normalisée TTC</button>';
+                h += '</div>';
+                h += '</div>';
+
                 h += '</div>';
                 zoneApercu.innerHTML = h;
+
+                // Écouteur WhatsApp
+                var btnWhatsApp = document.getElementById("btn-partager-taxe-whatsapp");
+                if (btnWhatsApp) {
+                  btnWhatsApp.addEventListener("click", function (ev) {
+                    ev.preventDefault();
+                    var dNom = selectTypeActe ? selectTypeActe.options[selectTypeActe.selectedIndex].text : "Acte notarié";
+                    var msg = "Bonjour,\n\nVoici le décompte prévisionnel officiel (Décret 2013-279) pour votre dossier [" + dNom + "] :\n\n" +
+                              "• Droits d'Enregistrement & Trésor : " + fmtFCFA(totalTresor) + "\n" +
+                              "• Frais & Débours Tiers : " + fmtFCFA(totalDebours) + "\n" +
+                              "• Émoluments Notaire (TTC) : " + fmtFCFA(totalCA + tva) + "\n\n" +
+                              "➡ TOTAL DE LA PROVISION : " + fmtFCFA(totalGeneral) + "\n" +
+                              "(" + enLettres + ")\n\n" +
+                              "Office Notarial — Gestion Numérique Sécurisée.";
+                    var urlWa = "https://wa.me/?text=" + encodeURIComponent(msg);
+                    window.open(urlWa, "_blank");
+                  });
+                }
+
+                // Écouteur Copier Lien
+                var btnCopierLien = document.getElementById("btn-copier-lien-taxe");
+                if (btnCopierLien) {
+                  btnCopierLien.addEventListener("click", function (ev) {
+                    ev.preventDefault();
+                    var curUrl = window.location.origin + "/demo.html#facturation";
+                    navigator.clipboard.writeText(curUrl).then(function () {
+                      btnCopierLien.textContent = "✓ Lien Copié !";
+                      setTimeout(function () { btnCopierLien.textContent = "🔗 Copier Lien Client"; }, 2000);
+                    }).catch(function () {
+                      alert("Lien client : " + curUrl);
+                    });
+                  });
+                }
+
+                zoneApercu.querySelectorAll(".btn-apercu-direct-doc").forEach(function (b) {
+                  b.addEventListener("click", function (e) {
+                    e.preventDefault();
+                    ouvrirFormatDepuisModal(b.dataset.fmt);
+                  });
+                });
               })
               .catch(function (e) {
                 var zoneApercu = document.getElementById("zone-apercu-calcul-modal");
                 if (zoneApercu) zoneApercu.innerHTML = '<div class="alert alert-warning" style="margin-top:6px;font-size:11.5px">Calcul automatique non disponible : ' + escapeHtml(e.message) + '</div>';
               });
           }
+
+          // Écouteurs sur les chips de presets démo dans la modale
+          document.querySelectorAll(".btn-preset-demo-chip").forEach(function (btn) {
+            btn.addEventListener("click", function (ev) {
+              ev.preventDefault();
+              var scId = btn.dataset.scenarioId;
+              var sc = SCENARIOS_DEMO_NOTARIAUX.find(function (it) { return it.id === scId; });
+              if (sc) {
+                document.querySelectorAll(".btn-preset-demo-chip").forEach(function (b) {
+                  b.classList.remove("btn-primary");
+                  b.classList.add("btn-secondary");
+                  b.style.background = "var(--color-surface)";
+                  b.style.color = "var(--color-text)";
+                });
+                btn.classList.remove("btn-secondary");
+                btn.classList.add("btn-primary");
+                btn.style.background = "var(--color-accent)";
+                btn.style.color = "#fff";
+
+                selectTypeActe.value = sc.typeActeId;
+                inputMontant.value = formaterEspaces(sc.montant);
+                actualiserCataloguePourActe(sc.typeActeId, sc.montant);
+              }
+            });
+          });
 
           // Formatage automatique du montant avec séparateurs d'espaces
           inputMontant.addEventListener("input", function () {
@@ -5848,11 +6164,14 @@
             if (curDossier) {
               selectTypeActe.value = curDossier.typeActeId;
               inputMontant.value = formaterEspaces(Number(curDossier.montantAssiette) || 0);
-              recalculerApercuModal();
+              actualiserCataloguePourActe(curDossier.typeActeId, Number(curDossier.montantAssiette) || 0);
             }
           });
 
-          selectTypeActe.addEventListener("change", recalculerApercuModal);
+          selectTypeActe.addEventListener("change", function () {
+            var mnt = extraireNombre(inputMontant.value);
+            actualiserCataloguePourActe(selectTypeActe.value, mnt);
+          });
 
           // Écouteurs sur les inputs de pages
           ["taxe-m-timbres-min", "taxe-m-timbres-exp", "taxe-m-timbres-nbexp", "taxe-m-roles-copies"].forEach(function (fId) {
@@ -5936,8 +6255,8 @@
           function ouvrirFormatDepuisModal(formatCible) {
             var dId = selectDossier ? selectDossier.value : (dossierInitial && dossierInitial.id);
             var curDossier = dossiers.find(function (d) { return String(d.id) === String(dId); }) || dossierInitial || {
-              id: dId,
-              numeroDossier: "DOSSIER",
+              id: dId || "dos-demo-sim",
+              numeroDossier: "SIMULATION",
               typeActeId: selectTypeActe ? selectTypeActe.value : "vente_immobiliere",
               montantAssiette: inputMontant ? extraireNombre(inputMontant.value) : 10000000
             };
@@ -5977,8 +6296,8 @@
           var btnModalExcel = document.getElementById("btn-modal-taxe-export-excel");
           if (btnModalExcel) {
             btnModalExcel.addEventListener("click", function () {
-              var dId = selectDossier.value;
-              var curDossier = (cache.dossiers || []).find(function (d) { return d.id === dId; }) || { id: dId };
+              var dId = selectDossier ? selectDossier.value : "simulation";
+              var curDossier = (cache.dossiers || []).find(function (d) { return d.id === dId; }) || { id: dId, numeroDossier: "SIMULATION" };
               var nomFichier = "Liquidation_" + (curDossier.numeroDossier || "Notaire") + ".xlsx";
               var saisies = construireSaisies();
               toast("Génération et remplissage de la matrice Excel (.xlsx)...");
@@ -5998,7 +6317,7 @@
 
           // Fonctions de soumission déontologique
           function enregistrerTaxeAvecStatut(statutCible, commentaireCustom) {
-            var dId = selectDossier.value;
+            var dId = selectDossier ? selectDossier.value : (dossierInitial && dossierInitial.id);
             var errZone = document.getElementById("erreur-creer-taxe");
             errZone.style.display = "none";
             var saisies = construireSaisies();
@@ -6104,6 +6423,9 @@
               }
             });
           }
+
+          // Lancement immédiat du calcul
+          recalculerApercuModal();
         },
       });
     });
@@ -9008,7 +9330,16 @@
       API.get("/api/telemetrie/erreurs").catch(function () { return []; }),
       API.get("/api/telemetrie/noeuds").catch(function () { return []; }),
     ]).then(function (res) {
-      var stats = res[0], etudes = res[1], equipe = res[2] || [], matricePerms = res[3], infra = res[4], sauvegardes = res[5], tickets = res[6] || [], journal = res[7] || [], erreursParc = res[8] || [], noeudsHeartbeat = res[9] || [];
+      var stats = res[0] || {};
+      var etudes = Array.isArray(res[1]) ? res[1] : [];
+      var equipe = Array.isArray(res[2]) ? res[2] : [];
+      var matricePerms = res[3] || {};
+      var infra = res[4] || {};
+      var sauvegardes = Array.isArray(res[5]) ? res[5] : [];
+      var tickets = Array.isArray(res[6]) ? res[6] : [];
+      var journal = Array.isArray(res[7]) ? res[7] : [];
+      var erreursParc = Array.isArray(res[8]) ? res[8] : [];
+      var noeudsHeartbeat = Array.isArray(res[9]) ? res[9] : [];
 
       var ongletActif = etatSuperadmin.onglet || "etudes";
 
@@ -9084,7 +9415,12 @@
 
         html += '<div class="table-wrap"><table class="table"><thead><tr><th>Code Tenant</th><th>Office Notarial</th><th>Notaire Titulaire</th><th>Hébergement</th><th>Dossiers / Minutes</th><th>Collaborateurs</th><th>Santé Serveur</th><th>Actions</th></tr></thead><tbody>';
         etudes.forEach(function (e, index) {
-          var modeBadge = '<span class="tag" style="background:rgba(56,189,248,0.15);color:#38bdf8;border:1px solid rgba(56,189,248,0.3)">Cloud Multi-Tenant</span>';
+          var modeBadge = '<span class="tag" style="background:rgba(56,189,248,0.15);color:#38bdf8;border:1px solid rgba(56,189,248,0.3)">Mode B Cloud Dédié</span>';
+          if (e.modeInfrastructure === "hybride") {
+            modeBadge = '<span class="tag" style="background:rgba(34,197,94,0.15);color:#22c55e;border:1px solid rgba(34,197,94,0.3)">Mode C Hybride</span>';
+          } else if (e.modeInfrastructure === "serveur_physique") {
+            modeBadge = '<span class="tag" style="background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3)">Mode A Local</span>';
+          }
 
           html += '<tr>';
           html += '<td><strong style="font-family:monospace;color:var(--color-text);font-size:12px">' + (e.codeEtude || "ETUDE-001") + '</strong></td>';
@@ -9567,10 +9903,10 @@
   // =========================================================================
   function modalDeploiementEtude(etudeId, nomEtude) {
     ouvrirModal({
-      titre: 'Mise en Ligne & Déploiement — ' + nomEtude,
+      titre: '<span>🚀</span> Mise en Ligne & Déploiement — ' + nomEtude,
       corps: '<p class="text-muted">Chargement des paramètres techniques et clés de déploiement…</p>',
       boutonFermer: true,
-      largeur: "720px",
+      largeur: "740px",
       apresOuverture: function () {
         API.get("/api/superadmin/etudes/" + etudeId + "/deploiement").then(function (dep) {
           var e = dep.etude;
@@ -9583,31 +9919,53 @@
 
           html += '<div style="display:grid;grid-template-columns:1fr;gap:var(--space-3)">';
 
-          // OPTION 1 : SOUS-DOMAINE CLOUD IMMÉDIAT
+          // CAS 1 : 100% CLOUD CLÉ-EN-MAIN
           html += '<div class="card" style="background:var(--color-surface);border:1px solid rgba(56,189,248,0.3);padding:var(--space-3)">';
-          html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><strong style="color:#38bdf8;font-size:13.5px">Option 1 : Espace Cloud Instantané (Sous-domaine dédié)</strong></div>';
-          html += '<p style="font-size:12px;color:var(--color-text);margin:0 0 8px">L\'office est activé immédiatement sur votre serveur centralisé. Aucune installation technique requise.</p>';
+          html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:18px">☁️</span><strong style="color:#38bdf8;font-size:13.5px">Cas 1 : L\'étude n\'a aucun matériel (100% Cloud Clé-en-main)</strong></div>';
+          html += '<p style="font-size:12px;color:var(--color-text);margin:0 0 8px">L\'office est hébergé directement sur vos clusters Cloud Vault multi-tenants. Aucune installation matérielle requise.</p>';
           html += '<div style="background:var(--color-surface-2);padding:8px 10px;border-radius:var(--radius);font-size:12px;font-family:monospace;color:var(--color-text);display:flex;justify-content:space-between;align-items:center">';
           html += '<span>' + dep.urlCloudAutomatique + '</span>';
-          html += '<button type="button" class="btn btn-secondary" onclick="navigator.clipboard.writeText(\'' + dep.urlCloudAutomatique + '\');toast(\'Lien d\\\'accès copié !\')" style="font-size:10.5px;padding:2px 6px">Copier l\'URL</button>';
+          html += '<button type="button" class="btn btn-secondary" onclick="navigator.clipboard.writeText(\'' + dep.urlCloudAutomatique + '\');toast(\'Lien d\\\'accès copié !\')" style="font-size:10.5px;padding:2px 6px">📋 Copier</button>';
           html += '</div>';
-          html += '<div style="font-size:11px;color:var(--color-text-dim);margin-top:6px">Transmettez ce lien avec l\'email administrateur au notaire titulaire. Accès immédiat sécurisé HTTPS.</div>';
+          html += '<div style="font-size:11px;color:var(--color-text-dim);margin-top:6px">Transmettez cette URL avec l\'email administrateur du notaire titulaire. Accès immédiat SSL sécurisé.</div>';
           html += '</div>';
 
-          // OPTION 2 : NOM DE DOMAINE PERSONNALISÉ
+          // CAS 2 : NOM DE DOMAINE PERSONNALISÉ
           html += '<div class="card" style="background:var(--color-surface);border:1px solid rgba(34,197,94,0.3);padding:var(--space-3)">';
-          html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><strong style="color:#22c55e;font-size:13.5px">Option 2 : Nom de Domaine Personnalisé du Cabinet (ex. notaire-kouame.ci)</strong></div>';
-          html += '<p style="font-size:12px;color:var(--color-text);margin:0 0 8px">Le notaire conserve son adresse web officielle sur votre serveur central sans infrastructure séparée.</p>';
+          html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:18px">🌐</span><strong style="color:#22c55e;font-size:13.5px">Cas 2 : L\'étude dispose de son propre Nom de Domaine (ex. notaire-kouame.ci)</strong></div>';
+          html += '<p style="font-size:12px;color:var(--color-text);margin:0 0 8px">L\'office souhaite que ses clercs et clients accèdent à la plateforme via son adresse internet officielle.</p>';
           html += '<div style="background:var(--color-surface-2);padding:8px 10px;border-radius:var(--radius);font-size:11.5px;line-height:1.5">';
-          html += '<div>Configuration DNS chez le registraire du notaire (1 minute) :</div>';
-          html += '<div style="font-family:monospace;color:#38bdf8;margin:3px 0">Type CNAME : <code>' + dep.dnsRecommande.hote + '</code> -> Cible : <code>' + dep.dnsRecommande.cible + '</code></div>';
-          html += '<div>Certificat SSL : <strong style="color:#22c55e">Génération automatique TLS 1.3 Let\'s Encrypt</strong> par votre serveur central.</div>';
+          html += '<div>1. Créez un enregistrement DNS chez le registraire du notaire :</div>';
+          html += '<div style="font-family:monospace;color:#38bdf8;margin:3px 0">Type CNAME : <code>' + dep.dnsRecommande.hote + '</code> ➜ Cible : <code>' + dep.dnsRecommande.cible + '</code> (ou A ➜ <code>' + dep.dnsRecommande.ipA + '</code>)</div>';
+          html += '<div>2. Certificat SSL : <strong style="color:#22c55e">Génération TLS 1.3 Let\'s Encrypt automatique</strong> dès la détection de la propagation DNS.</div>';
           html += '</div>';
+          html += '</div>';
+
+          // CAS 3 : SERVEUR PHYSIQUE LOCAL (ON-PREMISE OU HYBRIDE)
+          html += '<div class="card" style="background:var(--color-surface);border:1px solid rgba(245,158,11,0.3);padding:var(--space-3)">';
+          html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:18px">🖥️</span><strong style="color:#f59e0b;font-size:13.5px">Cas 3 : L\'étude dispose d\'un Serveur Physique Local (Mode A Local ou Mode C Hybride)</strong></div>';
+          html += '<p style="font-size:12px;color:var(--color-text);margin:0 0 8px">Pour installer l\'instance sur le mini-serveur ou NAS physique de l\'office (Mac Mini, Linux, Windows, Synology).</p>';
+          html += '<div style="background:var(--color-surface-2);padding:8px 10px;border-radius:var(--radius);font-size:11.5px">';
+          html += '<div style="margin-bottom:4px">Clé d\'appairage de l\'étude (Pair Token) : <code style="color:#f59e0b;font-weight:bold">' + dep.pairToken + '</code></div>';
+          html += '<div style="font-size:11px;color:var(--color-text-dim);margin-bottom:6px">Exécutez cette commande en 1 ligne sur le serveur physique de l\'office :</div>';
+          html += '<div style="background:#090d16;padding:6px 8px;border-radius:var(--radius);font-family:monospace;font-size:11px;color:#38bdf8;word-break:break-all;display:flex;justify-content:space-between;align-items:center">';
+          html += '<span>' + dep.commandeInstallServeurPhysique + '</span>';
+          html += '<button type="button" class="btn btn-secondary" onclick="navigator.clipboard.writeText(\'' + (dep.commandeInstallServeurPhysique || "").replace(/'/g, "\\'") + '\');toast(\'Commande copiée !\')" style="font-size:10px;padding:2px 6px;margin-left:6px">📋 Copier</button>';
+          html += '</div>';
+          html += '<div style="font-size:11px;color:var(--color-text-dim);margin-top:6px">🔒 <em>Sécurité Réseau :</em> Le serveur physique local initie une connexion sortante sécurisée (WSS/HTTPS) vers votre SaaS. Aucun port à ouvrir sur la box internet du notaire.</div>';
+          html += '</div>';
+          html += '</div>';
+
+          // CAS 4 : CLOUD DÉDIÉ CLIENT (BYOS)
+          html += '<div class="card" style="background:var(--color-surface);border:1px solid var(--color-border);padding:var(--space-3)">';
+          html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:18px">🗄️</span><strong style="color:var(--color-text);font-size:13.5px">Cas 4 : L\'étude dispose de son propre Cloud Dédié (BYOS - Bucket S3 / MinIO privé)</strong></div>';
+          html += '<p style="font-size:12px;color:var(--color-text);margin:0 0 6px">Pour les grands cabinets exigeant un stockage scellé sur leur propre abonnement AWS ou Cloud privé.</p>';
+          html += '<div style="font-size:11.5px;color:var(--color-text-dim)">Les clés S3 d\'infrastructure peuvent être directement configurées dans l\'onglet <em>⚙️ Configurer l\'Office</em>.</div>';
           html += '</div>';
 
           html += '</div>';
 
-          html += '<div style="display:flex;justify-content:flex-end;margin-top:var(--space-2)"><button type="button" class="btn btn-primary" onclick="fermerModal()">Terminer</button></div>';
+          html += '<div style="display:flex;justify-content:flex-end;margin-top:var(--space-2)"><button type="button" class="btn btn-primary" onclick="fermerModal()">Fermer le guide</button></div>';
           html += '</div>';
 
           var corpsModale = document.querySelector("#modal-conteneur .modal-corps");
@@ -9745,6 +10103,7 @@
   // MODALE : DÉPLOYER UN NOUVEL OFFICE NOTARIAL (PROVISIONING SAAS MULTI-TENANT)
   // =========================================================================
   // =========================================================================
+  // =========================================================================
   // MODALE : DÉPLOYER UN NOUVEL OFFICE NOTARIAL (PROVISIONING SAAS MULTI-TENANT)
   // =========================================================================
   function modalDeployerNouvelleEtude() {
@@ -9763,30 +10122,29 @@
     html += '</div>';
 
     html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2)">';
-    html += '<div class="field"><label>Formule d\'Abonnement SaaS</label><select class="input" name="modeInfrastructure">';
-    html += '<option value="cloud" selected>Formule Cloud Standard (100 Go)</option>';
-    html += '<option value="cloud_pro">Formule Cloud Professionnelle (250 Go)</option>';
-    html += '<option value="cloud_enterprise">Formule Cloud Entreprise (500 Go)</option>';
-    html += '<option value="cloud_illimite">Formule Grand Cabinet (1 To)</option>';
+    html += '<div class="field"><label>Mode d\'infrastructure</label><select class="input" name="modeInfrastructure">';
+    html += '<option value="hybride" selected>Mode C — Hybride (Local + Cloud Vault) [Recommandé]</option>';
+    html += '<option value="cloud">Mode B — Cloud Dédié (Vault)</option>';
+    html += '<option value="serveur_physique">Mode A — Serveur Physique Local Exclusif</option>';
     html += '</select></div>';
-    html += '<div class="field"><label>Quota de Stockage GED Alloué</label><select class="input" name="quotaStockageGo">';
-    html += '<option value="100" selected>100 Go</option>';
-    html += '<option value="250">250 Go</option>';
-    html += '<option value="500">500 Go</option>';
-    html += '<option value="1000">1 000 Go (1 To)</option>';
+    html += '<div class="field"><label>Quota de Stockage Cloud/Local</label><select class="input" name="quotaStockageGo">';
+    html += '<option value="100" selected>100 Go (Standard)</option>';
+    html += '<option value="250">250 Go (Grand Cabinet)</option>';
+    html += '<option value="500">500 Go (Fonds Historique Lourd)</option>';
+    html += '<option value="1000">1 To (Multi-Notaires Associés)</option>';
     html += '</select></div>';
     html += '</div>';
 
     html += '<div style="font-size:11px;color:var(--color-text-dim);background:var(--color-surface-2);padding:8px 10px;border-radius:var(--radius);border:1px solid var(--color-border)">';
-    html += '<strong>Isolation Stricte :</strong> L\'office bénéficiera immédiatement d\'un tenant PostgreSQL partitionné (`etude_id`), d\'un compte administrateur Notaire prêt à l\'emploi, et d\'un chiffrement AES-256 des secrets conforme au secret professionnel.';
+    html += '🔒 <strong>Isolation Stricte :</strong> L\'office bénéficiera immédiatement d\'un tenant PostgreSQL partitionné (`etude_id`), d\'un compte administrateur Notaire prêt à l\'emploi, et d\'un chiffrement AES-256 des secrets conforme au secret professionnel.';
     html += '</div>';
 
     html += '<div id="erreur-deployer-etude" class="erreur-inline" style="display:none"></div>';
-    html += '<div style="display:flex;justify-content:flex-end;gap:var(--space-2);margin-top:var(--space-2)"><button type="button" class="btn btn-ghost" id="btn-annuler-deploy">Annuler</button><button type="submit" class="btn btn-primary">Déployer & Initialiser l\'Office</button></div>';
+    html += '<div style="display:flex;justify-content:flex-end;gap:var(--space-2);margin-top:var(--space-2)"><button type="button" class="btn btn-ghost" id="btn-annuler-deploy">Annuler</button><button type="submit" class="btn btn-primary">🏛️ Déployer & Initialiser l\'Office</button></div>';
     html += '</form>';
 
     ouvrirModal({
-      titre: 'Déploiement d\'un Nouvel Office Notarial (Multi-Tenant SaaS)',
+      titre: '<span>🏛️</span> Déploiement d\'un Nouvel Office Notarial (Multi-Tenant SaaS)',
       corps: html,
       boutonFermer: true,
       largeur: "580px",
@@ -9809,7 +10167,7 @@
           };
 
           API.post("/api/superadmin/etudes", payload).then(function (nouvelle) {
-            toast("Office Notarial " + nouvelle.nom_etude + " déployé avec succès ! Compte administrateur créé.");
+            toast("Office Notarial " + (nouvelle.nomEtude || nouvelle.nom_etude) + " déployé avec succès ! Compte administrateur créé.");
             fermerModal();
             renderSuperAdmin();
           }).catch(function (e) {
@@ -9829,7 +10187,7 @@
 
     html += '<div style="display:flex;justify-content:space-between;align-items:center;background:var(--color-surface-2);padding:8px 12px;border-radius:var(--radius);border:1px solid var(--color-border)">';
     html += '<div><strong style="font-size:13px;color:var(--color-text)">Code Tenant : <code>' + (etude.codeEtude || "ETUDE-001") + '</code></strong></div>';
-    html += '<span class="tag tag-accent">' + (etude.statutSante || "En ligne") + '</span>';
+    html += '<span class="tag tag-accent">' + (etude.statutSante || "🟢 En ligne") + '</span>';
     html += '</div>';
 
     html += '<div class="field"><label>Nom de l\'office notarial</label><input class="input" name="nomEtude" value="' + (etude.nomEtude || "") + '" required></div>';
@@ -9840,8 +10198,12 @@
     html += '</div>';
 
     html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2)">';
-    html += '<div class="field"><label>Plateforme d\'Hébergement</label><input class="input" value="Cloud Multi-Tenant Centralisé" readonly style="opacity:.8;cursor:not-allowed"></div>';
-    html += '<div class="field"><label>Quota de Stockage GED Alloué (Go)</label><input class="input" type="number" name="quotaStockageGo" value="' + (etude.quotaStockageGo || 100) + '" required></div>';
+    html += '<div class="field"><label>Mode d\'Infrastructure</label><select class="input" name="modeInfrastructure">';
+    html += '<option value="hybride"' + (etude.modeInfrastructure === "hybride" ? " selected" : "") + '>Mode C — Hybride (Local + Cloud Vault)</option>';
+    html += '<option value="cloud"' + (etude.modeInfrastructure === "cloud" ? " selected" : "") + '>Mode B — Cloud Dédié</option>';
+    html += '<option value="serveur_physique"' + (etude.modeInfrastructure === "serveur_physique" ? " selected" : "") + '>Mode A — Serveur Physique Local</option>';
+    html += '</select></div>';
+    html += '<div class="field"><label>Quota de Stockage Alloué (Go)</label><input class="input" type="number" name="quotaStockageGo" value="' + (etude.quotaStockageGo || 100) + '" required></div>';
     html += '</div>';
 
     html += '<div class="field"><label>Domaine / Sous-domaine de l\'office</label><input class="input" name="domaine" value="' + (etude.domaine || "") + '"></div>';
@@ -9851,7 +10213,7 @@
     html += '</form>';
 
     ouvrirModal({
-      titre: 'Configuration de l\'Office Notarial',
+      titre: '<span>⚙️</span> Configuration de l\'Office Notarial',
       corps: html,
       boutonFermer: true,
       largeur: "560px",
@@ -9864,7 +10226,7 @@
             nomEtude: form.nomEtude.value.trim(),
             titreNotaire: form.titreNotaire.value.trim(),
             ville: form.ville.value.trim(),
-            modeInfrastructure: "cloud",
+            modeInfrastructure: form.modeInfrastructure.value,
             quotaStockageGo: parseInt(form.quotaStockageGo.value, 10) || 100,
             domaine: form.domaine.value.trim(),
           };

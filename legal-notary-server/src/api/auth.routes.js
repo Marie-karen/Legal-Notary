@@ -15,20 +15,24 @@ const {
 
 const router = express.Router();
 
-router.post("/connexion", limiterTentativesConnexion, async (req, res) => {
-  const { email, motDePasse } = req.body || {};
-  if (!email || !motDePasse) {
-    return res.status(400).json({ erreur: "Email et mot de passe requis." });
-  }
+router.post("/connexion", limiterTentativesConnexion, async (req, res, next) => {
+  try {
+    const { email, motDePasse } = req.body || {};
+    if (!email || !motDePasse) {
+      return res.status(400).json({ erreur: "Email et mot de passe requis." });
+    }
 
-  const resultat = await authService.connecter(email, motDePasse);
-  if (!resultat) {
-    enregistrerEchecConnexion(req);
-    return res.status(401).json({ erreur: "Email ou mot de passe incorrect." });
-  }
+    const resultat = await authService.connecter(email, motDePasse);
+    if (!resultat) {
+      enregistrerEchecConnexion(req);
+      return res.status(401).json({ erreur: "Email ou mot de passe incorrect." });
+    }
 
-  reinitialiserTentativesConnexion(req);
-  res.json(resultat);
+    reinitialiserTentativesConnexion(req);
+    res.json(resultat);
+  } catch (err) {
+    next(err);
+  }
 });
 
 module.exports = router;
