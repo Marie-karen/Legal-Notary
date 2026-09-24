@@ -432,6 +432,35 @@
     toast("Thème appliqué : " + (nouveauTheme === "light" ? "Mode Clair" : "Mode Sombre"));
   }
 
+  function basculerMenuMobile() {
+    var sidebar = document.getElementById("menu-navigation-laterale");
+    var backdrop = document.getElementById("mobile-menu-backdrop");
+    var btnIcon = document.getElementById("burger-icon-symbol");
+    if (!sidebar) return;
+
+    var estOuvert = sidebar.classList.contains("menu-mobile-ouvert");
+    if (estOuvert) {
+      sidebar.classList.remove("menu-mobile-ouvert");
+      if (backdrop) backdrop.classList.remove("actif");
+      if (btnIcon) btnIcon.textContent = "☰";
+    } else {
+      sidebar.classList.add("menu-mobile-ouvert");
+      if (backdrop) backdrop.classList.add("actif");
+      if (btnIcon) btnIcon.textContent = "✕";
+    }
+  }
+
+  function fermerMenuMobile() {
+    var sidebar = document.getElementById("menu-navigation-laterale");
+    var backdrop = document.getElementById("mobile-menu-backdrop");
+    var btnIcon = document.getElementById("burger-icon-symbol");
+    if (sidebar) sidebar.classList.remove("menu-mobile-ouvert");
+    if (backdrop) backdrop.classList.remove("actif");
+    if (btnIcon) btnIcon.textContent = "☰";
+  }
+
+  window.LegalNotaryBasculerMenuMobile = basculerMenuMobile;
+  window.LegalNotaryFermerMenuMobile = fermerMenuMobile;
   window.LegalNotaryBasculerTheme = basculerTheme;
   window.LegalNotaryAppliquerTheme = appliquerTheme;
 
@@ -828,6 +857,7 @@
   // Navigation entre les écrans
   // -----------------------------------------------------------------
   function irVers(vue, depuis) {
+    fermerMenuMobile();
     etat.vue = vue;
     if (depuis) etat.vuePrecedente = depuis;
     document.querySelectorAll(".zone-scroll .ecran").forEach(function (e) { e.classList.remove("actif"); });

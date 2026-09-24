@@ -878,10 +878,7 @@ select.input { -webkit-appearance: none; appearance: none; }
   }
 }
 
-@media (max-width: 720px) {
-  .barre-laterale { width: 100% !important; height: auto !important; flex-direction: row !important; flex-wrap: wrap; padding: var(--space-2) !important; }
-  .zone-scroll { padding: var(--space-4) !important; }
-}
+/* Responsive layout & Mobile Drawer definitions are handled in dedicated mobile section below */
 
 /* Sélecteur rapide de rôles dans la barre supérieure */
 .btn-role-switch {
@@ -1241,3 +1238,204 @@ select.input { -webkit-appearance: none; appearance: none; }
     break-after: avoid !important;
   }
 }
+
+/* =========================================================================
+   SYSTÈME RESPONSIVE MOBILE & TABLETTE — LEGAL NOTARY ERP
+   ========================================================================= */
+
+/* Bouton Hamburger Mobile (Caché sur Desktop) */
+.mobile-burger-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+.mobile-burger-btn:hover {
+  background: var(--color-accent-dim);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+/* Backdrop sombre pour le menu mobile */
+.mobile-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  z-index: 998;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.28s ease;
+}
+.mobile-menu-backdrop.actif {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Règles pour Écrans Mobiles et Tablettes (< 992px) */
+@media (max-width: 992px) {
+  .mobile-burger-btn {
+    display: inline-flex !important;
+  }
+
+  .nav {
+    padding: 8px 12px !important;
+    gap: 8px !important;
+    height: 54px !important;
+  }
+
+  .nav-brand {
+    font-size: 13.5px !important;
+    max-width: 135px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    letter-spacing: -0.3px !important;
+  }
+
+  .nav-user-info, .nav-user-divider {
+    display: none !important;
+  }
+
+  .nav-btn-doc {
+    padding: 4px 8px !important;
+  }
+  .nav-btn-doc .nav-doc-text {
+    display: none !important;
+  }
+  .nav-btn-doc .nav-doc-icon {
+    display: inline !important;
+    font-size: 14px;
+  }
+
+  .theme-switch-btn {
+    padding: 5px 8px !important;
+  }
+  .theme-switch-btn .theme-switch-label {
+    display: none !important;
+  }
+
+  .btn-nav-deconnexion {
+    padding: 4px 8px !important;
+  }
+  .btn-nav-deconnexion .deconnexion-text {
+    display: none !important;
+  }
+  .btn-nav-deconnexion .deconnexion-icon {
+    display: inline !important;
+    font-size: 13px;
+  }
+
+  /* Barre latérale transformée en Drawer Off-Canvas */
+  .barre-laterale {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    bottom: 0 !important;
+    width: 285px !important;
+    max-width: 86vw !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    z-index: 999 !important;
+    background: var(--color-sidebar) !important;
+    border-right: 1px solid var(--color-border) !important;
+    box-shadow: 0 0 35px rgba(0, 0, 0, 0.75) !important;
+    transform: translateX(-100%) !important;
+    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    padding: 24px 14px 20px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .barre-laterale.menu-mobile-ouvert {
+    transform: translateX(0) !important;
+  }
+
+  /* Zone principale de contenu */
+  .app-main-layout {
+    flex-direction: column !important;
+    height: calc(100vh - 54px) !important;
+    height: calc(100dvh - 54px) !important;
+  }
+
+  .zone-scroll {
+    padding: 14px 12px 60px 12px !important;
+    min-width: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  /* Ajustements Typographiques & Grilles */
+  h1, .ecran-titre {
+    font-size: 20px !important;
+    line-height: 1.25 !important;
+  }
+  
+  .grid-dashboard, .stats-grid, .kpi-grid {
+    grid-template-columns: repeat(auto-fit, minmax(135px, 1fr)) !important;
+    gap: 10px !important;
+  }
+
+  .card-kpi, .stat-box {
+    padding: 12px !important;
+  }
+  .card-kpi .kpi-valeur, .stat-box .stat-valeur {
+    font-size: 20px !important;
+  }
+
+  /* En-têtes d'écrans flexibles */
+  .ecran-header, .header-action-row {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+  }
+  .ecran-header .btn, .header-action-row .btn {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  /* Tableaux scrollables horizontalement */
+  .table-container, .table-wrapper {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    width: 100% !important;
+    margin-bottom: 14px !important;
+  }
+  table {
+    min-width: 580px !important;
+  }
+
+  /* Modales et Dialogues */
+  .modal-dialog, .modal-content {
+    width: 95vw !important;
+    max-width: 500px !important;
+    margin: 10px auto !important;
+    padding: 16px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .nav-brand {
+    font-size: 12px !important;
+    max-width: 110px !important;
+  }
+
+  .grid-dashboard, .stats-grid, .kpi-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+  }
+}
+
