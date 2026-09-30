@@ -649,23 +649,35 @@ async function supprimerMembreEditeur(id) {
 }
 
 async function obtenirInfosDeploiementEtude(etudeId) {
-  const e = ETUDES_MEMOIRE.find(x => x.id === etudeId) || ETUDES_MEMOIRE[0];
-  const pairToken = `PAIR-${e.codeEtude || 'ETD'}-${e.id.slice(0, 8).toUpperCase()}`;
+  let e = ETUDES_MEMOIRE.find(x => x.id === etudeId);
+  if (!e) {
+    try {
+      const { rows } = await pool.query("SELECT * FROM etudes WHERE id = $1", [etudeId]);
+      if (rows && rows.length) e = rows[0];
+    } catch (_) {}
+  }
+  if (!e) e = ETUDES_MEMOIRE[0] || { id: etudeId, nom_etude: "Office Notarial", code_etude: "ETD-001" };
+  
+  const code = e.codeEtude || e.code_etude || "ETD-001";
+  const idStr = String(e.id || "").slice(0, 8).toUpperCase();
+  const pairToken = `PAIR-${code}-${idStr || "DEFAULT"}`;
+  const dom = e.domaine || `${code.toLowerCase()}.notaires.ci`;
+
   return {
     etude: etudeVersCamel(e),
     pairToken,
-    urlCloudAutomatique: `https://${(e.codeEtude || 'etude').toLowerCase()}.notaires.ci`,
-    ipClusterSaaS: "10.0.1.14 (Master PG) / 10.0.2.88 (Vault)",
+    urlCloudAutomatique: `https://${dom}`,
+    ipClusterSaaS: "72.62.39.225 (Master PG / Cloud Vault)",
     dnsRecommande: {
       type: "CNAME",
-      hote: e.domaine ? e.domaine.split(".")[0] : "app",
-      cible: "cloud.notaires.ci",
-      ipA: "41.202.219.45"
+      hote: dom ? dom.split(".")[0] : "app",
+      cible: "legalnotary.app",
+      ipA: "72.62.39.225"
     },
-    commandeInstallServeurPhysique: `curl -sSL https://get.notaires.ci/node-agent.sh | sudo bash -s -- --token=${pairToken} --mode=${e.modeInfrastructure}`,
-    commandeDockerServeurPhysique: `docker run -d --name notaire-sync-agent --restart always -e PAIR_TOKEN="${pairToken}" -e SAAS_URL="https://api.notaires.ci" notaire/sync-agent:latest`,
-    statutDNS: "🟢 Validé & Certificat SSL Actif",
-    certificatSSL: "Let's Encrypt TLS 1.3 Strict (*.notaires.ci)"
+    commandeInstallServeurPhysique: `curl -sSL https://legalnotary.app/get-agent.sh | sudo bash -s -- --token=${pairToken} --mode=${e.modeInfrastructure || e.mode_infrastructure || "hybride"}`,
+    commandeDockerServeurPhysique: `docker run -d --name notaire-sync-agent --restart always -e PAIR_TOKEN="${pairToken}" -e SAAS_URL="https://legalnotary.app" notaire/sync-agent:latest`,
+    statutDNS: "🟢 Enregistré & Prêt pour SSL",
+    certificatSSL: "Let's Encrypt TLS 1.3 Strict"
   };
 }
 

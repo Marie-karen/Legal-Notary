@@ -10070,10 +10070,10 @@
           html += '<div style="display:flex;justify-content:flex-end;margin-top:var(--space-2)"><button type="button" class="btn btn-primary" onclick="fermerModal()">Fermer le guide</button></div>';
           html += '</div>';
 
-          var corpsModale = document.querySelector("#modal-conteneur .modal-corps");
+          var corpsModale = document.querySelector("#modal-racine .modal-body") || document.querySelector(".modal-body");
           if (corpsModale) corpsModale.innerHTML = html;
         }).catch(function (e) {
-          var corpsModale = document.querySelector("#modal-conteneur .modal-corps");
+          var corpsModale = document.querySelector("#modal-racine .modal-body") || document.querySelector(".modal-body");
           if (corpsModale) corpsModale.innerHTML = '<p class="erreur-inline">' + e.message + '</p>';
         });
       }
