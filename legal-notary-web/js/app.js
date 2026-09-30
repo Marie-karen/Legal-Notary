@@ -108,13 +108,26 @@
   }
 
   function majNomEtudeAffiche() {
-    var nomEtude = (cache.parametres && cache.parametres.nomEtude && cache.parametres.nomEtude.trim() && cache.parametres.nomEtude !== "Office notarial — à renseigner" && cache.parametres.nomEtude !== "Étude Notariale")
-      ? cache.parametres.nomEtude.trim()
-      : "Legal Notary";
+    var host = (window.location.hostname || "").toLowerCase();
+    var isMainSaasHost = (host === "legalnotary.app" || host === "www.legalnotary.app" || host === "localhost" || host === "127.0.0.1" || host === "");
+    var user = cache.utilisateur;
+    var estSaaSInternes = user && (user.role === "superadmin" || user.role === "dev" || user.role === "commercial" || user.role === "support" || user.role === "assistante_editeur");
+    var estCompteDemo = user && (user.email && (user.email.indexOf("@notaire.ci") !== -1 || user.email.indexOf("@editeur-legal.ci") !== -1) || user.id === "demo-notaire-id");
+
+    var nomAffiche = "Legal Notary";
+
+    // Si connecté à une étude spécifique réelle déployée (ex: Me Marie-Karen / MKA):
+    if (user && !estSaaSInternes && !estCompteDemo && user.etudeId && user.etudeId !== "saas-bttech" && user.etudeId !== "etude-abidjan-01" && cache.parametres && cache.parametres.nomEtude && cache.parametres.nomEtude !== "Legal Notary") {
+      nomAffiche = cache.parametres.nomEtude.trim();
+    } else if (!isMainSaasHost && cache.parametres && cache.parametres.nomEtude && cache.parametres.nomEtude !== "Legal Notary") {
+      // Si accédé via un domaine d'étude dédié (ex: https://etude-mka.ci)
+      nomAffiche = cache.parametres.nomEtude.trim();
+    }
+
     var elNav = document.getElementById("nav-nom-etude");
-    if (elNav) elNav.textContent = nomEtude;
+    if (elNav) elNav.textContent = nomAffiche;
     var elLogin = document.getElementById("login-titre-etude");
-    if (elLogin) elLogin.textContent = nomEtude;
+    if (elLogin) elLogin.textContent = (!isMainSaasHost && cache.parametres && cache.parametres.nomEtude && cache.parametres.nomEtude !== "Legal Notary") ? cache.parametres.nomEtude.trim() : "Legal Notary";
   }
 
   function calculerSyntheseEtude(dossiers) {

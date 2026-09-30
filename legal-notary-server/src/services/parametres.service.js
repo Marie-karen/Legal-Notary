@@ -8,18 +8,19 @@ function versCamel(ligne) {
   if (!ligne) return null;
   return {
     id: ligne.id,
-    nomEtude: ligne.nom_etude || ligne.nomEtude || "ÉTUDE NOTARIALE KOUAMÉ & ASSOCIÉS",
+    etudeId: ligne.etude_id || ligne.etudeId,
+    nomEtude: ligne.nom_etude || ligne.nomEtude || "Legal Notary",
     titreNotaire: ligne.titre_notaire || ligne.titreNotaire || "Maître",
-    nomNotaire: ligne.nom_notaire || ligne.nomNotaire || "Kouamé Jean-Luc",
+    nomNotaire: ligne.nom_notaire || ligne.nomNotaire || "Notaire Titulaire",
     numeroOrdre: ligne.numero_ordre || ligne.numeroOrdre || "NOT-ABJ-042",
-    adresse: ligne.adresse || "Plateau, Boulevard de la République, Immeuble Le Notariat, Abidjan, Côte d'Ivoire",
-    telephone: ligne.telephone || "+225 27 20 21 00 00",
-    telephoneFixe: ligne.telephone_fixe || ligne.telephoneFixe || "+225 27 20 21 00 00",
-    telephonePortable: ligne.telephone_portable || ligne.telephonePortable || "+225 07 07 12 34 56",
-    boitePostale: ligne.boite_postale || ligne.boitePostale || "01 BP 4512 Abidjan 01",
-    email: ligne.email || "contact@etude-kouame.ci",
+    adresse: ligne.adresse || "Plateau, Abidjan, Côte d'Ivoire",
+    telephone: ligne.telephone || "+225 27 20 00 00 00",
+    telephoneFixe: ligne.telephone_fixe || ligne.telephoneFixe || "+225 27 20 00 00 00",
+    telephonePortable: ligne.telephone_portable || ligne.telephonePortable || "+225 07 00 00 00 00",
+    boitePostale: ligne.boite_postale || ligne.boitePostale || "01 BP 1000 Abidjan 01",
+    email: ligne.email || "contact@legalnotary.app",
     numeroCC: ligne.numero_cc || ligne.numeroCC || "9801234 A",
-    centreImpots: ligne.centre_impots || ligne.centreImpots || "Direction des Moyennes Entreprises (DME Plateau)",
+    centreImpots: ligne.centre_impots || ligne.centreImpots || "Direction des Moyennes Entreprises (DME)",
     compteSequestreCDCI: ligne.compte_sequestre_cdci || ligne.compteSequestreCDCI || "CI092 01001 12345678901 22",
     tauxTVA: Number(ligne.taux_tva !== undefined ? ligne.taux_tva : (ligne.tauxTVA || 0.18)),
     minimumLegalMinute: Number(ligne.minimum_legal_minute !== undefined ? ligne.minimum_legal_minute : (ligne.minimumLegalMinute || 50000)),
@@ -37,18 +38,18 @@ function versCamel(ligne) {
 
 let PARAMETRES_ACTUELS = {
   id: "param-etude-defaut-id",
-  nomEtude: "ÉTUDE NOTARIALE KOUAMÉ & ASSOCIÉS",
+  nomEtude: "Legal Notary",
   titreNotaire: "Maître",
-  nomNotaire: "Kouamé Jean-Luc",
-  numeroOrdre: "NOT-ABJ-042",
-  adresse: "Plateau, Boulevard de la République, Immeuble Le Notariat, Abidjan, Côte d'Ivoire",
-  telephone: "+225 27 20 21 00 00",
-  telephoneFixe: "+225 27 20 21 00 00",
-  telephonePortable: "+225 07 07 12 34 56",
-  boitePostale: "01 BP 4512 Abidjan 01",
-  email: "contact@etude-kouame.ci",
+  nomNotaire: "Notaire Titulaire",
+  numeroOrdre: "NOT-ABJ-001",
+  adresse: "Plateau, Abidjan, Côte d'Ivoire",
+  telephone: "+225 27 20 00 00 00",
+  telephoneFixe: "+225 27 20 00 00 00",
+  telephonePortable: "+225 07 00 00 00 00",
+  boitePostale: "01 BP 1000 Abidjan 01",
+  email: "contact@legalnotary.app",
   numeroCC: "9801234 A",
-  centreImpots: "Direction des Moyennes Entreprises (DME Plateau)",
+  centreImpots: "Direction des Moyennes Entreprises (DME)",
   compteSequestreCDCI: "CI092 01001 12345678901 22",
   tauxTVA: 0.18,
   minimumLegalMinute: 50000,
@@ -63,10 +64,15 @@ let PARAMETRES_ACTUELS = {
   presenceArchiviste: true,
 };
 
-async function obtenir() {
+async function obtenir(etudeId) {
   try {
-    const { rows } = await pool.query("SELECT * FROM parametres_etude ORDER BY created_at ASC LIMIT 1");
-    if (rows && rows.length) return versCamel(rows[0]);
+    if (etudeId && etudeId !== "saas-bttech" && etudeId !== "etude-abidjan-01") {
+      const { rows } = await pool.query(
+        "SELECT * FROM parametres_etude WHERE etude_id = $1 OR id = $1 ORDER BY created_at DESC LIMIT 1",
+        [etudeId]
+      );
+      if (rows && rows.length) return versCamel(rows[0]);
+    }
   } catch (_) {}
   return PARAMETRES_ACTUELS;
 }
