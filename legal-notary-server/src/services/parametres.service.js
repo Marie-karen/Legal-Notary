@@ -77,11 +77,12 @@ async function obtenir(etudeId) {
   return PARAMETRES_ACTUELS;
 }
 
-async function mettreAJour(champs) {
-  const actuels = await obtenir();
+async function mettreAJour(champs, etudeId) {
+  const actuels = await obtenir(etudeId);
   const fusion = { ...actuels, ...champs };
 
   try {
+    const targetId = actuels.id || "param-etude-defaut-id";
     const { rows } = await pool.query(
       `UPDATE parametres_etude SET
          nom_etude = $1, titre_notaire = $2, nom_notaire = $3, numero_ordre = $4, adresse = $5,
@@ -92,7 +93,7 @@ async function mettreAJour(champs) {
          seuil_stagnation_jours = $21, seuil_alerte_echeance_heures = $22, capacite_carton_archive = $23,
          presence_archiviste = $24,
          updated_at = now()
-       WHERE id = $25
+       WHERE id = $25 OR etude_id = $26
        RETURNING *`,
       [
         fusion.nomEtude, fusion.titreNotaire, fusion.nomNotaire, fusion.numeroOrdre, fusion.adresse,
@@ -102,12 +103,16 @@ async function mettreAJour(champs) {
         fusion.taxeFonciereTauxProportionnel, fusion.taxeFonciereDroitFixe, fusion.forfaitDivers,
         fusion.seuilStagnationJours, fusion.seuilAlerteEcheanceHeures, fusion.capaciteCartonArchive,
         fusion.presenceArchiviste !== false,
-        actuels.id,
+        targetId,
+        etudeId || targetId,
       ]
     );
     if (rows && rows.length) {
-      PARAMETRES_ACTUELS = versCamel(rows[0]);
-      return PARAMETRES_ACTUELS;
+      const maj = versCamel(rows[0]);
+      if (!etudeId || etudeId === "saas-bttech" || etudeId === "etude-abidjan-01") {
+        PARAMETRES_ACTUELS = maj;
+      }
+      return maj;
     }
   } catch (_) {}
 

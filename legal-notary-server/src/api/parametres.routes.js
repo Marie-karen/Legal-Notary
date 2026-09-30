@@ -24,7 +24,8 @@ router.get("/", async (req, res, next) => {
 
 router.put("/", exigerPermission("parametres:gerer"), async (req, res, next) => {
   try {
-    const resultat = await parametresService.mettreAJour(req.body);
+    const etudeId = req.query.etudeId || (req.utilisateur && req.utilisateur.etudeId);
+    const resultat = await parametresService.mettreAJour(req.body, etudeId);
     await auditService.consigner("parametres_etude", resultat.id, "modification", req.utilisateur.id, req.body);
     res.json(resultat);
   } catch (e) { next(e); }
