@@ -64,14 +64,30 @@ let PARAMETRES_ACTUELS = {
   presenceArchiviste: true,
 };
 
-async function obtenir(etudeId) {
+async function obtenir(etudeIdOuDomaine) {
   try {
-    if (etudeId && etudeId !== "saas-bttech" && etudeId !== "etude-abidjan-01") {
+    if (etudeIdOuDomaine && etudeIdOuDomaine !== "saas-bttech" && etudeIdOuDomaine !== "etude-abidjan-01" && etudeIdOuDomaine !== "legalnotary.app" && etudeIdOuDomaine !== "www.legalnotary.app" && etudeIdOuDomaine !== "localhost" && etudeIdOuDomaine !== "127.0.0.1") {
+      // 1. Chercher par etude_id direct ou id
       const { rows } = await pool.query(
         "SELECT * FROM parametres_etude WHERE etude_id = $1 OR id = $1 ORDER BY created_at DESC LIMIT 1",
-        [etudeId]
+        [etudeIdOuDomaine]
       );
       if (rows && rows.length) return versCamel(rows[0]);
+
+      // 2. Chercher par domaine dans la table etudes
+      const cleanHost = String(etudeIdOuDomaine).replace(/^www\./i, "").toLowerCase();
+      const etudeRes = await pool.query(
+        "SELECT id FROM etudes WHERE LOWER(domaine) = $1 OR LOWER(domaine) = $2 LIMIT 1",
+        [etudeIdOuDomaine.toLowerCase(), cleanHost]
+      );
+      if (etudeRes.rows && etudeRes.rows.length) {
+        const foundEid = etudeRes.rows[0].id;
+        const paramRes = await pool.query(
+          "SELECT * FROM parametres_etude WHERE etude_id = $1 ORDER BY created_at DESC LIMIT 1",
+          [foundEid]
+        );
+        if (paramRes.rows && paramRes.rows.length) return versCamel(paramRes.rows[0]);
+      }
     }
   } catch (_) {}
   return PARAMETRES_ACTUELS;

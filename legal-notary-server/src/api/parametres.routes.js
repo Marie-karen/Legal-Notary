@@ -17,7 +17,8 @@ const router = express.Router();
 
 router.get("/", async (req, res, next) => {
   try {
-    const etudeId = req.query.etudeId || (req.utilisateur && req.utilisateur.etudeId);
+    const host = (req.headers.host || "").split(":")[0].toLowerCase();
+    const etudeId = req.query.etudeId || (req.utilisateur && req.utilisateur.etudeId) || host;
     res.json(await parametresService.obtenir(etudeId));
   } catch (e) { next(e); }
 });
