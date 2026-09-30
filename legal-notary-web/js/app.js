@@ -167,20 +167,21 @@
       // Calcul des émoluments officiels Décret 2013-279
       var emols = 0;
       var estPret = (cat === "banque");
+      var estSociete = (cat === "societes");
       if (assiette > 0) {
         var r = assiette;
-        var t1 = Math.min(r, 5000000); r -= t1;
-        var t2 = Math.min(Math.max(0, r), 15000000); r -= t2;
-        var t3 = Math.min(Math.max(0, r), 80000000); r -= t3;
+        var t1 = Math.min(r, 10000000); r -= t1;
+        var t2 = Math.min(Math.max(0, r), 20000000); r -= t2;
+        var t3 = Math.min(Math.max(0, r), 60000000); r -= t3;
         var t4 = Math.max(0, r);
 
-        var p1 = estPret ? 0.015 : 0.04;
-        var p2 = estPret ? 0.012 : 0.03;
-        var p3 = estPret ? 0.0075 : 0.015;
-        var p4 = estPret ? 0.003 : 0.0075;
+        var p1 = estPret ? 0.02 : (estSociete ? 0.03 : 0.04);
+        var p2 = estPret ? 0.01 : (estSociete ? 0.015 : 0.025);
+        var p3 = estPret ? 0.005 : (estSociete ? 0.0075 : 0.015);
+        var p4 = estPret ? 0.0025 : (estSociete ? 0.0035 : 0.0075);
 
         emols = Math.round(t1 * p1 + t2 * p2 + t3 * p3 + t4 * p4);
-        var minLegal = (cache.parametres && cache.parametres.minimumLegalMinute) || 100000;
+        var minLegal = (cache.parametres && cache.parametres.minimumLegalMinute) || 50000;
         if (emols < minLegal) emols = minLegal;
       }
       totalEmolumentsHT += emols;
