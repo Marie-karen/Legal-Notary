@@ -116,11 +116,11 @@
 
     var nomAffiche = "Legal Notary";
 
-    // Si connecté à une étude spécifique réelle déployée (ex: Me Marie-Karen / MKA):
+    // Si connecté à une étude spécifique réelle déployée (ex: Me Kouassi / étude cliente dédiée):
     if (user && !estSaaSInternes && !estCompteDemo && user.etudeId && user.etudeId !== "saas-bttech" && user.etudeId !== "etude-abidjan-01" && cache.parametres && cache.parametres.nomEtude && cache.parametres.nomEtude !== "Legal Notary") {
       nomAffiche = cache.parametres.nomEtude.trim();
     } else if (!isMainSaasHost && cache.parametres && cache.parametres.nomEtude && cache.parametres.nomEtude !== "Legal Notary") {
-      // Si accédé via un domaine d'étude dédié (ex: https://etude-mka.ci)
+      // Si accédé via un domaine d'étude dédié (ex: https://etude-notaire.ci)
       nomAffiche = cache.parametres.nomEtude.trim();
     }
 
@@ -10205,13 +10205,13 @@
   // =========================================================================
   function modalDeployerNouvelleEtude() {
     var collaborateursInitiaux = [
-      { role: "notaire", roleLabel: "👑 Notaire Titulaire", nomComplet: "Maître Notaire Titulaire", emailPrefix: "notaire", telephone: "+225 07 00 00 01", mdp: "Mka" + Math.floor(Math.random() * 900 + 100) + "!" },
-      { role: "premier_clerc", roleLabel: "🥇 Premier Clerc", nomComplet: "Premier Clerc", emailPrefix: "premier.clerc", telephone: "+225 07 00 00 02", mdp: "Mka" + Math.floor(Math.random() * 900 + 100) + "!" },
-      { role: "clerc_redacteur", roleLabel: "✍️ Clerc Rédacteur", nomComplet: "Clerc Rédacteur", emailPrefix: "clerc1", telephone: "+225 07 00 00 03", mdp: "Mka" + Math.floor(Math.random() * 900 + 100) + "!" },
-      { role: "clerc_formaliste", roleLabel: "🏛️ Clerc Formaliste", nomComplet: "Clerc Formaliste", emailPrefix: "formalites", telephone: "+225 07 00 00 04", mdp: "Mka" + Math.floor(Math.random() * 900 + 100) + "!" },
-      { role: "comptable_taxateur", roleLabel: "💰 Comptable / Taxateur", nomComplet: "Comptable Taxateur", emailPrefix: "comptable", telephone: "+225 07 00 00 05", mdp: "Mka" + Math.floor(Math.random() * 900 + 100) + "!" },
-      { role: "assistante", roleLabel: "🤝 Assistante Accueil", nomComplet: "Assistante Accueil", emailPrefix: "accueil", telephone: "+225 07 00 00 06", mdp: "Mka" + Math.floor(Math.random() * 900 + 100) + "!" },
-      { role: "archiviste", roleLabel: "📦 Archiviste", nomComplet: "Archiviste du Cabinet", emailPrefix: "archiviste", telephone: "+225 07 00 00 07", mdp: "Mka" + Math.floor(Math.random() * 900 + 100) + "!" },
+      { role: "notaire", roleLabel: "👑 Notaire Titulaire", nomComplet: "Maître Notaire Titulaire", emailPrefix: "notaire", telephone: "+225 07 00 00 01", mdp: "Pass" + Math.floor(Math.random() * 9000 + 1000) + "!" },
+      { role: "premier_clerc", roleLabel: "🥇 Premier Clerc", nomComplet: "Premier Clerc", emailPrefix: "premier.clerc", telephone: "+225 07 00 00 02", mdp: "Pass" + Math.floor(Math.random() * 9000 + 1000) + "!" },
+      { role: "clerc_redacteur", roleLabel: "✍️ Clerc Rédacteur", nomComplet: "Clerc Rédacteur", emailPrefix: "clerc1", telephone: "+225 07 00 00 03", mdp: "Pass" + Math.floor(Math.random() * 9000 + 1000) + "!" },
+      { role: "clerc_formaliste", roleLabel: "🏛️ Clerc Formaliste", nomComplet: "Clerc Formaliste", emailPrefix: "formalites", telephone: "+225 07 00 00 04", mdp: "Pass" + Math.floor(Math.random() * 9000 + 1000) + "!" },
+      { role: "comptable_taxateur", roleLabel: "💰 Comptable / Taxateur", nomComplet: "Comptable Taxateur", emailPrefix: "comptable", telephone: "+225 07 00 00 05", mdp: "Pass" + Math.floor(Math.random() * 9000 + 1000) + "!" },
+      { role: "assistante", roleLabel: "🤝 Assistante Accueil", nomComplet: "Assistante Accueil", emailPrefix: "accueil", telephone: "+225 07 00 00 06", mdp: "Pass" + Math.floor(Math.random() * 9000 + 1000) + "!" },
+      { role: "archiviste", roleLabel: "📦 Archiviste", nomComplet: "Archiviste du Cabinet", emailPrefix: "archiviste", telephone: "+225 07 00 00 07", mdp: "Pass" + Math.floor(Math.random() * 9000 + 1000) + "!" },
     ];
 
     var html = '<form id="form-deployer-etude" style="display:flex;flex-direction:column;gap:var(--space-3)">';
@@ -10220,11 +10220,11 @@
     html += '<div style="background:var(--color-surface-2);padding:12px;border-radius:var(--radius);border:1px solid var(--color-border)">';
     html += '<div style="font-weight:700;font-size:14px;color:var(--color-text);margin-bottom:8px">🏛️ 1. Identité & Coordonnées de l\'Office Notarial</div>';
     
-    html += '<div class="field"><label>Nom officiel du cabinet / étude</label><input class="input" name="nomEtude" id="dep-nom-etude" placeholder="Ex. Étude Notariale Me Marie-Karen / MKA" required></div>';
+    html += '<div class="field"><label>Nom officiel du cabinet / étude</label><input class="input" name="nomEtude" id="dep-nom-etude" placeholder="Ex. Étude Notariale Maître Kouassi & Associés" required></div>';
 
     html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2)">';
-    html += '<div class="field"><label>Notaire Titulaire</label><input class="input" name="titreNotaire" id="dep-titre-notaire" placeholder="Ex. Maître Marie-Karen" required></div>';
-    html += '<div class="field"><label>Nom de domaine personnalisé</label><input class="input" name="domaine" id="dep-domaine" placeholder="Ex. etude-mka.ci" value="etude-mka.ci" required></div>';
+    html += '<div class="field"><label>Notaire Titulaire</label><input class="input" name="titreNotaire" id="dep-titre-notaire" placeholder="Ex. Maître Kouassi Jean-Paul" required></div>';
+    html += '<div class="field"><label>Nom de domaine personnalisé</label><input class="input" name="domaine" id="dep-domaine" placeholder="Ex. etude-notaire.ci" value="" required></div>';
     html += '</div>';
 
     html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2)">';
@@ -10288,10 +10288,15 @@
         var tbody = document.getElementById("tbody-collabs-deploiement");
         var domaineInput = document.getElementById("dep-domaine");
 
+        function obtenirDomaineActuel() {
+          var d = domaineInput.value.trim().replace(/^@/, "");
+          return d || "etude-notaire.ci";
+        }
+
         function rendreLignesCollaborateurs(liste) {
           if (!tbody) return;
           tbody.innerHTML = "";
-          var dom = (domaineInput.value.trim() || "etude-mka.ci").replace(/^@/, "");
+          var dom = obtenirDomaineActuel();
           liste.forEach(function (c, idx) {
             var emailVal = c.email || (c.emailPrefix + "@" + dom);
             var tr = document.createElement("tr");
@@ -10328,7 +10333,7 @@
 
         // Mise à jour des emails quand le domaine change
         domaineInput.addEventListener("input", function () {
-          var dom = (domaineInput.value.trim() || "etude-mka.ci").replace(/^@/, "");
+          var dom = obtenirDomaineActuel();
           tbody.querySelectorAll("tr").forEach(function (tr, i) {
             var emailInput = tr.querySelector(".collab-email");
             if (emailInput && collaborateursInitiaux[i] && collaborateursInitiaux[i].emailPrefix) {
@@ -10339,27 +10344,27 @@
 
         // Bouton pré-remplir
         document.getElementById("btn-pre-remplir-7-roles").addEventListener("click", function () {
-          var dom = (domaineInput.value.trim() || "etude-mka.ci").replace(/^@/, "");
+          var dom = obtenirDomaineActuel();
           collaborateursInitiaux = [
-            { role: "notaire", roleLabel: "👑 Notaire Titulaire", nomComplet: document.getElementById("dep-titre-notaire").value || "Maître Notaire Titulaire", emailPrefix: "notaire", telephone: "+225 07 00 00 01", mdp: "Mka" + Math.floor(Math.random() * 900 + 100) + "!" },
-            { role: "premier_clerc", roleLabel: "🥇 Premier Clerc", nomComplet: "Premier Clerc", emailPrefix: "premier.clerc", telephone: "+225 07 00 00 02", mdp: "Mka" + Math.floor(Math.random() * 900 + 100) + "!" },
-            { role: "clerc_redacteur", roleLabel: "✍️ Clerc Rédacteur", nomComplet: "Clerc Rédacteur", emailPrefix: "clerc1", telephone: "+225 07 00 00 03", mdp: "Mka" + Math.floor(Math.random() * 900 + 100) + "!" },
-            { role: "clerc_formaliste", roleLabel: "🏛️ Clerc Formaliste", nomComplet: "Clerc Formaliste", emailPrefix: "formalites", telephone: "+225 07 00 00 04", mdp: "Mka" + Math.floor(Math.random() * 900 + 100) + "!" },
-            { role: "comptable_taxateur", roleLabel: "💰 Comptable / Taxateur", nomComplet: "Comptable Taxateur", emailPrefix: "comptable", telephone: "+225 07 00 00 05", mdp: "Mka" + Math.floor(Math.random() * 900 + 100) + "!" },
-            { role: "assistante", roleLabel: "🤝 Assistante Accueil", nomComplet: "Assistante Accueil", emailPrefix: "accueil", telephone: "+225 07 00 00 06", mdp: "Mka" + Math.floor(Math.random() * 900 + 100) + "!" },
-            { role: "archiviste", roleLabel: "📦 Archiviste", nomComplet: "Archiviste du Cabinet", emailPrefix: "archiviste", telephone: "+225 07 00 00 07", mdp: "Mka" + Math.floor(Math.random() * 900 + 100) + "!" },
+            { role: "notaire", roleLabel: "👑 Notaire Titulaire", nomComplet: document.getElementById("dep-titre-notaire").value || "Maître Notaire Titulaire", emailPrefix: "notaire", telephone: "+225 07 00 00 01", mdp: "Pass" + Math.floor(Math.random() * 9000 + 1000) + "!" },
+            { role: "premier_clerc", roleLabel: "🥇 Premier Clerc", nomComplet: "Premier Clerc", emailPrefix: "premier.clerc", telephone: "+225 07 00 00 02", mdp: "Pass" + Math.floor(Math.random() * 9000 + 1000) + "!" },
+            { role: "clerc_redacteur", roleLabel: "✍️ Clerc Rédacteur", nomComplet: "Clerc Rédacteur", emailPrefix: "clerc1", telephone: "+225 07 00 00 03", mdp: "Pass" + Math.floor(Math.random() * 9000 + 1000) + "!" },
+            { role: "clerc_formaliste", roleLabel: "🏛️ Clerc Formaliste", nomComplet: "Clerc Formaliste", emailPrefix: "formalites", telephone: "+225 07 00 00 04", mdp: "Pass" + Math.floor(Math.random() * 9000 + 1000) + "!" },
+            { role: "comptable_taxateur", roleLabel: "💰 Comptable / Taxateur", nomComplet: "Comptable Taxateur", emailPrefix: "comptable", telephone: "+225 07 00 00 05", mdp: "Pass" + Math.floor(Math.random() * 9000 + 1000) + "!" },
+            { role: "assistante", roleLabel: "🤝 Assistante Accueil", nomComplet: "Assistante Accueil", emailPrefix: "accueil", telephone: "+225 07 00 00 06", mdp: "Pass" + Math.floor(Math.random() * 9000 + 1000) + "!" },
+            { role: "archiviste", roleLabel: "📦 Archiviste", nomComplet: "Archiviste du Cabinet", emailPrefix: "archiviste", telephone: "+225 07 00 00 07", mdp: "Pass" + Math.floor(Math.random() * 9000 + 1000) + "!" },
           ];
           rendreLignesCollaborateurs(collaborateursInitiaux);
         });
 
         // Bouton ajouter ligne
         document.getElementById("btn-ajouter-ligne-collab").addEventListener("click", function () {
-          var dom = (domaineInput.value.trim() || "etude-mka.ci").replace(/^@/, "");
+          var dom = obtenirDomaineActuel();
           collaborateursInitiaux.push({
             role: "clerc_redacteur",
             nomComplet: "",
             email: "collab" + (collaborateursInitiaux.length + 1) + "@" + dom,
-            mdp: "Pass" + Math.floor(Math.random() * 900 + 100) + "!"
+            mdp: "Pass" + Math.floor(Math.random() * 9000 + 1000) + "!"
           });
           rendreLignesCollaborateurs(collaborateursInitiaux);
         });
