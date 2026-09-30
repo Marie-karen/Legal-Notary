@@ -10443,7 +10443,7 @@
     html += '<div style="font-size:12px;color:var(--color-text);margin-top:4px">L\'espace <strong>' + (nouvelle.nomEtude || nouvelle.nom_etude) + '</strong> est opérationnel. Les paramètres du cabinet ont été synchronisés et <strong>' + comptes.length + ' compte(s)</strong> ont été initialisés.</div>';
     html += '</div>';
 
-    html += '<div class="table-wrap" style="max-height:280px;overflow-y:auto"><table class="table" style="font-size:12px"><thead><tr><th>Nom</th><th>Email de Connexion</th><th>Rôle</th><th>Mot de passe Initial</th></tr></thead><tbody>';
+    html += '<div class="table-wrap" style="max-height:280px;overflow-y:auto"><table class="table" style="font-size:12px"><thead><tr><th>Nom</th><th>Email de Connexion</th><th>Rôle</th><th>Mot de passe Initial</th><th>Action Directe</th></tr></thead><tbody>';
     comptes.forEach(function (c) {
       texteACopier += "- " + (c.nomComplet || c.nom_complet) + " (" + (c.role || "collaborateur") + ") : " + c.email + " / MDP : " + (c.motDePasseTemporaire || "notaire123") + "\n";
       html += '<tr>';
@@ -10451,6 +10451,7 @@
       html += '<td><code>' + c.email + '</code></td>';
       html += '<td><span class="tag tag-outline">' + (c.role || "membre") + '</span></td>';
       html += '<td><strong style="color:var(--color-accent);font-family:monospace">' + (c.motDePasseTemporaire || "notaire123") + '</strong></td>';
+      html += '<td><button type="button" class="btn btn-secondary btn-tester-session-recap" data-email="' + c.email + '" data-mdp="' + (c.motDePasseTemporaire || "notaire123") + '" style="font-size:11px;padding:3px 8px">🚀 Tester Session</button></td>';
       html += '</tr>';
     });
     html += '</tbody></table></div>';
@@ -10465,7 +10466,7 @@
       titre: '<span>📜</span> Fiche de Livraison & Identifiants du Cabinet',
       corps: html,
       boutonFermer: true,
-      largeur: "680px",
+      largeur: "750px",
       apresOuverture: function () {
         document.getElementById("btn-fermer-recap").addEventListener("click", fermerModal);
         document.getElementById("btn-copier-identifiants").addEventListener("click", function () {
@@ -10476,6 +10477,16 @@
           } else {
             prompt("Copiez les identifiants ci-dessous :", texteACopier);
           }
+        });
+
+        // 1-clic pour tester la session immédiatement
+        document.querySelectorAll(".btn-tester-session-recap").forEach(function (btn) {
+          btn.addEventListener("click", function () {
+            var em = btn.dataset.email;
+            var pw = btn.dataset.mdp;
+            fermerModal();
+            effectuerConnexion(em, pw);
+          });
         });
       },
     });
@@ -12324,6 +12335,18 @@
     });
 
     var formLogin = document.getElementById("form-login");
+    var inputMdp = document.getElementById("login-input-mdp");
+    var btnToggleMdp = document.getElementById("btn-toggle-mdp-login");
+
+    if (btnToggleMdp && inputMdp) {
+      btnToggleMdp.addEventListener("click", function () {
+        var estCache = inputMdp.getAttribute("type") === "password";
+        inputMdp.setAttribute("type", estCache ? "text" : "password");
+        btnToggleMdp.textContent = estCache ? "🙈" : "👁️";
+        btnToggleMdp.setAttribute("title", estCache ? "Masquer le mot de passe" : "Afficher le mot de passe");
+      });
+    }
+
     if (formLogin) {
       formLogin.addEventListener("submit", function (e) {
         e.preventDefault();

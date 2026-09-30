@@ -79,7 +79,12 @@
             <label style="font-size:13px;font-weight:500;color:var(--color-text)">Mot de passe</label>
             <span style="font-size:12px;color:var(--color-text-dim);cursor:pointer;text-decoration:none" onclick="alert('Veuillez contacter votre administrateur pour réinitialiser votre mot de passe.')">Mot de passe oublié ?</span>
           </div>
-          <input class="input" type="password" name="motDePasse" id="login-input-mdp" placeholder="••••••••" required autocomplete="current-password" style="padding:10px 12px;font-size:14px;width:100%">
+          <div style="position:relative;display:flex;align-items:center">
+            <input class="input" type="password" name="motDePasse" id="login-input-mdp" placeholder="••••••••" required autocomplete="current-password" style="padding:10px 42px 10px 12px;font-size:14px;width:100%">
+            <button type="button" id="btn-toggle-mdp-login" style="position:absolute;right:8px;background:none;border:none;cursor:pointer;font-size:16px;color:var(--color-text-dim);padding:4px 6px;border-radius:4px;display:flex;align-items:center;justify-content:center" title="Afficher / Masquer le mot de passe" aria-label="Afficher ou masquer le mot de passe">
+              👁️
+            </button>
+          </div>
         </div>
         <button type="submit" class="btn btn-primary btn-block" style="padding:11px;font-size:14px;font-weight:600;width:100%;cursor:pointer">
           Se connecter
