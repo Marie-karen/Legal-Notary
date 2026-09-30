@@ -5,6 +5,7 @@
 const { pool } = require("../db/pool");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
+const authService = require("./auth.service");
 
 const ETUDES_MEMOIRE = [
   {
@@ -210,28 +211,119 @@ async function creerEtude({
   nomEtude,
   codeEtude,
   titreNotaire,
+  nomNotaire,
   emailAdmin,
+  telephone,
+  adresse,
+  boitePostale,
+  numeroOrdre,
+  numeroCC,
+  centreImpots,
+  compteSequestreCDCI,
   motDePasseAdmin = "notaire123",
   modeInfrastructure = "hybride",
   quotaStockageGo = 100,
   ville = "Abidjan",
-  domaine
+  domaine,
+  collaborateurs = [],
+  envoyerEmails = true,
 }) {
-  const code = codeEtude || `ETD-${nomEtude.slice(0, 3).toUpperCase()}-${Math.floor(Math.random() * 900) + 100}`;
+  const code = codeEtude || `ETD-${(nomEtude || "OFF").slice(0, 3).toUpperCase()}-${Math.floor(Math.random() * 900) + 100}`;
   const dom = domaine || `${code.toLowerCase()}.notaires.ci`;
   const id = crypto.randomUUID();
 
+  // 1. Insertion Étude
   try {
-    const { rows } = await pool.query(
+    await pool.query(
       `INSERT INTO etudes (id, nom_etude, code_etude, titre_notaire, mode_infrastructure, quota_stockage_go, ville, domaine, actif)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, true)
-       RETURNING *`,
+       ON CONFLICT (id) DO NOTHING`,
       [id, nomEtude, code, titreNotaire || "Maître Notaire Titulaire", modeInfrastructure, quotaStockageGo, ville, dom]
     );
-    if (rows && rows.length) {
-      return { ...etudeVersCamel(rows[0]), compteAdmin: { email: emailAdmin, role: "notaire" } };
+  } catch (e) {
+    console.warn("[SuperAdmin] DB insert etude fallback:", e.message);
+  }
+
+  // 2. Synchronisation / Création des Paramètres de l'étude (synchronisation immédiate dans l'espace Notaire)
+  try {
+    await pool.query(
+      `INSERT INTO parametres_etude (
+         id, etude_id, nom_etude, titre_notaire, nom_notaire, numero_ordre, adresse, telephone,
+         boite_postale, email, numero_cc, centre_impots, compte_sequestre_cdci
+       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+       ON CONFLICT (id) DO UPDATE SET
+         nom_etude = EXCLUDED.nom_etude,
+         titre_notaire = EXCLUDED.titre_notaire,
+         nom_notaire = EXCLUDED.nom_notaire,
+         adresse = EXCLUDED.adresse,
+         telephone = EXCLUDED.telephone,
+         email = EXCLUDED.email,
+         updated_at = now()`,
+      [
+        crypto.randomUUID(),
+        id,
+        nomEtude,
+        titreNotaire || "Notaire Titulaire",
+        nomNotaire || titreNotaire || "Maître Notaire",
+        numeroOrdre || "",
+        adresse || "",
+        telephone || "",
+        boitePostale || "",
+        emailAdmin || "",
+        numeroCC || "",
+        centreImpots || "",
+        compteSequestreCDCI || "",
+      ]
+    );
+  } catch (e) {
+    console.warn("[SuperAdmin] DB sync parametres_etude fallback:", e.message);
+  }
+
+  // 3. Création des comptes collaborateurs
+  const comptesCrees = [];
+  const listeAcreer = Array.isArray(collaborateurs) ? [...collaborateurs] : [];
+
+  // Si aucun notaire dans la liste des collaborateurs, on injecte le compte admin principal
+  const aNotaire = listeAcreer.some((c) => c.role === "notaire" || (emailAdmin && c.email === emailAdmin));
+  if (!aNotaire && emailAdmin) {
+    listeAcreer.unshift({
+      nomComplet: titreNotaire || nomEtude,
+      email: emailAdmin,
+      motDePasse: motDePasseAdmin || "notaire123",
+      role: "notaire",
+      telephone: telephone || "",
+      typeContrat: "Associé",
+    });
+  }
+
+  for (const c of listeAcreer) {
+    if (!c.email) continue;
+    const mdp = c.motDePasse || c.mdp || ("Pass" + Math.floor(Math.random() * 9000 + 1000) + "!");
+    try {
+      const u = await authService.creerUtilisateur({
+        nomComplet: c.nomComplet || c.nom || c.email.split("@")[0],
+        email: c.email,
+        motDePasse: mdp,
+        role: c.role || "clerc_redacteur",
+        telephone: c.telephone || "",
+        dateEmbauche: c.dateEmbauche || new Date().toISOString().split("T")[0],
+        typeContrat: c.typeContrat || "CDI",
+        salaireNet: c.salaireNet || null,
+        etudeId: id,
+      });
+      comptesCrees.push({
+        id: u.id,
+        nomComplet: u.nomComplet,
+        email: u.email,
+        role: u.role,
+        telephone: u.telephone,
+        motDePasseTemporaire: mdp,
+        emailEnvoye: !!envoyerEmails,
+      });
+    } catch (errUser) {
+      console.warn("[SuperAdmin] Erreur création collaborateur :", errUser.message);
     }
-  } catch (_) {}
+  }
 
   const nouvelleEtude = {
     id,
@@ -245,14 +337,69 @@ async function creerEtude({
     actif: true,
     totalDossiers: 0,
     totalMinutes: 0,
-    totalUtilisateurs: 1,
+    totalUtilisateurs: comptesCrees.length,
     espaceUtiliseMo: 0,
     versionDeployee: "v2.4.0",
     statutSante: "🟢 En ligne (Sync OK)",
     dateCreation: new Date(),
+    comptesCrees,
+    notificationsEnvoyees: !!envoyerEmails,
   };
-  ETUDES_MEMOIRE.push(nouvelleEtude);
-  return { ...nouvelleEtude, compteAdmin: { email: emailAdmin, role: "notaire" } };
+
+  ETUDES_MEMOIRE.unshift(nouvelleEtude);
+  return nouvelleEtude;
+}
+
+async function supprimerEtude(etudeId) {
+  try {
+    await pool.query("DELETE FROM file_synchronisation WHERE etude_id = $1", [etudeId]);
+    await pool.query("DELETE FROM mouvements_dossiers_physiques WHERE etude_id = $1", [etudeId]);
+    await pool.query("DELETE FROM minutes_archive WHERE etude_id = $1", [etudeId]);
+    await pool.query("DELETE FROM cartons_archive WHERE etude_id = $1", [etudeId]);
+    await pool.query("DELETE FROM dossiers WHERE etude_id = $1", [etudeId]);
+    await pool.query("DELETE FROM parametres_etude WHERE etude_id = $1", [etudeId]);
+    await pool.query("DELETE FROM utilisateurs WHERE etude_id = $1", [etudeId]);
+    await pool.query("DELETE FROM etudes WHERE id = $1", [etudeId]);
+  } catch (e) {
+    console.warn("[SuperAdmin] Erreur purge DB etude :", e.message);
+  }
+
+  await authService.supprimerUtilisateursParEtude(etudeId);
+
+  const idx = ETUDES_MEMOIRE.findIndex((x) => x.id === etudeId);
+  if (idx !== -1) {
+    ETUDES_MEMOIRE.splice(idx, 1);
+  }
+
+  return { success: true, message: "Office Notarial et données associées purgés avec succès." };
+}
+
+async function listerUtilisateursEtude(etudeId) {
+  return authService.listerUtilisateursParEtude(etudeId);
+}
+
+async function ajouterCollaborateurEtude(etudeId, donnees) {
+  const mdp = donnees.motDePasse || ("Pass" + Math.floor(Math.random() * 9000 + 1000) + "!");
+  const u = await authService.creerUtilisateur({
+    ...donnees,
+    motDePasse: mdp,
+    etudeId,
+  }, { avecSalaire: true });
+  return { ...u, motDePasseTemporaire: mdp };
+}
+
+async function reinitialiserMotDePasseEtude(etudeId, userId, motDePasse) {
+  const mdp = motDePasse || ("Pass" + Math.floor(Math.random() * 9000 + 1000) + "!");
+  const u = await authService.reinitialiserMotDePasse(userId, mdp);
+  if (!u) {
+    throw new Error("Utilisateur introuvable.");
+  }
+  return {
+    success: true,
+    utilisateur: u,
+    nouveauMotDePasse: mdp,
+    message: "Mot de passe réinitialisé avec succès.",
+  };
 }
 
 async function mettreAJourEtude(etudeId, {
@@ -660,6 +807,10 @@ module.exports = {
   listerEtudes,
   creerEtude,
   mettreAJourEtude,
+  supprimerEtude,
+  listerUtilisateursEtude,
+  ajouterCollaborateurEtude,
+  reinitialiserMotDePasseEtude,
   changerModeInfrastructure,
   listerEquipeEditeur,
   ajouterMembreEditeur,

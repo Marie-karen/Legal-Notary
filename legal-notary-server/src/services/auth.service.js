@@ -46,22 +46,23 @@ const COMPTES_DEMO_OFFLINE = {
 
 const UTILISATEURS_MEMOIRE = new Map(Object.entries(COMPTES_DEMO_OFFLINE).map(([k, v]) => [v.id, { ...v }]));
 
-async function creerUtilisateur({ nomComplet, email, motDePasse, role, telephone, dateEmbauche, typeContrat, salaireNet }, { avecSalaire = false } = {}) {
+async function creerUtilisateur({ nomComplet, email, motDePasse, role, telephone, dateEmbauche, typeContrat, salaireNet, etudeId, etude_id }, { avecSalaire = false } = {}) {
   const emailNorm = email.toLowerCase().trim();
+  const eid = etudeId || etude_id || "a0000000-0000-0000-0000-000000000001";
   let hash = "hash_demo";
   try {
-    hash = await bcrypt.hash(motDePasse, TOURS_HACHAGE);
+    hash = await bcrypt.hash(motDePasse || "notaire123", TOURS_HACHAGE);
   } catch (_) {}
 
   try {
     const { rows } = await pool.query(
-      `INSERT INTO utilisateurs (nom_complet, email, mot_de_passe_hash, role, telephone, date_embauche, type_contrat, salaire_net)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
-      [nomComplet, emailNorm, hash, role, telephone || "", dateEmbauche || null, typeContrat || null, salaireNet || null]
+      `INSERT INTO utilisateurs (nom_complet, email, mot_de_passe_hash, role, telephone, date_embauche, type_contrat, salaire_net, etude_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
+      [nomComplet, emailNorm, hash, role, telephone || "", dateEmbauche || null, typeContrat || null, salaireNet || null, eid]
     );
     if (rows && rows.length) {
       const u = rows[0];
-      notifyControlHub("user.created", { id: u.id, email: u.email, name: u.nom_complet, role: u.role }).catch(() => {});
+      notifyControlHub("user.created", { id: u.id, email: u.email, name: u.nom_complet, role: u.role, etudeId: eid }).catch(() => {});
       return utilisateurVersCamel(u, { avecSalaire });
     }
   } catch (errDb) {
@@ -73,14 +74,14 @@ async function creerUtilisateur({ nomComplet, email, motDePasse, role, telephone
     id: nouvelId,
     nom_complet: nomComplet,
     email: emailNorm,
-    mdp: motDePasse,
+    mdp: motDePasse || "notaire123",
     role: role || "clerc_redacteur",
     telephone: telephone || "",
     date_embauche: dateEmbauche || new Date().toISOString().split("T")[0],
     type_contrat: typeContrat || "CDI",
     salaire_net: salaireNet || 750000,
     actif: true,
-    etude_id: "etude-abidjan-01",
+    etude_id: eid,
   };
   UTILISATEURS_MEMOIRE.set(nouvelId, userLocal);
   COMPTES_DEMO_OFFLINE[emailNorm] = userLocal;
@@ -120,6 +121,43 @@ async function modifierUtilisateur(id, champs, { avecSalaire = false } = {}) {
     if (champs.typeContrat) existant.type_contrat = champs.typeContrat;
     if (champs.salaireNet !== undefined) existant.salaire_net = champs.salaireNet;
     return utilisateurVersCamel(existant, { avecSalaire });
+  }
+  return null;
+}
+
+async function reinitialiserMotDePasse(idOuEmail, nouveauMotDePasse) {
+  let hash = "hash_demo";
+  try {
+    hash = await bcrypt.hash(nouveauMotDePasse, TOURS_HACHAGE);
+  } catch (_) {}
+
+  try {
+    const { rows } = await pool.query(
+      `UPDATE utilisateurs SET mot_de_passe_hash = $1, updated_at = now()
+       WHERE (id::text = $2 OR email = LOWER($2))
+       RETURNING *`,
+      [hash, idOuEmail]
+    );
+    if (rows && rows.length) {
+      const u = rows[0];
+      if (COMPTES_DEMO_OFFLINE[u.email]) {
+        COMPTES_DEMO_OFFLINE[u.email].mdp = nouveauMotDePasse;
+      }
+      return utilisateurVersCamel(u);
+    }
+  } catch (errDb) {
+    console.warn("[AuthService] Repli mémoire réinitialisation mot de passe :", errDb.message);
+  }
+
+  // Fallback mémoire
+  for (const [k, v] of UTILISATEURS_MEMOIRE.entries()) {
+    if (v.id === idOuEmail || v.email === idOuEmail.toLowerCase().trim()) {
+      v.mdp = nouveauMotDePasse;
+      if (COMPTES_DEMO_OFFLINE[v.email]) {
+        COMPTES_DEMO_OFFLINE[v.email].mdp = nouveauMotDePasse;
+      }
+      return utilisateurVersCamel(v);
+    }
   }
   return null;
 }
@@ -185,6 +223,22 @@ async function listerUtilisateurs({ avecSalaires = false } = {}) {
     .map((l) => utilisateurVersCamel(l, { avecSalaire: avecSalaires }));
 }
 
+async function listerUtilisateursParEtude(etudeId) {
+  try {
+    const { rows } = await pool.query(
+      "SELECT * FROM utilisateurs WHERE etude_id = $1 AND archived_at IS NULL ORDER BY nom_complet",
+      [etudeId]
+    );
+    if (rows && rows.length) {
+      return rows.map((l) => utilisateurVersCamel(l, { avecSalaire: true }));
+    }
+  } catch (_) {}
+
+  return Array.from(UTILISATEURS_MEMOIRE.values())
+    .filter(u => (u.etude_id === etudeId || u.etudeId === etudeId) && u.actif !== false)
+    .map((l) => utilisateurVersCamel(l, { avecSalaire: true }));
+}
+
 async function desactiverUtilisateur(id) {
   try {
     await pool.query("UPDATE utilisateurs SET actif = false, archived_at = now() WHERE id = $1", [id]);
@@ -193,12 +247,27 @@ async function desactiverUtilisateur(id) {
   if (u) u.actif = false;
 }
 
+async function supprimerUtilisateursParEtude(etudeId) {
+  try {
+    await pool.query("DELETE FROM utilisateurs WHERE etude_id = $1", [etudeId]);
+  } catch (_) {}
+  for (const [id, u] of UTILISATEURS_MEMOIRE.entries()) {
+    if (u.etude_id === etudeId || u.etudeId === etudeId) {
+      UTILISATEURS_MEMOIRE.delete(id);
+      delete COMPTES_DEMO_OFFLINE[u.email];
+    }
+  }
+}
+
 module.exports = {
   creerUtilisateur,
   modifierUtilisateur,
+  reinitialiserMotDePasse,
   connecter,
   verifierJeton,
   listerUtilisateurs,
+  listerUtilisateursParEtude,
   desactiverUtilisateur,
+  supprimerUtilisateursParEtude,
   utilisateurVersCamel,
 };

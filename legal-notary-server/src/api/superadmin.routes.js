@@ -47,6 +47,46 @@ router.put("/etudes/:id", async (req, res, next) => {
   }
 });
 
+// 4b. Suppression définitive / Résiliation d'une étude
+router.delete("/etudes/:id", async (req, res, next) => {
+  try {
+    const resultat = await superadminService.supprimerEtude(req.params.id);
+    res.json(resultat);
+  } catch (e) {
+    next(e);
+  }
+});
+
+// 4c. Liste des utilisateurs / collaborateurs d'une étude
+router.get("/etudes/:id/utilisateurs", async (req, res, next) => {
+  try {
+    const utilisateurs = await superadminService.listerUtilisateursEtude(req.params.id);
+    res.json(utilisateurs);
+  } catch (e) {
+    next(e);
+  }
+});
+
+// 4d. Ajout d'un collaborateur à une étude depuis le SuperAdmin
+router.post("/etudes/:id/utilisateurs", async (req, res, next) => {
+  try {
+    const nouveau = await superadminService.ajouterCollaborateurEtude(req.params.id, req.body);
+    res.status(201).json(nouveau);
+  } catch (e) {
+    next(e);
+  }
+});
+
+// 4e. Réinitialisation du mot de passe d'un utilisateur d'une étude
+router.post("/etudes/:id/utilisateurs/:userId/reinitialiser-mdp", async (req, res, next) => {
+  try {
+    const resultat = await superadminService.reinitialiserMotDePasseEtude(req.params.id, req.params.userId, req.body.motDePasse);
+    res.json(resultat);
+  } catch (e) {
+    next(e);
+  }
+});
+
 // 5. Changement rapide de mode infrastructure d'une étude
 router.post("/etudes/:id/basculer-mode", async (req, res, next) => {
   try {

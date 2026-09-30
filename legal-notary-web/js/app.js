@@ -9462,7 +9462,7 @@
         html += '<p style="font-size:12px;color:var(--color-text-dim);margin:2px 0 0">Supervision du parc d\'études notariales, formules d\'abonnement, espaces de stockage GED et domaines.</p></div>';
         html += '</div>';
 
-        html += '<div class="table-wrap"><table class="table"><thead><tr><th>Code Tenant</th><th>Office Notarial</th><th>Notaire Titulaire</th><th>Hébergement</th><th>Dossiers / Minutes</th><th>Collaborateurs</th><th>Santé Serveur</th><th>Actions</th></tr></thead><tbody>';
+        html += '<div class="table-wrap"><table class="table"><thead><tr><th>Code Tenant</th><th>Office Notarial</th><th>Notaire Titulaire</th><th>Hébergement</th><th>Dossiers / Minutes</th><th>Collaborateurs</th><th>Statut</th><th>Actions de Gestion</th></tr></thead><tbody>';
         etudes.forEach(function (e, index) {
           var modeBadge = '<span class="tag" style="background:rgba(56,189,248,0.15);color:#38bdf8;border:1px solid rgba(56,189,248,0.3)">Mode B Cloud Dédié</span>';
           if (e.modeInfrastructure === "hybride") {
@@ -9471,17 +9471,24 @@
             modeBadge = '<span class="tag" style="background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3)">Mode A Local</span>';
           }
 
+          var statutBadge = (e.actif !== false)
+            ? '<span class="tag tag-success" style="font-size:11px">🟢 Actif</span>'
+            : '<span class="tag" style="background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid rgba(239,68,68,0.3);font-size:11px">⏸️ Suspendu</span>';
+
           html += '<tr>';
           html += '<td><strong style="font-family:monospace;color:var(--color-text);font-size:12px">' + (e.codeEtude || "ETUDE-001") + '</strong></td>';
-          html += '<td><strong style="color:var(--color-text);font-size:13px">' + e.nomEtude + '</strong><div style="font-size:11px;color:var(--color-text-dim)">' + (e.ville || "Abidjan") + ' · Quota GED ' + (e.quotaStockageGo || 100) + ' Go</div></td>';
+          html += '<td><strong style="color:var(--color-text);font-size:13px">' + e.nomEtude + '</strong><div style="font-size:11px;color:var(--color-text-dim)">' + (e.ville || "Abidjan") + ' · Quota GED ' + (e.quotaStockageGo || 100) + ' Go · <code>' + (e.domaine || "notaires.ci") + '</code></div></td>';
           html += '<td style="font-size:12px;font-weight:600">' + (e.titreNotaire || "Maître Notaire") + '</td>';
           html += '<td>' + modeBadge + '</td>';
           html += '<td><strong style="color:var(--color-accent)">' + (e.totalDossiers || 0) + '</strong> dossiers <span style="font-size:11px;color:var(--color-text-dim)">(' + (e.totalMinutes || 0) + ' min.)</span></td>';
-          html += '<td><span class="tag tag-outline">' + (e.totalUtilisateurs || 5) + ' collaborateurs</span></td>';
-          html += '<td><span style="font-size:12px;font-weight:bold;color:#22c55e">' + (e.statutSante || "En ligne") + '</span></td>';
+          html += '<td><button type="button" class="btn btn-ghost btn-utilisateurs-etude" data-etude-idx="' + index + '" style="font-size:11px;padding:2px 8px;text-decoration:underline">👥 ' + (e.totalUtilisateurs || 1) + ' collaborateur(s)</button></td>';
+          html += '<td>' + statutBadge + '</td>';
           html += '<td><div style="display:flex;gap:4px;flex-wrap:wrap">';
-          html += '<button type="button" class="btn btn-primary btn-deploiement-etude" data-etude-id="' + e.id + '" data-nom="' + encodeURIComponent(e.nomEtude) + '" style="font-size:11px;padding:3px 8px;font-weight:700" title="Accès et mise en ligne">Mettre en ligne</button>';
-          html += '<button type="button" class="btn btn-secondary btn-configurer-etude" data-etude-idx="' + index + '" style="font-size:11px;padding:3px 8px" title="Configurer l\'office">Configurer</button>';
+          html += '<button type="button" class="btn btn-secondary btn-utilisateurs-etude" data-etude-idx="' + index + '" style="font-size:11px;padding:3px 8px" title="Gérer les comptes et réinitialiser mots de passe">👥 Comptes & Accès</button>';
+          html += '<button type="button" class="btn btn-secondary btn-configurer-etude" data-etude-idx="' + index + '" style="font-size:11px;padding:3px 8px" title="Configurer l\'office">⚙️ Configurer</button>';
+          html += '<button type="button" class="btn btn-primary btn-deploiement-etude" data-etude-id="' + e.id + '" data-nom="' + encodeURIComponent(e.nomEtude) + '" style="font-size:11px;padding:3px 8px;font-weight:700" title="Accès DNS et mise en ligne">🌐 DNS / Clés</button>';
+          html += '<button type="button" class="btn btn-ghost btn-toggle-etude" data-etude-id="' + e.id + '" data-actif="' + (e.actif !== false ? "1" : "0") + '" data-nom="' + encodeURIComponent(e.nomEtude) + '" style="font-size:11px;padding:3px 8px;color:' + (e.actif !== false ? "#f59e0b" : "#22c55e") + '" title="Activer / Suspendre">' + (e.actif !== false ? "⏸️ Suspendre" : "▶️ Activer") + '</button>';
+          html += '<button type="button" class="btn btn-ghost btn-supprimer-etude" data-etude-idx="' + index + '" style="font-size:11px;padding:3px 8px;color:#ef4444" title="Supprimer définitivement cette étude">🗑️ Supprimer</button>';
           html += '</div></td>';
           html += '</tr>';
         });
@@ -9898,6 +9905,38 @@
         });
       }
 
+      c.querySelectorAll(".btn-utilisateurs-etude").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          var idx = parseInt(btn.dataset.etudeIdx, 10);
+          var etude = etudes[idx];
+          if (etude) modalUtilisateursEtude(etude);
+        });
+      });
+
+      c.querySelectorAll(".btn-toggle-etude").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          var etudeId = btn.dataset.etudeId;
+          var nomEtude = decodeURIComponent(btn.dataset.nom);
+          var estActif = btn.dataset.actif === "1";
+          var nouvActif = !estActif;
+          var msg = nouvActif ? "Réactiver l'accès pour " + nomEtude + " ?" : "Suspendre temporairement l'accès pour " + nomEtude + " ?";
+          if (confirm(msg)) {
+            API.put("/api/superadmin/etudes/" + etudeId, { actif: nouvActif }).then(function () {
+              toast("Statut de l'office " + nomEtude + (nouvActif ? " activé" : " suspendu"));
+              renderSuperAdmin();
+            }).catch(function (e) { toast(e.message); });
+          }
+        });
+      });
+
+      c.querySelectorAll(".btn-supprimer-etude").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          var idx = parseInt(btn.dataset.etudeIdx, 10);
+          var etude = etudes[idx];
+          if (etude) modalSupprimerEtude(etude);
+        });
+      });
+
       c.querySelectorAll(".btn-deploiement-etude").forEach(function (btn) {
         btn.addEventListener("click", function () {
           var etudeId = btn.dataset.etudeId;
@@ -10149,25 +10188,40 @@
   }
 
   // =========================================================================
-  // MODALE : DÉPLOYER UN NOUVEL OFFICE NOTARIAL (PROVISIONING SAAS MULTI-TENANT)
-  // =========================================================================
-  // =========================================================================
-  // =========================================================================
-  // MODALE : DÉPLOYER UN NOUVEL OFFICE NOTARIAL (PROVISIONING SAAS MULTI-TENANT)
+  // MODALE : DÉPLOYER UN NOUVEL OFFICE NOTARIAL (ONBOARDING CLÉ EN MAIN B2B)
   // =========================================================================
   function modalDeployerNouvelleEtude() {
+    var collaborateursInitiaux = [
+      { role: "notaire", roleLabel: "👑 Notaire Titulaire", nomComplet: "Maître Notaire Titulaire", emailPrefix: "notaire", telephone: "+225 07 00 00 01", mdp: "Mka" + Math.floor(Math.random() * 900 + 100) + "!" },
+      { role: "premier_clerc", roleLabel: "🥇 Premier Clerc", nomComplet: "Premier Clerc", emailPrefix: "premier.clerc", telephone: "+225 07 00 00 02", mdp: "Mka" + Math.floor(Math.random() * 900 + 100) + "!" },
+      { role: "clerc_redacteur", roleLabel: "✍️ Clerc Rédacteur", nomComplet: "Clerc Rédacteur", emailPrefix: "clerc1", telephone: "+225 07 00 00 03", mdp: "Mka" + Math.floor(Math.random() * 900 + 100) + "!" },
+      { role: "clerc_formaliste", roleLabel: "🏛️ Clerc Formaliste", nomComplet: "Clerc Formaliste", emailPrefix: "formalites", telephone: "+225 07 00 00 04", mdp: "Mka" + Math.floor(Math.random() * 900 + 100) + "!" },
+      { role: "comptable_taxateur", roleLabel: "💰 Comptable / Taxateur", nomComplet: "Comptable Taxateur", emailPrefix: "comptable", telephone: "+225 07 00 00 05", mdp: "Mka" + Math.floor(Math.random() * 900 + 100) + "!" },
+      { role: "assistante", roleLabel: "🤝 Assistante Accueil", nomComplet: "Assistante Accueil", emailPrefix: "accueil", telephone: "+225 07 00 00 06", mdp: "Mka" + Math.floor(Math.random() * 900 + 100) + "!" },
+      { role: "archiviste", roleLabel: "📦 Archiviste", nomComplet: "Archiviste du Cabinet", emailPrefix: "archiviste", telephone: "+225 07 00 00 07", mdp: "Mka" + Math.floor(Math.random() * 900 + 100) + "!" },
+    ];
+
     var html = '<form id="form-deployer-etude" style="display:flex;flex-direction:column;gap:var(--space-3)">';
 
-    html += '<div class="field"><label>Nom officiel de l\'office notarial</label><input class="input" name="nomEtude" placeholder="Ex. Étude Notariale Maître Kouamé" required></div>';
+    // SECTION 1 : Coordonnées du Cabinet
+    html += '<div style="background:var(--color-surface-2);padding:12px;border-radius:var(--radius);border:1px solid var(--color-border)">';
+    html += '<div style="font-weight:700;font-size:14px;color:var(--color-text);margin-bottom:8px">🏛️ 1. Identité & Coordonnées de l\'Office Notarial</div>';
+    
+    html += '<div class="field"><label>Nom officiel du cabinet / étude</label><input class="input" name="nomEtude" id="dep-nom-etude" placeholder="Ex. Étude Notariale Me Marie-Karen / MKA" required></div>';
 
     html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2)">';
-    html += '<div class="field"><label>Notaire Titulaire</label><input class="input" name="titreNotaire" placeholder="Ex. Maître Kouamé Jean-Luc" required></div>';
-    html += '<div class="field"><label>Ville / Région d\'implantation</label><input class="input" name="ville" value="Abidjan" required></div>';
+    html += '<div class="field"><label>Notaire Titulaire</label><input class="input" name="titreNotaire" id="dep-titre-notaire" placeholder="Ex. Maître Marie-Karen" required></div>';
+    html += '<div class="field"><label>Nom de domaine personnalisé</label><input class="input" name="domaine" id="dep-domaine" placeholder="Ex. etude-mka.ci" value="etude-mka.ci" required></div>';
     html += '</div>';
 
     html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2)">';
-    html += '<div class="field"><label>Email Administrateur du Notaire</label><input class="input" type="email" name="emailAdmin" placeholder="kouame@notaire.ci" required></div>';
-    html += '<div class="field"><label>Mot de passe initial</label><input class="input" type="text" name="motDePasseAdmin" value="notaire123" required></div>';
+    html += '<div class="field"><label>Ville / Commune</label><input class="input" name="ville" value="Abidjan" required></div>';
+    html += '<div class="field"><label>Téléphone standard du cabinet</label><input class="input" name="telephone" placeholder="+225 27 20 00 00 00"></div>';
+    html += '</div>';
+
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2)">';
+    html += '<div class="field"><label>Adresse géographique</label><input class="input" name="adresse" placeholder="Ex. Plateau, Rue du Commerce, Immeuble Horizon"></div>';
+    html += '<div class="field"><label>Boîte Postale</label><input class="input" name="boitePostale" placeholder="Ex. 01 BP 1234 Abidjan 01"></div>';
     html += '</div>';
 
     html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2)">';
@@ -10176,53 +10230,370 @@
     html += '<option value="cloud">Mode B — Cloud Dédié (Vault)</option>';
     html += '<option value="serveur_physique">Mode A — Serveur Physique Local Exclusif</option>';
     html += '</select></div>';
-    html += '<div class="field"><label>Quota de Stockage Cloud/Local</label><select class="input" name="quotaStockageGo">';
+    html += '<div class="field"><label>Quota GED</label><select class="input" name="quotaStockageGo">';
     html += '<option value="100" selected>100 Go (Standard)</option>';
     html += '<option value="250">250 Go (Grand Cabinet)</option>';
-    html += '<option value="500">500 Go (Fonds Historique Lourd)</option>';
-    html += '<option value="1000">1 To (Multi-Notaires Associés)</option>';
+    html += '<option value="500">500 Go (Historique Lourd)</option>';
+    html += '<option value="1000">1 To (Multi-Notaires)</option>';
     html += '</select></div>';
     html += '</div>';
+    html += '</div>';
 
-    html += '<div style="font-size:11px;color:var(--color-text-dim);background:var(--color-surface-2);padding:8px 10px;border-radius:var(--radius);border:1px solid var(--color-border)">';
-    html += '🔒 <strong>Isolation Stricte :</strong> L\'office bénéficiera immédiatement d\'un tenant PostgreSQL partitionné (`etude_id`), d\'un compte administrateur Notaire prêt à l\'emploi, et d\'un chiffrement AES-256 des secrets conforme au secret professionnel.';
+    // SECTION 2 : Collaborateurs & Comptes Clé en Main
+    html += '<div style="background:var(--color-surface-2);padding:12px;border-radius:var(--radius);border:1px solid var(--color-border)">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:6px">';
+    html += '<div><strong style="font-size:14px;color:var(--color-text)">👥 2. Collaborateurs & Comptes Clé en Main</strong><div style="font-size:11px;color:var(--color-text-dim)">Chaque compte sera activé et recevra ses identifiants.</div></div>';
+    html += '<button type="button" class="btn btn-secondary" id="btn-pre-remplir-7-roles" style="font-size:11px;padding:4px 8px;font-weight:600">⚡ Réinitialiser les 7 Postes Types</button>';
+    html += '</div>';
+
+    html += '<div style="max-height:260px;overflow-y:auto;border:1px solid var(--color-border);border-radius:var(--radius);background:var(--color-bg)">';
+    html += '<table class="table" style="font-size:12px;margin:0" id="table-collabs-deploiement">';
+    html += '<thead><tr><th>Poste / Rôle</th><th>Nom Complet</th><th>Email de Connexion</th><th>Mot de passe Initial</th><th></th></tr></thead>';
+    html += '<tbody id="tbody-collabs-deploiement"></tbody>';
+    html += '</table>';
+    html += '</div>';
+
+    html += '<div style="margin-top:8px"><button type="button" class="btn btn-ghost" id="btn-ajouter-ligne-collab" style="font-size:11px">+ Ajouter une ligne collaborateur</button></div>';
+    html += '</div>';
+
+    // SECTION 3 : Synchronisation et Options
+    html += '<div style="background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.3);padding:10px 12px;border-radius:var(--radius);font-size:12px;display:flex;flex-direction:column;gap:6px">';
+    html += '<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600;color:var(--color-text)"><input type="checkbox" name="envoyerEmails" checked> ✉️ Envoyer immédiatement par email les identifiants de connexion à chaque collaborateur</label>';
+    html += '<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600;color:var(--color-text)"><input type="checkbox" name="syncParams" checked> ⚙️ Synchroniser automatiquement ces coordonnées dans les paramètres de l\'étude du notaire</label>';
     html += '</div>';
 
     html += '<div id="erreur-deployer-etude" class="erreur-inline" style="display:none"></div>';
-    html += '<div style="display:flex;justify-content:flex-end;gap:var(--space-2);margin-top:var(--space-2)"><button type="button" class="btn btn-ghost" id="btn-annuler-deploy">Annuler</button><button type="submit" class="btn btn-primary">🏛️ Déployer & Initialiser l\'Office</button></div>';
+    html += '<div style="display:flex;justify-content:flex-end;gap:var(--space-2);margin-top:var(--space-2)"><button type="button" class="btn btn-ghost" id="btn-annuler-deploy">Annuler</button><button type="submit" class="btn btn-primary" style="font-weight:700">🏛️ Déployer, Initialiser & Activer l\'Office</button></div>';
     html += '</form>';
 
     ouvrirModal({
-      titre: '<span>🏛️</span> Déploiement d\'un Nouvel Office Notarial (Multi-Tenant SaaS)',
+      titre: '<span>🏛️</span> Déploiement d\'un Nouvel Office Notarial (Onboarding Clé en Main)',
       corps: html,
       boutonFermer: true,
-      largeur: "580px",
+      largeur: "750px",
       apresOuverture: function () {
+        var tbody = document.getElementById("tbody-collabs-deploiement");
+        var domaineInput = document.getElementById("dep-domaine");
+
+        function rendreLignesCollaborateurs(liste) {
+          if (!tbody) return;
+          tbody.innerHTML = "";
+          var dom = (domaineInput.value.trim() || "etude-mka.ci").replace(/^@/, "");
+          liste.forEach(function (c, idx) {
+            var emailVal = c.email || (c.emailPrefix + "@" + dom);
+            var tr = document.createElement("tr");
+            tr.innerHTML =
+              '<td>' +
+                '<select class="input collab-role" data-idx="' + idx + '" style="font-size:11px;padding:3px 6px">' +
+                  '<option value="notaire"' + (c.role === "notaire" ? " selected" : "") + '>👑 Notaire Titulaire</option>' +
+                  '<option value="premier_clerc"' + (c.role === "premier_clerc" ? " selected" : "") + '>🥇 Premier Clerc</option>' +
+                  '<option value="clerc_redacteur"' + (c.role === "clerc_redacteur" ? " selected" : "") + '>✍️ Clerc Rédacteur</option>' +
+                  '<option value="clerc_formaliste"' + (c.role === "clerc_formaliste" ? " selected" : "") + '>🏛️ Clerc Formaliste</option>' +
+                  '<option value="comptable_taxateur"' + (c.role === "comptable_taxateur" ? " selected" : "") + '>💰 Comptable / Taxateur</option>' +
+                  '<option value="assistante"' + (c.role === "assistante" ? " selected" : "") + '>🤝 Assistante Accueil</option>' +
+                  '<option value="archiviste"' + (c.role === "archiviste" ? " selected" : "") + '>📦 Archiviste</option>' +
+                '</select>' +
+              '</td>' +
+              '<td><input class="input collab-nom" data-idx="' + idx + '" value="' + (c.nomComplet || "") + '" placeholder="Nom complet" style="font-size:11px;padding:3px 6px" required></td>' +
+              '<td><input class="input collab-email" data-idx="' + idx + '" type="email" value="' + emailVal + '" style="font-size:11px;padding:3px 6px" required></td>' +
+              '<td><input class="input collab-mdp" data-idx="' + idx + '" value="' + (c.mdp || "Pass1234!") + '" style="font-size:11px;padding:3px 6px" required></td>' +
+              '<td style="text-align:center"><button type="button" class="btn btn-ghost btn-suppr-collab-row" data-idx="' + idx + '" style="color:#ef4444;padding:2px 6px;font-size:11px">✕</button></td>';
+            tbody.appendChild(tr);
+          });
+
+          // Handlers de suppression de ligne
+          tbody.querySelectorAll(".btn-suppr-collab-row").forEach(function (b) {
+            b.addEventListener("click", function () {
+              var i = parseInt(b.dataset.idx, 10);
+              collaborateursInitiaux.splice(i, 1);
+              rendreLignesCollaborateurs(collaborateursInitiaux);
+            });
+          });
+        }
+
+        rendreLignesCollaborateurs(collaborateursInitiaux);
+
+        // Mise à jour des emails quand le domaine change
+        domaineInput.addEventListener("input", function () {
+          var dom = (domaineInput.value.trim() || "etude-mka.ci").replace(/^@/, "");
+          tbody.querySelectorAll("tr").forEach(function (tr, i) {
+            var emailInput = tr.querySelector(".collab-email");
+            if (emailInput && collaborateursInitiaux[i] && collaborateursInitiaux[i].emailPrefix) {
+              emailInput.value = collaborateursInitiaux[i].emailPrefix + "@" + dom;
+            }
+          });
+        });
+
+        // Bouton pré-remplir
+        document.getElementById("btn-pre-remplir-7-roles").addEventListener("click", function () {
+          var dom = (domaineInput.value.trim() || "etude-mka.ci").replace(/^@/, "");
+          collaborateursInitiaux = [
+            { role: "notaire", roleLabel: "👑 Notaire Titulaire", nomComplet: document.getElementById("dep-titre-notaire").value || "Maître Notaire Titulaire", emailPrefix: "notaire", telephone: "+225 07 00 00 01", mdp: "Mka" + Math.floor(Math.random() * 900 + 100) + "!" },
+            { role: "premier_clerc", roleLabel: "🥇 Premier Clerc", nomComplet: "Premier Clerc", emailPrefix: "premier.clerc", telephone: "+225 07 00 00 02", mdp: "Mka" + Math.floor(Math.random() * 900 + 100) + "!" },
+            { role: "clerc_redacteur", roleLabel: "✍️ Clerc Rédacteur", nomComplet: "Clerc Rédacteur", emailPrefix: "clerc1", telephone: "+225 07 00 00 03", mdp: "Mka" + Math.floor(Math.random() * 900 + 100) + "!" },
+            { role: "clerc_formaliste", roleLabel: "🏛️ Clerc Formaliste", nomComplet: "Clerc Formaliste", emailPrefix: "formalites", telephone: "+225 07 00 00 04", mdp: "Mka" + Math.floor(Math.random() * 900 + 100) + "!" },
+            { role: "comptable_taxateur", roleLabel: "💰 Comptable / Taxateur", nomComplet: "Comptable Taxateur", emailPrefix: "comptable", telephone: "+225 07 00 00 05", mdp: "Mka" + Math.floor(Math.random() * 900 + 100) + "!" },
+            { role: "assistante", roleLabel: "🤝 Assistante Accueil", nomComplet: "Assistante Accueil", emailPrefix: "accueil", telephone: "+225 07 00 00 06", mdp: "Mka" + Math.floor(Math.random() * 900 + 100) + "!" },
+            { role: "archiviste", roleLabel: "📦 Archiviste", nomComplet: "Archiviste du Cabinet", emailPrefix: "archiviste", telephone: "+225 07 00 00 07", mdp: "Mka" + Math.floor(Math.random() * 900 + 100) + "!" },
+          ];
+          rendreLignesCollaborateurs(collaborateursInitiaux);
+        });
+
+        // Bouton ajouter ligne
+        document.getElementById("btn-ajouter-ligne-collab").addEventListener("click", function () {
+          var dom = (domaineInput.value.trim() || "etude-mka.ci").replace(/^@/, "");
+          collaborateursInitiaux.push({
+            role: "clerc_redacteur",
+            nomComplet: "",
+            email: "collab" + (collaborateursInitiaux.length + 1) + "@" + dom,
+            mdp: "Pass" + Math.floor(Math.random() * 900 + 100) + "!"
+          });
+          rendreLignesCollaborateurs(collaborateursInitiaux);
+        });
+
         document.getElementById("btn-annuler-deploy").addEventListener("click", fermerModal);
+
+        // Soumission
         document.getElementById("form-deployer-etude").addEventListener("submit", function (ev) {
           ev.preventDefault();
           var form = ev.target;
           var errZone = document.getElementById("erreur-deployer-etude");
           errZone.style.display = "none";
 
+          // Lecture des collaborateurs du tableau
+          var collabsPayload = [];
+          tbody.querySelectorAll("tr").forEach(function (tr) {
+            var r = tr.querySelector(".collab-role").value;
+            var nom = tr.querySelector(".collab-nom").value.trim();
+            var em = tr.querySelector(".collab-email").value.trim();
+            var pw = tr.querySelector(".collab-mdp").value.trim();
+            if (em) {
+              collabsPayload.push({
+                role: r,
+                nomComplet: nom || em.split("@")[0],
+                email: em,
+                motDePasse: pw || "Pass1234!",
+              });
+            }
+          });
+
+          var notaireAccount = collabsPayload.find(function (c) { return c.role === "notaire"; });
+          var emailAdminPrincipal = notaireAccount ? notaireAccount.email : (collabsPayload[0] ? collabsPayload[0].email : "notaire@" + form.domaine.value.trim());
+
           var payload = {
             nomEtude: form.nomEtude.value.trim(),
             titreNotaire: form.titreNotaire.value.trim(),
-            emailAdmin: form.emailAdmin.value.trim(),
-            motDePasseAdmin: form.motDePasseAdmin.value.trim(),
+            domaine: form.domaine.value.trim(),
+            ville: form.ville.value.trim(),
+            telephone: form.telephone.value.trim(),
+            adresse: form.adresse.value.trim(),
+            boitePostale: form.boitePostale.value.trim(),
             modeInfrastructure: form.modeInfrastructure.value,
             quotaStockageGo: parseInt(form.quotaStockageGo.value, 10) || 100,
-            ville: form.ville.value.trim(),
+            emailAdmin: emailAdminPrincipal,
+            motDePasseAdmin: notaireAccount ? notaireAccount.motDePasse : "notaire123",
+            collaborateurs: collabsPayload,
+            envoyerEmails: form.envoyerEmails.checked,
           };
 
           API.post("/api/superadmin/etudes", payload).then(function (nouvelle) {
-            toast("Office Notarial " + (nouvelle.nomEtude || nouvelle.nom_etude) + " déployé avec succès ! Compte administrateur créé.");
             fermerModal();
             renderSuperAdmin();
+            modalRecapitulatifDeploiement(nouvelle);
           }).catch(function (e) {
             errZone.textContent = e.message;
             errZone.style.display = "block";
           });
+        });
+      },
+    });
+  }
+
+  // =========================================================================
+  // MODALE : RÉCAPITULATIF & IDENTIFIANTS DES COMPTES CRÉÉS
+  // =========================================================================
+  function modalRecapitulatifDeploiement(nouvelle) {
+    var comptes = nouvelle.comptesCrees || [];
+    var texteACopier = "🔑 IDENTIFIANTS D'ACCÈS — " + (nouvelle.nomEtude || nouvelle.nom_etude) + "\n";
+    texteACopier += "URL de connexion : https://legalnotary.app\n";
+    texteACopier += "Domaine dédié : https://" + (nouvelle.domaine || "legalnotary.app") + "\n\n";
+
+    var html = '<div style="display:flex;flex-direction:column;gap:var(--space-3)">';
+    html += '<div style="background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);padding:12px;border-radius:var(--radius);color:#22c55e">';
+    html += '<strong style="font-size:15px">🎉 Office Notarial Déployé & Collaborateurs Activés !</strong>';
+    html += '<div style="font-size:12px;color:var(--color-text);margin-top:4px">L\'espace <strong>' + (nouvelle.nomEtude || nouvelle.nom_etude) + '</strong> est opérationnel. Les paramètres du cabinet ont été synchronisés et <strong>' + comptes.length + ' compte(s)</strong> ont été initialisés.</div>';
+    html += '</div>';
+
+    html += '<div class="table-wrap" style="max-height:280px;overflow-y:auto"><table class="table" style="font-size:12px"><thead><tr><th>Nom</th><th>Email de Connexion</th><th>Rôle</th><th>Mot de passe Initial</th></tr></thead><tbody>';
+    comptes.forEach(function (c) {
+      texteACopier += "- " + (c.nomComplet || c.nom_complet) + " (" + (c.role || "collaborateur") + ") : " + c.email + " / MDP : " + (c.motDePasseTemporaire || "notaire123") + "\n";
+      html += '<tr>';
+      html += '<td><strong>' + (c.nomComplet || c.nom_complet) + '</strong></td>';
+      html += '<td><code>' + c.email + '</code></td>';
+      html += '<td><span class="tag tag-outline">' + (c.role || "membre") + '</span></td>';
+      html += '<td><strong style="color:var(--color-accent);font-family:monospace">' + (c.motDePasseTemporaire || "notaire123") + '</strong></td>';
+      html += '</tr>';
+    });
+    html += '</tbody></table></div>';
+
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:var(--space-2);margin-top:var(--space-2)">';
+    html += '<button type="button" class="btn btn-secondary" id="btn-copier-identifiants">📋 Copier tous les identifiants</button>';
+    html += '<button type="button" class="btn btn-primary" id="btn-fermer-recap">Terminer & Retour au Parc</button>';
+    html += '</div>';
+    html += '</div>';
+
+    ouvrirModal({
+      titre: '<span>📜</span> Fiche de Livraison & Identifiants du Cabinet',
+      corps: html,
+      boutonFermer: true,
+      largeur: "680px",
+      apresOuverture: function () {
+        document.getElementById("btn-fermer-recap").addEventListener("click", fermerModal);
+        document.getElementById("btn-copier-identifiants").addEventListener("click", function () {
+          if (navigator.clipboard) {
+            navigator.clipboard.writeText(texteACopier).then(function () {
+              toast("Tous les identifiants ont été copiés dans le presse-papiers !");
+            });
+          } else {
+            prompt("Copiez les identifiants ci-dessous :", texteACopier);
+          }
+        });
+      },
+    });
+  }
+
+  // =========================================================================
+  // MODALE : GESTION DES COMPTES & RÉINITIALISATION DES MOTS DE PASSE D'UNE ÉTUDE
+  // =========================================================================
+  function modalUtilisateursEtude(etude) {
+    var html = '<div style="display:flex;flex-direction:column;gap:var(--space-3)">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;background:var(--color-surface-2);padding:10px 12px;border-radius:var(--radius);border:1px solid var(--color-border);flex-wrap:wrap;gap:6px">';
+    html += '<div><strong style="font-size:14px;color:var(--color-text)">' + etude.nomEtude + '</strong><div style="font-size:11px;color:var(--color-text-dim)">Domaine : <code>' + (etude.domaine || "notaires.ci") + '</code> · Code : <code>' + etude.codeEtude + '</code></div></div>';
+    html += '<button type="button" class="btn btn-primary" id="btn-ajouter-collab-direct" style="font-size:11px;padding:4px 10px">+ Ajouter un collaborateur</button>';
+    html += '</div>';
+
+    html += '<div id="zone-utilisateurs-etude-chargement" style="padding:16px;text-align:center;color:var(--color-text-dim)">Chargement des collaborateurs…</div>';
+    html += '<div id="zone-utilisateurs-etude-table" style="display:none;max-height:320px;overflow-y:auto" class="table-wrap"><table class="table" style="font-size:12px"><thead><tr><th>Nom & Prénom</th><th>Email de Connexion</th><th>Rôle</th><th>Statut</th><th>Action</th></tr></thead><tbody id="tbody-utilisateurs-etude"></tbody></table></div>';
+
+    html += '<div style="display:flex;justify-content:flex-end;margin-top:var(--space-2)"><button type="button" class="btn btn-secondary" id="btn-fermer-utilisateurs-etude">Fermer</button></div>';
+    html += '</div>';
+
+    ouvrirModal({
+      titre: '<span>👥</span> Gestion des Comptes & Mots de Passe — ' + etude.nomEtude,
+      corps: html,
+      boutonFermer: true,
+      largeur: "720px",
+      apresOuverture: function () {
+        document.getElementById("btn-fermer-utilisateurs-etude").addEventListener("click", fermerModal);
+
+        function rechargerComptes() {
+          API.get("/api/superadmin/etudes/" + etude.id + "/utilisateurs").then(function (utilisateurs) {
+            var loadZone = document.getElementById("zone-utilisateurs-etude-chargement");
+            var tableZone = document.getElementById("zone-utilisateurs-etude-table");
+            var tbody = document.getElementById("tbody-utilisateurs-etude");
+            if (loadZone) loadZone.style.display = "none";
+            if (tableZone) tableZone.style.display = "block";
+            if (!tbody) return;
+
+            tbody.innerHTML = "";
+            if (!utilisateurs || utilisateurs.length === 0) {
+              tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--color-text-dim)">Aucun utilisateur trouvé pour cette étude.</td></tr>';
+              return;
+            }
+
+            utilisateurs.forEach(function (u) {
+              var tr = document.createElement("tr");
+              tr.innerHTML =
+                '<td><strong style="color:var(--color-text)">' + (u.nomComplet || u.nom_complet) + '</strong></td>' +
+                '<td><code>' + u.email + '</code></td>' +
+                '<td><span class="tag tag-outline">' + (u.role || "collaborateur") + '</span></td>' +
+                '<td>' + (u.actif !== false ? '<span style="color:#22c55e;font-weight:bold">Actif</span>' : '<span style="color:#ef4444;font-weight:bold">Suspendu</span>') + '</td>' +
+                '<td><button type="button" class="btn btn-secondary btn-reset-mdp-user" data-user-id="' + u.id + '" data-user-nom="' + encodeURIComponent(u.nomComplet || u.nom_complet) + '" style="font-size:11px;padding:3px 8px">🔑 Réinitialiser MDP</button></td>';
+              tbody.appendChild(tr);
+            });
+
+            // Action réinitialiser mot de passe
+            tbody.querySelectorAll(".btn-reset-mdp-user").forEach(function (btn) {
+              btn.addEventListener("click", function () {
+                var uid = btn.dataset.userId;
+                var unom = decodeURIComponent(btn.dataset.userNom);
+                var nouveauMdp = prompt("Saisissez le nouveau mot de passe pour " + unom + " (laisser vide pour générer automatiquement) :", "Pass" + Math.floor(Math.random() * 9000 + 1000) + "!");
+                if (nouveauMdp) {
+                  API.post("/api/superadmin/etudes/" + etude.id + "/utilisateurs/" + uid + "/reinitialiser-mdp", { motDePasse: nouveauMdp }).then(function (res) {
+                    alert("✅ Mot de passe réinitialisé pour " + unom + " !\nNouveau mot de passe : " + (res.nouveauMotDePasse || nouveauMdp) + "\nUn email de notification a été envoyé.");
+                    toast("Mot de passe réinitialisé avec succès !");
+                  }).catch(function (e) { toast(e.message); });
+                }
+              });
+            });
+          }).catch(function (e) {
+            var loadZone = document.getElementById("zone-utilisateurs-etude-chargement");
+            if (loadZone) loadZone.textContent = "Erreur chargement : " + e.message;
+          });
+        }
+
+        rechargerComptes();
+
+        // Bouton ajouter collaborateur direct
+        document.getElementById("btn-ajouter-collab-direct").addEventListener("click", function () {
+          var nom = prompt("Nom complet du nouveau collaborateur :");
+          if (!nom) return;
+          var role = prompt("Rôle (notaire, premier_clerc, clerc_redacteur, clerc_formaliste, comptable_taxateur, assistante, archiviste) :", "clerc_redacteur");
+          var email = prompt("Email professionnel :", nom.toLowerCase().replace(/\s+/g, ".") + "@" + (etude.domaine || "notaires.ci"));
+          if (!email) return;
+          var mdp = prompt("Mot de passe initial :", "Pass" + Math.floor(Math.random() * 9000 + 1000) + "!");
+
+          API.post("/api/superadmin/etudes/" + etude.id + "/utilisateurs", {
+            nomComplet: nom,
+            role: role || "clerc_redacteur",
+            email: email,
+            motDePasse: mdp,
+          }).then(function () {
+            toast("Collaborateur ajouté avec succès !");
+            rechargerComptes();
+            renderSuperAdmin();
+          }).catch(function (e) { toast(e.message); });
+        });
+      },
+    });
+  }
+
+  // =========================================================================
+  // MODALE : SUPPRIMER DÉFINITIVEMENT UNE ÉTUDE DU PARC
+  // =========================================================================
+  function modalSupprimerEtude(etude) {
+    var codeVerif = (etude.codeEtude || "SUPPRIMER").toUpperCase();
+    var html = '<form id="form-supprimer-etude" style="display:flex;flex-direction:column;gap:var(--space-3)">';
+    html += '<div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);padding:12px;border-radius:var(--radius);color:#ef4444">';
+    html += '<strong style="font-size:14px">⚠️ Avertissement de Sécurité : Action Irréversible</strong>';
+    html += '<div style="font-size:12px;color:var(--color-text);margin-top:4px">Vous êtes sur le point de purger définitivement l\'office <strong>' + etude.nomEtude + '</strong> (Code : <code>' + codeVerif + '</code>). Tous les comptes collaborateurs, dossiers, minutes et paramètres associés à ce tenant seront effacés.</div>';
+    html += '</div>';
+
+    html += '<div class="field"><label>Pour confirmer la suppression, veuillez taper le code <strong>' + codeVerif + '</strong> :</label><input class="input" id="input-confirm-suppr" placeholder="' + codeVerif + '" required></div>';
+
+    html += '<div style="display:flex;justify-content:flex-end;gap:var(--space-2);margin-top:var(--space-2)"><button type="button" class="btn btn-ghost" id="btn-annuler-suppr-etude">Annuler</button><button type="submit" class="btn btn-danger" style="background:#ef4444;color:#fff;font-weight:700">🗑️ Confirmer la Suppression Définitive</button></div>';
+    html += '</form>';
+
+    ouvrirModal({
+      titre: '<span>🗑️</span> Suppression / Résiliation d\'un Office Notarial',
+      corps: html,
+      boutonFermer: true,
+      largeur: "540px",
+      apresOuverture: function () {
+        document.getElementById("btn-annuler-suppr-etude").addEventListener("click", fermerModal);
+        document.getElementById("form-supprimer-etude").addEventListener("submit", function (ev) {
+          ev.preventDefault();
+          var saisie = document.getElementById("input-confirm-suppr").value.trim().toUpperCase();
+          if (saisie !== codeVerif && saisie !== etude.nomEtude.toUpperCase()) {
+            alert("Le code saisi ne correspond pas. Suppression annulée.");
+            return;
+          }
+
+          API.delete("/api/superadmin/etudes/" + etude.id).then(function (res) {
+            toast(res.message || "Office notarial supprimé avec succès.");
+            fermerModal();
+            renderSuperAdmin();
+          }).catch(function (e) { toast(e.message); });
         });
       },
     });
