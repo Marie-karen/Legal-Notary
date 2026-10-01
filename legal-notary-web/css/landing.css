@@ -1,7 +1,8 @@
 /**
- * landing.css — Charte graphique institutionnelle & Plateforme de Gestion Notariale.
- * Palette : Bleu Roi #1A3FA0, Bleu Nuit #0F172A, Blanc Pur #FFFFFF, Gris Neutre #F8FAFC, Bordures #CBD5E1.
+ * landing.css — Charte graphique institutionnelle, sobre et haut de gamme pour Legal Notary.
+ * Palette : Bleu Roi #1A3FA0, Bleu Nuit #0F172A, Blanc Pur #FFFFFF, Ardoise Lumineuse #F8FAFC, Bordures #CBD5E1.
  * 100% Mobile-First, Responsive Pixel-Perfect (320px - 4K), Typographie sobre et institutionnelle.
+ * Thème Exécutif Lumineux & Clarté Optimale pour Officiers Publics Ministériels.
  */
 
 :root {
@@ -220,14 +221,20 @@ img, svg, video, canvas {
   border-color: #FCA5A5;
 }
 
+.badge-tag.emerald {
+  background-color: #ECFDF5;
+  color: #065F46;
+  border-color: #A7F3D0;
+}
+
 /* =========================================================================
-   1. HEADER & NAVIGATION MOBILE
+   1. HEADER & LOGO LN
    ========================================================================= */
 .site-header {
   position: sticky;
   top: 0;
   z-index: 1000;
-  background: rgba(255, 255, 255, 0.96);
+  background: rgba(255, 255, 255, 0.97);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
@@ -244,7 +251,7 @@ img, svg, video, canvas {
 .logo-brand {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   color: var(--text-main);
   font-size: 1.15rem;
   font-weight: 800;
@@ -252,10 +259,9 @@ img, svg, video, canvas {
   flex-shrink: 0;
 }
 
-.logo-brand svg {
-  width: 28px;
-  height: 28px;
-  color: var(--primary);
+.logo-ln-crest {
+  width: 34px;
+  height: 34px;
   flex-shrink: 0;
 }
 
@@ -316,11 +322,10 @@ img, svg, video, canvas {
   }
   .logo-brand {
     font-size: 1.25rem;
-    gap: 10px;
   }
-  .logo-brand svg {
-    width: 32px;
-    height: 32px;
+  .logo-ln-crest {
+    width: 38px;
+    height: 38px;
   }
   .nav-links {
     display: flex;
@@ -395,7 +400,7 @@ img, svg, video, canvas {
 }
 
 /* =========================================================================
-   2. HERO SECTION
+   2. HERO SECTION & APERÇU EXÉCUTIF LUMINEUX
    ========================================================================= */
 .hero-section {
   padding: 32px 0 44px 0;
@@ -422,7 +427,7 @@ img, svg, video, canvas {
 .hero-subtitle {
   font-size: clamp(0.96rem, 3.2vw, 1.15rem);
   color: var(--text-muted);
-  line-height: 1.55;
+  line-height: 1.6;
   margin-bottom: 22px;
 }
 
@@ -486,14 +491,14 @@ img, svg, video, canvas {
   }
 }
 
-/* Visuel Mockup du Tableau de Bord Hero */
+/* Visuel Mockup du Tableau de Bord Hero (Thème Lumineux Exécutif) */
 .dashboard-preview-card {
-  background: #0F172A;
-  border: 1px solid #334155;
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
   overflow: hidden;
-  color: #F8FAFC;
+  color: #0F172A;
   width: 100%;
 }
 
@@ -501,11 +506,11 @@ img, svg, video, canvas {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 12px;
-  background: #1E293B;
-  border-bottom: 1px solid #334155;
-  font-size: 0.72rem;
-  color: #94A3B8;
+  padding: 9px 14px;
+  background: #F1F5F9;
+  border-bottom: 1px solid #CBD5E1;
+  font-size: 0.75rem;
+  color: #475569;
   gap: 6px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -519,10 +524,9 @@ img, svg, video, canvas {
 }
 
 .mock-dot {
-  width: 8px;
-  height: 8px;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
-  background: #475569;
 }
 
 .mock-dot.red { background: #EF4444; }
@@ -530,42 +534,43 @@ img, svg, video, canvas {
 .mock-dot.green { background: #10B981; }
 
 .mock-body {
-  padding: 14px 12px;
+  padding: 16px 14px;
 }
 
 .mock-kpi-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
+  gap: 8px;
   margin-bottom: 14px;
 }
 
 .mock-kpi {
-  background: #1E293B;
-  border: 1px solid #334155;
-  padding: 8px 6px;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  padding: 10px 8px;
   border-radius: var(--radius-sm);
   text-align: center;
 }
 
 .mock-kpi-title {
-  font-size: 0.65rem;
-  color: #94A3B8;
+  font-size: 0.68rem;
+  color: #64748B;
   text-transform: uppercase;
+  font-weight: 700;
   line-height: 1.2;
 }
 
 .mock-kpi-val {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #38BDF8;
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--primary);
   margin-top: 2px;
 }
 
 .mock-table-wrap {
-  border: 1px solid #334155;
+  border: 1px solid #E2E8F0;
   border-radius: var(--radius-sm);
-  background: #1E293B;
+  background: #FFFFFF;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   width: 100%;
@@ -580,17 +585,17 @@ img, svg, video, canvas {
 }
 
 .mock-table th {
-  padding: 7px 10px;
-  background: #0F172A;
-  color: #94A3B8;
-  font-weight: 600;
-  border-bottom: 1px solid #334155;
+  padding: 8px 10px;
+  background: #F8FAFC;
+  color: #475569;
+  font-weight: 700;
+  border-bottom: 1px solid #E2E8F0;
 }
 
 .mock-table td {
-  padding: 8px 10px;
-  border-bottom: 1px solid rgba(51, 65, 85, 0.6);
-  color: #E2E8F0;
+  padding: 9px 10px;
+  border-bottom: 1px solid #F1F5F9;
+  color: #1E293B;
 }
 
 .mock-status {
@@ -598,15 +603,84 @@ img, svg, video, canvas {
   padding: 2px 6px;
   border-radius: 4px;
   font-size: 0.7rem;
-  font-weight: 600;
+  font-weight: 700;
 }
 
-.mock-status.alert { background: rgba(239, 68, 68, 0.2); color: #FCA5A5; border: 1px solid rgba(239, 68, 68, 0.4); }
-.mock-status.prog { background: rgba(56, 189, 248, 0.2); color: #7DD3FC; border: 1px solid rgba(56, 189, 248, 0.4); }
-.mock-status.done { background: rgba(34, 197, 94, 0.2); color: #86EFAC; border: 1px solid rgba(34, 197, 94, 0.4); }
+.mock-status.alert { background: #FEF2F2; color: #991B1B; border: 1px solid #FECACA; }
+.mock-status.prog { background: #EFF6FF; color: #1E40AF; border: 1px solid #BFDBFE; }
+.mock-status.done { background: #ECFDF5; color: #065F46; border: 1px solid #A7F3D0; }
 
 /* =========================================================================
-   3. SECTION LE CONSTAT (LES DÉFIS DE L'OFFICE NOTARIAL)
+   3. SECTION LE CERCLE DES 10 ÉTUDES (RARETÉ & PRIVILÈGE)
+   ========================================================================= */
+.circle-banner-box {
+  background: linear-gradient(135deg, rgba(26, 63, 160, 0.05) 0%, rgba(217, 119, 6, 0.05) 100%);
+  border: 2px solid var(--primary-border);
+  border-radius: var(--radius-xl);
+  padding: 32px 24px;
+  margin: 40px auto 0;
+  max-width: 1000px;
+}
+
+.circle-banner-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(26, 63, 160, 0.15);
+}
+
+.circle-jurisdictions-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+@media (min-width: 640px) {
+  .circle-jurisdictions-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 960px) {
+  .circle-jurisdictions-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.circle-jurisdiction-card {
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  border-radius: 12px;
+  padding: 14px 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.circle-country-name {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #0F172A;
+  margin-bottom: 4px;
+}
+
+.circle-quota-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  color: #64748B;
+}
+
+.circle-spots-left {
+  font-weight: 800;
+  color: var(--accent-gold);
+}
+
+/* =========================================================================
+   4. SECTION LE CONSTAT (LES DÉFIS DE L'OFFICE NOTARIAL)
    ========================================================================= */
 .section {
   padding: 48px 0;
@@ -717,7 +791,7 @@ img, svg, video, canvas {
 }
 
 /* =========================================================================
-   4. SECTION LA SOLUTION EN ACTION (4 PANS / CAPTURES UI INTERACTIVES)
+   5. SECTION LA SOLUTION EN ACTION (CAPTURES UI LUMINEUSES EXÉCUTIVES)
    ========================================================================= */
 .solutions-showcase-list {
   display: flex;
@@ -798,21 +872,15 @@ img, svg, video, canvas {
   margin-top: 2px;
 }
 
-/* Fenêtre UI Capture Réaliste */
+/* Fenêtre UI Capture Réaliste (Thème Lumineux Haut de Gamme) */
 .ui-capture-window {
-  background: #0F172A;
-  border: 1px solid #334155;
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
   border-radius: 14px;
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
   overflow: hidden;
-  color: #F8FAFC;
-  width: 100%;
-}
-
-.ui-capture-window.light {
-  background: #F8FAFC;
-  border-color: #CBD5E1;
   color: #0F172A;
+  width: 100%;
 }
 
 .ui-window-bar {
@@ -820,21 +888,17 @@ img, svg, video, canvas {
   align-items: center;
   justify-content: space-between;
   padding: 9px 14px;
-  background: #1E293B;
-  border-bottom: 1px solid #334155;
-  font-size: 0.75rem;
-  color: #94A3B8;
-  gap: 8px;
-}
-
-.ui-capture-window.light .ui-window-bar {
-  background: #E2E8F0;
+  background: #F1F5F9;
   border-bottom: 1px solid #CBD5E1;
+  font-size: 0.75rem;
   color: #475569;
+  font-weight: 600;
+  gap: 8px;
 }
 
 .ui-window-body {
   padding: 16px 14px;
+  background: #FFFFFF;
 }
 
 /* Éléments internes des captures UI */
@@ -848,20 +912,14 @@ img, svg, video, canvas {
 }
 
 .ui-search-input {
-  background: #1E293B;
-  border: 1px solid #334155;
-  color: #E2E8F0;
+  background: #F8FAFC;
+  border: 1px solid #CBD5E1;
+  color: #0F172A;
   padding: 6px 10px;
   border-radius: 6px;
   font-size: 0.78rem;
   flex: 1;
   min-width: 140px;
-}
-
-.ui-capture-window.light .ui-search-input {
-  background: #FFFFFF;
-  border-color: #CBD5E1;
-  color: #0F172A;
 }
 
 .ui-status-badge {
@@ -875,21 +933,21 @@ img, svg, video, canvas {
 }
 
 .ui-status-badge.success {
-  background: rgba(16, 185, 129, 0.15);
-  color: #34D399;
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  background: #ECFDF5;
+  color: #065F46;
+  border: 1px solid #A7F3D0;
 }
 
 .ui-status-badge.info {
-  background: rgba(56, 189, 248, 0.15);
-  color: #38BDF8;
-  border: 1px solid rgba(56, 189, 248, 0.3);
+  background: #EFF6FF;
+  color: #1E40AF;
+  border: 1px solid #BFDBFE;
 }
 
 .ui-status-badge.warning {
-  background: rgba(245, 158, 11, 0.15);
-  color: #FBBF24;
-  border: 1px solid rgba(245, 158, 11, 0.3);
+  background: #FEF3C7;
+  color: #92400E;
+  border: 1px solid #FDE68A;
 }
 
 .ui-capture-table {
@@ -900,33 +958,22 @@ img, svg, video, canvas {
 }
 
 .ui-capture-table th {
-  padding: 7px 10px;
-  background: #1E293B;
-  color: #94A3B8;
-  font-weight: 600;
-  border-bottom: 1px solid #334155;
-  white-space: nowrap;
-}
-
-.ui-capture-window.light .ui-capture-table th {
-  background: #E2E8F0;
+  padding: 8px 10px;
+  background: #F8FAFC;
   color: #475569;
-  border-bottom: 1px solid #CBD5E1;
+  font-weight: 700;
+  border-bottom: 1px solid #E2E8F0;
+  white-space: nowrap;
 }
 
 .ui-capture-table td {
   padding: 9px 10px;
-  border-bottom: 1px solid rgba(51, 65, 85, 0.6);
-  color: #E2E8F0;
-}
-
-.ui-capture-window.light .ui-capture-table td {
-  border-bottom: 1px solid #E2E8F0;
+  border-bottom: 1px solid #F1F5F9;
   color: #1E293B;
 }
 
 .ui-fiscal-summary {
-  background: #FFFFFF;
+  background: #F8FAFC;
   border: 1px solid #CBD5E1;
   border-radius: 8px;
   padding: 12px 14px;
@@ -938,7 +985,7 @@ img, svg, video, canvas {
   justify-content: space-between;
   padding: 5px 0;
   font-size: 0.82rem;
-  border-bottom: 1px dashed #E2E8F0;
+  border-bottom: 1px dashed #CBD5E1;
 }
 
 .ui-fiscal-row.total {
@@ -952,8 +999,8 @@ img, svg, video, canvas {
 }
 
 .ui-call-card {
-  background: #1E293B;
-  border: 1px solid #334155;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
   border-radius: 8px;
   padding: 10px 12px;
   margin-bottom: 8px;
@@ -965,13 +1012,13 @@ img, svg, video, canvas {
   align-items: center;
   font-size: 0.78rem;
   font-weight: 700;
-  color: #38BDF8;
+  color: #1A3FA0;
   margin-bottom: 4px;
 }
 
 .ui-call-body {
   font-size: 0.78rem;
-  color: #CBD5E1;
+  color: #334155;
   line-height: 1.4;
 }
 
@@ -981,17 +1028,18 @@ img, svg, video, canvas {
   align-items: center;
   justify-content: space-between;
   font-size: 0.72rem;
-  color: #94A3B8;
+  color: #64748B;
 }
 
 .ui-hash-badge {
   font-family: monospace;
-  background: #020617;
-  border: 1px solid #1E293B;
+  background: #F8FAFC;
+  border: 1px solid #CBD5E1;
   padding: 6px 10px;
   border-radius: 6px;
   font-size: 0.74rem;
-  color: #10B981;
+  color: #065F46;
+  font-weight: 600;
   word-break: break-all;
   margin: 8px 0;
 }
@@ -1520,7 +1568,7 @@ img, svg, video, canvas {
 }
 
 /* =========================================================================
-   10. SECTION FORMULAIRE DE DÉMO
+   10. SECTION FORMULAIRE DE CANDIDATURE & DÉMO
    ========================================================================= */
 .form-card {
   max-width: 680px;

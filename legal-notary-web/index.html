@@ -7,22 +7,22 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <title>Legal Notary — Logiciel de Gestion d'Office Notarial & Pilotage de Dossiers</title>
-  <meta name="description" content="Plateforme intégrée pour offices notariaux. Registre numérique des courriers, journal des appels, calculateur fiscal Décret 2013-279 et minutier scellé SHA-256 en Côte d'Ivoire et Afrique francophone.">
+  <title>Legal Notary — Le Cercle d'Excellence Numérique du Notariat</title>
+  <meta name="description" content="Plateforme intégrée d'excellence pour offices notariaux. Registre numérique des courriers, suivi des requêtes, décomptes Décret 2013-279 et minutier scellé SHA-256. Promotion limitée à 10 études par pays.">
   <meta name="author" content="BETHEL TIME SARLU">
   <link rel="canonical" href="https://legalnotary.app/">
 
   <!-- Open Graph / WhatsApp / Facebook -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://legalnotary.app/">
-  <meta property="og:title" content="Legal Notary — Logiciel de Gestion d'Office Notarial">
-  <meta property="og:description" content="Registres courriers, suivi des appels, décomptes fiscaux Décret 2013-279 et minutier numérique sécurisé pour offices notariaux.">
+  <meta property="og:title" content="Legal Notary — Le Cercle d'Excellence Numérique du Notariat">
+  <meta property="og:description" content="Plateforme réservée à 10 études notariales par juridiction. Registres courriers, suivi des échanges, fiscalité Décret 2013-279 et minutier scellé.">
   <meta property="og:image" content="https://legalnotary.app/images/og-preview.png">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Legal Notary — Logiciel de Gestion Notariale">
-  <meta name="twitter:description" content="Suivi des dossiers, registres de courriers, alertes de délais et calculs fiscaux officiels.">
+  <meta name="twitter:title" content="Legal Notary — Gestion Notariale d'Excellence">
+  <meta name="twitter:description" content="Solution exclusive pour offices notariaux en Côte d'Ivoire et Afrique francophone.">
 
   <!-- Polices Google Fonts Premium -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -58,7 +58,7 @@
           "@type": "Offer",
           "price": "200000",
           "priceCurrency": "XOF",
-          "description": "Forfait mensuel tout inclus - Collaborateurs et postes illimités"
+          "description": "Forfait mensuel tout inclus - Collaborateurs et postes illimités pour l'étude"
         },
         "description": "Suite logicielle complète de pilotage de dossiers, gestion des courriers, suivi des appels et calcul fiscal pour les offices notariaux en Côte d'Ivoire et Afrique francophone."
       }
@@ -69,20 +69,23 @@
 <body>
 
   <!-- =========================================================================
-       1. HEADER AVEC NAVIGATION
+       1. HEADER AVEC LOGO LN & NAVIGATION
        ========================================================================= -->
   <header class="site-header">
     <div class="container header-content">
       <a href="/" class="logo-brand" aria-label="Legal Notary - Accueil">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+        <svg viewBox="0 0 36 36" class="logo-ln-crest" width="36" height="36" fill="none">
+          <rect width="36" height="36" rx="8" fill="#1A3FA0"/>
+          <path d="M10 9v18h9" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M19 27V9l8 18V9" stroke="#D97706" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
         <span>Legal Notary</span>
       </a>
 
       <nav class="nav-links" aria-label="Navigation principale">
+        <a href="#cercle">Le Cercle des 10</a>
         <a href="#constat">Le Constat</a>
-        <a href="#solutions">Solutions & Démonstration</a>
+        <a href="#solutions">Démonstration</a>
         <a href="#tarifs">Tarifs</a>
         <a href="#securite">Sécurité</a>
         <a href="#faq">FAQ</a>
@@ -92,8 +95,8 @@
         <a href="/connexion" class="btn btn-discret" title="Accéder à l'espace de travail de votre étude">
           Connexion
         </a>
-        <a href="#demo-form" class="btn btn-primary">
-          Démo 14j
+        <a href="#candidature" class="btn btn-primary">
+          Candidature Étude
         </a>
         <button type="button" class="mobile-menu-toggle" id="btn-mobile-menu" aria-label="Ouvrir le menu">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
@@ -110,76 +113,77 @@
       <button type="button" id="btn-close-drawer" aria-label="Fermer le menu" style="background:none;border:none;font-size:1.6rem;color:var(--text-dim);cursor:pointer;padding:4px">&times;</button>
     </div>
     <div class="mobile-drawer-links">
+      <a href="#cercle" class="drawer-link">Le Cercle des 10 Études</a>
       <a href="#constat" class="drawer-link">Le Constat Opérationnel</a>
-      <a href="#solutions" class="drawer-link">Solutions & Démonstration</a>
+      <a href="#solutions" class="drawer-link">Démonstration Produit</a>
       <a href="#tarifs" class="drawer-link">Tarifs & Formules</a>
       <a href="#securite" class="drawer-link">Sécurité & Souveraineté</a>
       <a href="#faq" class="drawer-link">Questions Fréquentes</a>
       <a href="/connexion" style="color:var(--primary);font-weight:700;margin-top:12px">Espace de Connexion</a>
     </div>
-    <a href="#demo-form" class="btn btn-primary drawer-link" style="width:100%;margin-top:20px;padding:12px;font-size:0.95rem">
-      Demander une Démo (14j)
+    <a href="#candidature" class="btn btn-primary drawer-link" style="width:100%;margin-top:20px;padding:12px;font-size:0.95rem">
+      Déposer ma Candidature (30 min)
     </a>
   </div>
 
   <main>
     <!-- =========================================================================
-         2. HERO SECTION
+         2. HERO SECTION — LE POSITIONNEMENT D'ÉLITE
          ========================================================================= -->
     <section class="hero-section">
       <div class="container hero-grid">
         <div class="hero-text">
-          <div class="badge-tag">
+          <div class="badge-tag gold">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 2L1 21h22L12 2zm0 3.5L19.5 19h-15L12 5.5z"/>
             </svg>
-            Conforme Décret 2013-279 & Pratiques Notariales
+            Admission Exclusive : 10 Études Partenaires par Pays
           </div>
 
-          <h1>Pilotez votre étude notariale, dossier par dossier.</h1>
+          <h1>Pilotez votre étude notariale avec la rigueur d'un sanctuaire.</h1>
 
           <p class="hero-subtitle">
-            Centralisez vos courriers officiels, vos appels clients, vos décomptes fiscaux et vos minutes scellées au sein d'une plateforme sécurisée conçue pour les notaires de Côte d'Ivoire et d'Afrique francophone.
+            Le métier de Notaire n'est pas un marché de masse : c'est un cercle restreint d'Officiers Publics Dépositaires de l'Autorité de l'État. Legal Notary a été conçu sur-mesure pour les 10 études de référence en Côte d'Ivoire et par pays d'Afrique francophone qui exigent une souveraineté absolue sur leurs courriers, leurs décomptes fiscaux Décret 2013-279 et leurs minutes scellées.
           </p>
 
           <div class="hero-ctas">
-            <a href="#demo-form" class="btn btn-primary" style="padding:14px 28px;font-size:1.02rem">
-              Demander une démo (30 min)
+            <a href="#candidature" class="btn btn-primary" style="padding:14px 28px;font-size:1.02rem">
+              Vérifier l'éligibilité de mon Étude (30 min)
             </a>
-            <a href="https://wa.me/2250700000000?text=Bonjour,%20je%20souhaite%20en%20savoir%20plus%20sur%20Legal%20Notary" target="_blank" rel="noopener" class="btn btn-whatsapp" style="padding:14px 24px;font-size:1.02rem">
+            <a href="https://wa.me/2250700000000?text=Bonjour,%20je%20souhaite%20en%20savoir%20plus%20sur%20l'admission%20au%20cercle%20Legal%20Notary" target="_blank" rel="noopener" class="btn btn-whatsapp" style="padding:14px 24px;font-size:1.02rem">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2zM12.05 20.2c-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.196 8.196 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.24-8.24 2.2 0 4.27.86 5.82 2.42a8.18 8.18 0 0 1 2.41 5.83c.02 4.54-3.68 8.23-8.22 8.23zm4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.09-.39-.12-.56.12-.17.25-.64.81-.79.97-.14.17-.29.18-.54.06-.25-.12-1.05-.39-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.02-.38.11-.5.11-.11.25-.29.37-.43.12-.14.17-.25.25-.41.08-.17.04-.31-.02-.43s-.56-1.34-.76-1.84c-.2-.48-.41-.42-.56-.43h-.48c-.17 0-.43.06-.66.31-.22.25-.86.84-.86 2.05s.88 2.38 1 2.54c.12.17 1.73 2.64 4.2 3.7.59.25 1.05.4 1.41.51.59.19 1.13.16 1.56.1.48-.07 1.47-.6 1.67-1.18.21-.58.21-1.07.14-1.18-.06-.11-.23-.17-.48-.29z"/>
               </svg>
-              Écrire sur WhatsApp
+              Échange Direct WhatsApp
             </a>
           </div>
 
           <div class="hero-reassurance">
             <span>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-              Démonstration de 30 min sans engagement
+              Session d'audit confidentielle de 30 min
             </span>
             <span>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-              Déploiement local ou cloud sécurisé
+              Intégration dédiée de vos modèles d'actes
             </span>
             <span>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-              Formation complète des clercs
+              Ligne directe avec l'équipe d'ingénierie
             </span>
           </div>
         </div>
 
-        <!-- Visuel Dashboard Démo -->
-        <div class="dashboard-preview-card" aria-label="Aperçu du tableau de bord de pilotage des dossiers">
+        <!-- Visuel Dashboard Démo (Thème Lumineux Exécutif) -->
+        <div class="dashboard-preview-card" aria-label="Aperçu du cockpit exécutif de pilotage des dossiers">
           <div class="mock-window-bar">
             <div class="mock-dots">
               <span class="mock-dot red"></span>
               <span class="mock-dot yellow"></span>
               <span class="mock-dot green"></span>
             </div>
-            <span>Étude Notariale — Tableau de Bord Direction</span>
-            <span>Session Sécurisée</span>
+            <span>Office Notarial — Cockpit Exécutif de Direction</span>
+            <span class="ui-status-badge success">Session Sécurisée</span>
           </div>
           <div class="mock-body">
             <div class="mock-kpi-grid">
@@ -189,11 +193,11 @@
               </div>
               <div class="mock-kpi">
                 <div class="mock-kpi-title">Courriers & Délais</div>
-                <div class="mock-kpi-val" style="color:#F59E0B">8</div>
+                <div class="mock-kpi-val" style="color:#B45309">8</div>
               </div>
               <div class="mock-kpi">
                 <div class="mock-kpi-title">Signatures Semaine</div>
-                <div class="mock-kpi-val" style="color:#10B981">6</div>
+                <div class="mock-kpi-val" style="color:#0D9488">6</div>
               </div>
             </div>
 
@@ -204,7 +208,7 @@
                     <th>Réf. Dossier</th>
                     <th>Objet de l'Acte</th>
                     <th>Clerc Rédacteur</th>
-                    <th>Étape & Délai</th>
+                    <th>Échéance Foncier / DGI</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -235,15 +239,83 @@
     </section>
 
     <!-- =========================================================================
-         3. SECTION LE CONSTAT OPÉRATIONNEL
+         3. SECTION LE CERCLE DES 10 ÉTUDES (RARETÉ & SÉLECTION STRICTE)
+         ========================================================================= -->
+    <section class="section" id="cercle">
+      <div class="container">
+        <div class="section-head">
+          <div class="badge-tag gold">Rareté & Déploiement Haute Voltige</div>
+          <h2>Pourquoi limitons-nous volontairement l'accès à 10 études par pays ?</h2>
+          <p>
+            Un office notarial n'est pas une entreprise ordinaire : c'est un sanctuaire juridique. Pour garantir une personnalisation absolue de vos trames d'actes, un accompagnement déontologique irréprochable et une disponibilité sans faille de nos ingénieurs, nous refusons les déploiements de masse.
+          </p>
+        </div>
+
+        <div class="circle-banner-box">
+          <div class="circle-banner-head">
+            <div>
+              <strong style="color:#0F172A;font-size:1.1rem;display:block">Promotion 2026 — Quotas d'Admission par Juridiction</strong>
+              <span style="font-size:0.85rem;color:#64748B">Places attribuées après examen confidentiel de la candidature de l'office.</span>
+            </div>
+            <span class="badge-tag emerald">Membres Fondateurs Actifs</span>
+          </div>
+
+          <div class="circle-jurisdictions-grid">
+            <div class="circle-jurisdiction-card">
+              <div class="circle-country-name">Côte d'Ivoire</div>
+              <div class="circle-quota-status">
+                <span>7 études admises</span>
+                <span class="circle-spots-left">3 places</span>
+              </div>
+            </div>
+
+            <div class="circle-jurisdiction-card">
+              <div class="circle-country-name">Sénégal</div>
+              <div class="circle-quota-status">
+                <span>5 études admises</span>
+                <span class="circle-spots-left">5 places</span>
+              </div>
+            </div>
+
+            <div class="circle-jurisdiction-card">
+              <div class="circle-country-name">Cameroun</div>
+              <div class="circle-quota-status">
+                <span>4 études admises</span>
+                <span class="circle-spots-left">6 places</span>
+              </div>
+            </div>
+
+            <div class="circle-jurisdiction-card">
+              <div class="circle-country-name">Gabon, Bénin & Togo</div>
+              <div class="circle-quota-status">
+                <span>6 études admises</span>
+                <span class="circle-spots-left">4 places</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top:20px;padding-top:16px;border-top:1px solid rgba(26,63,160,0.12);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+            <span style="font-size:0.88rem;color:#334155">
+              <strong>Privilège Membre Fondateur :</strong> Le tarif mensuel tout inclus est garanti à vie sans augmentation pour les 10 premières études sélectionnées.
+            </span>
+            <a href="#candidature" class="btn btn-primary" style="padding:10px 18px;font-size:0.9rem">
+              Déposer la Candidature de mon Étude
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================================
+         4. SECTION LE CONSTAT OPÉRATIONNEL
          ========================================================================= -->
     <section class="section section-alt" id="constat">
       <div class="container">
         <div class="section-head">
           <div class="badge-tag danger">Le Constat Opérationnel</div>
-          <h2>Les défis quotidiens de l'office notarial moderne</h2>
+          <h2>Les 4 défis quotidiens de l'office notarial</h2>
           <p>
-            Entre la multiplication des courriers officiels, les relances téléphoniques ininterrompues et les exigences fiscales, le Notaire Titulaire et ses clercs subissent une charge mentale continue.
+            Entre la dispersion des courriers officiels, les relances téléphoniques ininterrompues et les exigences de la DGI, le Notaire Titulaire et ses collaborateurs subissent une friction permanente.
           </p>
         </div>
 
@@ -267,7 +339,7 @@
             </div>
             <h3>L'Engorgement du Standard & Messages Égarés</h3>
             <p>
-              Des comparants qui appellent en boucle pour connaître l'avancement de leur acte, des messages notés sur des feuilles volantes qui s'égarent, et des promesses de rappel non tenues qui détériorent la relation client de l'étude.
+              Des comparants qui appellent en boucle pour connaître l'avancement de leur acte, des messages notés sur des feuilles volantes qui s'égarent, et des promesses de rappel non tenues qui détériorent la relation de confiance de l'étude.
             </p>
             <div class="problem-impact-badge">Standard téléphonique saturé & clercs interrompus</div>
           </div>
@@ -279,7 +351,7 @@
             </div>
             <h3>Le Risque d'Erreur Fiscale Décret 2013-279</h3>
             <p>
-              Calculer à la main sur tableur les tranches dégressives d'émoluments (4% à 0,75%), ventiler la TVA 18% et chiffrer les droits d'enregistrement DGI sur des montants en centaines de millions engage directement la responsabilité du Notaire.
+              Calculer manuellement les tranches dégressives d'émoluments (4% à 0,75%), ventiler la TVA 18% et chiffrer les droits d'enregistrement DGI sur des montants en centaines de millions engage directement la responsabilité civile et financière du Notaire.
             </p>
             <div class="problem-impact-badge">Responsabilité civile et financière du Notaire Titulaire</div>
           </div>
@@ -300,15 +372,15 @@
     </section>
 
     <!-- =========================================================================
-         4. SECTION LA SOLUTION EN ACTION (DÉMONSTRATION VISUELLE PAR LE PRODUIT)
+         5. SECTION LA SOLUTION EN ACTION (CAPTURES UI LUMINEUSES EXÉCUTIVES)
          ========================================================================= -->
     <section class="section" id="solutions">
       <div class="container">
         <div class="section-head">
-          <div class="badge-tag gold">Démonstration Produit</div>
-          <h2>Une réponse concrète et visuelle pour chaque besoin de l'étude</h2>
+          <div class="badge-tag gold">Preuve Visuelle par le Produit</div>
+          <h2>Les 4 piliers technologiques de la charge notariale moderne</h2>
           <p>
-            Découvrez comment Legal Notary structure chaque pan opérationnel de votre office au quotidien.
+            Chaque module a été pensé pour répondre avec précision à un acte concret de votre office.
           </p>
         </div>
 
@@ -317,7 +389,7 @@
           <!-- Pan 1 : Registre des Courriers Entrants / Sortants -->
           <div class="solution-showcase-item">
             <div class="solution-text-col">
-              <div class="badge-tag">Traçabilité Intégrale</div>
+              <div class="badge-tag">Pilier 1 : Traçabilité Officielle</div>
               <h3>Registre Numérique Unique des Courriers Entrants & Sortants</h3>
               <p>
                 Finis les registres papier et les cahiers de transmission éparpillés. Chaque courrier officiel ou pièce justificative reçu ou expédié est instantanément consigné, horodaté et rattaché au dossier du client.
@@ -338,7 +410,7 @@
               </ul>
             </div>
 
-            <!-- Capture Mockup Courriers -->
+            <!-- Capture Mockup Courriers (Thème Lumineux Exécutif) -->
             <div class="solution-ui-col">
               <div class="ui-capture-window">
                 <div class="ui-window-bar">
@@ -348,7 +420,7 @@
                     <span class="mock-dot green"></span>
                   </div>
                   <span>Module Courriers — Registre Numérique Officiel</span>
-                  <span>Filtres Actifs</span>
+                  <span class="ui-status-badge info">Registre Actif</span>
                 </div>
                 <div class="ui-window-body">
                   <div class="ui-control-bar">
@@ -369,19 +441,19 @@
                       <tbody>
                         <tr>
                           <td><code>ENT-2026-089</code></td>
-                          <td>Conservation Cocody<br><small style="color:#94A3B8">État Foncier Lot 412</small></td>
+                          <td>Conservation Cocody<br><small style="color:#64748B">État Foncier Lot 412</small></td>
                           <td><code>DOS-2026-084</code><br><small>Me Awa Koné</small></td>
                           <td><span class="ui-status-badge success">Traité & Lié</span></td>
                         </tr>
                         <tr>
                           <td><code>SOR-2026-042</code></td>
-                          <td>Recette Principale DGI<br><small style="color:#94A3B8">Bordereau Statuts</small></td>
+                          <td>Recette Principale DGI<br><small style="color:#64748B">Bordereau Statuts</small></td>
                           <td><code>DOS-2026-089</code><br><small>M. Sékou Bamba</small></td>
                           <td><span class="ui-status-badge warning">Décharge en cours</span></td>
                         </tr>
                         <tr>
                           <td><code>ENT-2026-091</code></td>
-                          <td>Ministère Construction<br><small style="color:#94A3B8">Arrêté Concession ACD</small></td>
+                          <td>Ministère Construction<br><small style="color:#64748B">Arrêté Concession ACD</small></td>
                           <td><code>DOS-2026-095</code><br><small>M. Ibrahim Traoré</small></td>
                           <td><span class="ui-status-badge info">Prêt Signature</span></td>
                         </tr>
@@ -396,7 +468,7 @@
           <!-- Pan 2 : Journal Centralisé des Appels & Messages -->
           <div class="solution-showcase-item reverse">
             <div class="solution-text-col">
-              <div class="badge-tag">Relation Client & Accueil</div>
+              <div class="badge-tag">Pilier 2 : Relation Client & Accueil</div>
               <h3>Journal Centralisé des Appels & Suivi des Requêtes Clients</h3>
               <p>
                 Ne laissez plus aucun appel sans réponse. L'accueil et les secrétaires notent chaque communication dans le journal de l'étude avec son degré d'urgence, et les clients reçoivent des notifications d'avancement transparentes.
@@ -417,7 +489,7 @@
               </ul>
             </div>
 
-            <!-- Capture Mockup Appels -->
+            <!-- Capture Mockup Appels (Thème Lumineux Exécutif) -->
             <div class="solution-ui-col">
               <div class="ui-capture-window">
                 <div class="ui-window-bar">
@@ -427,7 +499,7 @@
                     <span class="mock-dot green"></span>
                   </div>
                   <span>Journal des Échanges — Standard de l'Étude</span>
-                  <span>Aujourd'hui</span>
+                  <span class="ui-status-badge info">Aujourd'hui</span>
                 </div>
                 <div class="ui-window-body">
                   <div class="ui-call-card">
@@ -440,7 +512,7 @@
                     </div>
                     <div class="ui-call-action">
                       <span>Reçu à 14h15 par Standard</span>
-                      <span style="color:#38BDF8;font-weight:600">Assigné à Me Koné</span>
+                      <span style="color:#1A3FA0;font-weight:700">Assigné à Me Koné</span>
                     </div>
                   </div>
 
@@ -454,7 +526,7 @@
                     </div>
                     <div class="ui-call-action">
                       <span>Reçu à 11h40</span>
-                      <span style="color:#34D399;font-weight:600">SMS de confirmation envoyé</span>
+                      <span style="color:#059669;font-weight:700">SMS de confirmation envoyé</span>
                     </div>
                   </div>
                 </div>
@@ -465,7 +537,7 @@
           <!-- Pan 3 : Moteur Fiscal Décret 2013-279 -->
           <div class="solution-showcase-item">
             <div class="solution-text-col">
-              <div class="badge-tag">Conformité Réglementaire</div>
+              <div class="badge-tag">Pilier 3 : Conformité Fiscale</div>
               <h3>Simulateur & Moteur Fiscal Décret 2013-279 Infaillible</h3>
               <p>
                 Sécurisez vos taxations et vos débours. Saisissez la valeur de l'acte : le moteur applique instantanément le barème officiel ivoirien, ventile la TVA 18%, les droits d'enregistrement et édite le décompte officiel prêt pour le client.
@@ -486,9 +558,9 @@
               </ul>
             </div>
 
-            <!-- Capture Mockup Fiscal -->
+            <!-- Capture Mockup Fiscal (Thème Lumineux Exécutif) -->
             <div class="solution-ui-col">
-              <div class="ui-capture-window light">
+              <div class="ui-capture-window">
                 <div class="ui-window-bar">
                   <div class="mock-dots">
                     <span class="mock-dot red"></span>
@@ -496,7 +568,7 @@
                     <span class="mock-dot green"></span>
                   </div>
                   <span>Décompte Fiscal Officiel — Décret 2013-279</span>
-                  <span>Barème CI</span>
+                  <span class="ui-status-badge success">Certifié DGI</span>
                 </div>
                 <div class="ui-window-body">
                   <div style="font-size:0.82rem;margin-bottom:10px;color:#475569">
@@ -532,7 +604,7 @@
           <!-- Pan 4 : Minutier Cryptographique Scellé -->
           <div class="solution-showcase-item reverse">
             <div class="solution-text-col">
-              <div class="badge-tag">Sécurité Dépositaire</div>
+              <div class="badge-tag">Pilier 4 : Sécurité Dépositaire</div>
               <h3>Minutier Numérique Scellé SHA-256 & Localisation des Archives</h3>
               <p>
                 Garantissez l'inaltérabilité de vos actes signés. Chaque minute est indexée, scellée par empreinte cryptographique SHA-256 et rattachée à l'emplacement exact de son carton physique dans votre salle d'archives.
@@ -553,7 +625,7 @@
               </ul>
             </div>
 
-            <!-- Capture Mockup Minutier -->
+            <!-- Capture Mockup Minutier (Thème Lumineux Exécutif) -->
             <div class="solution-ui-col">
               <div class="ui-capture-window">
                 <div class="ui-window-bar">
@@ -563,21 +635,21 @@
                     <span class="mock-dot green"></span>
                   </div>
                   <span>Fiche Minute — Minutier Électronique Scellé</span>
-                  <span>Archivé</span>
+                  <span class="ui-status-badge success">Archivé & Scellé</span>
                 </div>
                 <div class="ui-window-body">
-                  <div style="font-size:0.85rem;font-weight:700;color:#F8FAFC;margin-bottom:4px">
+                  <div style="font-size:0.85rem;font-weight:700;color:#0F172A;margin-bottom:4px">
                     Minute N° ACT-2026-00412 — Vente Immobilière & Copropriété
                   </div>
-                  <div style="font-size:0.75rem;color:#94A3B8;margin-bottom:8px">
+                  <div style="font-size:0.75rem;color:#64748B;margin-bottom:8px">
                     Signé le 28 Septembre 2026 devant Me Koné — Répertoire N° 842
                   </div>
                   <div class="ui-hash-badge">
                     SHA-256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
                   </div>
-                  <div style="background:#1E293B;padding:8px 12px;border-radius:6px;font-size:0.78rem;border:1px solid #334155;display:flex;justify-content:space-between;align-items:center">
-                    <span>Emplacement Physique :</span>
-                    <strong style="color:#38BDF8">Salle 1 > Armoire B > Carton C-14</strong>
+                  <div style="background:#F8FAFC;padding:8px 12px;border-radius:6px;font-size:0.78rem;border:1px solid #CBD5E1;display:flex;justify-content:space-between;align-items:center">
+                    <span style="color:#475569">Emplacement Physique :</span>
+                    <strong style="color:#1A3FA0">Salle 1 > Armoire B > Carton C-14</strong>
                   </div>
                 </div>
               </div>
@@ -594,10 +666,10 @@
     <section class="section section-alt" id="tarifs">
       <div class="container">
         <div class="section-head">
-          <div class="badge-tag gold">Investissement & Sérénité</div>
+          <div class="badge-tag gold">Investissement Membre Fondateur</div>
           <h2>Un forfait unique et transparent. Postes ILLIMITÉS pour toute l'étude.</h2>
           <p>
-            Équipez l'ensemble de votre étude sans coût additionnel par collaborateur. Choisissez le rythme de facturation adapté à la trésorerie de votre office.
+            Équipez l'ensemble de votre étude (notaire, premiers clercs, clercs rédacteurs, formalistes, comptables et stagiaires) sans aucun surcoût par utilisateur.
           </p>
         </div>
 
@@ -645,8 +717,8 @@
               <span class="price-saving-pill" id="pricing-pill-text">1 Session Perfectionnement Clercs Inclus</span>
             </div>
 
-            <a href="#demo-form" class="btn btn-primary" style="width:100%;padding:16px;font-size:1.05rem;font-weight:700;border-radius:10px;box-shadow:0 6px 20px rgba(26,63,160,0.3)">
-              Équiper mon Étude Notariale
+            <a href="#candidature" class="btn btn-primary" style="width:100%;padding:16px;font-size:1.05rem;font-weight:700;border-radius:10px;box-shadow:0 6px 20px rgba(26,63,160,0.3)">
+              Déposer la Candidature de mon Étude
             </a>
 
             <!-- Garanties incluses -->
@@ -770,7 +842,7 @@
           <div class="section-head" style="margin-bottom:24px;text-align:left;max-width:none">
             <div class="badge-tag">Confidentialité Notariale</div>
             <h2>Sécurité et Secret Professionnel Garanti</h2>
-            <p>Conforme aux normes de la Chambre des Notaires et aux exigences OHADA.</p>
+            <p>Conforme aux normes déontologiques notariales et aux exigences OHADA.</p>
           </div>
 
           <div class="security-pillars">
@@ -860,17 +932,17 @@
     </section>
 
     <!-- =========================================================================
-         10. SECTION CTA FINAL & FORMULAIRE DE DEMANDE DE DÉMO
+         10. SECTION FORMULAIRE DE CANDIDATURE & DÉMO
          ========================================================================= -->
-    <section class="section" id="demo-form">
+    <section class="section" id="candidature">
       <div class="container">
         <div class="section-head">
-          <div class="badge-tag">Démonstration Personnalisée</div>
-          <h2>Planifiez votre démonstration de 30 minutes</h2>
-          <p>Découvrez comment Legal Notary apporte visibilité, sérénité et gain de temps à votre office notarial.</p>
+          <div class="badge-tag gold">Admission Promotion 2026</div>
+          <h2>Déposer la candidature de votre étude notariale</h2>
+          <p>Bénéficiez d'une session de présentation confidentielle de 30 minutes avec nos spécialistes du notariat.</p>
         </div>
 
-        <div class="form-card">
+        <div class="form-card" id="demo-form">
           <form id="form-demande-demo">
             
             <!-- Champ Honeypot invisible pour les bots -->
@@ -922,19 +994,19 @@
             </div>
 
             <div class="form-group" style="margin-bottom:20px">
-              <label for="message">Message ou besoins spécifiques (facultatif)</label>
-              <textarea name="message" id="message" rows="3" placeholder="Précisez par exemple le nombre de collaborateurs ou vos attentes particulières..."></textarea>
+              <label for="message">Spécificités ou volume de dossiers de l'office (facultatif)</label>
+              <textarea name="message" id="message" rows="3" placeholder="Précisez par exemple le nombre de collaborateurs ou vos priorités immédiates..."></textarea>
             </div>
 
             <div class="form-checkbox" style="margin-bottom:24px">
               <input type="checkbox" name="consentement" id="consentement" required checked>
               <label for="consentement">
-                J'accepte que les informations saisies soient traitées par BETHEL TIME SARLU pour organiser ma démonstration et être recontacté, conformément à la <a href="/politique-confidentialite" target="_blank" style="text-decoration:underline">politique de confidentialité</a>.
+                J'accepte que les informations saisies soient traitées par BETHEL TIME SARLU pour examiner ma candidature et convenir d'un rendez-vous, conformément à la <a href="/politique-confidentialite" target="_blank" style="text-decoration:underline">politique de confidentialité</a>.
               </label>
             </div>
 
             <button type="submit" id="btn-soumettre-demo" class="btn btn-primary" style="width:100%;padding:14px;font-size:1.02rem">
-              Confirmer ma demande de démo (30 min)
+              Soumettre la Candidature de mon Étude (30 min)
             </button>
 
             <div id="form-alert-succes" class="form-alert-success" role="alert"></div>
@@ -953,7 +1025,7 @@
       <div class="footer-brand">
         <h4>Legal Notary</h4>
         <p>
-          Suite logicielle de pilotage de dossiers et de gestion intégrée d'office notarial en Côte d'Ivoire et Afrique francophone.
+          Plateforme intégrée de gestion et de souveraineté notariale pour les offices de référence en Côte d'Ivoire et Afrique francophone.
         </p>
         <p style="margin-top:12px;font-size:0.85rem;color:#64748B">
           Édité par <strong>BETHEL TIME SARLU</strong><br>
@@ -965,11 +1037,11 @@
       <div class="footer-links">
         <h5>Navigation</h5>
         <ul>
+          <li><a href="#cercle">Le Cercle des 10</a></li>
           <li><a href="#constat">Le Constat</a></li>
-          <li><a href="#solutions">Solutions & Démonstration</a></li>
-          <li><a href="#securite">Sécurité & Souveraineté</a></li>
+          <li><a href="#solutions">Démonstration</a></li>
           <li><a href="#tarifs">Tarifs</a></li>
-          <li><a href="#faq">Questions Fréquentes</a></li>
+          <li><a href="#securite">Sécurité & Souveraineté</a></li>
           <li><a href="/connexion">Espace de Connexion</a></li>
         </ul>
       </div>
@@ -997,12 +1069,12 @@
 
   <!-- Sticky Quick Actions Bar (Mobile Only) -->
   <div class="mobile-sticky-cta-bar" aria-label="Accès rapide mobile">
-    <a href="https://wa.me/2250700000000?text=Bonjour,%20je%20souhaite%20en%20savoir%20plus%20sur%20Legal%20Notary" target="_blank" rel="noopener" class="btn btn-whatsapp" style="flex:0.85;font-size:0.88rem;padding:8px 12px">
+    <a href="https://wa.me/2250700000000?text=Bonjour,%20je%20souhaite%20en%20savoir%20plus%20sur%20l'admission%20au%20cercle%20Legal%20Notary" target="_blank" rel="noopener" class="btn btn-whatsapp" style="flex:0.85;font-size:0.88rem;padding:8px 12px">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2z"/></svg>
       WhatsApp
     </a>
-    <a href="#demo-form" class="btn btn-primary" style="flex:1.15;font-size:0.88rem;padding:8px 12px">
-      Démo Gratuite 14j
+    <a href="#candidature" class="btn btn-primary" style="flex:1.15;font-size:0.88rem;padding:8px 12px">
+      Candidature Étude
     </a>
   </div>
 
