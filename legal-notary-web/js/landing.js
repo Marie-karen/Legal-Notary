@@ -127,25 +127,24 @@ document.addEventListener("DOMContentLoaded", function () {
           throw new Error(data.erreur || TEXTES_FR.form.erreurGenerique);
         }
 
-        // Succès : affichage de la carte d'accès VIP personnalisée
+        // Succès : affichage de la carte d'accès personnalisée
         if (alertSucces) {
           if (data.motDePasse) {
             alertSucces.innerHTML = `
-              <div style="background:rgba(16,185,129,0.12);border:1px solid #10b981;border-radius:12px;padding:22px;margin-top:12px;text-align:left;color:var(--color-text)">
+              <div style="background:rgba(26,63,160,0.06);border:1px solid #1A3FA0;border-radius:12px;padding:22px;margin-top:12px;text-align:left;color:var(--text-main)">
                 <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-                  <span style="font-size:24px">🎉</span>
-                  <strong style="color:#10b981;font-size:17px">Votre Espace Démo Personnel est prêt !</strong>
+                  <strong style="color:#1A3FA0;font-size:16px">Votre Espace Démo Personnel est prêt</strong>
                 </div>
-                <p style="font-size:14px;color:var(--color-text-dim);margin:0 0 14px 0;line-height:1.5">
+                <p style="font-size:14px;color:var(--text-muted);margin:0 0 14px 0;line-height:1.5">
                   Un email avec vos accès officiels vient de vous être envoyé à <strong>${data.email}</strong>.
                 </p>
-                <div style="background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.08);padding:14px 16px;border-radius:8px;font-family:monospace;font-size:13.5px;margin-bottom:16px;line-height:1.8">
-                  <div>🏛️ Office Démo : <strong>${data.nomEtude || 'Espace Notarial'}</strong></div>
-                  <div>👤 Identifiant : <strong>${data.email}</strong></div>
-                  <div>🔑 Mot de passe : <strong>${data.motDePasse}</strong></div>
+                <div style="background:#F8FAFC;border:1px solid #CBD5E1;padding:14px 16px;border-radius:8px;font-family:monospace;font-size:13.5px;margin-bottom:16px;line-height:1.8;color:#0F172A">
+                  <div>Office Démo : <strong>${data.nomEtude || 'Étude Notariale'}</strong></div>
+                  <div>Identifiant : <strong>${data.email}</strong></div>
+                  <div>Mot de passe : <strong>${data.motDePasse}</strong></div>
                 </div>
                 <a href="/app.html?demoEmail=${encodeURIComponent(data.email)}&demoMdp=${encodeURIComponent(data.motDePasse)}" class="btn btn-primary" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:700;padding:12px 24px;border-radius:8px;text-decoration:none;font-size:14px">
-                  🚀 Lancer ma Démo Immédiatement
+                  Accéder à mon Espace Notarial
                 </a>
               </div>
             `;
@@ -179,14 +178,14 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // 4. Sélecteur de Fréquence Tarifaire Neuromarketing (4 Fréquences)
+  // 4. Sélecteur de Fréquence Tarifaire (4 Fréquences)
   const TARIFAIRE_CONFIG = {
     mensuel: {
       titre: "Formule Mensuelle Sans Engagement",
       desc: "Liberté totale de gestion, paiement mois par mois.",
       montantMois: "300 000",
       barre: "",
-      badgeSaving: "0% ENGAGEMENT LIBRE",
+      badgeSaving: "ENGAGEMENT MENSUEL",
       badgeSavingClass: "",
       detail: "Facturation mensuelle de <strong>300 000 FCFA HT</strong> prélevée chaque mois",
       pill: "Résiliation libre à tout moment",
@@ -209,17 +208,17 @@ document.addEventListener("DOMContentLoaded", function () {
       badgeSaving: "ÉCONOMIE : 360 000 FCFA",
       badgeSavingClass: "gold",
       detail: "Facturation semestrielle de <strong>1 440 000 FCFA HT</strong> tous les 6 mois",
-      pill: "⭐ 1 Session Perfectionnement Clercs OFFERTE",
+      pill: "1 Session Perfectionnement Clercs Inclus",
     },
     annuel: {
-      titre: "Formule Annuelle Maître (Sérénité Totale)",
+      titre: "Formule Annuelle Sérénité Totale",
       desc: "L'investissement haute rentabilité des études notariales de référence.",
       montantMois: "200 000",
       barre: "300 000 F",
-      badgeSaving: "👑 ÉCONOMIE GÉANTE : 1 200 000 FCFA",
+      badgeSaving: "ÉCONOMIE : 1 200 000 FCFA",
       badgeSavingClass: "green",
       detail: "Facturation annuelle de <strong>2 400 000 FCFA HT</strong> par an",
-      pill: "🎁 Setup & Nom de Domaine .CI OFFERTS (Valeur 1 850 000 F)",
+      pill: "Déploiement complet & Accompagnement Inclus",
     },
   };
 

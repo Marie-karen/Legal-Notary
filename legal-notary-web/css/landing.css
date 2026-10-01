@@ -1,7 +1,7 @@
 /**
- * landing.css — Charte graphique institutionnelle & Neuromarketing pour Legal Notary.
- * Palette : Bleu Roi #1A3FA0, Bleu Nuit #0F172A, Blanc Pur #FFFFFF, Gris Neutre #F8FAFC, Bordures #E2E8F0.
- * 100% Mobile-First, Responsive Pixel-Perfect (320px - 4K), Touch Ergonomique, WCAG 2.1 AA.
+ * landing.css — Charte graphique institutionnelle & Plateforme de Gestion Notariale.
+ * Palette : Bleu Roi #1A3FA0, Bleu Nuit #0F172A, Blanc Pur #FFFFFF, Gris Neutre #F8FAFC, Bordures #CBD5E1.
+ * 100% Mobile-First, Responsive Pixel-Perfect (320px - 4K), Typographie sobre et institutionnelle.
  */
 
 :root {
@@ -17,7 +17,7 @@
   --bg-card: #FFFFFF;
   --border: #E2E8F0;
   --border-focus: #1A3FA0;
-  --accent-gold: #D97706;
+  --accent-gold: #B45309;
   --accent-green: #0D9488;
   --radius-sm: 6px;
   --radius: 10px;
@@ -58,7 +58,7 @@ body {
   position: relative;
 }
 
-/* Typographie Fluide */
+/* Typographie Fluide & Rigoureuse */
 h1, h2, h3, h4 {
   color: var(--text-main);
   line-height: 1.25;
@@ -89,7 +89,7 @@ p, li, label, button {
   font-size: 1rem;
 }
 
-/* Toujours 16px minimum pour les champs afin d'éviter le zoom forcé d'iOS Safari */
+/* 16px minimum pour les champs afin de bloquer le zoom automatique iOS Safari */
 input, select, textarea {
   font-size: 16px !important;
 }
@@ -123,7 +123,7 @@ img, svg, video, canvas {
 }
 
 /* =========================================================================
-   BOUTONS & CTAs TOUCH-OPTIMIZED
+   BOUTONS & CTAs
    ========================================================================= */
 .btn {
   display: inline-flex;
@@ -203,7 +203,7 @@ img, svg, video, canvas {
   font-size: 0.8rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.04em;
   max-width: 100%;
   line-height: 1.3;
 }
@@ -212,6 +212,12 @@ img, svg, video, canvas {
   background-color: rgba(217, 119, 6, 0.08);
   color: var(--accent-gold);
   border-color: rgba(217, 119, 6, 0.25);
+}
+
+.badge-tag.danger {
+  background-color: #FEE2E2;
+  color: #991B1B;
+  border-color: #FCA5A5;
 }
 
 /* =========================================================================
@@ -286,7 +292,6 @@ img, svg, video, canvas {
   padding: 8px 10px;
 }
 
-/* Menu Mobile Burger */
 .mobile-menu-toggle {
   display: inline-flex;
   align-items: center;
@@ -382,7 +387,7 @@ img, svg, video, canvas {
 }
 
 .mobile-drawer-links a {
-  font-size: 1.05rem;
+  font-size: 1rem;
   font-weight: 600;
   color: var(--text-main);
   padding: 8px 0;
@@ -390,7 +395,7 @@ img, svg, video, canvas {
 }
 
 /* =========================================================================
-   2. HERO SECTION MOBILE-OPTIMIZED
+   2. HERO SECTION
    ========================================================================= */
 .hero-section {
   padding: 32px 0 44px 0;
@@ -481,7 +486,7 @@ img, svg, video, canvas {
   }
 }
 
-/* Visuel Mockup du Tableau de Bord */
+/* Visuel Mockup du Tableau de Bord Hero */
 .dashboard-preview-card {
   background: #0F172A;
   border: 1px solid #334155;
@@ -601,7 +606,7 @@ img, svg, video, canvas {
 .mock-status.done { background: rgba(34, 197, 94, 0.2); color: #86EFAC; border: 1px solid rgba(34, 197, 94, 0.4); }
 
 /* =========================================================================
-   3. SECTION LE PROBLÈME (DOULEURS NOTARIALES)
+   3. SECTION LE CONSTAT (LES DÉFIS DE L'OFFICE NOTARIAL)
    ========================================================================= */
 .section {
   padding: 48px 0;
@@ -621,7 +626,7 @@ img, svg, video, canvas {
 
 .section-head {
   text-align: center;
-  max-width: 680px;
+  max-width: 720px;
   margin: 0 auto 36px auto;
 }
 
@@ -650,7 +655,7 @@ img, svg, video, canvas {
 .problem-card {
   background: #FFFFFF;
   border: 1px solid var(--border);
-  border-left: 4px solid #EF4444;
+  border-left: 4px solid #DC2626;
   padding: 22px 18px;
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
@@ -661,20 +666,20 @@ img, svg, video, canvas {
 
 @media (min-width: 768px) {
   .problem-card {
-    padding: 30px 24px;
+    padding: 28px 24px;
   }
 }
 
 .problem-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 24px rgba(239, 68, 68, 0.08);
+  box-shadow: 0 10px 24px rgba(220, 38, 38, 0.08);
 }
 
 .problem-icon {
   width: 42px;
   height: 42px;
   border-radius: 10px;
-  background: rgba(239, 68, 68, 0.12);
+  background: rgba(220, 38, 38, 0.08);
   color: #DC2626;
   display: flex;
   align-items: center;
@@ -702,8 +707,8 @@ img, svg, video, canvas {
   margin-top: 14px;
   padding: 4px 8px;
   border-radius: 6px;
-  background: rgba(239, 68, 68, 0.08);
-  color: #B91C1C;
+  background: rgba(220, 38, 38, 0.06);
+  color: #991B1B;
   font-size: 0.78rem;
   font-weight: 700;
   line-height: 1.35;
@@ -712,7 +717,287 @@ img, svg, video, canvas {
 }
 
 /* =========================================================================
-   8. SÉLECTEUR DE PRIX NEUROMARKETING (4 FRÉQUENCES) — 100% RESPONSIVE
+   4. SECTION LA SOLUTION EN ACTION (4 PANS / CAPTURES UI INTERACTIVES)
+   ========================================================================= */
+.solutions-showcase-list {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  margin-top: 32px;
+}
+
+@media (min-width: 768px) {
+  .solutions-showcase-list {
+    gap: 56px;
+  }
+}
+
+.solution-showcase-item {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  align-items: center;
+  background: #FFFFFF;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 24px 18px;
+  box-shadow: var(--shadow-sm);
+}
+
+@media (min-width: 900px) {
+  .solution-showcase-item {
+    grid-template-columns: 1fr 1.15fr;
+    gap: 36px;
+    padding: 36px 32px;
+  }
+  .solution-showcase-item.reverse {
+    grid-template-columns: 1.15fr 1fr;
+  }
+  .solution-showcase-item.reverse .solution-text-col {
+    order: 2;
+  }
+  .solution-showcase-item.reverse .solution-ui-col {
+    order: 1;
+  }
+}
+
+.solution-text-col h3 {
+  font-size: 1.35rem;
+  color: #0F172A;
+  margin: 10px 0 12px 0;
+  line-height: 1.3;
+}
+
+.solution-text-col p {
+  color: #475569;
+  font-size: 0.95rem;
+  line-height: 1.65;
+  margin-bottom: 16px;
+}
+
+.solution-benefits-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.solution-benefits-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: #1E293B;
+}
+
+.solution-benefits-list svg {
+  width: 18px;
+  height: 18px;
+  color: var(--primary);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* Fenêtre UI Capture Réaliste */
+.ui-capture-window {
+  background: #0F172A;
+  border: 1px solid #334155;
+  border-radius: 14px;
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  color: #F8FAFC;
+  width: 100%;
+}
+
+.ui-capture-window.light {
+  background: #F8FAFC;
+  border-color: #CBD5E1;
+  color: #0F172A;
+}
+
+.ui-window-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 14px;
+  background: #1E293B;
+  border-bottom: 1px solid #334155;
+  font-size: 0.75rem;
+  color: #94A3B8;
+  gap: 8px;
+}
+
+.ui-capture-window.light .ui-window-bar {
+  background: #E2E8F0;
+  border-bottom: 1px solid #CBD5E1;
+  color: #475569;
+}
+
+.ui-window-body {
+  padding: 16px 14px;
+}
+
+/* Éléments internes des captures UI */
+.ui-control-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.ui-search-input {
+  background: #1E293B;
+  border: 1px solid #334155;
+  color: #E2E8F0;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  flex: 1;
+  min-width: 140px;
+}
+
+.ui-capture-window.light .ui-search-input {
+  background: #FFFFFF;
+  border-color: #CBD5E1;
+  color: #0F172A;
+}
+
+.ui-status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.ui-status-badge.success {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34D399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.ui-status-badge.info {
+  background: rgba(56, 189, 248, 0.15);
+  color: #38BDF8;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+.ui-status-badge.warning {
+  background: rgba(245, 158, 11, 0.15);
+  color: #FBBF24;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.ui-capture-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+  text-align: left;
+}
+
+.ui-capture-table th {
+  padding: 7px 10px;
+  background: #1E293B;
+  color: #94A3B8;
+  font-weight: 600;
+  border-bottom: 1px solid #334155;
+  white-space: nowrap;
+}
+
+.ui-capture-window.light .ui-capture-table th {
+  background: #E2E8F0;
+  color: #475569;
+  border-bottom: 1px solid #CBD5E1;
+}
+
+.ui-capture-table td {
+  padding: 9px 10px;
+  border-bottom: 1px solid rgba(51, 65, 85, 0.6);
+  color: #E2E8F0;
+}
+
+.ui-capture-window.light .ui-capture-table td {
+  border-bottom: 1px solid #E2E8F0;
+  color: #1E293B;
+}
+
+.ui-fiscal-summary {
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  border-radius: 8px;
+  padding: 12px 14px;
+  color: #0F172A;
+}
+
+.ui-fiscal-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 0;
+  font-size: 0.82rem;
+  border-bottom: 1px dashed #E2E8F0;
+}
+
+.ui-fiscal-row.total {
+  border-bottom: none;
+  border-top: 2px solid #1A3FA0;
+  margin-top: 6px;
+  padding-top: 8px;
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: #1A3FA0;
+}
+
+.ui-call-card {
+  background: #1E293B;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+}
+
+.ui-call-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #38BDF8;
+  margin-bottom: 4px;
+}
+
+.ui-call-body {
+  font-size: 0.78rem;
+  color: #CBD5E1;
+  line-height: 1.4;
+}
+
+.ui-call-action {
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  color: #94A3B8;
+}
+
+.ui-hash-badge {
+  font-family: monospace;
+  background: #020617;
+  border: 1px solid #1E293B;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.74rem;
+  color: #10B981;
+  word-break: break-all;
+  margin: 8px 0;
+}
+
+/* =========================================================================
+   8. SÉLECTEUR DE PRIX NEUROMARKETING (4 FRÉQUENCES)
    ========================================================================= */
 .pricing-frequency-wrapper {
   display: flex;
@@ -807,17 +1092,17 @@ img, svg, video, canvas {
 
 .tab-badge-saving.gold {
   background: #FEF3C7;
-  color: #B45309;
+  color: #92400E;
   border: 1px solid #FDE68A;
 }
 
 .tab-badge-saving.green {
   background: #D1FAE5;
-  color: #047857;
+  color: #065F46;
   border: 1px solid #A7F3D0;
 }
 
-/* Cartes de Prix Masterclass */
+/* Cartes de Prix */
 .pricing-cards-container {
   display: grid;
   grid-template-columns: 1fr;
@@ -851,7 +1136,7 @@ img, svg, video, canvas {
 }
 
 .main-pricing-hero-card::after {
-  content: "OFFRE RECOMMANDÉE PAR LA PROFESSION";
+  content: "FORMULE RECOMMANDÉE POUR LES ÉTUDES";
   position: absolute;
   top: -12px;
   left: 50%;
@@ -1090,136 +1375,6 @@ img, svg, video, canvas {
 }
 
 /* =========================================================================
-   4. SECTION LA SOLUTION (FONCTIONNALITÉS)
-   ========================================================================= */
-.features-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px;
-}
-
-@media (min-width: 640px) {
-  .features-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
-  }
-}
-
-@media (min-width: 1024px) {
-  .features-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
-  }
-}
-
-.feature-card {
-  background: #FFFFFF;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 22px 18px;
-  box-shadow: var(--shadow-sm);
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-}
-
-@media (min-width: 768px) {
-  .feature-card {
-    padding: 28px 24px;
-  }
-}
-
-.feature-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-  border-color: var(--primary-border);
-}
-
-.feature-icon-box {
-  width: 42px;
-  height: 42px;
-  border-radius: 10px;
-  background: var(--primary-light);
-  color: var(--primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 14px;
-  border: 1px solid var(--primary-border);
-}
-
-.feature-icon-box svg {
-  width: 20px;
-  height: 20px;
-}
-
-.feature-card h3 {
-  margin-bottom: 8px;
-  color: var(--text-main);
-  font-size: 1.12rem;
-}
-
-.feature-card p {
-  color: var(--text-muted);
-  font-size: 0.92rem;
-  line-height: 1.6;
-}
-
-/* =========================================================================
-   5. SECTION COMMENT ÇA MARCHE
-   ========================================================================= */
-.steps-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px;
-}
-
-@media (min-width: 768px) {
-  .steps-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
-  }
-}
-
-.step-card {
-  background: #FFFFFF;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 24px 18px;
-  position: relative;
-  box-shadow: var(--shadow-sm);
-}
-
-@media (min-width: 768px) {
-  .step-card {
-    padding: 32px 24px;
-  }
-}
-
-.step-number {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: var(--primary);
-  color: #FFFFFF;
-  font-weight: 800;
-  font-size: 0.95rem;
-  margin-bottom: 14px;
-}
-
-.step-card h3 {
-  margin-bottom: 8px;
-  font-size: 1.15rem;
-}
-
-.step-card p {
-  color: var(--text-muted);
-  font-size: 0.92rem;
-  line-height: 1.6;
-}
-
-/* =========================================================================
    6. SECTION SÉCURITÉ & SOUVERAINETÉ
    ========================================================================= */
 .security-box {
@@ -1365,7 +1520,7 @@ img, svg, video, canvas {
 }
 
 /* =========================================================================
-   10. SECTION CTA FINAL & FORMULAIRE DE DÉMO
+   10. SECTION FORMULAIRE DE DÉMO
    ========================================================================= */
 .form-card {
   max-width: 680px;
@@ -1445,7 +1600,6 @@ img, svg, video, canvas {
   height: 18px;
 }
 
-/* Champ Honeypot invisible pour bots */
 .champ-honeypot {
   display: none !important;
   visibility: hidden !important;
@@ -1565,7 +1719,7 @@ img, svg, video, canvas {
 }
 
 /* =========================================================================
-   STICKY BAR MOBILE CONVERSION (Bottom Bar)
+   STICKY BAR MOBILE (Bottom Bar)
    ========================================================================= */
 .mobile-sticky-cta-bar {
   display: flex;
