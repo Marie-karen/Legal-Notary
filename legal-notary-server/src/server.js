@@ -64,6 +64,9 @@ app.use((req, res, next) => {
 
 app.get("/api/sante", (req, res) => res.json({ etat: "ok" }));
 
+const publicRoutes = require("./api/public.routes");
+
+app.use("/api/public", publicRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/telemetrie", telemetrieRoutes);
 app.use("/api/kyc", kycRoutes); // Gère les routes publiques /public/* et privées /dossier/*
@@ -91,15 +94,7 @@ app.use("/api/rapports", rapportsRoutes);
 app.use("/api/agenda", agendaRoutes);
 
 /**
- * Sert aussi le frontend statique (legal-notary-web/) depuis ce même
- * processus : un seul programme à lancer et un seul port à ouvrir chez le
- * cabinet, plutôt que deux serveurs séparés à faire tourner (celui-ci et
- * un serveur de fichiers statiques) — plus simple à installer et à
- * maintenir pour quelqu'un qui n'est pas développeur. Le frontend appelle
- * l'API sur `window.location.origin` (voir index.html), donc ceci
- * fonctionne sans configuration CORS particulière une fois en production.
- * Le chemin est configurable (FRONTEND_DIR) pour les cabinets qui
- * préfèrent une autre disposition de dossiers.
+ * Sert aussi le frontend statique (legal-notary-web/) depuis ce même processus.
  */
 const fs = require("fs");
 let FRONTEND_DIR = process.env.FRONTEND_DIR || path.join(__dirname, "..", "..", "legal-notary-web");
@@ -121,27 +116,53 @@ if (!fs.existsSync(FRONTEND_DIR)) {
 
 app.use(express.static(FRONTEND_DIR));
 
-// Page vitrine commerciale pour site d'entreprise & marketing
-app.get(["/vitrine", "/landing", "/landing.html", "/presentation"], (req, res) => {
-  res.sendFile(path.join(FRONTEND_DIR, "landing.html"));
+// 1. Accès direct à l'espace de connexion et à l'ERP
+app.get(["/connexion", "/login", "/app", "/app.html", "/erp"], (req, res) => {
+  const appFile = path.join(FRONTEND_DIR, "app.html");
+  if (fs.existsSync(appFile)) return res.sendFile(appFile);
+  res.sendFile(path.join(FRONTEND_DIR, "index.html"));
 });
 
-// Espace de démonstration commerciale 1-clic (tous rôles démo)
+// 2. Pages Légales & Conformité RGPD / OHADA
+app.get(["/mentions-legales", "/mentions-legales.html"], (req, res) => {
+  res.sendFile(path.join(FRONTEND_DIR, "mentions-legales.html"));
+});
+
+app.get(["/politique-confidentialite", "/confidentialite", "/politique-confidentialite.html"], (req, res) => {
+  res.sendFile(path.join(FRONTEND_DIR, "politique-confidentialite.html"));
+});
+
+app.get(["/cgu", "/conditions-generales", "/cgu.html"], (req, res) => {
+  res.sendFile(path.join(FRONTEND_DIR, "cgu.html"));
+});
+
+// 3. Espace de démonstration commerciale 1-clic (tous rôles démo)
 app.get(["/demo", "/demo.html", "/demonstration"], (req, res) => {
   res.sendFile(path.join(FRONTEND_DIR, "demo.html"));
 });
 
-// Espace Manuels & Formation interactifs (Style Glitter.io)
+// 4. Espace Manuels & Formation interactifs (Style Glitter.io)
 app.get(["/docs", "/documentation", "/documentation.html", "/manuel"], (req, res) => {
   res.sendFile(path.join(FRONTEND_DIR, "documentation.html"));
 });
 
+// 5. Routage principal intelligent
 app.get(/^(?!\/api).*/, (req, res) => {
+  const host = (req.hostname || req.headers.host || "").toLowerCase();
+
+  // Si l'utilisateur accède via un domaine dédié d'une étude (ex: etude-mka.ci, app.legalnotary.app)
+  const isCustomDomainEtude = host.startsWith("app.") || (host.includes("etude-") && !host.includes("legalnotary.app"));
+  if (isCustomDomainEtude) {
+    const appFile = path.join(FRONTEND_DIR, "app.html");
+    if (fs.existsSync(appFile)) return res.sendFile(appFile);
+  }
+
+  // Par défaut sur le domaine principal (legalnotary.app ou localhost), on sert la Landing Page index.html
   const indexFile = path.join(FRONTEND_DIR, "index.html");
   if (fs.existsSync(indexFile)) {
     return res.sendFile(indexFile);
   }
-  res.sendFile(path.join(__dirname, "..", "..", "legal-notary-web", "index.html"));
+  res.sendFile(path.join(FRONTEND_DIR, "landing.html"));
 });
 
 app.use((erreur, req, res, next) => {

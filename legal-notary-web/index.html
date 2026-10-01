@@ -1,181 +1,684 @@
-<!--
-  index.html — Legal Notary, application web réelle.
-
-  Structure et design repris fidèlement de ../design-reference/Legal Notary.dc.html
-  (réalisé via Claude Design — thème sombre, accent vert, Space Grotesk +
-  Inter). Ce fichier remplace le moteur de gabarits interne à Claude Design
-  (sc-if/sc-for) par du JavaScript classique dans js/app.js, pour tourner
-  comme une vraie page web reliée à l'API réelle (legal-notary-server) —
-  aucune donnée simulée, tout vient du serveur.
--->
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>Legal Notary</title>
-<link rel="stylesheet" href="css/style.css?v=3.6.0">
-<script>
-  // Initialisation immédiate du thème pour éviter tout flash blanc/noir
-  (function () {
-    var theme = "dark";
-    try {
-      theme = localStorage.getItem("legal_notary_theme") || "dark";
-    } catch (e) {}
-    document.documentElement.setAttribute("data-theme", theme);
-  })();
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Legal Notary — Logiciel de Gestion d'Office Notarial & Pilotage de Dossiers</title>
+  <meta name="description" content="Pilotez votre étude notariale dossier par dossier. Suivi des étapes, alertes de délais légaux, calculateurs fiscaux Décret 2013-279 et minutier numérique sécurisé en Côte d'Ivoire et Afrique francophone.">
+  <meta name="author" content="BETHEL TIME SARLU">
+  <link rel="canonical" href="https://legalnotary.app/">
 
-  // Configuration automatique de l'URL API backend :
-  (function () {
-    var port = window.location.port;
-    var host = window.location.hostname;
-    if (port === "4000" || (host !== "localhost" && host !== "127.0.0.1" && host !== "" && !window.location.protocol.startsWith("file:"))) {
-      window.LEGAL_NOTARY_API_URL = window.location.origin;
-    } else {
-      window.LEGAL_NOTARY_API_URL = "http://localhost:4000";
-    }
-  })();
-</script>
+  <!-- Open Graph / WhatsApp / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://legalnotary.app/">
+  <meta property="og:title" content="Legal Notary — Pilotez votre étude notariale, dossier par dossier">
+  <meta property="og:description" content="Sachez qui traite chaque dossier, à quelle étape, et soyez alerté avant qu'un délai ne glisse. Conçu pour les notaires de Côte d'Ivoire et d'Afrique francophone.">
+  <meta property="og:image" content="https://legalnotary.app/images/og-preview.png">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Legal Notary — Logiciel de Gestion Notariale">
+  <meta name="twitter:description" content="Suivi des dossiers, alertes de délais et calculs fiscaux officiels pour offices notariaux.">
+
+  <!-- Polices Google Fonts Premium -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="css/landing.css">
+
+  <!-- Données structurées Schema.org -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://legalnotary.app/#organization",
+        "name": "BETHEL TIME SARLU",
+        "url": "https://legalnotary.app",
+        "logo": "https://legalnotary.app/images/logo.png",
+        "contactPoint": {
+          "@type": "ContactPoint",
+          "contactType": "customer service",
+          "email": "contact@legalnotary.app",
+          "availableLanguage": "French"
+        }
+      },
+      {
+        "@type": "SoftwareApplication",
+        "name": "Legal Notary",
+        "operatingSystem": "Web, Windows, macOS, Linux (Serveur Local ou Cloud)",
+        "applicationCategory": "BusinessApplication",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "XOF",
+          "description": "Tarif sur demande / Offre pilote"
+        },
+        "description": "Suite logicielle complète de pilotage de dossiers et de calcul fiscal pour les offices notariaux en Côte d'Ivoire et Afrique francophone."
+      }
+    ]
+  }
+  </script>
 </head>
 <body>
 
-<!-- Avertissement si ouvert par double-clic (file://) au lieu de http://localhost:4000 -->
-<div id="avertissement-file-protocol" style="display:none;background:#dc2626;color:#ffffff;padding:14px;text-align:center;font-weight:700;font-size:14px;position:sticky;top:0;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,0.4)">
-  Attention : Mode fichier local détecté (Finder). Le navigateur bloque les requêtes de sécurité.<br>
-  Veuillez ouvrir votre navigateur et accéder à l'application via : <a href="http://localhost:4000/" target="_blank" style="color:#fef08a;text-decoration:underline;margin-left:4px">http://localhost:4000/</a>
-</div>
-<script>
-  if (window.location.protocol === "file:") {
-    document.getElementById("avertissement-file-protocol").style.display = "block";
-  }
-</script>
-
-<div id="chargement-initial" class="chargement" style="display:none">Chargement…</div>
-
-<!-- ============ ÉCRAN DE CONNEXION ============ -->
-<div id="ecran-login" class="ecran actif">
-  <div style="min-height:100vh;width:100%;display:flex;align-items:center;justify-content:center;padding:var(--space-4);background:var(--color-bg)">
-    <div class="card elev-md" style="width:380px;padding:36px 32px;position:relative;border-radius:12px;border:1px solid var(--color-border);background:var(--color-surface)">
-      
-      <div style="position:absolute;top:14px;right:14px">
-        <button type="button" onclick="window.LegalNotaryBasculerTheme()" class="theme-switch-btn" title="Basculer Mode Clair / Sombre">
-          <span class="theme-switch-icon">🌙</span> <span class="theme-switch-label" style="font-size:11px">Mode Sombre</span>
-        </button>
-      </div>
-
-      <div style="text-align:center;margin-bottom:28px;margin-top:8px">
-        <div style="font-family:var(--font-heading);font-weight:700;font-size:24px;margin-bottom:4px;color:var(--color-text);letter-spacing:-0.5px" id="login-titre-etude">Legal Notary</div>
-        <div style="font-size:13px;color:var(--color-text-dim)">Connectez-vous à votre compte</div>
-      </div>
-
-      <!-- Formulaire de connexion standard -->
-      <form id="form-login">
-        <div class="field" style="margin-bottom:16px">
-          <label style="font-size:13px;font-weight:500;margin-bottom:6px;display:block;color:var(--color-text)">Email</label>
-          <input class="input" type="email" name="email" id="login-input-email" placeholder="exemple@notaire.ci" required autocomplete="username" style="padding:10px 12px;font-size:14px;width:100%">
-        </div>
-        <div class="field" style="margin-bottom:22px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-            <label style="font-size:13px;font-weight:500;color:var(--color-text)">Mot de passe</label>
-            <span style="font-size:12px;color:var(--color-text-dim);cursor:pointer;text-decoration:none" onclick="alert('Veuillez contacter votre administrateur pour réinitialiser votre mot de passe.')">Mot de passe oublié ?</span>
-          </div>
-          <div style="position:relative;display:flex;align-items:center">
-            <input class="input" type="password" name="motDePasse" id="login-input-mdp" placeholder="••••••••" required autocomplete="current-password" style="padding:10px 42px 10px 12px;font-size:14px;width:100%">
-            <button type="button" id="btn-toggle-mdp-login" style="position:absolute;right:8px;background:none;border:none;cursor:pointer;font-size:16px;color:var(--color-text-dim);padding:4px 6px;border-radius:4px;display:flex;align-items:center;justify-content:center" title="Afficher / Masquer le mot de passe" aria-label="Afficher ou masquer le mot de passe">
-              👁️
-            </button>
-          </div>
-        </div>
-        <button type="submit" class="btn btn-primary btn-block" style="padding:11px;font-size:14px;font-weight:600;width:100%;cursor:pointer">
-          Se connecter
-        </button>
-        <div id="login-erreur" class="erreur-inline" style="display:none;margin-top:14px"></div>
-      </form>
-    </div>
-  </div>
-</div>
-
-<!-- ============ APPLICATION ============ -->
-<div id="app">
-  <div style="height:100vh;width:100%;background:var(--color-bg);display:flex;flex-direction:column;overflow:hidden">
-
-    <div class="nav" style="border-bottom:1px solid var(--color-divider);flex:none;gap:var(--space-2)">
-      <!-- Bouton Hamburger Mobile pour ouvrir la barre latérale -->
-      <button type="button" id="btn-toggle-menu-mobile" onclick="window.LegalNotaryBasculerMenuMobile()" class="mobile-burger-btn" aria-label="Menu de navigation" title="Ouvrir le menu">
-        <span id="burger-icon-symbol">☰</span>
-      </button>
-
-      <div class="nav-brand" id="nav-nom-etude">Legal Notary</div>
-      <span class="tag tag-outline" id="notif-badge" style="cursor:pointer">0</span>
-
-      <div style="flex:1"></div>
-      
-      <!-- Accès Documentation & Manuel de Formation -->
-      <a href="documentation.html" target="_blank" class="btn btn-ghost nav-btn-doc" style="padding:4px 10px;font-size:11.5px;color:#38bdf8;border:1px solid rgba(56,189,248,0.3);text-decoration:none;border-radius:6px;display:inline-flex;align-items:center;gap:4px" title="Consulter le Manuel d'Utilisation Officiel et le Manuel de Formation">
-        <span class="nav-doc-text">📘 Manuels & Formations</span>
-        <span class="nav-doc-icon" style="display:none">📘</span>
+  <!-- =========================================================================
+       1. HEADER
+       ========================================================================= -->
+  <header class="site-header">
+    <div class="container header-content">
+      <a href="/" class="logo-brand" aria-label="Legal Notary - Accueil">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+        </svg>
+        <span>Legal Notary</span>
       </a>
 
-      <!-- Sélecteur de Thème (Mode Sombre / Mode Clair) -->
-      <button type="button" id="btn-toggle-theme" onclick="window.LegalNotaryBasculerTheme()" class="theme-switch-btn" title="Basculer Mode Clair / Mode Sombre">
-        <span class="theme-switch-icon">🌙</span> <span class="theme-switch-label" style="font-size:11px">Mode Sombre</span>
-      </button>
+      <nav class="nav-links" aria-label="Navigation principale">
+        <a href="#fonctionnalites">Fonctionnalités</a>
+        <a href="#comment-ca-marche">Comment ça marche</a>
+        <a href="#securite">Sécurité</a>
+        <a href="#tarifs">Tarifs</a>
+        <a href="#faq">FAQ</a>
+      </nav>
 
-      <div class="nav-user-divider" style="width:1px;height:20px;background:var(--color-divider)"></div>
-      <div class="nav-user-info" style="text-align:right">
-        <div id="nav-utilisateur-nom" style="font-family:var(--font-heading);font-weight:600;font-size:14px"></div>
-        <div id="nav-utilisateur-role" style="font-size:11px;opacity:.55"></div>
-      </div>
-      <button type="button" id="btn-top-deconnexion" onclick="window.LegalNotaryDeconnexion()" class="btn btn-ghost btn-nav-deconnexion" style="padding:4px 8px;font-size:11.5px;color:var(--color-text-dim);border:1px solid var(--color-border);cursor:pointer;margin-left:4px" title="Se déconnecter">
-        <span class="deconnexion-text">Déconnexion</span>
-        <span class="deconnexion-icon" style="display:none">🚪</span>
-      </button>
-    </div>
-
-    <!-- Overlay sombre pour fermer le menu au clic sur mobile -->
-    <div id="mobile-menu-backdrop" class="mobile-menu-backdrop" onclick="window.LegalNotaryFermerMenuMobile()"></div>
-
-    <div class="app-main-layout" style="flex:1;display:flex;overflow:hidden;position:relative">
-      <div class="barre-laterale" id="menu-navigation-laterale" style="width:230px;flex:none;height:100%;overflow-y:auto;padding:var(--space-6) var(--space-3);display:flex;flex-direction:column;gap:var(--space-1)">
-        <!-- Le menu de navigation s'adapte dynamiquement et fidèlement au rôle de l'utilisateur connecté via renderMenuNavigation(role) -->
-      </div>
-
-      <div class="zone-scroll" style="flex:1;min-width:320px;height:100%;overflow-y:auto;padding:var(--space-6) var(--space-6) var(--space-8)">
-        <div id="vue-dashboard" class="ecran"></div>
-        <div id="vue-agenda" class="ecran"></div>
-        <div id="vue-kanban" class="ecran"></div>
-        <div id="vue-dossiers" class="ecran"></div>
-        <div id="vue-nouveau-dossier" class="ecran"></div>
-        <div id="vue-clients" class="ecran"></div>
-        <div id="vue-actes" class="ecran"></div>
-        <div id="vue-emoluments" class="ecran"></div>
-        <div id="vue-comptabilite" class="ecran"></div>
-        <div id="vue-archives" class="ecran"></div>
-        <div id="vue-equipe" class="ecran"></div>
-        <div id="vue-evolution" class="ecran"></div>
-        <div id="vue-parametres" class="ecran"></div>
-        <div id="vue-superadmin" class="ecran"></div>
-        <div id="vue-rapports" class="ecran"></div>
-        <div id="vue-dossier" class="ecran"></div>
-        <div id="vue-validations" class="ecran"></div>
-        <div id="vue-notifications" class="ecran"></div>
+      <div class="header-actions">
+        <a href="/connexion" class="btn btn-discret" title="Accéder à l'espace de travail de votre étude">
+          Se connecter
+        </a>
+        <a href="#demo-form" class="btn btn-primary">
+          Demander une démo
+        </a>
       </div>
     </div>
-  </div>
-</div>
+  </header>
 
-<!-- Conteneur d'impression officielle (fiche de taxe / décompte notarié) -->
-<div id="print-container" class="print-only"></div>
+  <main>
+    <!-- =========================================================================
+         2. HERO SECTION
+         ========================================================================= -->
+    <section class="hero-section">
+      <div class="container hero-grid">
+        <div class="hero-text">
+          <div class="badge-tag">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2L1 21h22L12 2zm0 3.5L19.5 19h-15L12 5.5z"/>
+            </svg>
+            Conforme Décret 2013-279 & Pratiques Notariales
+          </div>
 
-<!-- Racine globale pour les boîtes de dialogue et modales -->
-<div id="modal-racine" style="display:none;position:relative;z-index:999999"></div>
+          <h1>Pilotez votre étude notariale, dossier par dossier.</h1>
 
-<div id="toast" class="card elev-lg" style="display:none; position:fixed; bottom:var(--space-4); right:var(--space-4); max-width:340px; z-index:9999999;">
-  <div class="card-body" style="opacity:1" id="toast-texte"></div>
-</div>
+          <p class="hero-subtitle">
+            Sachez qui traite chaque dossier, à quelle étape, et soyez alerté avant qu'un délai ne glisse. Conçu pour les notaires de Côte d'Ivoire et d'Afrique francophone.
+          </p>
 
-<script src="js/api.js?v=3.6.2"></script>
-<script src="js/qrcode.js?v=3.6.2"></script>
-<script src="js/app.js?v=3.6.2"></script>
+          <div class="hero-ctas">
+            <a href="#demo-form" class="btn btn-primary" style="padding:14px 28px;font-size:1.02rem">
+              Demander une démo (30 min)
+            </a>
+            <a href="https://wa.me/2250700000000?text=Bonjour,%20je%20souhaite%20en%20savoir%20plus%20sur%20Legal%20Notary" target="_blank" rel="noopener" class="btn btn-whatsapp" style="padding:14px 24px;font-size:1.02rem">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2zM12.05 20.2c-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.196 8.196 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.24-8.24 2.2 0 4.27.86 5.82 2.42a8.18 8.18 0 0 1 2.41 5.83c.02 4.54-3.68 8.23-8.22 8.23zm4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.09-.39-.12-.56.12-.17.25-.64.81-.79.97-.14.17-.29.18-.54.06-.25-.12-1.05-.39-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.02-.38.11-.5.11-.11.25-.29.37-.43.12-.14.17-.25.25-.41.08-.17.04-.31-.02-.43s-.56-1.34-.76-1.84c-.2-.48-.41-.42-.56-.43h-.48c-.17 0-.43.06-.66.31-.22.25-.86.84-.86 2.05s.88 2.38 1 2.54c.12.17 1.73 2.64 4.2 3.7.59.25 1.05.4 1.41.51.59.19 1.13.16 1.56.1.48-.07 1.47-.6 1.67-1.18.21-.58.21-1.07.14-1.18-.06-.11-.23-.17-.48-.29z"/>
+              </svg>
+              Écrire sur WhatsApp
+            </a>
+          </div>
+
+          <div class="hero-reassurance">
+            <span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              Démo de 30 min sans engagement
+            </span>
+            <span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              Installation locale ou cloud
+            </span>
+            <span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              Accompagnement de vos clercs
+            </span>
+          </div>
+        </div>
+
+        <!-- Visuel Dashboard Démo -->
+        <div class="dashboard-preview-card" aria-label="Aperçu du tableau de bord de pilotage des dossiers">
+          <div class="mock-window-bar">
+            <div class="mock-dots">
+              <span class="mock-dot red"></span>
+              <span class="mock-dot yellow"></span>
+              <span class="mock-dot green"></span>
+            </div>
+            <span>Étude Notariale — Tableau de Bord Direction</span>
+            <span>🔒 Session Sécurisée</span>
+          </div>
+          <div class="mock-body">
+            <div class="mock-kpi-grid">
+              <div class="mock-kpi">
+                <div class="mock-kpi-title">Dossiers Actifs</div>
+                <div class="mock-kpi-val">34</div>
+              </div>
+              <div class="mock-kpi">
+                <div class="mock-kpi-title">Formalités DGI</div>
+                <div class="mock-kpi-val" style="color:#F59E0B">8</div>
+              </div>
+              <div class="mock-kpi">
+                <div class="mock-kpi-title">Délais Imminents</div>
+                <div class="mock-kpi-val" style="color:#EF4444">2</div>
+              </div>
+            </div>
+
+            <div class="mock-table-wrap">
+              <table class="mock-table">
+                <thead>
+                  <tr>
+                    <th>Réf. Dossier</th>
+                    <th>Objet de l'Acte</th>
+                    <th>Clerc Rédacteur</th>
+                    <th>Étape & Délai</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code>DOS-2026-084</code></td>
+                    <td>Vente Immobilière (Plateau)</td>
+                    <td>Mme Awa Koné</td>
+                    <td><span class="mock-status alert">Conservation (J-2)</span></td>
+                  </tr>
+                  <tr>
+                    <td><code>DOS-2026-089</code></td>
+                    <td>Constitution SARL</td>
+                    <td>M. Sékou Bamba</td>
+                    <td><span class="mock-status prog">Enregistrement DGI</span></td>
+                  </tr>
+                  <tr>
+                    <td><code>DOS-2026-092</code></td>
+                    <td>Règlement de Succession</td>
+                    <td>M. Ibrahim Traoré</td>
+                    <td><span class="mock-status done">Prêt pour Signature</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================================
+         3. SECTION LE PROBLÈME
+         ========================================================================= -->
+    <section class="section section-alt">
+      <div class="container">
+        <div class="section-head">
+          <div class="badge-tag gold">Constats Métier</div>
+          <h2>La gestion quotidienne d'un office comporte des risques évitables</h2>
+          <p>
+            Entre la multiplicité des dossiers, les démarches administratives et les impératifs légaux, l'absence d'un outil centralisé fragilise l'activité de l'étude.
+          </p>
+        </div>
+
+        <div class="problem-grid">
+          <div class="problem-card">
+            <div class="problem-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            </div>
+            <h3>Dossiers suivis sur Excel et papier</h3>
+            <p>
+              Informations dispersées, manque de visibilité globale pour le Notaire Titulaire et risque constant de perte d'historique lors du départ d'un collaborateur.
+            </p>
+          </div>
+
+          <div class="problem-card">
+            <div class="problem-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <h3>Retards découverts trop tard</h3>
+            <p>
+              Délais de formalités à la Conservation Foncière ou aux Impôts découverts après expiration, créant des tensions inutiles avec les clients et les partenaires.
+            </p>
+          </div>
+
+          <div class="problem-card">
+            <div class="problem-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </div>
+            <h3>Calculs de frais longs et risqués</h3>
+            <p>
+              Barème d'émoluments proportionnels Décret 2013-279, droits d'enregistrement, TVA et débours calculés manuellement, avec risque d'erreur de taxation.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================================
+         4. SECTION LA SOLUTION
+         ========================================================================= -->
+    <section class="section" id="fonctionnalites">
+      <div class="container">
+        <div class="section-head">
+          <div class="badge-tag">Fonctionnalités Clés</div>
+          <h2>Une solution conçue pour la rigueur notariale</h2>
+          <p>
+            Chaque module répond directement aux exigences pratiques et légales des offices notariaux en Côte d'Ivoire.
+          </p>
+        </div>
+
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-icon-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            <h3>Pilotage des dossiers</h3>
+            <p>Visualisez instantanément l'état d'avancement de chaque acte et sachez quel clerc est en charge de chaque étape.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            </div>
+            <h3>Alertes de délais</h3>
+            <p>Recevez des notifications automatiques avant l'expiration des délais légaux, fiscaux et fonciers.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            </div>
+            <h3>Calcul taxes et honoraires</h3>
+            <p>Appliquez en un clic le barème officiel du Décret 2013-279, les droits DGI, la TVA et éditez des fiches de taxe claires.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+            </div>
+            <h3>Modèles d'actes Word</h3>
+            <p>Générez vos projets d'actes à partir de modèles types personnalisables pré-remplis avec les données du dossier.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <h3>Traçabilité & Pièces</h3>
+            <p>Conservez l'historique complet des actions, des pièces d'identité scannées et des échanges attachés au dossier.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            </div>
+            <h3>Tableau de bord du notaire</h3>
+            <p>Supervisez en temps réel le volume des actes, la charge de travail de l'équipe et les flux financiers de l'office.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================================
+         5. SECTION COMMENT ÇA MARCHE
+         ========================================================================= -->
+    <section class="section section-alt" id="comment-ca-marche">
+      <div class="container">
+        <div class="section-head">
+          <div class="badge-tag">Déploiement Simple</div>
+          <h2>Comment se déroule la mise en service ?</h2>
+          <p>Un accompagnement pas à pas pour équiper votre étude sans perturber votre activité en cours.</p>
+        </div>
+
+        <div class="steps-grid">
+          <div class="step-card">
+            <div class="step-number">1</div>
+            <h3>Démonstration personnalisée (30 min)</h3>
+            <p>Nous découvrons vos besoins et vous présentons le fonctionnement du logiciel adapté à la taille de votre office.</p>
+          </div>
+
+          <div class="step-card">
+            <div class="step-number">2</div>
+            <h3>Paramétrage de votre étude</h3>
+            <p>Configuration de votre en-tête, de vos collaborateurs, des rôles d'accès et choix du mode d'hébergement (Cloud ou Serveur Local).</p>
+          </div>
+
+          <div class="step-card">
+            <div class="step-number">3</div>
+            <h3>Mise en service accompagnée</h3>
+            <p>Prise en main guidée pour vos clercs et votre comptable, avec une assistance dédiée réactive à tout moment.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================================
+         6. SECTION SÉCURITÉ ET SOUVERAINETÉ DES DONNÉES
+         ========================================================================= -->
+    <section class="section" id="securite">
+      <div class="container">
+        <div class="section-head">
+          <div class="badge-tag">Confidentialité & Souveraineté</div>
+          <h2>La protection du secret professionnel notarial</h2>
+          <p>Vos dossiers et les données de vos clients restent sous votre contrôle exclusif.</p>
+        </div>
+
+        <div class="security-box">
+          <div class="security-pillars">
+            <div class="security-pillar">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              <div>
+                <h4>Confidentialité absolue & Secret professionnel</h4>
+                <p>Cloisonnement strict des données entre études. L'éditeur n'a aucun accès aux contenus des actes rédigés.</p>
+              </div>
+            </div>
+
+            <div class="security-pillar">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M5.5 21v-2a6.5 6.5 0 0 1 13 0v2"/></svg>
+              <div>
+                <h4>Contrôle des accès par rôle</h4>
+                <p>Permissions granulaires adaptées (Notaire, Premier Clerc, Clerc Rédacteur, Formaliste, Comptable, Archiviste).</p>
+              </div>
+            </div>
+
+            <div class="security-pillar">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <div>
+                <h4>Sauvegardes chiffrées & Mode Hybride</h4>
+                <p>Sauvegardes automatiques régulières. L'étude peut continuer à travailler en local même en cas de coupure internet.</p>
+              </div>
+            </div>
+
+            <div class="security-pillar">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <div>
+                <h4>Conformité réglementaire <span class="legal-badge-notice">[À VALIDER]</span></h4>
+                <p>Alignement sur le cadre ivoirien de protection des données à caractère personnel (Loi 2013-450) <span class="legal-badge-notice">[À VALIDER]</span>.</p>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top:32px;padding-top:20px;border-top:1px solid var(--border);text-align:center">
+            <a href="#" style="font-size:0.92rem;font-weight:600;display:inline-flex;align-items:center;gap:6px" onclick="alert('Le livre blanc sur la souveraineté des données sera disponible prochainement en téléchargement.');return false;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+              Télécharger notre livre blanc sur la souveraineté des données <span class="legal-badge-notice">[À FOURNIR]</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================================
+         7. PREUVE SOCIALE
+         ========================================================================= -->
+    <section class="section section-alt">
+      <div class="container">
+        <div class="section-head">
+          <div class="badge-tag">Témoignages & Références</div>
+          <h2>La confiance des professionnels du droit</h2>
+          <p>Découvrez les retours d'expérience des offices notariaux qui ont digitalisé leur organisation.</p>
+        </div>
+
+        <div class="placeholder-box">
+          <p><strong>[À COMPLÉTER — accord écrit du client requis]</strong></p>
+          <p style="margin-top:6px;font-size:0.85rem">Les citations de confrères notaires et les logos d'études partenaires seront intégrés après validation formelle de chaque office.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================================
+         8. TARIFS
+         ========================================================================= -->
+    <section class="section" id="tarifs">
+      <div class="container">
+        <div class="section-head">
+          <div class="badge-tag gold">Programme Pilote</div>
+          <h2>Un investissement adapté à la taille de votre office</h2>
+          <p>Une offre claire sans frais cachés, incluant l'installation, le paramétrage et le support continu.</p>
+        </div>
+
+        <div class="pricing-card">
+          <div class="badge-tag" style="margin-bottom:12px">Offre Pilote Réservée</div>
+          <h3>Tarif sur mesure pour votre étude</h3>
+          <p style="color:var(--text-muted);font-size:0.95rem">Offre de lancement pour les premières études partenaires.</p>
+          
+          <ul class="pricing-features">
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              Comptes collaborateurs illimités selon la formule
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              Calculateur fiscal Décret 2013-279 & DGI intégré
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              Mode Hybride (travail hors ligne en cas de coupure)
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              Formation initiale de vos équipes & Support technique prioritaire
+            </li>
+          </ul>
+
+          <a href="#demo-form" class="btn btn-primary" style="width:100%;padding:14px">
+            Demander une proposition tarifaire
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================================
+         9. FAQ
+         ========================================================================= -->
+    <section class="section section-alt" id="faq">
+      <div class="container">
+        <div class="section-head">
+          <div class="badge-tag">Questions Fréquentes</div>
+          <h2>Réponses à vos questions</h2>
+          <p>Tout ce que vous devez savoir avant d'adopter Legal Notary au sein de votre étude.</p>
+        </div>
+
+        <div class="faq-list">
+          <div class="faq-item">
+            <button type="button" class="faq-question">
+              <span>1. Nos données et les actes de nos clients sont-ils sécurisés ?</span>
+              <span class="faq-icon">+</span>
+            </button>
+            <div class="faq-answer">
+              Oui, la sécurité est notre priorité absolue. Chaque office dispose de sa propre base de données isolée et chiffrée. L'accès est strictement restreint aux collaborateurs autorisés par le notaire via des identifiants nominatifs.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button type="button" class="faq-question">
+              <span>2. Le logiciel fonctionne-t-il si la connexion internet est coupée ?</span>
+              <span class="faq-icon">+</span>
+            </button>
+            <div class="faq-answer">
+              Absolument. Grâce à notre architecture Hybride (Mode C), un serveur local dans votre étude assure la continuité intégrale de travail de vos clercs. Dès le rétablissement d'Internet, les données se synchronisent automatiquement et en toute sécurité.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button type="button" class="faq-question">
+              <span>3. Peut-on récupérer nos dossiers existants depuis nos fichiers Excel ?</span>
+              <span class="faq-icon">+</span>
+            </button>
+            <div class="faq-answer">
+              Oui. Notre équipe technique prend en charge l'importation initiale de vos listes de dossiers, clients et contacts enregistrés sous Excel pour vous permettre de démarrer sans aucune ressaisie fastidieuse.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button type="button" class="faq-question">
+              <span>4. Combien de temps faut-il pour former nos clercs et collaborateurs ?</span>
+              <span class="faq-icon">+</span>
+            </button>
+            <div class="faq-answer">
+              L'interface a été conçue pour être intuitive et naturelle pour les professionnels du notariat. Une session pratique de 2 heures suffit généralement pour que vos clercs soient parfaitement autonomes dans la création et le suivi de leurs dossiers.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button type="button" class="faq-question">
+              <span>5. Le logiciel est-il compatible avec nos modèles Microsoft Word ?</span>
+              <span class="faq-icon">+</span>
+            </button>
+            <div class="faq-answer">
+              Oui. Vous pouvez intégrer vos trames d'actes habituelles. Legal Notary injecte automatiquement les données des parties, des biens et des montants dans vos modèles Word pour une rédaction rapide.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button type="button" class="faq-question">
+              <span>6. Quelles sont les conditions d'engagement et de résiliation ?</span>
+              <span class="faq-icon">+</span>
+            </button>
+            <div class="faq-answer">
+              Les conditions sont définies dans la convention d'accompagnement. En cas de résiliation, vous bénéficiez d'une réversibilité intégrale : la totalité de vos archives et dossiers vous est restituée sous format standard ouvert. <span class="legal-badge-notice">[À COMPLÉTER selon contrat final]</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================================
+         10. SECTION CTA FINAL & FORMULAIRE DE DEMANDE DE DÉMO
+         ========================================================================= -->
+    <section class="section" id="demo-form">
+      <div class="container">
+        <div class="section-head">
+          <div class="badge-tag">Passez à l'Action</div>
+          <h2>Planifiez votre démonstration de 30 minutes</h2>
+          <p>Découvrez comment Legal Notary apporte visibilité, sérénité et gain de temps à votre office notarial.</p>
+        </div>
+
+        <div class="form-card">
+          <form id="form-demande-demo">
+            
+            <!-- Champ Honeypot invisible pour les humains (Anti-Spam) -->
+            <div class="champ-honeypot" aria-hidden="true">
+              <label for="website">Ne pas remplir si vous êtes humain</label>
+              <input type="text" name="website" id="website" tabindex="-1" autocomplete="off">
+            </div>
+
+            <div class="form-grid two-cols" style="margin-bottom:16px">
+              <div class="form-group">
+                <label for="nomPrenom">Nom et prénom <span style="color:#EF4444">*</span></label>
+                <input type="text" name="nomPrenom" id="nomPrenom" placeholder="Ex. Me Mireille Koffi" required autocomplete="name">
+              </div>
+
+              <div class="form-group">
+                <label for="nomEtude">Nom de l'étude notariale <span style="color:#EF4444">*</span></label>
+                <input type="text" name="nomEtude" id="nomEtude" placeholder="Ex. Étude Maître Koffi" required>
+              </div>
+            </div>
+
+            <div class="form-grid two-cols" style="margin-bottom:16px">
+              <div class="form-group">
+                <label for="villePays">Ville et pays <span style="color:#EF4444">*</span></label>
+                <input type="text" name="villePays" id="villePays" placeholder="Ex. Abidjan, Côte d'Ivoire" required value="Abidjan, Côte d'Ivoire">
+              </div>
+
+              <div class="form-group">
+                <label for="fonction">Votre fonction au sein de l'étude <span style="color:#EF4444">*</span></label>
+                <select name="fonction" id="fonction" required>
+                  <option value="notaire" selected>Notaire Titulaire / Notaire Associé</option>
+                  <option value="premier_clerc">Premier Clerc</option>
+                  <option value="clerc_redacteur">Clerc Rédacteur</option>
+                  <option value="comptable">Comptable Taxateur</option>
+                  <option value="autre">Autre collaborateur</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-grid two-cols" style="margin-bottom:16px">
+              <div class="form-group">
+                <label for="telephoneWhatsapp">Téléphone WhatsApp (pour confirmation) <span style="color:#EF4444">*</span></label>
+                <input type="tel" name="telephoneWhatsapp" id="telephoneWhatsapp" placeholder="Ex. +225 07 00 00 00 00" required autocomplete="tel">
+              </div>
+
+              <div class="form-group">
+                <label for="email">Adresse email professionnelle <span style="color:#EF4444">*</span></label>
+                <input type="email" name="email" id="email" placeholder="contact@etude-notaire.ci" required autocomplete="email">
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom:20px">
+              <label for="message">Message ou besoins spécifiques (facultatif)</label>
+              <textarea name="message" id="message" rows="3" placeholder="Précisez par exemple le nombre de collaborateurs ou vos attentes particulières..."></textarea>
+            </div>
+
+            <div class="form-checkbox" style="margin-bottom:24px">
+              <input type="checkbox" name="consentement" id="consentement" required checked>
+              <label for="consentement">
+                J'accepte que les informations saisies soient traitées par BETHEL TIME SARLU pour organiser ma démonstration et être recontacté, conformément à la <a href="/politique-confidentialite" target="_blank" style="text-decoration:underline">politique de confidentialité</a>.
+              </label>
+            </div>
+
+            <button type="submit" id="btn-soumettre-demo" class="btn btn-primary" style="width:100%;padding:14px;font-size:1.02rem">
+              Confirmer ma demande de démo (30 min)
+            </button>
+
+            <div id="form-alert-succes" class="form-alert-success" role="alert"></div>
+            <div id="form-alert-erreur" class="form-alert-error" role="alert"></div>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- =========================================================================
+       11. FOOTER
+       ========================================================================= -->
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <h4>Legal Notary</h4>
+        <p>
+          Suite logicielle de pilotage de dossiers et de gestion intégrée d'office notarial en Côte d'Ivoire et Afrique francophone.
+        </p>
+        <p style="margin-top:12px;font-size:0.85rem;color:#64748B">
+          Édité par <strong>BETHEL TIME SARLU</strong><br>
+          RCCM : <span class="legal-badge-notice">[À COMPLÉTER]</span> — Abidjan, Côte d'Ivoire<br>
+          Contact : <a href="mailto:contact@legalnotary.app" style="color:#94A3B8">contact@legalnotary.app</a>
+        </p>
+      </div>
+
+      <div class="footer-links">
+        <h5>Navigation</h5>
+        <ul>
+          <li><a href="#fonctionnalites">Fonctionnalités</a></li>
+          <li><a href="#comment-ca-marche">Comment ça marche</a></li>
+          <li><a href="#securite">Sécurité & Souveraineté</a></li>
+          <li><a href="#tarifs">Tarifs & Offre Pilote</a></li>
+          <li><a href="#faq">Questions Fréquentes</a></li>
+          <li><a href="/connexion">Espace de Connexion</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-links">
+        <h5>Informations Légales</h5>
+        <ul>
+          <li><a href="/mentions-legales">Mentions Légales</a></li>
+          <li><a href="/politique-confidentialite">Politique de Confidentialité</a></li>
+          <li><a href="/cgu">Conditions Générales (CGU)</a></li>
+          <li><a href="/documentation.html" target="_blank">Manuel d'Utilisation</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="container footer-bottom">
+      <div>
+        © 2026 BETHEL TIME SARLU — Tous droits réservés. Legal Notary est une marque déposée.
+      </div>
+      <div>
+        Solution conforme aux exigences déontologiques notariales & OHADA.
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/landing.js"></script>
 </body>
 </html>

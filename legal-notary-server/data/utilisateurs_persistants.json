@@ -234,5 +234,61 @@
     "salaire_net": 750000,
     "actif": true,
     "etude_id": "4bffda3a-3697-4b3f-b9f2-f04ba4ae4e9c"
+  },
+  {
+    "id": "user-51ce7f63",
+    "nom_complet": "Me Koffi Mireille",
+    "email": "mireille.koffi@etude-koffi.ci",
+    "mdp": "PassMireille2026!",
+    "mot_de_passe_hash": "$2a$12$Q3eNpVZWfKtilhpbndRQLuhDGMPFyr/DbNPBa3QpnarweZEvW/Vqe",
+    "role": "notaire",
+    "telephone": "+225 07 12 34 56 78",
+    "date_embauche": "2026-10-01",
+    "type_contrat": "CDI",
+    "salaire_net": 750000,
+    "actif": true,
+    "etude_id": "41923c7c-801b-4da8-aa30-16bcf4ca686e"
+  },
+  {
+    "id": "user-7e857180",
+    "nom_complet": "Jean Kouamé (Premier Clerc)",
+    "email": "clerc.jean@etude-koffi.ci",
+    "mdp": "PassJean2026!",
+    "mot_de_passe_hash": "$2a$12$YhGfNMh1.1B9djptbl5ywO0UInWAq9YqrdeeDfoWr56uCu08G2Mly",
+    "role": "premier_clerc",
+    "telephone": "+225 05 98 76 54 32",
+    "date_embauche": "2026-10-01",
+    "type_contrat": "CDI",
+    "salaire_net": 750000,
+    "actif": true,
+    "etude_id": "41923c7c-801b-4da8-aa30-16bcf4ca686e"
+  },
+  {
+    "id": "user-fa7fd153",
+    "nom_complet": "Me Test Titulaire",
+    "email": "notaire.test@etude-mail.ci",
+    "mdp": "PassAdmin123!",
+    "mot_de_passe_hash": "$2a$12$mGiq8yRouLllW29Lmc1LEeU40hhoAbRZomqAo9Nfcl35JBv2QU7Sy",
+    "role": "notaire",
+    "telephone": "",
+    "date_embauche": "2026-10-01",
+    "type_contrat": "CDI",
+    "salaire_net": 750000,
+    "actif": true,
+    "etude_id": "0f8df41e-8b1f-487a-b027-353e39afba20"
+  },
+  {
+    "id": "user-9e6e1571",
+    "nom_complet": "Awa Koné (Rédactrice)",
+    "email": "awa.kone@etude-mail.ci",
+    "mdp": "PassAwa2026!",
+    "mot_de_passe_hash": "$2a$12$YlADrFpbdjJvbEgz2qvnTe4gkRPdTEAqOwxAONWECwdHKjPJLO8lG",
+    "role": "clerc_redacteur",
+    "telephone": "",
+    "date_embauche": "2026-10-01",
+    "type_contrat": "CDI",
+    "salaire_net": 750000,
+    "actif": true,
+    "etude_id": "0f8df41e-8b1f-487a-b027-353e39afba20"
   }
 ]

@@ -1,0 +1,176 @@
+<!--
+  app.html — Legal Notary, Application Notariale & ERP Sécurisé.
+  Accès via /connexion, /login, /app ou via sous-domaines / domaines d'études dédiés.
+-->
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Legal Notary — Espace Notarial</title>
+<link rel="stylesheet" href="css/style.css?v=3.6.0">
+<script>
+  // Initialisation immédiate du thème pour éviter tout flash blanc/noir
+  (function () {
+    var theme = "dark";
+    try {
+      theme = localStorage.getItem("legal_notary_theme") || "dark";
+    } catch (e) {}
+    document.documentElement.setAttribute("data-theme", theme);
+  })();
+
+  // Configuration automatique de l'URL API backend :
+  (function () {
+    var port = window.location.port;
+    var host = window.location.hostname;
+    if (port === "4000" || (host !== "localhost" && host !== "127.0.0.1" && host !== "" && !window.location.protocol.startsWith("file:"))) {
+      window.LEGAL_NOTARY_API_URL = window.location.origin;
+    } else {
+      window.LEGAL_NOTARY_API_URL = "http://localhost:4000";
+    }
+  })();
+</script>
+</head>
+<body>
+
+<!-- Avertissement si ouvert par double-clic (file://) au lieu de http://localhost:4000 -->
+<div id="avertissement-file-protocol" style="display:none;background:#dc2626;color:#ffffff;padding:14px;text-align:center;font-weight:700;font-size:14px;position:sticky;top:0;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,0.4)">
+  Attention : Mode fichier local détecté (Finder). Le navigateur bloque les requêtes de sécurité.<br>
+  Veuillez ouvrir votre navigateur et accéder à l'application via : <a href="http://localhost:4000/connexion" target="_blank" style="color:#fef08a;text-decoration:underline;margin-left:4px">http://localhost:4000/connexion</a>
+</div>
+<script>
+  if (window.location.protocol === "file:") {
+    document.getElementById("avertissement-file-protocol").style.display = "block";
+  }
+</script>
+
+<div id="chargement-initial" class="chargement" style="display:none">Chargement…</div>
+
+<!-- ============ ÉCRAN DE CONNEXION ============ -->
+<div id="ecran-login" class="ecran actif">
+  <div style="min-height:100vh;width:100%;display:flex;align-items:center;justify-content:center;padding:var(--space-4);background:var(--color-bg)">
+    <div class="card elev-md" style="width:380px;padding:36px 32px;position:relative;border-radius:12px;border:1px solid var(--color-border);background:var(--color-surface)">
+      
+      <div style="position:absolute;top:14px;right:14px;display:flex;align-items:center;gap:8px">
+        <a href="/" style="font-size:11px;color:var(--color-text-dim);text-decoration:none;padding:4px 8px;border-radius:4px;border:1px solid var(--color-border)" title="Retour au site public">← Accueil</a>
+        <button type="button" onclick="window.LegalNotaryBasculerTheme()" class="theme-switch-btn" title="Basculer Mode Clair / Sombre">
+          <span class="theme-switch-icon">🌙</span> <span class="theme-switch-label" style="font-size:11px">Mode Sombre</span>
+        </button>
+      </div>
+
+      <div style="text-align:center;margin-bottom:28px;margin-top:14px">
+        <div style="font-family:var(--font-heading);font-weight:700;font-size:24px;margin-bottom:4px;color:var(--color-text);letter-spacing:-0.5px" id="login-titre-etude">Legal Notary</div>
+        <div style="font-size:13px;color:var(--color-text-dim)">Connectez-vous à votre espace notarial</div>
+      </div>
+
+      <!-- Formulaire de connexion standard -->
+      <form id="form-login">
+        <div class="field" style="margin-bottom:16px">
+          <label style="font-size:13px;font-weight:500;margin-bottom:6px;display:block;color:var(--color-text)">Email professionnel</label>
+          <input class="input" type="email" name="email" id="login-input-email" placeholder="exemple@notaire.ci" required autocomplete="username" style="padding:10px 12px;font-size:14px;width:100%">
+        </div>
+        <div class="field" style="margin-bottom:22px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <label style="font-size:13px;font-weight:500;color:var(--color-text)">Mot de passe</label>
+            <span style="font-size:12px;color:var(--color-text-dim);cursor:pointer;text-decoration:none" onclick="alert('Veuillez contacter votre administrateur ou l\'assistance pour réinitialiser votre mot de passe.')">Mot de passe oublié ?</span>
+          </div>
+          <div style="position:relative;display:flex;align-items:center">
+            <input class="input" type="password" name="motDePasse" id="login-input-mdp" placeholder="••••••••" required autocomplete="current-password" style="padding:10px 42px 10px 12px;font-size:14px;width:100%">
+            <button type="button" id="btn-toggle-mdp-login" style="position:absolute;right:8px;background:none;border:none;cursor:pointer;font-size:16px;color:var(--color-text-dim);padding:4px 6px;border-radius:4px;display:flex;align-items:center;justify-content:center" title="Afficher / Masquer le mot de passe" aria-label="Afficher ou masquer le mot de passe">
+              👁️
+            </button>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block" style="padding:11px;font-size:14px;font-weight:600;width:100%;cursor:pointer">
+          Se connecter
+        </button>
+        <div id="login-erreur" class="erreur-inline" style="display:none;margin-top:14px"></div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APPLICATION ============ -->
+<div id="app">
+  <div style="height:100vh;width:100%;background:var(--color-bg);display:flex;flex-direction:column;overflow:hidden">
+
+    <div class="nav" style="border-bottom:1px solid var(--color-divider);flex:none;gap:var(--space-2)">
+      <!-- Bouton Hamburger Mobile pour ouvrir la barre latérale -->
+      <button type="button" id="btn-toggle-menu-mobile" onclick="window.LegalNotaryBasculerMenuMobile()" class="mobile-burger-btn" aria-label="Menu de navigation" title="Ouvrir le menu">
+        <span id="burger-icon-symbol">☰</span>
+      </button>
+
+      <div class="nav-brand" id="nav-nom-etude">Legal Notary</div>
+      <span class="tag tag-outline" id="notif-badge" style="cursor:pointer">0</span>
+
+      <div style="flex:1"></div>
+      
+      <!-- Accès Documentation & Manuel de Formation -->
+      <a href="documentation.html" target="_blank" class="btn btn-ghost nav-btn-doc" style="padding:4px 10px;font-size:11.5px;color:#38bdf8;border:1px solid rgba(56,189,248,0.3);text-decoration:none;border-radius:6px;display:inline-flex;align-items:center;gap:4px" title="Consulter le Manuel d'Utilisation Officiel et le Manuel de Formation">
+        <span class="nav-doc-text">📘 Manuels & Formations</span>
+        <span class="nav-doc-icon" style="display:none">📘</span>
+      </a>
+
+      <!-- Sélecteur de Thème (Mode Sombre / Mode Clair) -->
+      <button type="button" id="btn-toggle-theme" onclick="window.LegalNotaryBasculerTheme()" class="theme-switch-btn" title="Basculer Mode Clair / Mode Sombre">
+        <span class="theme-switch-icon">🌙</span> <span class="theme-switch-label" style="font-size:11px">Mode Sombre</span>
+      </button>
+
+      <div class="nav-user-divider" style="width:1px;height:20px;background:var(--color-divider)"></div>
+      <div class="nav-user-info" style="text-align:right">
+        <div id="nav-utilisateur-nom" style="font-family:var(--font-heading);font-weight:600;font-size:14px"></div>
+        <div id="nav-utilisateur-role" style="font-size:11px;opacity:.55"></div>
+      </div>
+      <button type="button" id="btn-top-deconnexion" onclick="window.LegalNotaryDeconnexion()" class="btn btn-ghost btn-nav-deconnexion" style="padding:4px 8px;font-size:11.5px;color:var(--color-text-dim);border:1px solid var(--color-border);cursor:pointer;margin-left:4px" title="Se déconnecter">
+        <span class="deconnexion-text">Déconnexion</span>
+        <span class="deconnexion-icon" style="display:none">🚪</span>
+      </button>
+    </div>
+
+    <!-- Overlay sombre pour fermer le menu au clic sur mobile -->
+    <div id="mobile-menu-backdrop" class="mobile-menu-backdrop" onclick="window.LegalNotaryFermerMenuMobile()"></div>
+
+    <div class="app-main-layout" style="flex:1;display:flex;overflow:hidden;position:relative">
+      <div class="barre-laterale" id="menu-navigation-laterale" style="width:230px;flex:none;height:100%;overflow-y:auto;padding:var(--space-6) var(--space-3);display:flex;flex-direction:column;gap:var(--space-1)">
+        <!-- Le menu de navigation s'adapte dynamiquement et fidèlement au rôle de l'utilisateur connecté via renderMenuNavigation(role) -->
+      </div>
+
+      <div class="zone-scroll" style="flex:1;min-width:320px;height:100%;overflow-y:auto;padding:var(--space-6) var(--space-6) var(--space-8)">
+        <div id="vue-dashboard" class="ecran"></div>
+        <div id="vue-agenda" class="ecran"></div>
+        <div id="vue-kanban" class="ecran"></div>
+        <div id="vue-dossiers" class="ecran"></div>
+        <div id="vue-nouveau-dossier" class="ecran"></div>
+        <div id="vue-clients" class="ecran"></div>
+        <div id="vue-actes" class="ecran"></div>
+        <div id="vue-emoluments" class="ecran"></div>
+        <div id="vue-comptabilite" class="ecran"></div>
+        <div id="vue-archives" class="ecran"></div>
+        <div id="vue-equipe" class="ecran"></div>
+        <div id="vue-evolution" class="ecran"></div>
+        <div id="vue-parametres" class="ecran"></div>
+        <div id="vue-superadmin" class="ecran"></div>
+        <div id="vue-rapports" class="ecran"></div>
+        <div id="vue-dossier" class="ecran"></div>
+        <div id="vue-validations" class="ecran"></div>
+        <div id="vue-notifications" class="ecran"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Conteneur d'impression officielle (fiche de taxe / décompte notarié) -->
+<div id="print-container" class="print-only"></div>
+
+<!-- Racine globale pour les boîtes de dialogue et modales -->
+<div id="modal-racine" style="display:none;position:relative;z-index:999999"></div>
+
+<div id="toast" class="card elev-lg" style="display:none; position:fixed; bottom:var(--space-4); right:var(--space-4); max-width:340px; z-index:9999999;">
+  <div class="card-body" style="opacity:1" id="toast-texte"></div>
+</div>
+
+<script src="js/api.js?v=3.6.2"></script>
+<script src="js/qrcode.js?v=3.6.2"></script>
+<script src="js/app.js?v=3.6.2"></script>
+</body>
+</html>

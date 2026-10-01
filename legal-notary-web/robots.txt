@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Allow: /mentions-legales
+Allow: /politique-confidentialite
+Allow: /cgu
+Disallow: /api/
+Disallow: /app.html
+Disallow: /connexion
+
+Sitemap: https://legalnotary.app/sitemap.xml
