@@ -26,6 +26,32 @@ const TEXTES_FR = {
 // =========================================================================
 document.addEventListener("DOMContentLoaded", function () {
   
+  // 0. Gestion du Menu Mobile Drawer
+  const btnMobileMenu = document.getElementById("btn-mobile-menu");
+  const btnCloseDrawer = document.getElementById("btn-close-drawer");
+  const mobileDrawer = document.getElementById("mobile-drawer");
+  const mobileOverlay = document.getElementById("mobile-overlay");
+  const drawerLinks = document.querySelectorAll(".drawer-link");
+
+  function openMobileMenu() {
+    if (mobileDrawer) mobileDrawer.classList.add("open");
+    if (mobileOverlay) mobileOverlay.style.display = "block";
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeMobileMenu() {
+    if (mobileDrawer) mobileDrawer.classList.remove("open");
+    if (mobileOverlay) mobileOverlay.style.display = "none";
+    document.body.style.overflow = "";
+  }
+
+  if (btnMobileMenu) btnMobileMenu.addEventListener("click", openMobileMenu);
+  if (btnCloseDrawer) btnCloseDrawer.addEventListener("click", closeMobileMenu);
+  if (mobileOverlay) mobileOverlay.addEventListener("click", closeMobileMenu);
+  drawerLinks.forEach(function (link) {
+    link.addEventListener("click", closeMobileMenu);
+  });
+
   // 1. Gestion de l'Accordéon FAQ
   const faqQuestions = document.querySelectorAll(".faq-question");
   faqQuestions.forEach(function (btn) {
