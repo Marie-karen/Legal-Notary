@@ -153,17 +153,81 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // 3. Smooth scroll sur les ancres de navigation
-  document.querySelectorAll('a[href^="#"]').forEach(function (anchor) {
-    anchor.addEventListener("click", function (e) {
-      const targetId = anchor.getAttribute("href");
-      if (targetId && targetId !== "#") {
-        const targetElement = document.querySelector(targetId);
-        if (targetElement) {
-          e.preventDefault();
-          targetElement.scrollIntoView({ behavior: "smooth", block: "start" });
-        }
+  // 4. Sélecteur de Fréquence Tarifaire Neuromarketing (4 Fréquences)
+  const TARIFAIRE_CONFIG = {
+    mensuel: {
+      titre: "Formule Mensuelle Sans Engagement",
+      desc: "Liberté totale de gestion, paiement mois par mois.",
+      montantMois: "300 000",
+      barre: "",
+      badgeSaving: "0% ENGAGEMENT LIBRE",
+      badgeSavingClass: "",
+      detail: "Facturation mensuelle de <strong>300 000 FCFA HT</strong> prélevée chaque mois",
+      pill: "Résiliation libre à tout moment",
+    },
+    trimestriel: {
+      titre: "Formule Trimestrielle Équilibre",
+      desc: "Engagement 3 mois avec première réduction de trésorerie.",
+      montantMois: "275 000",
+      barre: "300 000 F",
+      badgeSaving: "ÉCONOMIE : 75 000 FCFA",
+      badgeSavingClass: "",
+      detail: "Facturation trimestrielle de <strong>825 000 FCFA HT</strong> tous les 3 mois",
+      pill: "Économie de 25 000 F / mois",
+    },
+    semestriel: {
+      titre: "Formule Semestrielle Privilège",
+      desc: "Le choix optimal pour sécuriser la trésorerie de votre étude.",
+      montantMois: "240 000",
+      barre: "300 000 F",
+      badgeSaving: "ÉCONOMIE : 360 000 FCFA",
+      badgeSavingClass: "gold",
+      detail: "Facturation semestrielle de <strong>1 440 000 FCFA HT</strong> tous les 6 mois",
+      pill: "⭐ 1 Session Perfectionnement Clercs OFFERTE",
+    },
+    annuel: {
+      titre: "Formule Annuelle Maître (Sérénité Totale)",
+      desc: "L'investissement haute rentabilité des études notariales de référence.",
+      montantMois: "200 000",
+      barre: "300 000 F",
+      badgeSaving: "👑 ÉCONOMIE GÉANTE : 1 200 000 FCFA",
+      badgeSavingClass: "green",
+      detail: "Facturation annuelle de <strong>2 400 000 FCFA HT</strong> par an",
+      pill: "🎁 Setup & Nom de Domaine .CI OFFERTS (Valeur 1 850 000 F)",
+    },
+  };
+
+  const tabBtns = document.querySelectorAll(".pricing-tab-btn");
+  const planTitle = document.getElementById("pricing-plan-title");
+  const planDesc = document.getElementById("pricing-plan-desc");
+  const strikethrough = document.getElementById("pricing-strikethrough");
+  const mainAmount = document.getElementById("pricing-main-amount");
+  const savingBadge = document.getElementById("pricing-saving-badge");
+  const billingDetail = document.getElementById("pricing-billing-detail");
+  const pillText = document.getElementById("pricing-pill-text");
+
+  tabBtns.forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      const freq = btn.getAttribute("data-freq");
+      const cfg = TARIFAIRE_CONFIG[freq];
+      if (!cfg) return;
+
+      tabBtns.forEach(function (b) { b.classList.remove("active"); });
+      btn.classList.add("active");
+
+      if (planTitle) planTitle.textContent = cfg.titre;
+      if (planDesc) planDesc.textContent = cfg.desc;
+      if (mainAmount) mainAmount.textContent = cfg.montantMois;
+      if (strikethrough) {
+        strikethrough.textContent = cfg.barre;
+        strikethrough.style.display = cfg.barre ? "inline" : "none";
       }
+      if (savingBadge) {
+        savingBadge.textContent = cfg.badgeSaving;
+        savingBadge.className = "tab-badge-saving " + (cfg.badgeSavingClass || "");
+      }
+      if (billingDetail) billingDetail.innerHTML = cfg.detail;
+      if (pillText) pillText.textContent = cfg.pill;
     });
   });
 
