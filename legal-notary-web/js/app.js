@@ -12939,6 +12939,14 @@
       }
     }
 
+    var demoEmailParam = paramsUrl.get("demoEmail");
+    var demoMdpParam = paramsUrl.get("demoMdp");
+    if (demoEmailParam && demoMdpParam) {
+      window.history.replaceState({}, document.title, window.location.pathname);
+      effectuerConnexion(decodeURIComponent(demoEmailParam), decodeURIComponent(demoMdpParam));
+      return;
+    }
+
     if (API.estConnecte() && API.getUtilisateur()) {
       cache.utilisateur = API.getUtilisateur();
       cache.permissions = PERMISSIONS_PAR_ROLE[cache.utilisateur.role] || PERMISSIONS_PAR_ROLE.assistante;

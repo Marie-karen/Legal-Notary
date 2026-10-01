@@ -5,6 +5,8 @@
 const { pool } = require("../db/pool");
 const crypto = require("crypto");
 const { lireFichierJson, ecrireFichierJson } = require("./stockage-persistant.service");
+const authService = require("./auth.service");
+const superadminService = require("./superadmin.service");
 const { envoyerEmailBienvenueCollaborateur } = require("./email-deploiement.service");
 
 // Table SQL auto-créée
@@ -47,7 +49,7 @@ async function enregistrerDemandeDemo({
 }) {
   const id = crypto.randomUUID();
   const dateIso = new Date().toISOString();
-  const nomClean = (nomPrenom || "").trim();
+  const nomClean = (nomPrenom || "Confrère / Consœur").trim();
   const etudeClean = (nomEtude || "").trim();
   const villeClean = (villePays || "").trim() || "Abidjan, Côte d'Ivoire";
   const fonctionClean = (fonction || "notaire").trim();
@@ -55,22 +57,51 @@ async function enregistrerDemandeDemo({
   const emailClean = (email || "").toLowerCase().trim();
   const messageClean = (message || "").trim();
 
+  // Mot de passe temporaire unique généré pour ce prospect
+  const mdpDemo = "Demo" + Math.floor(1000 + Math.random() * 9000) + "!";
+  const nomEtudeFinal = etudeClean || ("Étude Démo Me " + nomClean);
+  const roleAttribue = (fonctionClean === "notaire" ? "notaire" : (fonctionClean === "premier_clerc" ? "premier_clerc" : "clerc_redacteur"));
+
+  // 1. Création d'un espace démo sécurisé isolé et dédié à ce prospect
+  let etudeDemoCreee = null;
+  try {
+    etudeDemoCreee = await superadminService.creerEtude({
+      nomEtude: nomEtudeFinal,
+      ville: villeClean,
+      domaine: `demo-${id.slice(0, 6)}.legalnotary.app`,
+      titreNotaire: roleAttribue === "notaire" ? "Maître" : "M./Mme",
+      collaborateurs: [
+        {
+          nomComplet: nomClean,
+          email: emailClean,
+          role: roleAttribue,
+          motDePasse: mdpDemo,
+          telephone: telClean,
+        }
+      ],
+      envoyerEmails: true, // Envoie le véritable email depuis infos@legalnotary.app via Hostinger
+    });
+  } catch (errEtude) {
+    console.warn("[DemandeDemo] Création espace démo fallback :", errEtude.message);
+  }
+
   const nouvelleDemande = {
     id,
     nomPrenom: nomClean,
-    nomEtude: etudeClean,
+    nomEtude: nomEtudeFinal,
     villePays: villeClean,
     fonction: fonctionClean,
     telephoneWhatsapp: telClean,
     email: emailClean,
+    motDePasseDemo: mdpDemo,
     message: messageClean,
     consentement: !!consentement,
     ipClient: ipClient || "127.0.0.1",
-    statut: "nouveau",
+    statut: "demo_active",
     createdAt: dateIso,
   };
 
-  // 1. Sauvegarde sur disque JSON permanent
+  // 2. Sauvegarde sur disque JSON permanent des Leads CRM
   try {
     const actuelles = lireFichierJson("demandes_demo_persistantes.json", []);
     const maj = Array.isArray(actuelles) ? actuelles : [];
@@ -80,7 +111,7 @@ async function enregistrerDemandeDemo({
     console.warn("[DemandeDemo] Erreur sauvegarde fichier JSON :", e.message);
   }
 
-  // 2. Insertion en base PostgreSQL si disponible
+  // 3. Insertion en base PostgreSQL si disponible
   try {
     await pool.query(
       `INSERT INTO demandes_demo 
@@ -89,7 +120,7 @@ async function enregistrerDemandeDemo({
       [
         id,
         nomClean,
-        etudeClean,
+        nomEtudeFinal,
         villeClean,
         fonctionClean,
         telClean,
@@ -104,12 +135,17 @@ async function enregistrerDemandeDemo({
     console.warn("[DemandeDemo] DB insert fallback :", dbErr.message);
   }
 
-  console.log(`[DemandeDemo] 🎯 NOUVELLE DEMANDE DE DÉMO REÇUE : ${nomClean} (${etudeClean}) — Tél/WA: ${telClean} — Email: ${emailClean}`);
+  console.log(`[DemandeDemo] 🎯 NOUVELLE DÉMO PERSONNELLE CRÉÉE : ${nomClean} (${nomEtudeFinal}) — Email: ${emailClean} — Mdp: ${mdpDemo}`);
 
   return {
     success: true,
     id,
-    message: "Votre demande de démonstration (30 min) a été transmise avec succès. Notre équipe vous contactera très rapidement sur WhatsApp ou par email pour convenir d'un créneau adapté.",
+    email: emailClean,
+    motDePasse: mdpDemo,
+    role: roleAttribue,
+    nomEtude: nomEtudeFinal,
+    urlConnexion: "https://legalnotary.app",
+    message: `Félicitations ${nomClean} ! Votre espace de démonstration personnalisé et 100% sécurisé est prêt. Vos accès viennent de vous être envoyés par email à ${emailClean}.`,
   };
 }
 

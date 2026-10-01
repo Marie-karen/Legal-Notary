@@ -101,9 +101,31 @@ document.addEventListener("DOMContentLoaded", function () {
           throw new Error(data.erreur || TEXTES_FR.form.erreurGenerique);
         }
 
-        // Succès
+        // Succès : affichage de la carte d'accès VIP personnalisée
         if (alertSucces) {
-          alertSucces.textContent = data.message || TEXTES_FR.form.succes;
+          if (data.motDePasse) {
+            alertSucces.innerHTML = `
+              <div style="background:rgba(16,185,129,0.12);border:1px solid #10b981;border-radius:12px;padding:22px;margin-top:12px;text-align:left;color:var(--color-text)">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+                  <span style="font-size:24px">🎉</span>
+                  <strong style="color:#10b981;font-size:17px">Votre Espace Démo Personnel est prêt !</strong>
+                </div>
+                <p style="font-size:14px;color:var(--color-text-dim);margin:0 0 14px 0;line-height:1.5">
+                  Un email avec vos accès officiels vient de vous être envoyé à <strong>${data.email}</strong>.
+                </p>
+                <div style="background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.08);padding:14px 16px;border-radius:8px;font-family:monospace;font-size:13.5px;margin-bottom:16px;line-height:1.8">
+                  <div>🏛️ Office Démo : <strong>${data.nomEtude || 'Espace Notarial'}</strong></div>
+                  <div>👤 Identifiant : <strong>${data.email}</strong></div>
+                  <div>🔑 Mot de passe : <strong>${data.motDePasse}</strong></div>
+                </div>
+                <a href="/app.html?demoEmail=${encodeURIComponent(data.email)}&demoMdp=${encodeURIComponent(data.motDePasse)}" class="btn btn-primary" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:700;padding:12px 24px;border-radius:8px;text-decoration:none;font-size:14px">
+                  🚀 Lancer ma Démo Immédiatement
+                </a>
+              </div>
+            `;
+          } else {
+            alertSucces.textContent = data.message || TEXTES_FR.form.succes;
+          }
           alertSucces.style.display = "block";
         }
         formDemo.reset();
