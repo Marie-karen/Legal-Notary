@@ -114,7 +114,7 @@ if (!fs.existsSync(FRONTEND_DIR)) {
   }
 }
 
-app.use(express.static(FRONTEND_DIR));
+app.use(express.static(FRONTEND_DIR, { index: false }));
 
 // 1. Accès direct à l'espace de connexion et à l'ERP
 app.get(["/connexion", "/login", "/app", "/app.html", "/erp"], (req, res) => {
@@ -146,18 +146,28 @@ app.get(["/docs", "/documentation", "/documentation.html", "/manuel"], (req, res
   res.sendFile(path.join(FRONTEND_DIR, "documentation.html"));
 });
 
-// 5. Routage principal intelligent
+// 5. Routage principal intelligent multi-tenant
 app.get(/^(?!\/api).*/, (req, res) => {
-  const host = (req.hostname || req.headers.host || "").toLowerCase();
+  const host = (req.hostname || req.headers.host || "").toLowerCase().replace(/:\d+$/, "");
 
-  // Si l'utilisateur accède via un domaine dédié d'une étude (ex: etude-mka.ci, app.legalnotary.app)
-  const isCustomDomainEtude = host.startsWith("app.") || (host.includes("etude-") && !host.includes("legalnotary.app"));
-  if (isCustomDomainEtude) {
+  // Domaines publics de BT.Tech affichant la vitrine commerciale / landing page
+  const isPublicLandingHost = (
+    host === "legalnotary.app" ||
+    host === "www.legalnotary.app" ||
+    host === "bt-tech.ci" ||
+    host === "www.bt-tech.ci" ||
+    host === "localhost" ||
+    host === "127.0.0.1"
+  );
+
+  // Si l'utilisateur accède via un domaine dédié d'une étude (ex: etude-mka.ci, www.etude-mka.ci, notaire-*.ci, app.legalnotary.app)
+  // => L'étude arrive DIRECTEMENT sur sa page de connexion et son espace notarial (app.html), jamais sur la landing page !
+  if (!isPublicLandingHost || host.startsWith("app.") || host.startsWith("demo.")) {
     const appFile = path.join(FRONTEND_DIR, "app.html");
     if (fs.existsSync(appFile)) return res.sendFile(appFile);
   }
 
-  // Par défaut sur le domaine principal (legalnotary.app ou localhost), on sert la Landing Page index.html
+  // Sur legalnotary.app (domaine BT.Tech), on sert la Landing Page officielle index.html
   const indexFile = path.join(FRONTEND_DIR, "index.html");
   if (fs.existsSync(indexFile)) {
     return res.sendFile(indexFile);

@@ -290,5 +290,33 @@
     "salaire_net": 750000,
     "actif": true,
     "etude_id": "0f8df41e-8b1f-487a-b027-353e39afba20"
+  },
+  {
+    "id": "user-0f86ddc7",
+    "nom_complet": "Me Koffi Mireille",
+    "email": "mireille.koffi@etude-koffi.ci",
+    "mdp": "PassMireille2026!",
+    "mot_de_passe_hash": "$2a$12$GeP5PX7uMu4TUF1diwjFsekpQc6ZGBXBJpaw6loHkb0qPFpk7JpXO",
+    "role": "notaire",
+    "telephone": "+225 07 12 34 56 78",
+    "date_embauche": "2026-10-01",
+    "type_contrat": "CDI",
+    "salaire_net": 750000,
+    "actif": true,
+    "etude_id": "60209999-dbdb-4030-bf04-d610efd5424f"
+  },
+  {
+    "id": "user-2165e879",
+    "nom_complet": "Jean Kouamé (Premier Clerc)",
+    "email": "clerc.jean@etude-koffi.ci",
+    "mdp": "PassJean2026!",
+    "mot_de_passe_hash": "$2a$12$Sge8erBivtVY.gh8VS636.MvWXnLhdRRTa4yR0.y8Hy0e90hPysVC",
+    "role": "premier_clerc",
+    "telephone": "+225 05 98 76 54 32",
+    "date_embauche": "2026-10-01",
+    "type_contrat": "CDI",
+    "salaire_net": 750000,
+    "actif": true,
+    "etude_id": "60209999-dbdb-4030-bf04-d610efd5424f"
   }
 ]

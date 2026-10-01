@@ -2,6 +2,30 @@
   {
     "succes": true,
     "mode": "journal_local_pret",
+    "destinataire": "clerc.jean@etude-koffi.ci",
+    "nomComplet": "Jean Kouamé (Premier Clerc)",
+    "role": "Premier Clerc",
+    "sujet": "Vos accès à l'espace notarial — Étude Maître Koffi Mireille",
+    "motDePasse": "PassJean2026!",
+    "urlConnexion": "https://etude-mka.ci",
+    "dateEnvoi": "2026-10-01T13:32:37.726Z",
+    "erreur": "SMTP en attente de configuration — message consigné et prêt à l'envoi"
+  },
+  {
+    "succes": true,
+    "mode": "journal_local_pret",
+    "destinataire": "mireille.koffi@etude-koffi.ci",
+    "nomComplet": "Me Koffi Mireille",
+    "role": "Notaire Titulaire",
+    "sujet": "Vos accès à l'espace notarial — Étude Maître Koffi Mireille",
+    "motDePasse": "PassMireille2026!",
+    "urlConnexion": "https://etude-mka.ci",
+    "dateEnvoi": "2026-10-01T13:32:37.529Z",
+    "erreur": "SMTP en attente de configuration — message consigné et prêt à l'envoi"
+  },
+  {
+    "succes": true,
+    "mode": "journal_local_pret",
     "destinataire": "awa.kone@etude-mail.ci",
     "nomComplet": "Awa Koné (Rédactrice)",
     "role": "Clerc Rédacteur",
