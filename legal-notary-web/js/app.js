@@ -9491,7 +9491,15 @@
         html += '<p style="font-size:12px;color:var(--color-text-dim);margin:2px 0 0">Supervision du parc d\'études notariales, formules d\'abonnement, espaces de stockage GED et domaines.</p></div>';
         html += '</div>';
 
-        html += '<div class="table-wrap"><table class="table"><thead><tr><th>Code Tenant</th><th>Office Notarial</th><th>Notaire Titulaire</th><th>Hébergement</th><th>Dossiers / Minutes</th><th>Collaborateurs</th><th>Statut</th><th>Actions de Gestion</th></tr></thead><tbody>';
+        // Barre d'actions flottante pour la sélection multiple
+        html += '<div id="barre-actions-selection-etudes" style="display:none;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.35);padding:10px 14px;border-radius:var(--radius);margin-bottom:var(--space-3);align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">';
+        html += '<div><strong style="color:#ef4444;font-size:13px">🗑️ <span id="compteur-etudes-selectionnees">0</span> office(s) notarial(aux) sélectionné(s)</strong><span style="font-size:11.5px;color:var(--color-text-dim);margin-left:8px">Cochez ou décochez les offices à supprimer en masse</span></div>';
+        html += '<div style="display:flex;gap:6px">';
+        html += '<button type="button" class="btn btn-danger" id="btn-supprimer-etudes-selectionnees" style="background:#ef4444;color:#fff;font-size:12px;padding:6px 14px;font-weight:700">Supprimer les offices sélectionnés</button>';
+        html += '<button type="button" class="btn btn-secondary" id="btn-deselectionner-tout-etudes" style="font-size:12px;padding:6px 12px">Annuler la sélection</button>';
+        html += '</div></div>';
+
+        html += '<div class="table-wrap"><table class="table"><thead><tr><th style="width:36px;text-align:center"><input type="checkbox" id="cb-select-all-etudes" title="Tout sélectionner / désélectionner" style="cursor:pointer;width:15px;height:15px"></th><th>Code Tenant</th><th>Office Notarial</th><th>Notaire Titulaire</th><th>Hébergement</th><th>Dossiers / Minutes</th><th>Collaborateurs</th><th>Statut</th><th>Actions de Gestion</th></tr></thead><tbody>';
         etudes.forEach(function (e, index) {
           var modeBadge = '<span class="tag" style="background:rgba(56,189,248,0.15);color:#38bdf8;border:1px solid rgba(56,189,248,0.3)">Mode B Cloud Dédié</span>';
           if (e.modeInfrastructure === "hybride") {
@@ -9505,6 +9513,7 @@
             : '<span class="tag" style="background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid rgba(239,68,68,0.3);font-size:11px">⏸️ Suspendu</span>';
 
           html += '<tr>';
+          html += '<td style="text-align:center"><input type="checkbox" class="cb-select-etude" data-etude-id="' + e.id + '" data-nom="' + encodeURIComponent(e.nomEtude) + '" data-code="' + (e.codeEtude || "") + '" style="cursor:pointer;width:15px;height:15px"></td>';
           html += '<td><strong style="font-family:monospace;color:var(--color-text);font-size:12px">' + (e.codeEtude || "ETUDE-001") + '</strong></td>';
           html += '<td><strong style="color:var(--color-text);font-size:13px">' + e.nomEtude + '</strong><div style="font-size:11px;color:var(--color-text-dim)">' + (e.ville || "Abidjan") + ' · Quota GED ' + (e.quotaStockageGo || 100) + ' Go · <code>' + (e.domaine || "notaires.ci") + '</code></div></td>';
           html += '<td style="font-size:12px;font-weight:600">' + (e.titreNotaire || "Maître Notaire") + '</td>';
@@ -10032,6 +10041,64 @@
           }
         });
       });
+
+      // Gestion de la sélection multiple des études
+      var cbMaster = c.querySelector("#cb-select-all-etudes");
+      var barreSelection = c.querySelector("#barre-actions-selection-etudes");
+      var compteurSelection = c.querySelector("#compteur-etudes-selectionnees");
+      var btnSupprSelection = c.querySelector("#btn-supprimer-etudes-selectionnees");
+      var btnDeselectAll = c.querySelector("#btn-deselectionner-tout-etudes");
+
+      function actualiserSelectionEtudes() {
+        var coches = c.querySelectorAll(".cb-select-etude:checked");
+        var total = c.querySelectorAll(".cb-select-etude").length;
+        if (compteurSelection) compteurSelection.textContent = coches.length;
+        if (barreSelection) barreSelection.style.display = coches.length > 0 ? "flex" : "none";
+        if (cbMaster) {
+          cbMaster.checked = total > 0 && coches.length === total;
+          cbMaster.indeterminate = coches.length > 0 && coches.length < total;
+        }
+      }
+
+      if (cbMaster) {
+        cbMaster.addEventListener("change", function () {
+          var etat = cbMaster.checked;
+          c.querySelectorAll(".cb-select-etude").forEach(function (cb) {
+            cb.checked = etat;
+          });
+          actualiserSelectionEtudes();
+        });
+      }
+
+      c.querySelectorAll(".cb-select-etude").forEach(function (cb) {
+        cb.addEventListener("change", actualiserSelectionEtudes);
+      });
+
+      if (btnDeselectAll) {
+        btnDeselectAll.addEventListener("click", function () {
+          if (cbMaster) cbMaster.checked = false;
+          c.querySelectorAll(".cb-select-etude").forEach(function (cb) {
+            cb.checked = false;
+          });
+          actualiserSelectionEtudes();
+        });
+      }
+
+      if (btnSupprSelection) {
+        btnSupprSelection.addEventListener("click", function () {
+          var selectionnes = [];
+          c.querySelectorAll(".cb-select-etude:checked").forEach(function (cb) {
+            selectionnes.push({
+              id: cb.dataset.etudeId,
+              nomEtude: decodeURIComponent(cb.dataset.nom || "Office"),
+              codeEtude: cb.dataset.code || "",
+            });
+          });
+          if (selectionnes.length > 0) {
+            modalSupprimerPlusieursEtudes(selectionnes);
+          }
+        });
+      }
 
       c.querySelectorAll(".btn-supprimer-etude").forEach(function (btn) {
         btn.addEventListener("click", function () {
@@ -10843,6 +10910,61 @@
           }).catch(function (e) { toast(e.message); });
         });
       },
+    });
+  }
+
+  // =========================================================================
+  // MODALE : SUPPRESSION EN MASSE / SÉLECTION MULTIPLE D'ÉTUDES
+  // =========================================================================
+  function modalSupprimerPlusieursEtudes(selectionnes) {
+    var nb = selectionnes.length;
+    var html = '<form id="form-supprimer-lot-etudes" style="display:flex;flex-direction:column;gap:var(--space-3)">';
+    html += '<div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);padding:14px;border-radius:var(--radius);color:#ef4444">';
+    html += '<strong style="font-size:14px">⚠️ Purge en Masse : Action Irréversible</strong>';
+    html += '<div style="font-size:12.5px;color:var(--color-text);margin-top:6px">Vous êtes sur le point de supprimer définitivement <strong>' + nb + ' office(s) notarial(aux)</strong> et toutes leurs données associées (dossiers, minutes, collaborateurs, paramètres).</div>';
+    html += '</div>';
+
+    html += '<div style="max-height:180px;overflow-y:auto;background:var(--color-surface-2);border:1px solid var(--color-border);border-radius:var(--radius);padding:10px 14px">';
+    html += '<strong style="font-size:12px;color:var(--color-text-dim);text-transform:uppercase">Offices qui seront supprimés :</strong>';
+    html += '<ul style="margin:8px 0 0 16px;font-size:13px;line-height:1.7">';
+    selectionnes.forEach(function (s) {
+      html += '<li><strong>' + s.nomEtude + '</strong> <span style="font-family:monospace;font-size:11px;color:var(--color-text-dim)">(' + (s.codeEtude || "—") + ')</span></li>';
+    });
+    html += '</ul></div>';
+
+    html += '<div class="field"><label>Pour confirmer la suppression de ces <strong>' + nb + '</strong> offices, tapez <strong>SUPPRIMER</strong> :</label><input class="input" id="input-confirm-suppr-lot" placeholder="SUPPRIMER" required style="font-weight:bold;letter-spacing:1px"></div>';
+
+    html += '<div style="display:flex;justify-content:flex-end;gap:var(--space-2);margin-top:var(--space-2)">';
+    html += '<button type="button" class="btn btn-ghost" id="btn-annuler-suppr-lot">Annuler</button>';
+    html += '<button type="submit" class="btn btn-danger" style="background:#ef4444;color:#fff;font-weight:700">🗑️ Confirmer la Purge des ' + nb + ' Études</button>';
+    html += '</div>';
+    html += '</form>';
+
+    ouvrirModal({
+      titre: '<span>🗑️</span> Suppression Groupée de ' + nb + ' Offices Notariaux',
+      corps: html,
+      boutonFermer: true,
+      largeur: "560px",
+      apresOuverture: function () {
+        document.getElementById("btn-annuler-suppr-lot").addEventListener("click", fermerModal);
+        document.getElementById("form-supprimer-lot-etudes").addEventListener("submit", function (ev) {
+          ev.preventDefault();
+          var saisie = document.getElementById("input-confirm-suppr-lot").value.trim().toUpperCase();
+          if (saisie !== "SUPPRIMER") {
+            alert("Veuillez taper SUPPRIMER pour confirmer.");
+            return;
+          }
+
+          var ids = selectionnes.map(function (x) { return x.id; });
+          API.post("/api/superadmin/etudes/supprimer-lot", { ids: ids }).then(function (res) {
+            toast(res.message || (nb + " offices notariaux supprimés avec succès."));
+            fermerModal();
+            renderSuperAdmin();
+          }).catch(function (e) {
+            toast("Erreur : " + e.message);
+          });
+        });
+      }
     });
   }
 

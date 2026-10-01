@@ -1,48 +1,5 @@
 [
   {
-    "id": "60209999-dbdb-4030-bf04-d610efd5424f",
-    "codeEtude": "ETD-MKA-TEST",
-    "nomEtude": "Étude Maître Koffi Mireille",
-    "titreNotaire": "Maître Koffi-About Mireille",
-    "modeInfrastructure": "hybride",
-    "quotaStockageGo": 200,
-    "ville": "Abidjan (Plateau)",
-    "domaine": "etude-mka.ci",
-    "actif": true,
-    "totalDossiers": 0,
-    "totalMinutes": 0,
-    "totalUtilisateurs": 2,
-    "espaceUtiliseMo": 0,
-    "versionDeployee": "v2.4.0",
-    "statutSante": "🟢 En ligne (Sync OK)",
-    "dateCreation": "2026-10-01T13:32:37.726Z",
-    "comptesCrees": [
-      {
-        "id": "user-0f86ddc7",
-        "nomComplet": "Me Koffi Mireille",
-        "email": "mireille.koffi@etude-koffi.ci",
-        "role": "notaire",
-        "telephone": "+225 07 12 34 56 78",
-        "motDePasseTemporaire": "PassMireille2026!",
-        "emailEnvoye": true,
-        "emailMode": "journal_local_pret",
-        "emailApercuTexte": "Bonjour Me Koffi Mireille,\n\nUn compte d'accès vous a été créé sur la plateforme notariale sécurisée pour l'office : Étude Maître Koffi Mireille.\n\nVos identifiants de connexion :\n• Rôle / Fonction : Notaire Titulaire\n• Identifiant (Email) : mireille.koffi@etude-koffi.ci\n• Mot de passe initial : PassMireille2026!\n• Lien de connexion : https://etude-mka.ci\n\nPour des raisons de confidentialité et de secret professionnel notarial, nous vous recommandons de modifier votre mot de passe dès votre première connexion.\n\nPlateforme Notariale Conforme OHADA & Décret 2013-279\nSupport Technique : support@editeur-legal.ci"
-      },
-      {
-        "id": "user-2165e879",
-        "nomComplet": "Jean Kouamé (Premier Clerc)",
-        "email": "clerc.jean@etude-koffi.ci",
-        "role": "premier_clerc",
-        "telephone": "+225 05 98 76 54 32",
-        "motDePasseTemporaire": "PassJean2026!",
-        "emailEnvoye": true,
-        "emailMode": "journal_local_pret",
-        "emailApercuTexte": "Bonjour Jean Kouamé (Premier Clerc),\n\nUn compte d'accès vous a été créé sur la plateforme notariale sécurisée pour l'office : Étude Maître Koffi Mireille.\n\nVos identifiants de connexion :\n• Rôle / Fonction : Premier Clerc\n• Identifiant (Email) : clerc.jean@etude-koffi.ci\n• Mot de passe initial : PassJean2026!\n• Lien de connexion : https://etude-mka.ci\n\nPour des raisons de confidentialité et de secret professionnel notarial, nous vous recommandons de modifier votre mot de passe dès votre première connexion.\n\nPlateforme Notariale Conforme OHADA & Décret 2013-279\nSupport Technique : support@editeur-legal.ci"
-      }
-    ],
-    "notificationsEnvoyees": true
-  },
-  {
     "id": "a0000000-0000-0000-0000-000000000001",
     "codeEtude": "ETD-ABJ-001",
     "nomEtude": "Office Notarial — Legal Notary (Démo)",
@@ -95,6 +52,49 @@
     "versionDeployee": "v2.4.0",
     "statutSante": "🟢 En ligne (Sync OK)",
     "dateCreation": "2026-02-01T00:00:00.000Z"
+  },
+  {
+    "id": "60209999-dbdb-4030-bf04-d610efd5424f",
+    "codeEtude": "ETD-MKA-TEST",
+    "nomEtude": "Étude Maître Koffi Mireille",
+    "titreNotaire": "Maître Koffi-About Mireille",
+    "modeInfrastructure": "hybride",
+    "quotaStockageGo": 200,
+    "ville": "Abidjan (Plateau)",
+    "domaine": "etude-mka.ci",
+    "actif": true,
+    "totalDossiers": 0,
+    "totalMinutes": 0,
+    "totalUtilisateurs": 2,
+    "espaceUtiliseMo": 0,
+    "versionDeployee": "v2.4.0",
+    "statutSante": "🟢 En ligne (Sync OK)",
+    "dateCreation": "2026-10-01T13:32:37.726Z",
+    "comptesCrees": [
+      {
+        "id": "user-0f86ddc7",
+        "nomComplet": "Me Koffi Mireille",
+        "email": "mireille.koffi@etude-koffi.ci",
+        "role": "notaire",
+        "telephone": "+225 07 12 34 56 78",
+        "motDePasseTemporaire": "PassMireille2026!",
+        "emailEnvoye": true,
+        "emailMode": "journal_local_pret",
+        "emailApercuTexte": "Bonjour Me Koffi Mireille,\n\nUn compte d'accès vous a été créé sur la plateforme notariale sécurisée pour l'office : Étude Maître Koffi Mireille.\n\nVos identifiants de connexion :\n• Rôle / Fonction : Notaire Titulaire\n• Identifiant (Email) : mireille.koffi@etude-koffi.ci\n• Mot de passe initial : PassMireille2026!\n• Lien de connexion : https://etude-mka.ci\n\nPour des raisons de confidentialité et de secret professionnel notarial, nous vous recommandons de modifier votre mot de passe dès votre première connexion.\n\nPlateforme Notariale Conforme OHADA & Décret 2013-279\nSupport Technique : support@editeur-legal.ci"
+      },
+      {
+        "id": "user-2165e879",
+        "nomComplet": "Jean Kouamé (Premier Clerc)",
+        "email": "clerc.jean@etude-koffi.ci",
+        "role": "premier_clerc",
+        "telephone": "+225 05 98 76 54 32",
+        "motDePasseTemporaire": "PassJean2026!",
+        "emailEnvoye": true,
+        "emailMode": "journal_local_pret",
+        "emailApercuTexte": "Bonjour Jean Kouamé (Premier Clerc),\n\nUn compte d'accès vous a été créé sur la plateforme notariale sécurisée pour l'office : Étude Maître Koffi Mireille.\n\nVos identifiants de connexion :\n• Rôle / Fonction : Premier Clerc\n• Identifiant (Email) : clerc.jean@etude-koffi.ci\n• Mot de passe initial : PassJean2026!\n• Lien de connexion : https://etude-mka.ci\n\nPour des raisons de confidentialité et de secret professionnel notarial, nous vous recommandons de modifier votre mot de passe dès votre première connexion.\n\nPlateforme Notariale Conforme OHADA & Décret 2013-279\nSupport Technique : support@editeur-legal.ci"
+      }
+    ],
+    "notificationsEnvoyees": true
   },
   {
     "id": "0f8df41e-8b1f-487a-b027-353e39afba20",

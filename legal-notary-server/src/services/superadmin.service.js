@@ -410,6 +410,20 @@ async function supprimerEtude(etudeId) {
   return { success: true, message: "Office Notarial et données associées purgés avec succès." };
 }
 
+async function supprimerPlusieursEtudes(ids = []) {
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return { success: true, count: 0, message: "Aucune étude sélectionnée." };
+  }
+  let count = 0;
+  for (const id of ids) {
+    if (id) {
+      await supprimerEtude(id);
+      count++;
+    }
+  }
+  return { success: true, count, message: `${count} office(s) notarial(aux) supprimé(s) avec succès.` };
+}
+
 async function listerUtilisateursEtude(etudeId) {
   return authService.listerUtilisateursParEtude(etudeId);
 }
@@ -885,6 +899,7 @@ module.exports = {
   creerEtude,
   mettreAJourEtude,
   supprimerEtude,
+  supprimerPlusieursEtudes,
   listerUtilisateursEtude,
   ajouterCollaborateurEtude,
   reinitialiserMotDePasseEtude,

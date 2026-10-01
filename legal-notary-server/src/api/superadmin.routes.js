@@ -57,6 +57,17 @@ router.delete("/etudes/:id", async (req, res, next) => {
   }
 });
 
+// 4b-bis. Suppression en lot / multi-sélection d'études
+router.post("/etudes/supprimer-lot", async (req, res, next) => {
+  try {
+    const ids = req.body.ids || [];
+    const resultat = await superadminService.supprimerPlusieursEtudes(ids);
+    res.json(resultat);
+  } catch (e) {
+    next(e);
+  }
+});
+
 // 4c. Liste des utilisateurs / collaborateurs d'une étude
 router.get("/etudes/:id/utilisateurs", async (req, res, next) => {
   try {
