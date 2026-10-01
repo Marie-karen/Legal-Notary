@@ -783,6 +783,54 @@
 
         </div>
 
+        <!-- =========================================================================
+             SIMULATEUR INTERACTIF DE GAINS DE TRÉSORERIE (ROI NOTARIAL)
+             ========================================================================= -->
+        <div class="roi-calculator-box">
+          <div class="roi-header">
+            <div class="badge-tag gold">Simulateur d'Impact Budgétaire</div>
+            <h3>Calculez l'économie réelle de trésorerie pour votre Étude</h3>
+            <p>
+              Ajustez le curseur selon le nombre de collaborateurs dans votre étude (notaires associés, clercs, formalistes, comptables) pour mesurer en direct votre gain financier net.
+            </p>
+          </div>
+
+          <div class="roi-slider-container">
+            <div class="roi-slider-label-row">
+              <label for="roi-clerks-slider">Taille de l'équipe de votre Étude :</label>
+              <span class="roi-clerks-count-badge"><span id="roi-clerks-display">6</span> collaborateurs</span>
+            </div>
+            <input type="range" id="roi-clerks-slider" min="2" max="25" value="6" step="1" class="roi-range-input" aria-label="Nombre de collaborateurs dans l'office">
+            <div class="roi-slider-ticks">
+              <span>2 pers.</span>
+              <span>6 pers.</span>
+              <span>12 pers.</span>
+              <span>18 pers.</span>
+              <span>25 pers.</span>
+            </div>
+          </div>
+
+          <div class="roi-results-grid">
+            <div class="roi-result-card traditional">
+              <span class="roi-card-label">Logiciels Traditionnels (Poste + Serveur)</span>
+              <div class="roi-card-amount" id="roi-traditional-cost">4 900 000 F</div>
+              <span class="roi-card-sub" id="roi-traditional-sub">Licences par poste + Amortissement matériel</span>
+            </div>
+
+            <div class="roi-result-card legalnotary">
+              <span class="roi-card-label">Legal Notary (Forfait Tout Inclus)</span>
+              <div class="roi-card-amount" id="roi-ln-cost">2 400 000 F</div>
+              <span class="roi-card-sub">Postes & Collaborateurs ILLIMITÉS</span>
+            </div>
+
+            <div class="roi-result-card gain">
+              <span class="roi-card-label">Trésorerie Immédiate Préservée</span>
+              <div class="roi-card-amount gain-amount" id="roi-savings">+2 500 000 FCFA / an</div>
+              <span class="roi-card-sub" id="roi-hours-saved">Soit ~150h administratives libérées / mois</span>
+            </div>
+          </div>
+        </div>
+
         <!-- Tableau Comparatif Détaillé -->
         <div class="table-scroll-hint">Faites défiler horizontalement pour comparer les critères</div>
         <div class="comparison-table-wrap">
@@ -841,8 +889,8 @@
         <div class="security-box">
           <div class="section-head" style="margin-bottom:24px;text-align:left;max-width:none">
             <div class="badge-tag">Confidentialité Notariale</div>
-            <h2>Sécurité et Secret Professionnel Garanti</h2>
-            <p>Conforme aux normes déontologiques notariales et aux exigences OHADA.</p>
+            <h2>Sécurité, Souveraineté et Secret Professionnel Garanti</h2>
+            <p>Conforme aux normes déontologiques notariales, aux règles de la DGI et aux exigences OHADA.</p>
           </div>
 
           <div class="security-pillars">
@@ -862,6 +910,29 @@
               </div>
             </div>
           </div>
+
+          <!-- Sceau Déontologique & Clause de Réversibilité Totale -->
+          <div class="deontological-seal-banner">
+            <div class="seal-crest-icon">
+              <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#D97706" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                <path d="M9 12l2 2 4-4"/>
+              </svg>
+            </div>
+            <div class="seal-content">
+              <h4>Garantie Déontologique de Non-Séquestration & Réversibilité Totale</h4>
+              <p>
+                <strong>Vos données demeurent la propriété inaliénable de votre Office Notarial.</strong> Vous conservez à tout moment la faculté d'exporter l'intégralité de vos répertoires, actes scellés, registres de courriers et comptes clients en 1 clic au format standard ouvert (PDF/A certifiés et dump SQL structuré). Zéro dépendance captive, conformité totale au secret professionnel.
+              </p>
+              <div class="seal-badges">
+                <span class="seal-pill">Conformité Décret 2013-279</span>
+                <span class="seal-pill">Horodatage Inaltérable SHA-256</span>
+                <span class="seal-pill">Export Intégral 1-Clic Libre</span>
+                <span class="seal-pill">Secret Professionnel Notarial</span>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
     </section>

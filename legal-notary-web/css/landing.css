@@ -1568,6 +1568,267 @@ img, svg, video, canvas {
 }
 
 /* =========================================================================
+   SIMULATEUR DE GAINS DE TRÉSORERIE (CALCULATEUR ROI NOTARIAL)
+   ========================================================================= */
+.roi-calculator-box {
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  border-radius: var(--radius-lg);
+  padding: 28px 20px;
+  box-shadow: var(--shadow-md);
+  margin-top: 36px;
+  margin-bottom: 36px;
+}
+
+@media (min-width: 768px) {
+  .roi-calculator-box {
+    padding: 36px 32px;
+  }
+}
+
+.roi-header {
+  text-align: center;
+  max-width: 680px;
+  margin: 0 auto 28px auto;
+}
+
+.roi-header h3 {
+  font-size: 1.45rem;
+  color: #0F172A;
+  margin: 10px 0 6px 0;
+}
+
+.roi-header p {
+  font-size: 0.92rem;
+  color: #64748B;
+  line-height: 1.5;
+}
+
+.roi-slider-container {
+  max-width: 640px;
+  margin: 0 auto 32px auto;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: var(--radius);
+  padding: 20px 24px;
+}
+
+.roi-slider-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.roi-slider-label-row label {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1E293B;
+}
+
+.roi-clerks-count-badge {
+  background: #1A3FA0;
+  color: #FFFFFF;
+  font-weight: 800;
+  font-size: 0.95rem;
+  padding: 4px 14px;
+  border-radius: 20px;
+  box-shadow: 0 2px 6px rgba(26, 63, 160, 0.25);
+}
+
+.roi-range-input {
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  background: #CBD5E1;
+  outline: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  margin: 10px 0;
+}
+
+.roi-range-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #1A3FA0;
+  border: 3px solid #FFFFFF;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.roi-range-input::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  background: #D97706;
+}
+
+.roi-range-input::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #1A3FA0;
+  border: 3px solid #FFFFFF;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+}
+
+.roi-slider-ticks {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: #64748B;
+  font-weight: 600;
+}
+
+.roi-results-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 768px) {
+  .roi-results-grid {
+    grid-template-columns: 1fr 1fr 1.2fr;
+    gap: 20px;
+  }
+}
+
+.roi-result-card {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: var(--radius);
+  padding: 20px 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+}
+
+.roi-result-card.traditional {
+  border-left: 4px solid #94A3B8;
+}
+
+.roi-result-card.legalnotary {
+  background: #F0FDF4;
+  border: 1px solid #BBF7D0;
+  border-left: 4px solid #10B981;
+}
+
+.roi-result-card.gain {
+  background: #EFF6FF;
+  border: 1px solid #BFDBFE;
+  border-left: 4px solid #1A3FA0;
+  box-shadow: 0 4px 12px rgba(26, 63, 160, 0.08);
+}
+
+.roi-card-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748B;
+  margin-bottom: 6px;
+}
+
+.roi-card-amount {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #0F172A;
+  margin-bottom: 4px;
+}
+
+.roi-result-card.gain .roi-card-amount {
+  font-size: 1.75rem;
+  color: #1A3FA0;
+}
+
+.roi-card-sub {
+  font-size: 0.78rem;
+  color: #64748B;
+  line-height: 1.4;
+}
+
+.roi-result-card.gain .roi-card-sub {
+  color: #059669;
+  font-weight: 700;
+}
+
+/* =========================================================================
+   SCEAU DÉONTOLOGIQUE & RÉVERSIBILITÉ
+   ========================================================================= */
+.deontological-seal-banner {
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  border-left: 5px solid #D97706;
+  border-radius: var(--radius-lg);
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 32px;
+  box-shadow: var(--shadow-sm);
+}
+
+@media (min-width: 768px) {
+  .deontological-seal-banner {
+    flex-direction: row;
+    align-items: flex-start;
+    padding: 28px 30px;
+    gap: 22px;
+  }
+}
+
+.seal-crest-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: #FEF3C7;
+  border: 1px solid #FDE68A;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.seal-content h4 {
+  font-size: 1.15rem;
+  color: #0F172A;
+  margin-bottom: 6px;
+  font-weight: 700;
+}
+
+.seal-content p {
+  font-size: 0.9rem;
+  color: #475569;
+  line-height: 1.6;
+  margin-bottom: 12px;
+}
+
+.seal-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.seal-pill {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.76rem;
+  font-weight: 700;
+  background: #F1F5F9;
+  color: #334155;
+  border: 1px solid #E2E8F0;
+  padding: 4px 10px;
+  border-radius: 12px;
+}
+
+
+/* =========================================================================
    10. SECTION FORMULAIRE DE CANDIDATURE & DÉMO
    ========================================================================= */
 .form-card {

@@ -256,4 +256,40 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
+  // 5. Simulateur Dynamique de ROI Notarial (Impact Budgétaire & Trésorerie)
+  const roiSlider = document.getElementById("roi-clerks-slider");
+  const roiClerksDisplay = document.getElementById("roi-clerks-display");
+  const roiTradCost = document.getElementById("roi-traditional-cost");
+  const roiLnCost = document.getElementById("roi-ln-cost");
+  const roiSavings = document.getElementById("roi-savings");
+  const roiHoursSaved = document.getElementById("roi-hours-saved");
+
+  function formatFCFA(montant) {
+    return montant.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ") + " F";
+  }
+
+  function updateROICalculator() {
+    if (!roiSlider) return;
+    const n = parseInt(roiSlider.value, 10) || 6;
+    if (roiClerksDisplay) roiClerksDisplay.textContent = n;
+
+    // Coût traditionnel annuel estimé : 2.800.000 F (serveur physique lourd & maintenance) + (N * 350.000 F / poste)
+    const coutTraditionnel = 2800000 + (n * 350000);
+    // Coût Legal Notary annuel tout inclus (formule 200.000 F/mois)
+    const coutLegalNotary = 2400000;
+    const economie = coutTraditionnel - coutLegalNotary;
+    const heuresEconomisees = n * 25;
+
+    if (roiTradCost) roiTradCost.textContent = formatFCFA(coutTraditionnel);
+    if (roiLnCost) roiLnCost.textContent = formatFCFA(coutLegalNotary);
+    if (roiSavings) roiSavings.textContent = "+" + formatFCFA(economie) + " / an";
+    if (roiHoursSaved) roiHoursSaved.textContent = "Soit ~" + heuresEconomisees + "h administratives libérées / mois";
+  }
+
+  if (roiSlider) {
+    roiSlider.addEventListener("input", updateROICalculator);
+    updateROICalculator();
+  }
+
 });
+
