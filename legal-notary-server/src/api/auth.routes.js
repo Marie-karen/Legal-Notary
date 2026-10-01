@@ -15,6 +15,8 @@ const {
 
 const { lireFichierJson } = require("../services/stockage-persistant.service");
 
+const router = express.Router();
+
 router.get("/etude-info", async (req, res) => {
   try {
     const rawHost = (req.query.host || req.hostname || req.headers.host || "").toLowerCase().replace(/:\d+$/, "");
