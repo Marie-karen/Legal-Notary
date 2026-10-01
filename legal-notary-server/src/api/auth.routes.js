@@ -13,7 +13,41 @@ const {
   reinitialiserTentativesConnexion,
 } = require("../middleware/securite.middleware");
 
-const router = express.Router();
+const { lireFichierJson } = require("../services/stockage-persistant.service");
+
+router.get("/etude-info", async (req, res) => {
+  try {
+    const rawHost = (req.query.host || req.hostname || req.headers.host || "").toLowerCase().replace(/:\d+$/, "");
+    const etudes = lireFichierJson("etudes_persistantes.json", []);
+    
+    // Recherche par correspondance de domaine (ex: etude-mka.ci, notaire-kouassi.ci, etc.)
+    const trouvee = etudes.find(e => {
+      if (!e.domaine) return false;
+      const domClean = e.domaine.toLowerCase().trim().replace(/^https?:\/\//, "").replace(/\/$/, "");
+      return rawHost === domClean || rawHost.includes(domClean) || (domClean.length > 3 && rawHost.includes(domClean));
+    });
+
+    if (trouvee) {
+      return res.json({
+        trouve: true,
+        nomEtude: trouvee.nomEtude,
+        titreNotaire: trouvee.titreNotaire || "Maître Notaire",
+        ville: trouvee.ville || "Abidjan",
+        domaine: trouvee.domaine,
+        codeEtude: trouvee.codeEtude,
+      });
+    }
+
+    res.json({
+      trouve: false,
+      nomEtude: "Legal Notary",
+      titreNotaire: "Maître Notaire",
+      ville: "Abidjan",
+    });
+  } catch (err) {
+    res.json({ trouve: false, nomEtude: "Legal Notary" });
+  }
+});
 
 router.post("/connexion", limiterTentativesConnexion, async (req, res, next) => {
   try {

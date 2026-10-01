@@ -369,6 +369,12 @@ async function listerDossiersPourUtilisateur(utilisateur, filtres = {}) {
     // Repli instantané mémoire (< 0.1ms)
   }
 
+  const estCompteDemo = !utilisateur || utilisateur.etudeId === "etude-abidjan-01" || (utilisateur.email && utilisateur.email.endsWith("@notaire.ci"));
+  if (!estCompteDemo) {
+    // Espace de travail strictement vierge pour toute nouvelle étude réelle
+    return [];
+  }
+
   return DOSSIERS_DEMO_COMPLETS.filter(d => {
     if (portee === "formalites" && ![5, 6].includes(d.etapeActuelle)) return false;
     if (portee === "assignes" && utilisateur && d.clercAssigneId && d.clercAssigneId !== utilisateur.id && d.clercAssigneId !== "demo-clerc1-id") return false;
@@ -426,7 +432,13 @@ async function listerClientsPourUtilisateur(utilisateur) {
     // Repli instantané mémoire
   }
 
-  // Fallback clients depuis la mémoire
+  const estCompteDemo = !utilisateur || utilisateur.etudeId === "etude-abidjan-01" || (utilisateur.email && utilisateur.email.endsWith("@notaire.ci"));
+  if (!estCompteDemo) {
+    // Espace de travail strictement vierge pour toute nouvelle étude réelle
+    return [];
+  }
+
+  // Fallback clients depuis la mémoire pour compte démo uniquement
   const clientsMap = new Map();
   DOSSIERS_DEMO_COMPLETS.forEach(d => {
     const nomBrut = d.comparantsNoms || "Client Démo";

@@ -64,6 +64,8 @@ let PARAMETRES_ACTUELS = {
   presenceArchiviste: true,
 };
 
+const { lireFichierJson } = require("./stockage-persistant.service");
+
 async function obtenir(etudeIdOuDomaine) {
   try {
     if (etudeIdOuDomaine && etudeIdOuDomaine !== "saas-bttech" && etudeIdOuDomaine !== "etude-abidjan-01" && etudeIdOuDomaine !== "legalnotary.app" && etudeIdOuDomaine !== "www.legalnotary.app" && etudeIdOuDomaine !== "localhost" && etudeIdOuDomaine !== "127.0.0.1") {
@@ -90,6 +92,33 @@ async function obtenir(etudeIdOuDomaine) {
       }
     }
   } catch (_) {}
+
+  // Recherche dans les études persistées sur disque
+  if (etudeIdOuDomaine && etudeIdOuDomaine !== "saas-bttech" && etudeIdOuDomaine !== "etude-abidjan-01") {
+    try {
+      const etudes = lireFichierJson("etudes_persistantes.json", []);
+      const cle = String(etudeIdOuDomaine).toLowerCase().trim();
+      const etudeTrouvee = etudes.find(e =>
+        e.id === etudeIdOuDomaine ||
+        (e.codeEtude && e.codeEtude.toLowerCase() === cle) ||
+        (e.domaine && e.domaine.toLowerCase().includes(cle))
+      );
+      if (etudeTrouvee) {
+        return {
+          ...PARAMETRES_ACTUELS,
+          id: etudeTrouvee.id,
+          etudeId: etudeTrouvee.id,
+          nomEtude: etudeTrouvee.nomEtude || PARAMETRES_ACTUELS.nomEtude,
+          titreNotaire: etudeTrouvee.titreNotaire || "Maître",
+          nomNotaire: etudeTrouvee.nomNotaire || (etudeTrouvee.titreNotaire ? etudeTrouvee.titreNotaire + " " + etudeTrouvee.nomEtude : "Maître Notaire"),
+          ville: etudeTrouvee.ville || "Abidjan",
+          adresse: etudeTrouvee.adresse || ("Office Notarial, " + (etudeTrouvee.ville || "Abidjan")),
+          email: etudeTrouvee.emailContact || (etudeTrouvee.codeEtude ? etudeTrouvee.codeEtude + "@notaire.ci" : PARAMETRES_ACTUELS.email),
+        };
+      }
+    } catch (_) {}
+  }
+
   return PARAMETRES_ACTUELS;
 }
 

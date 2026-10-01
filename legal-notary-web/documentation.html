@@ -888,9 +888,35 @@
       }
     }
 
-    // Initialisation au chargement
+    // Initialisation au chargement avec prise en compte du profil connecté
     document.addEventListener('DOMContentLoaded', function() {
-      selectionnerRole('notaire');
+      var urlParams = new URLSearchParams(window.location.search);
+      var roleParam = urlParams.get('role');
+      var nomParam = urlParams.get('nom');
+      var etudeParam = urlParams.get('etude');
+
+      var roleASelectionner = 'notaire';
+      if (roleParam && GUIDES_PAR_ROLE[roleParam]) {
+        roleASelectionner = roleParam;
+      }
+
+      // Si un rôle est spécifié (utilisateur connecté depuis l'ERP) :
+      // On personnalise la bannière haute exclusivement pour sa fonction
+      if (roleParam && GUIDES_PAR_ROLE[roleASelectionner]) {
+        var barPills = document.querySelector('.role-selector-bar');
+        if (barPills) {
+          var guide = GUIDES_PAR_ROLE[roleASelectionner];
+          barPills.innerHTML = '<div style="background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.3);padding:12px 18px;border-radius:10px;width:100%;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">' +
+            '<div>' +
+              '<div style="display:flex;align-items:center;gap:8px"><span style="font-size:20px">' + guide.roleIcon + '</span><strong style="color:#38bdf8;font-size:15px">Manuel & Procédures Métier : ' + guide.roleLabel + '</strong></div>' +
+              (nomParam ? '<div style="font-size:12px;color:var(--color-text-dim);margin-top:2px">Session : <strong>' + decodeURIComponent(nomParam) + '</strong>' + (etudeParam ? ' · ' + decodeURIComponent(etudeParam) : '') + '</div>' : '') +
+            '</div>' +
+            '<span class="tag tag-accent" style="font-size:11.5px;padding:4px 10px">⭐ Guide Personnalisé</span>' +
+          '</div>';
+        }
+      }
+
+      selectionnerRole(roleASelectionner);
     });
   </script>
 </body>

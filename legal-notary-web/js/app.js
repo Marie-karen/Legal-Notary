@@ -584,6 +584,23 @@
       chargerNotifBadge();
       chargerValidationsBadge();
 
+      // Mise à jour du lien de documentation vers le manuel spécifique du profil
+      var elDocMenu = document.querySelector(".nav-btn-doc");
+      if (elDocMenu && cache.utilisateur) {
+        elDocMenu.setAttribute("href", "documentation.html?role=" + encodeURIComponent(cache.utilisateur.role) + "&nom=" + encodeURIComponent(cache.utilisateur.nomComplet || "") + "&etude=" + encodeURIComponent((cache.parametres && cache.parametres.nomEtude) || ""));
+      }
+
+      // Affichage du pop-up chaleureux et motivationnel quotidien (Matin & Soir 16h50)
+      try {
+        var cleSession = "pop_mot_vue_" + (cache.utilisateur ? cache.utilisateur.id : "user");
+        if (!sessionStorage.getItem(cleSession)) {
+          sessionStorage.setItem(cleSession, "1");
+          window.setTimeout(function () {
+            afficherPopupMotivationnel(cache.utilisateur);
+          }, 450);
+        }
+      } catch (e) {}
+
       if (!window._notifInterval) {
         window._notifInterval = window.setInterval(function () {
           chargerNotifBadge();
@@ -638,6 +655,144 @@
       racine.innerHTML = "";
       racine.style.display = "none";
     }
+  }
+
+  // =========================================================================
+  // POP-UP CHALEUREUX & MOTIVATIONNEL QUOTIDIEN (MATIN & 16H50 SOIR)
+  // =========================================================================
+  function afficherPopupMotivationnel(utilisateur) {
+    if (!utilisateur) return;
+    var estSaaS = (utilisateur.role === "superadmin" || utilisateur.role === "dev" || utilisateur.role === "commercial" || utilisateur.role === "support" || utilisateur.role === "assistante_editeur");
+    if (estSaaS) return;
+
+    var now = new Date();
+    var heure = now.getHours();
+    var minute = now.getMinutes();
+    var estSoir = heure >= 16 && (heure > 16 || minute >= 40);
+    var estMatin = heure < 12;
+
+    var prenomNom = (utilisateur.nomComplet || "Collaborateur").trim();
+    var estNotaire = (utilisateur.role === "notaire");
+
+    var CITATIONS_NOTAIRE_MATIN = [
+      {
+        citation: "Le leadership authentique ne consiste pas à tout contrôler, mais à inspirer chaque collaborateur à donner le meilleur de son art.",
+        auteur: "Vision & Sérénité Dirigeant",
+        message: "Maître, vos décisions éclairent l'avenir de vos clients. Que cette journée soit placée sous le signe de l'excellence et du leadership partagé !"
+      },
+      {
+        citation: "Une étude notariale prospère repose sur deux piliers : la rigueur absolue du droit et la bienveillance envers les femmes et hommes qui la font vivre.",
+        auteur: "Pratique Notariale d'Excellence",
+        message: "Maître, vos équipes sont prêtes à vos côtés pour relever tous les défis du jour avec sérénité et dynamisme."
+      },
+      {
+        citation: "Chaque grand projet économique et chaque patrimoine familial commence par la signature d'un acte authentique scellé dans la confiance.",
+        auteur: "Mission Notariale",
+        message: "Bonjour Maître ! Votre autorité morale et votre vision font la fierté de votre office notarial."
+      },
+      {
+        citation: "La clarté de votre vision d'entrepreneur juridique transforme la complexité en sécurité pour des générations entières.",
+        auteur: "Éthique & Réussite",
+        message: "Plein succès dans vos arbitrages du jour Maître !"
+      }
+    ];
+
+    var CITATIONS_NOTAIRE_SOIR = [
+      {
+        citation: "Le grand dirigeant sait clore sa journée avec sérénité : le devoir a été accompli, l'équipe a été guidée, et demain apportera de nouvelles victoires.",
+        auteur: "Art du Management",
+        message: "16h50 passé Maître : félicitations pour toutes les validations et la direction assurée aujourd'hui. Accordez-vous une soirée ressourçante !"
+      },
+      {
+        citation: "Savoir déconnecter le soir est le secret des chefs d'entreprise les plus clairvoyants et inspirants.",
+        auteur: "Équilibre & Clarté Mentale",
+        message: "Excellente fin de journée Maître ! Vos collaborateurs et vos dossiers sont en ordre pour demain."
+      },
+      {
+        citation: "Chaque signature apposée aujourd'hui protège des vies et des entreprises. Mission accomplie avec honneur.",
+        auteur: "Sérénité Notariale",
+        message: "Très belle soirée de repos bien mérité Maître !"
+      }
+    ];
+
+    var CITATIONS_COLLAB_MATIN = [
+      {
+        citation: "Le travail bien fait apporte une joie profonde et silencieuse. Vous êtes le cœur battant de l'office notarial !",
+        auteur: "Rigueur & Passion",
+        message: "Bonjour " + prenomNom + " ! Commencez cette journée avec le sourire : votre travail rigoureux protège et sécurise nos concitoyens."
+      },
+      {
+        citation: "Chaque détail soigné sur un dossier, chaque formalité accomplie avec minutie construit la réputation d'excellence de l'étude.",
+        auteur: "Excellence au Quotidien",
+        message: "Belle et fructueuse journée à vous, " + prenomNom + " ! Tout est réuni pour que vos dossiers avancent à la perfection."
+      },
+      {
+        citation: "La réussite est la somme de petits efforts répétés jour après jour avec le sourire et le sens du service.",
+        auteur: "Motivation & Entraide",
+        message: "Une excellente journée d'énergie et de bonne humeur à vous, " + prenomNom + " !"
+      },
+      {
+        citation: "Un clerc dévoué ne rédige pas seulement des actes : il bâtit la paix juridique et la sérénité des familles.",
+        auteur: "Noblesse de la Fonction",
+        message: "Plein d'élan positif pour votre journée, " + prenomNom + " ! Vous faites un travail formidable."
+      }
+    ];
+
+    var CITATIONS_COLLAB_SOIR = [
+      {
+        citation: "16h50 sonne bientôt : le sentiment du devoir accompli est la plus douce des récompenses. Bravo pour toute l'énergie déployée aujourd'hui !",
+        auteur: "Accomplissement & Fierté",
+        message: "Bravo " + prenomNom + " pour tout le travail abattu sur vos dossiers. Rangez sereinement vos affaires et passez une très agréable soirée !"
+      },
+      {
+        citation: "Après l'effort et la rigueur du jour, place à la détente et aux moments précieux avec vos proches.",
+        auteur: "Bien-être & Repos",
+        message: "Très belle fin de journée, " + prenomNom + " ! Merci pour votre précieuse contribution au sein de l'étude."
+      },
+      {
+        citation: "Les dossiers traités aujourd'hui sont entre de bonnes mains. Reposez-vous bien pour revenir avec le même bel enthousiasme demain !",
+        auteur: "Énergie & Sérénité",
+        message: "Bonne soirée et excellent repos, " + prenomNom + " !"
+      }
+    ];
+
+    var liste = estNotaire
+      ? (estSoir ? CITATIONS_NOTAIRE_SOIR : CITATIONS_NOTAIRE_MATIN)
+      : (estSoir ? CITATIONS_COLLAB_SOIR : (estMatin ? CITATIONS_COLLAB_MATIN : CITATIONS_COLLAB_MATIN));
+
+    var indexChoisi = Math.floor(Math.random() * liste.length);
+    var item = liste[indexChoisi];
+
+    var badgeIcon = estSoir ? "🌇 16h50 — Fin de Journée" : (estMatin ? "🌅 Matinée Énergie & Sérénité" : "✨ Pause Inspiration");
+    var titreHeader = estSoir ? "Excellente fin de journée !" : "Belle journée à l'office !";
+
+    var html = '<div style="display:flex;flex-direction:column;gap:16px;text-align:center;padding:8px 12px">';
+    html += '<div style="display:inline-flex;align-items:center;justify-content:center;gap:6px;background:rgba(56,189,248,0.12);color:#38bdf8;border:1px solid rgba(56,189,248,0.3);padding:4px 14px;border-radius:20px;font-size:12px;font-weight:700;width:max-content;margin:0 auto">' + badgeIcon + '</div>';
+    
+    html += '<h3 style="font-family:var(--font-heading);font-size:22px;color:var(--color-text);margin:0">' + titreHeader + '</h3>';
+    
+    html += '<div style="background:var(--color-surface-2);border:1px solid var(--color-border);padding:18px 20px;border-radius:12px;position:relative">';
+    html += '<p style="font-size:14.5px;font-style:italic;color:var(--color-text);line-height:1.6;margin:0 0 8px 0;padding:0 8px">« ' + item.citation + ' »</p>';
+    html += '<div style="font-size:11.5px;font-weight:700;color:#38bdf8;text-transform:uppercase;letter-spacing:0.5px">— ' + item.auteur + '</div>';
+    html += '</div>';
+
+    html += '<p style="font-size:13.5px;color:var(--color-text-dim);line-height:1.6;margin:0">' + item.message + '</p>';
+
+    html += '<div style="margin-top:6px">';
+    html += '<button type="button" class="btn btn-primary" id="btn-fermer-popup-motivation" style="padding:10px 28px;font-size:14px;font-weight:700;border-radius:8px;cursor:pointer">' + (estSoir ? "Merci, bonne soirée ! 🌙" : "C'est parti, à mes dossiers ! ✨") + '</button>';
+    html += '</div>';
+    html += '</div>';
+
+    ouvrirModal({
+      titre: '<span style="color:#f59e0b">☀️</span> Mot d\'Accueil & Pensée du Jour',
+      corps: html,
+      boutonFermer: true,
+      largeur: "490px",
+      apresOuverture: function () {
+        var btn = document.getElementById("btn-fermer-popup-motivation");
+        if (btn) btn.addEventListener("click", fermerModal);
+      }
+    });
   }
 
   // -----------------------------------------------------------------

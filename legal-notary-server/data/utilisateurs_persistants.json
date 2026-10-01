@@ -318,5 +318,33 @@
     "salaire_net": 750000,
     "actif": true,
     "etude_id": "60209999-dbdb-4030-bf04-d610efd5424f"
+  },
+  {
+    "id": "user-2ae50dd0",
+    "nom_complet": "Me Koffi-About Mireille",
+    "email": "notaire@etude-mka.ci",
+    "mdp": "Mireille2026!",
+    "mot_de_passe_hash": "$2a$12$UJp/rwz5voAivpseOUmWbu4Z6xVEaRJnqvAwXa1cTmh.IwGwHgiW6",
+    "role": "notaire",
+    "telephone": "+225 07 00 11 22",
+    "date_embauche": "2026-10-01",
+    "type_contrat": "CDI",
+    "salaire_net": 750000,
+    "actif": true,
+    "etude_id": "153d037b-7c69-4dff-b049-782bcabd4bf6"
+  },
+  {
+    "id": "user-3a8d0d33",
+    "nom_complet": "M. Kouamé Junior",
+    "email": "clerc@etude-mka.ci",
+    "mdp": "Clerc2026!",
+    "mot_de_passe_hash": "$2a$12$2O31dmAPehq6X88nNeYFzek2JBs.qRBPfaGUtXFQU09kVzl7ZdyCi",
+    "role": "clerc_redacteur",
+    "telephone": "+225 07 00 33 44",
+    "date_embauche": "2026-10-01",
+    "type_contrat": "CDI",
+    "salaire_net": 750000,
+    "actif": true,
+    "etude_id": "153d037b-7c69-4dff-b049-782bcabd4bf6"
   }
 ]
