@@ -222,11 +222,30 @@ router.post("/sauvegardes/test-pra", async (req, res, next) => {
   }
 });
 
-// 10. Journal des événements de sécurité SaaS
-router.get("/journal-securite", async (req, res, next) => {
+// 11. Journal des emails envoyés & notification de bienvenue
+router.get("/emails-envoyes", async (req, res, next) => {
   try {
-    const journal = await superadminService.listerJournalSecurite();
-    res.json(journal);
+    const limite = Number(req.query.limite) || 50;
+    const emails = superadminService.listerEmailsEnvoyes(limite);
+    res.json(emails);
+  } catch (e) {
+    next(e);
+  }
+});
+
+// 12. Renvoyer manuellement un email d'identifiants
+router.post("/renvoyer-email", async (req, res, next) => {
+  try {
+    const { email, nomComplet, role, motDePasse, nomEtude, domaine } = req.body || {};
+    const resultat = await superadminService.envoyerEmailBienvenueCollaborateur({
+      destinataireEmail: email,
+      nomComplet,
+      role,
+      motDePasse,
+      nomEtude,
+      domaine,
+    });
+    res.json(resultat);
   } catch (e) {
     next(e);
   }

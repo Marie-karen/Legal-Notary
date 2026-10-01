@@ -6,6 +6,7 @@ const { pool } = require("../db/pool");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 const authService = require("./auth.service");
+const emailDeploiementService = require("./email-deploiement.service");
 const { lireFichierJson, ecrireFichierJson } = require("./stockage-persistant.service");
 
 const ETUDES_MEMOIRE = [
@@ -329,6 +330,19 @@ async function creerEtude({
         salaireNet: c.salaireNet || null,
         etudeId: id,
       });
+
+      let infoEmail = { succes: true, mode: "desactive" };
+      if (envoyerEmails !== false) {
+        infoEmail = await emailDeploiementService.envoyerEmailBienvenueCollaborateur({
+          destinataireEmail: u.email,
+          nomComplet: u.nomComplet,
+          role: u.role,
+          motDePasse: mdp,
+          nomEtude,
+          domaine: dom,
+        });
+      }
+
       comptesCrees.push({
         id: u.id,
         nomComplet: u.nomComplet,
@@ -336,7 +350,9 @@ async function creerEtude({
         role: u.role,
         telephone: u.telephone,
         motDePasseTemporaire: mdp,
-        emailEnvoye: !!envoyerEmails,
+        emailEnvoye: infoEmail.succes,
+        emailMode: infoEmail.mode,
+        emailApercuTexte: infoEmail.apercuTexte,
       });
     } catch (errUser) {
       console.warn("[SuperAdmin] Erreur création collaborateur :", errUser.message);
@@ -405,7 +421,21 @@ async function ajouterCollaborateurEtude(etudeId, donnees) {
     motDePasse: mdp,
     etudeId,
   }, { avecSalaire: true });
-  return { ...u, motDePasseTemporaire: mdp };
+
+  const etude = ETUDES_MEMOIRE.find(e => e.id === etudeId);
+  const nomEtude = etude ? etude.nomEtude : "Office Notarial";
+  const dom = etude ? etude.domaine : "";
+
+  const infoEmail = await emailDeploiementService.envoyerEmailBienvenueCollaborateur({
+    destinataireEmail: u.email,
+    nomComplet: u.nomComplet,
+    role: u.role,
+    motDePasse: mdp,
+    nomEtude,
+    domaine: dom,
+  });
+
+  return { ...u, motDePasseTemporaire: mdp, emailEnvoye: infoEmail.succes, emailApercuTexte: infoEmail.apercuTexte };
 }
 
 async function reinitialiserMotDePasseEtude(etudeId, userId, motDePasse) {
@@ -414,11 +444,26 @@ async function reinitialiserMotDePasseEtude(etudeId, userId, motDePasse) {
   if (!u) {
     throw new Error("Utilisateur introuvable.");
   }
+
+  const etude = ETUDES_MEMOIRE.find(e => e.id === etudeId);
+  const nomEtude = etude ? etude.nomEtude : "Office Notarial";
+  const dom = etude ? etude.domaine : "";
+
+  const infoEmail = await emailDeploiementService.envoyerEmailBienvenueCollaborateur({
+    destinataireEmail: u.email,
+    nomComplet: u.nomComplet,
+    role: u.role,
+    motDePasse: mdp,
+    nomEtude,
+    domaine: dom,
+  });
+
   return {
     success: true,
     utilisateur: u,
     nouveauMotDePasse: mdp,
-    message: "Mot de passe réinitialisé avec succès.",
+    emailEnvoye: infoEmail.succes,
+    message: "Mot de passe réinitialisé et email d'accès envoyé avec succès.",
   };
 }
 
@@ -857,4 +902,6 @@ module.exports = {
   declencherSnapshotUrgence,
   testerPlanReprise,
   listerJournalSecurite,
+  listerEmailsEnvoyes: emailDeploiementService.listerEmailsEnvoyes,
+  envoyerEmailBienvenueCollaborateur: emailDeploiementService.envoyerEmailBienvenueCollaborateur,
 };

@@ -9404,6 +9404,7 @@
       }),
       API.get("/api/telemetrie/erreurs").catch(function () { return []; }),
       API.get("/api/telemetrie/noeuds").catch(function () { return []; }),
+      API.get("/api/superadmin/emails-envoyes").catch(function () { return []; }),
     ]).then(function (res) {
       var stats = res[0] || {};
       var etudes = Array.isArray(res[1]) ? res[1] : [];
@@ -9415,6 +9416,7 @@
       var journal = Array.isArray(res[7]) ? res[7] : [];
       var erreursParc = Array.isArray(res[8]) ? res[8] : [];
       var noeudsHeartbeat = Array.isArray(res[9]) ? res[9] : [];
+      var emailsEnvoyes = Array.isArray(res[10]) ? res[10] : [];
 
       var ongletActif = etatSuperadmin.onglet || "etudes";
 
@@ -9469,6 +9471,7 @@
       // =========================================================================
       html += '<div class="tabs-nav" style="margin-bottom:var(--space-4);border-bottom:1px solid var(--color-border);display:flex;gap:4px;overflow-x:auto">';
       html += '<button type="button" class="tab-btn btn-superadmin-tab" data-tab="etudes" style="cursor:pointer;padding:10px 16px;font-weight:600;font-size:13px;border-radius:var(--radius) var(--radius) 0 0;background:' + (ongletActif === "etudes" ? "var(--color-surface-2)" : "transparent") + ';color:' + (ongletActif === "etudes" ? "#38bdf8;border-bottom:2px solid #38bdf8" : "var(--color-text-dim)") + '">Parc des Offices (' + etudes.length + ')</button>';
+      html += '<button type="button" class="tab-btn btn-superadmin-tab" data-tab="emails" style="cursor:pointer;padding:10px 16px;font-weight:600;font-size:13px;border-radius:var(--radius) var(--radius) 0 0;background:' + (ongletActif === "emails" ? "var(--color-surface-2)" : "transparent") + ';color:' + (ongletActif === "emails" ? "#38bdf8;border-bottom:2px solid #38bdf8" : "var(--color-text-dim)") + '">✉️ Emails & Accès (' + emailsEnvoyes.length + ')</button>';
       html += '<button type="button" class="tab-btn btn-superadmin-tab" data-tab="equipe" style="cursor:pointer;padding:10px 16px;font-weight:600;font-size:13px;border-radius:var(--radius) var(--radius) 0 0;background:' + (ongletActif === "equipe" ? "var(--color-surface-2)" : "transparent") + ';color:' + (ongletActif === "equipe" ? "#38bdf8;border-bottom:2px solid #38bdf8" : "var(--color-text-dim)") + '">Équipe Éditeur SaaS (' + equipe.length + ')</button>';
       html += '<button type="button" class="tab-btn btn-superadmin-tab" data-tab="infrastructure" style="cursor:pointer;padding:10px 16px;font-weight:600;font-size:13px;border-radius:var(--radius) var(--radius) 0 0;background:' + (ongletActif === "infrastructure" ? "var(--color-surface-2)" : "transparent") + ';color:' + (ongletActif === "infrastructure" ? "#38bdf8;border-bottom:2px solid #38bdf8" : "var(--color-text-dim)") + '">Infrastructure & Clusters (' + (infra.noeudsServeurs ? infra.noeudsServeurs.length : 3) + ')</button>';
       html += '<button type="button" class="tab-btn btn-superadmin-tab" data-tab="sauvegardes" style="cursor:pointer;padding:10px 16px;font-weight:600;font-size:13px;border-radius:var(--radius) var(--radius) 0 0;background:' + (ongletActif === "sauvegardes" ? "var(--color-surface-2)" : "transparent") + ';color:' + (ongletActif === "sauvegardes" ? "#38bdf8;border-bottom:2px solid #38bdf8" : "var(--color-text-dim)") + '">Sauvegardes & PRA (' + sauvegardes.length + ')</button>';
@@ -9805,7 +9808,82 @@
         html += '</div>';
       }
 
+      // 7. ONGLET EMAILS & ACCÈS TRANSMIS
+      else if (ongletActif === "emails") {
+        html += '<div class="card" style="background:var(--color-surface-2);border-color:var(--color-border);padding:var(--space-4)">';
+        html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-3);flex-wrap:wrap;gap:var(--space-2)">';
+        html += '<div><strong style="font-size:16px;color:var(--color-text)">Journal des Emails d\'Accès & Identifiants Transmis</strong>';
+        html += '<p style="font-size:12px;color:var(--color-text-dim);margin:2px 0 0">Historique des notifications de bienvenue, identifiants envoyés aux notaires et collaborateurs.</p></div>';
+        html += '</div>';
+
+        if (!emailsEnvoyes || !emailsEnvoyes.length) {
+          html += '<div style="padding:var(--space-4);text-align:center;color:var(--color-text-dim);font-size:13px">Aucun email consigné pour le moment. Les emails sont enregistrés lors du déploiement d\'études ou de réinitialisations.</div>';
+        } else {
+          html += '<div class="table-wrap"><table class="table" style="font-size:12px"><thead><tr><th>Date & Heure</th><th>Destinataire</th><th>Rôle</th><th>Sujet de l\'Email</th><th>Canal</th><th>Actions</th></tr></thead><tbody>';
+          emailsEnvoyes.forEach(function (em, idx) {
+            var modeBadge = (em.mode === "smtp_reel")
+              ? '<span class="tag" style="background:rgba(34,197,94,0.15);color:#22c55e;font-size:11px">🟢 SMTP Délivré</span>'
+              : '<span class="tag" style="background:rgba(56,189,248,0.15);color:#38bdf8;font-size:11px">✉️ Prêt / Consigné</span>';
+
+            html += '<tr>';
+            html += '<td style="font-size:11px;color:var(--color-text-dim)">' + (em.dateEnvoi ? new Date(em.dateEnvoi).toLocaleString("fr-CI") : "—") + '</td>';
+            html += '<td><strong>' + (em.nomComplet || em.destinataire) + '</strong><div style="font-size:11px;color:var(--color-text-dim)"><code>' + em.destinataire + '</code></div></td>';
+            html += '<td><span class="tag tag-outline">' + (em.role || "Collaborateur") + '</span></td>';
+            html += '<td><div style="max-width:280px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (em.sujet || "Vos accès notariaux") + '</div></td>';
+            html += '<td>' + modeBadge + '</td>';
+            html += '<td><div style="display:flex;gap:4px">';
+            html += '<button type="button" class="btn btn-secondary btn-voir-email-historique" data-idx="' + idx + '" style="font-size:11px;padding:3px 7px">📧 Voir</button>';
+            html += '<button type="button" class="btn btn-ghost btn-renvoyer-email-historique" data-idx="' + idx + '" style="font-size:11px;padding:3px 7px;color:#38bdf8">🔄 Renvoyer</button>';
+            html += '</div></td>';
+            html += '</tr>';
+          });
+          html += '</tbody></table></div>';
+        }
+        html += '</div>';
+      }
+
       c.innerHTML = html;
+
+      // Événements boutons historique email
+      c.querySelectorAll(".btn-voir-email-historique").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          var i = parseInt(btn.dataset.idx, 10);
+          var em = emailsEnvoyes[i];
+          if (em) {
+            modalApercuEmailCollaborateur({
+              email: em.destinataire,
+              nomComplet: em.nomComplet,
+              role: em.role,
+              motDePasseTemporaire: em.motDePasse,
+            }, "Office Notarial", em.urlConnexion);
+          }
+        });
+      });
+
+      c.querySelectorAll(".btn-renvoyer-email-historique").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          var i = parseInt(btn.dataset.idx, 10);
+          var em = emailsEnvoyes[i];
+          if (em) {
+            btn.textContent = "⏳ Envoi...";
+            btn.disabled = true;
+            API.post("/api/superadmin/renvoyer-email", {
+              email: em.destinataire,
+              nomComplet: em.nomComplet,
+              role: em.role,
+              motDePasse: em.motDePasse || "notaire123",
+              nomEtude: "Office Notarial",
+              domaine: em.urlConnexion,
+            }).then(function () {
+              btn.textContent = "✓ Renvoyé";
+              toast("Email renvoyé à " + em.destinataire);
+            }).catch(function (e) {
+              btn.textContent = "✕ Erreur";
+              toast("Erreur : " + e.message);
+            });
+          }
+        });
+      });
 
       // Événements onglets Super Admin
       c.querySelectorAll(".btn-superadmin-tab").forEach(function (btn) {
@@ -10441,29 +10519,94 @@
   }
 
   // =========================================================================
+  // MODALE : APERÇU DE L'EMAIL ENVOYÉ À UN COLLABORATEUR
+  // =========================================================================
+  function modalApercuEmailCollaborateur(c, nomEtude, domaine) {
+    var roleAffiche = ROLE_LABEL[c.role] || c.role || "Collaborateur";
+    var lien = domaine ? (domaine.startsWith("http") ? domaine : "https://" + domaine) : "https://legalnotary.app";
+    var nom = c.nomComplet || c.nom_complet || c.email;
+    var pw = c.motDePasseTemporaire || c.mdp || "notaire123";
+
+    var texteMessage = "Bonjour " + nom + ",\n\n";
+    texteMessage += "Un compte d'accès vous a été créé sur la plateforme notariale sécurisée pour l'office : " + nomEtude + ".\n\n";
+    texteMessage += "Vos identifiants de connexion :\n";
+    texteMessage += "• Rôle / Fonction : " + roleAffiche + "\n";
+    texteMessage += "• Identifiant (Email) : " + c.email + "\n";
+    texteMessage += "• Mot de passe initial : " + pw + "\n";
+    texteMessage += "• Lien d'accès direct : " + lien + "\n\n";
+    texteMessage += "Pour des raisons de sécurité et de conformité au secret professionnel notarial, veuillez modifier votre mot de passe dès votre première connexion.\n\n";
+    texteMessage += "Support : support@editeur-legal.ci";
+
+    var html = '<div style="display:flex;flex-direction:column;gap:var(--space-3)">';
+    html += '<div style="background:var(--color-surface-2);border:1px solid var(--color-border);padding:12px;border-radius:var(--radius)">';
+    html += '<div style="font-size:12px;color:var(--color-text-dim)">Objet : <strong style="color:var(--color-text)">Vos accès à l\'espace notarial — ' + nomEtude + '</strong></div>';
+    html += '<div style="font-size:12px;color:var(--color-text-dim);margin-top:2px">Destinataire : <strong style="color:#38bdf8">' + c.email + '</strong> (' + nom + ')</div>';
+    html += '</div>';
+
+    html += '<div style="background:var(--color-bg);border:1px solid var(--color-border);padding:14px;border-radius:var(--radius);font-family:monospace;font-size:12.5px;line-height:1.6;white-space:pre-wrap;color:var(--color-text);max-height:280px;overflow-y:auto">';
+    html += echapperHtml(texteMessage);
+    html += '</div>';
+
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:var(--space-2)">';
+    html += '<button type="button" class="btn btn-secondary" id="btn-copier-message-unique">📋 Copier le Message (WhatsApp / SMS / Mail)</button>';
+    html += '<button type="button" class="btn btn-primary" id="btn-fermer-apercu-email">Fermer</button>';
+    html += '</div>';
+    html += '</div>';
+
+    ouvrirModal({
+      titre: '<span>✉️</span> Message d\'Accès Envoyé — ' + nom,
+      corps: html,
+      boutonFermer: true,
+      largeur: "620px",
+      apresOuverture: function () {
+        document.getElementById("btn-fermer-apercu-email").addEventListener("click", fermerModal);
+        document.getElementById("btn-copier-message-unique").addEventListener("click", function () {
+          if (navigator.clipboard) {
+            navigator.clipboard.writeText(texteMessage).then(function () {
+              toast("Message copié ! Vous pouvez le coller directement sur WhatsApp ou par SMS.");
+            });
+          } else {
+            prompt("Copiez le message :", texteMessage);
+          }
+        });
+      },
+    });
+  }
+
+  // =========================================================================
   // MODALE : RÉCAPITULATIF & IDENTIFIANTS DES COMPTES CRÉÉS
   // =========================================================================
   function modalRecapitulatifDeploiement(nouvelle) {
     var comptes = nouvelle.comptesCrees || [];
-    var texteACopier = "🔑 IDENTIFIANTS D'ACCÈS — " + (nouvelle.nomEtude || nouvelle.nom_etude) + "\n";
-    texteACopier += "URL de connexion : https://legalnotary.app\n";
-    texteACopier += "Domaine dédié : https://" + (nouvelle.domaine || "legalnotary.app") + "\n\n";
+    var nomEtude = nouvelle.nomEtude || nouvelle.nom_etude || "Office Notarial";
+    var domaine = nouvelle.domaine || "legalnotary.app";
+    var lien = domaine ? (domaine.startsWith("http") ? domaine : "https://" + domaine) : "https://legalnotary.app";
+
+    var texteACopier = "🔑 IDENTIFIANTS D'ACCÈS — " + nomEtude + "\n";
+    texteACopier += "URL de connexion : " + lien + "\n\n";
 
     var html = '<div style="display:flex;flex-direction:column;gap:var(--space-3)">';
     html += '<div style="background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);padding:12px;border-radius:var(--radius);color:#22c55e">';
-    html += '<strong style="font-size:15px">🎉 Office Notarial Déployé & Collaborateurs Activés !</strong>';
-    html += '<div style="font-size:12px;color:var(--color-text);margin-top:4px">L\'espace <strong>' + (nouvelle.nomEtude || nouvelle.nom_etude) + '</strong> est opérationnel. Les paramètres du cabinet ont été synchronisés et <strong>' + comptes.length + ' compte(s)</strong> ont été initialisés.</div>';
+    html += '<strong style="font-size:15px">🎉 Office Notarial Déployé & Identifiants Générés !</strong>';
+    html += '<div style="font-size:12px;color:var(--color-text);margin-top:4px">L\'espace <strong>' + nomEtude + '</strong> est opérationnel. <strong>' + comptes.length + ' compte(s)</strong> ont été activés et leurs accès ont été transmis par email.</div>';
     html += '</div>';
 
-    html += '<div class="table-wrap" style="max-height:280px;overflow-y:auto"><table class="table" style="font-size:12px"><thead><tr><th>Nom</th><th>Email de Connexion</th><th>Rôle</th><th>Mot de passe Initial</th><th>Action Directe</th></tr></thead><tbody>';
-    comptes.forEach(function (c) {
-      texteACopier += "- " + (c.nomComplet || c.nom_complet) + " (" + (c.role || "collaborateur") + ") : " + c.email + " / MDP : " + (c.motDePasseTemporaire || "notaire123") + "\n";
+    html += '<div class="table-wrap" style="max-height:300px;overflow-y:auto"><table class="table" style="font-size:12px"><thead><tr><th>Collaborateur</th><th>Email de Connexion</th><th>Rôle</th><th>Mot de passe</th><th>Statut Email</th><th>Actions</th></tr></thead><tbody>';
+    comptes.forEach(function (c, idx) {
+      var pw = c.motDePasseTemporaire || c.mdp || "notaire123";
+      var roleAff = ROLE_LABEL[c.role] || c.role || "Membre";
+      texteACopier += "• " + (c.nomComplet || c.nom_complet) + " (" + roleAff + ") : " + c.email + " / MDP : " + pw + "\n";
       html += '<tr>';
       html += '<td><strong>' + (c.nomComplet || c.nom_complet) + '</strong></td>';
       html += '<td><code>' + c.email + '</code></td>';
-      html += '<td><span class="tag tag-outline">' + (c.role || "membre") + '</span></td>';
-      html += '<td><strong style="color:var(--color-accent);font-family:monospace">' + (c.motDePasseTemporaire || "notaire123") + '</strong></td>';
-      html += '<td><button type="button" class="btn btn-secondary btn-tester-session-recap" data-email="' + c.email + '" data-mdp="' + (c.motDePasseTemporaire || "notaire123") + '" style="font-size:11px;padding:3px 8px">🚀 Tester Session</button></td>';
+      html += '<td><span class="tag tag-outline">' + roleAff + '</span></td>';
+      html += '<td><strong style="color:var(--color-accent);font-family:monospace">' + pw + '</strong></td>';
+      html += '<td><span class="tag" style="background:rgba(34,197,94,0.15);color:#22c55e;border:1px solid rgba(34,197,94,0.3);font-size:11px">✉️ Envoyé</span></td>';
+      html += '<td><div style="display:flex;gap:4px">';
+      html += '<button type="button" class="btn btn-secondary btn-voir-email-recap" data-idx="' + idx + '" style="font-size:11px;padding:3px 7px" title="Voir le message envoyé">📧 Voir</button>';
+      html += '<button type="button" class="btn btn-secondary btn-tester-session-recap" data-email="' + c.email + '" data-mdp="' + pw + '" style="font-size:11px;padding:3px 7px" title="Ouvrir la session de ce compte">🚀 Tester</button>';
+      html += '<button type="button" class="btn btn-ghost btn-renvoyer-email-recap" data-idx="' + idx + '" style="font-size:11px;padding:3px 7px;color:#38bdf8" title="Renvoyer l\'email">🔄 Renvoyer</button>';
+      html += '</div></td>';
       html += '</tr>';
     });
     html += '</tbody></table></div>';
@@ -10475,10 +10618,10 @@
     html += '</div>';
 
     ouvrirModal({
-      titre: '<span>📜</span> Fiche de Livraison & Identifiants du Cabinet',
+      titre: '<span>📜</span> Fiche de Livraison & Identifiants — ' + nomEtude,
       corps: html,
       boutonFermer: true,
-      largeur: "750px",
+      largeur: "780px",
       apresOuverture: function () {
         document.getElementById("btn-fermer-recap").addEventListener("click", fermerModal);
         document.getElementById("btn-copier-identifiants").addEventListener("click", function () {
@@ -10491,6 +10634,15 @@
           }
         });
 
+        // Voir le message email formaté
+        document.querySelectorAll(".btn-voir-email-recap").forEach(function (btn) {
+          btn.addEventListener("click", function () {
+            var i = parseInt(btn.dataset.idx, 10);
+            var collab = comptes[i];
+            modalApercuEmailCollaborateur(collab, nomEtude, domaine);
+          });
+        });
+
         // 1-clic pour tester la session immédiatement
         document.querySelectorAll(".btn-tester-session-recap").forEach(function (btn) {
           btn.addEventListener("click", function () {
@@ -10498,6 +10650,30 @@
             var pw = btn.dataset.mdp;
             fermerModal();
             effectuerConnexion(em, pw);
+          });
+        });
+
+        // Renvoyer l'email
+        document.querySelectorAll(".btn-renvoyer-email-recap").forEach(function (btn) {
+          btn.addEventListener("click", function () {
+            var i = parseInt(btn.dataset.idx, 10);
+            var collab = comptes[i];
+            btn.textContent = "⏳ Envoi...";
+            btn.disabled = true;
+            API.post("/api/superadmin/renvoyer-email", {
+              email: collab.email,
+              nomComplet: collab.nomComplet || collab.nom_complet,
+              role: collab.role,
+              motDePasse: collab.motDePasseTemporaire || collab.mdp || "notaire123",
+              nomEtude: nomEtude,
+              domaine: domaine,
+            }).then(function () {
+              btn.textContent = "✓ Renvoyé";
+              toast("Email d'accès renvoyé à " + collab.email);
+            }).catch(function (err) {
+              btn.textContent = "✕ Erreur";
+              toast("Erreur envoi email : " + err.message);
+            });
           });
         });
       },
@@ -10550,8 +10726,37 @@
                 '<td><code>' + u.email + '</code></td>' +
                 '<td><span class="tag tag-outline">' + (u.role || "collaborateur") + '</span></td>' +
                 '<td>' + (u.actif !== false ? '<span style="color:#22c55e;font-weight:bold">Actif</span>' : '<span style="color:#ef4444;font-weight:bold">Suspendu</span>') + '</td>' +
-                '<td><button type="button" class="btn btn-secondary btn-reset-mdp-user" data-user-id="' + u.id + '" data-user-nom="' + encodeURIComponent(u.nomComplet || u.nom_complet) + '" style="font-size:11px;padding:3px 8px">🔑 Réinitialiser MDP</button></td>';
+                '<td><div style="display:flex;gap:4px">' +
+                  '<button type="button" class="btn btn-secondary btn-reset-mdp-user" data-user-id="' + u.id + '" data-user-nom="' + encodeURIComponent(u.nomComplet || u.nom_complet) + '" style="font-size:11px;padding:3px 7px">🔑 MDP</button>' +
+                  '<button type="button" class="btn btn-ghost btn-renvoyer-mail-user" data-user-email="' + u.email + '" data-user-nom="' + encodeURIComponent(u.nomComplet || u.nom_complet) + '" data-user-role="' + (u.role || "clerc_redacteur") + '" style="font-size:11px;padding:3px 7px;color:#38bdf8" title="Renvoyer un email avec identifiants">✉️ Renvoyer Email</button>' +
+                '</div></td>';
               tbody.appendChild(tr);
+            });
+
+            // Action renvoyer email
+            tbody.querySelectorAll(".btn-renvoyer-mail-user").forEach(function (btn) {
+              btn.addEventListener("click", function () {
+                var em = btn.dataset.userEmail;
+                var unom = decodeURIComponent(btn.dataset.userNom);
+                var urole = btn.dataset.userRole;
+                var mdpGenere = "Pass" + Math.floor(Math.random() * 9000 + 1000) + "!";
+                btn.textContent = "⏳ Envoi...";
+                btn.disabled = true;
+                API.post("/api/superadmin/renvoyer-email", {
+                  email: em,
+                  nomComplet: unom,
+                  role: urole,
+                  motDePasse: mdpGenere,
+                  nomEtude: etude.nomEtude,
+                  domaine: etude.domaine,
+                }).then(function () {
+                  btn.textContent = "✓ Envoyé";
+                  toast("Email d'accès et mot de passe envoyés à " + em);
+                }).catch(function (e) {
+                  btn.textContent = "✕ Erreur";
+                  toast("Erreur : " + e.message);
+                });
+              });
             });
 
             // Action réinitialiser mot de passe
