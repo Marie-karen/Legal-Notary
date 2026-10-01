@@ -112,7 +112,7 @@ window.LegalNotaryAPI = (function () {
 
     return fetch(getBaseUrl() + chemin, options).then(function (reponse) {
       if (timer) clearTimeout(timer);
-      if (reponse.status === 401 && chemin !== "/api/auth/connexion") {
+      if (reponse.status === 401 && chemin.indexOf("/api/auth/") === -1) {
         clearSession();
         if (onNonAutorise) onNonAutorise();
         return Promise.reject(new Error("Session expirée."));

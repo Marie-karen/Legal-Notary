@@ -384,7 +384,8 @@
     if (barre) barre.style.display = "none";
   }
 
-  function executerDeconnexion() {
+  function executerDeconnexion(options) {
+    var opt = options || {};
     API.deconnecter();
     cache.utilisateur = null;
     cache.dossiers = [];
@@ -411,7 +412,9 @@
     }
     var errZone = document.getElementById("login-erreur");
     if (errZone) errZone.style.display = "none";
-    toast("Déconnexion réussie.");
+    if (!opt.silencieux) {
+      toast("Déconnexion réussie.");
+    }
   }
 
   window.LegalNotaryDeconnexion = executerDeconnexion;
@@ -480,7 +483,10 @@
 
   function effectuerConnexion(email, motDePasse) {
     var erreurZone = document.getElementById("login-erreur");
-    if (erreurZone) erreurZone.style.display = "none";
+    if (erreurZone) {
+      erreurZone.textContent = "";
+      erreurZone.style.display = "none";
+    }
     var inputEmail = document.getElementById("login-input-email");
     var inputMdp = document.getElementById("login-input-mdp");
     if (inputEmail) inputEmail.value = email;
@@ -498,11 +504,12 @@
       return chargerToutEtAfficher();
     }).catch(function (erreur) {
       if (chargement) chargement.style.display = "none";
+      var msg = (erreur && erreur.message) || "Identifiants invalides";
       if (erreurZone) {
-        erreurZone.textContent = "Erreur de connexion : " + (erreur.message || "Identifiants invalides");
+        erreurZone.textContent = "Erreur de connexion : " + msg;
         erreurZone.style.display = "block";
       }
-      toast("Échec connexion : " + (erreur.message || "Erreur serveur"));
+      toast("Échec connexion : " + msg);
     });
   }
 
@@ -586,7 +593,12 @@
     }).catch(function (erreur) {
       console.error("Erreur chargerToutEtAfficher:", erreur);
       if (chargement) chargement.style.display = "none";
-      executerDeconnexion();
+      executerDeconnexion({ silencieux: true });
+      var errZone = document.getElementById("login-erreur");
+      if (errZone) {
+        errZone.textContent = "Erreur de session : " + (erreur.message || "Session expirée");
+        errZone.style.display = "block";
+      }
       toast("Erreur de session : " + (erreur.message || "Session expirée"));
     });
   }
@@ -12449,10 +12461,10 @@
       cache.utilisateur = API.getUtilisateur();
       cache.permissions = PERMISSIONS_PAR_ROLE[cache.utilisateur.role] || PERMISSIONS_PAR_ROLE.assistante;
       chargerToutEtAfficher().catch(function () {
-        executerDeconnexion();
+        executerDeconnexion({ silencieux: true });
       });
     } else {
-      executerDeconnexion();
+      executerDeconnexion({ silencieux: true });
     }
   }
 

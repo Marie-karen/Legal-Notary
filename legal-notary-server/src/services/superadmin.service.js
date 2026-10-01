@@ -6,6 +6,7 @@ const { pool } = require("../db/pool");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 const authService = require("./auth.service");
+const { lireFichierJson, ecrireFichierJson } = require("./stockage-persistant.service");
 
 const ETUDES_MEMOIRE = [
   {
@@ -63,6 +64,23 @@ const ETUDES_MEMOIRE = [
     dateCreation: new Date("2026-02-01"),
   }
 ];
+
+// Chargement initial des études sauvegardées sur disque
+function synchroniserEtudesDepuisDisque() {
+  const sauvegardes = lireFichierJson("etudes_persistantes.json", []);
+  if (Array.isArray(sauvegardes)) {
+    for (const e of sauvegardes) {
+      if (e && e.id && !ETUDES_MEMOIRE.some(x => x.id === e.id)) {
+        ETUDES_MEMOIRE.push(e);
+      }
+    }
+  }
+}
+synchroniserEtudesDepuisDisque();
+
+function persisterEtudesSurDisque() {
+  ecrireFichierJson("etudes_persistantes.json", ETUDES_MEMOIRE);
+}
 
 const MEMBRES_EDITEUR_MEMOIRE = [
   {
@@ -347,6 +365,7 @@ async function creerEtude({
   };
 
   ETUDES_MEMOIRE.unshift(nouvelleEtude);
+  persisterEtudesSurDisque();
   return nouvelleEtude;
 }
 
@@ -370,6 +389,7 @@ async function supprimerEtude(etudeId) {
   if (idx !== -1) {
     ETUDES_MEMOIRE.splice(idx, 1);
   }
+  persisterEtudesSurDisque();
 
   return { success: true, message: "Office Notarial et données associées purgés avec succès." };
 }

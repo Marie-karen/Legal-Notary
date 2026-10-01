@@ -7,6 +7,7 @@ const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const { pool } = require("../db/pool");
 const { notifyControlHub } = require("./webhook-dispatcher.service");
+const { lireFichierJson, ecrireFichierJson } = require("./stockage-persistant.service");
 
 const TOURS_HACHAGE = 12;
 
@@ -14,7 +15,7 @@ function utilisateurVersCamel(l, { avecSalaire = false } = {}) {
   const base = {
     id: l.id,
     nomComplet: l.nom_complet || l.nomComplet,
-    email: l.email,
+    email: (l.email || "").toLowerCase().trim(),
     telephone: l.telephone || "",
     role: l.role,
     etudeId: l.etude_id || l.etudeId || "etude-abidjan-01",
@@ -46,6 +47,26 @@ const COMPTES_DEMO_OFFLINE = {
 
 const UTILISATEURS_MEMOIRE = new Map(Object.entries(COMPTES_DEMO_OFFLINE).map(([k, v]) => [v.id, { ...v }]));
 
+// Chargement initial depuis le stockage persistant sur disque JSON
+function synchroniserDepuisDisque() {
+  const sauvegardes = lireFichierJson("utilisateurs_persistants.json", []);
+  if (Array.isArray(sauvegardes)) {
+    for (const u of sauvegardes) {
+      if (u && u.email) {
+        const norm = u.email.toLowerCase().trim();
+        UTILISATEURS_MEMOIRE.set(u.id, { ...u, email: norm });
+        COMPTES_DEMO_OFFLINE[norm] = { ...u, email: norm };
+      }
+    }
+  }
+}
+synchroniserDepuisDisque();
+
+function persisterUtilisateursSurDisque() {
+  const tous = Array.from(UTILISATEURS_MEMOIRE.values());
+  ecrireFichierJson("utilisateurs_persistants.json", tous);
+}
+
 async function creerUtilisateur({ nomComplet, email, motDePasse, role, telephone, dateEmbauche, typeContrat, salaireNet, etudeId, etude_id }, { avecSalaire = false } = {}) {
   const emailNorm = (email || "").toLowerCase().trim();
   const mdpNorm = (motDePasse || "notaire123").trim();
@@ -55,7 +76,7 @@ async function creerUtilisateur({ nomComplet, email, motDePasse, role, telephone
     hash = await bcrypt.hash(mdpNorm, TOURS_HACHAGE);
   } catch (_) {}
 
-  // Toujours enregistrer immédiatement en mémoire pour un accès immédiat (< 0.1ms)
+  // Toujours enregistrer immédiatement en mémoire et sur disque pour un accès immédiat (< 0.1ms)
   const nouvelId = "user-" + crypto.randomUUID().slice(0, 8);
   const userLocal = {
     id: nouvelId,
@@ -73,6 +94,7 @@ async function creerUtilisateur({ nomComplet, email, motDePasse, role, telephone
   };
   UTILISATEURS_MEMOIRE.set(nouvelId, userLocal);
   COMPTES_DEMO_OFFLINE[emailNorm] = userLocal;
+  persisterUtilisateursSurDisque();
 
   try {
     const { rows } = await pool.query(
@@ -94,6 +116,7 @@ async function creerUtilisateur({ nomComplet, email, motDePasse, role, telephone
       const u = rows[0];
       userLocal.id = u.id;
       UTILISATEURS_MEMOIRE.set(u.id, userLocal);
+      persisterUtilisateursSurDisque();
       notifyControlHub("user.created", { id: u.id, email: u.email, name: u.nom_complet, role: u.role, etudeId: eid }).catch(() => {});
       return utilisateurVersCamel(u, { avecSalaire });
     }
@@ -122,7 +145,10 @@ async function modifierUtilisateur(id, champs, { avecSalaire = false } = {}) {
           id,
         ]
       );
-      if (rows && rows.length) return utilisateurVersCamel(rows[0], { avecSalaire });
+      if (rows && rows.length) {
+        persisterUtilisateursSurDisque();
+        return utilisateurVersCamel(rows[0], { avecSalaire });
+      }
     }
   } catch (errDb) {
     console.warn("[AuthService] Repli mémoire modification utilisateur :", errDb.message);
@@ -136,6 +162,7 @@ async function modifierUtilisateur(id, champs, { avecSalaire = false } = {}) {
     if (champs.dateEmbauche) existant.date_embauche = champs.dateEmbauche;
     if (champs.typeContrat) existant.type_contrat = champs.typeContrat;
     if (champs.salaireNet !== undefined) existant.salaire_net = champs.salaireNet;
+    persisterUtilisateursSurDisque();
     return utilisateurVersCamel(existant, { avecSalaire });
   }
   return null;
@@ -160,6 +187,7 @@ async function reinitialiserMotDePasse(idOuEmail, nouveauMotDePasse) {
       if (COMPTES_DEMO_OFFLINE[u.email]) {
         COMPTES_DEMO_OFFLINE[u.email].mdp = mdpNorm;
       }
+      persisterUtilisateursSurDisque();
       return utilisateurVersCamel(u);
     }
   } catch (errDb) {
@@ -174,6 +202,7 @@ async function reinitialiserMotDePasse(idOuEmail, nouveauMotDePasse) {
       if (COMPTES_DEMO_OFFLINE[v.email]) {
         COMPTES_DEMO_OFFLINE[v.email].mdp = mdpNorm;
       }
+      persisterUtilisateursSurDisque();
       return utilisateurVersCamel(v);
     }
   }
@@ -287,6 +316,7 @@ async function desactiverUtilisateur(id) {
   } catch (_) {}
   const u = UTILISATEURS_MEMOIRE.get(id);
   if (u) u.actif = false;
+  persisterUtilisateursSurDisque();
 }
 
 async function supprimerUtilisateursParEtude(etudeId) {
@@ -299,6 +329,7 @@ async function supprimerUtilisateursParEtude(etudeId) {
       delete COMPTES_DEMO_OFFLINE[u.email];
     }
   }
+  persisterUtilisateursSurDisque();
 }
 
 module.exports = {
