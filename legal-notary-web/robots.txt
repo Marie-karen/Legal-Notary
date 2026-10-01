@@ -1,5 +1,6 @@
 User-agent: *
 Allow: /
+Allow: /documentation.html
 Allow: /mentions-legales
 Allow: /politique-confidentialite
 Allow: /cgu

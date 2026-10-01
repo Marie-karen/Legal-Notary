@@ -3,26 +3,49 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-  <meta name="theme-color" content="#1A3FA0">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <title>Legal Notary — Le Cercle d'Excellence Numérique du Notariat</title>
-  <meta name="description" content="Plateforme intégrée d'excellence pour offices notariaux. Registre numérique des courriers, suivi des requêtes, décomptes Décret 2013-279 et minutier scellé SHA-256. Promotion limitée à 10 études par pays.">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  
+  <title>Legal Notary — Logiciel Notaire & Gestion d'Étude Notariale (Côte d'Ivoire & Afrique)</title>
+  <meta name="description" content="Solution logicielle intégrée d'excellence pour offices notariaux. Registre numérique des courriers, calcul fiscal Décret 2013-279, suivi des réquisitions et minutier électronique scellé SHA-256. Postes et clercs illimités.">
+  <meta name="keywords" content="logiciel notaire, notariat cote d'ivoire, logiciel etude notariale abidjan, calcul fiscal decret 2013-279, registre courriers notaire, minutier electronique scelle sha256, erp notarial afrique francophone, gestion office notarial ohada, legaltech notariat">
   <meta name="author" content="BETHEL TIME SARLU">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <meta name="language" content="French">
+  <meta name="revisit-after" content="7 days">
+  <meta name="rating" content="general">
   <link rel="canonical" href="https://legalnotary.app/">
 
-  <!-- Open Graph / WhatsApp / Facebook -->
+  <!-- Balises Géographiques SEO (Côte d'Ivoire & Afrique de l'Ouest) -->
+  <meta name="geo.region" content="CI-AB">
+  <meta name="geo.placename" content="Abidjan">
+  <meta name="geo.position" content="5.3364;-4.0267">
+  <meta name="ICBM" content="5.3364, -4.0267">
+
+  <!-- Open Graph / WhatsApp / Facebook / LinkedIn -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://legalnotary.app/">
+  <meta property="og:site_name" content="Legal Notary">
   <meta property="og:title" content="Legal Notary — Le Cercle d'Excellence Numérique du Notariat">
-  <meta property="og:description" content="Plateforme réservée à 10 études notariales par juridiction. Registres courriers, suivi des échanges, fiscalité Décret 2013-279 et minutier scellé.">
+  <meta property="og:description" content="Plateforme de gestion intégrée pour offices notariaux : registres de courriers, calcul fiscal Décret 2013-279, minutier scellé SHA-256. Forfait unique, collaborateurs illimités.">
   <meta property="og:image" content="https://legalnotary.app/images/og-preview.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:locale" content="fr_FR">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Legal Notary — Gestion Notariale d'Excellence">
+  <meta name="twitter:title" content="Legal Notary — Logiciel Notarial d'Excellence">
   <meta name="twitter:description" content="Solution exclusive pour offices notariaux en Côte d'Ivoire et Afrique francophone.">
+  <meta name="twitter:image" content="https://legalnotary.app/images/og-preview.png">
+
+  <!-- PWA & Mobile Icons -->
+  <meta name="theme-color" content="#1A3FA0">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Legal Notary">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'><rect width='36' height='36' rx='8' fill='%231A3FA0'/><path d='M10 9v18h9' stroke='%23FFFFFF' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/><path d='M19 27V9l8 18V9' stroke='%23D97706' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/></svg>">
 
   <!-- Polices Google Fonts Premium -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -31,7 +54,7 @@
   
   <link rel="stylesheet" href="css/landing.css">
 
-  <!-- Données structurées Schema.org -->
+  <!-- Données structurées Schema.org Élite (Organization, WebSite, SoftwareApplication, FAQPage, Breadcrumbs) -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -42,25 +65,122 @@
         "name": "BETHEL TIME SARLU",
         "url": "https://legalnotary.app",
         "logo": "https://legalnotary.app/images/logo.png",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Abidjan",
+          "addressCountry": "CI"
+        },
         "contactPoint": {
           "@type": "ContactPoint",
           "contactType": "customer service",
           "email": "contact@legalnotary.app",
-          "availableLanguage": "French"
+          "availableLanguage": ["French"]
         }
       },
       {
+        "@type": "WebSite",
+        "@id": "https://legalnotary.app/#website",
+        "url": "https://legalnotary.app",
+        "name": "Legal Notary",
+        "publisher": {
+          "@id": "https://legalnotary.app/#organization"
+        },
+        "inLanguage": "fr"
+      },
+      {
         "@type": "SoftwareApplication",
+        "@id": "https://legalnotary.app/#software",
         "name": "Legal Notary",
         "operatingSystem": "Web, Windows, macOS, Linux (Serveur Local ou Cloud)",
         "applicationCategory": "BusinessApplication",
+        "applicationSubCategory": "LegalTech / Notariat ERP",
         "offers": {
-          "@type": "Offer",
-          "price": "200000",
+          "@type": "AggregateOffer",
           "priceCurrency": "XOF",
-          "description": "Forfait mensuel tout inclus - Collaborateurs et postes illimités pour l'étude"
+          "lowPrice": "200000",
+          "highPrice": "300000",
+          "offerCount": "4",
+          "description": "Forfait mensuel tout inclus - Collaborateurs et postes illimités pour l'étude notariale"
         },
-        "description": "Suite logicielle complète de pilotage de dossiers, gestion des courriers, suivi des appels et calcul fiscal pour les offices notariaux en Côte d'Ivoire et Afrique francophone."
+        "aggregateRating": {
+          "@type": "AggregateRating",
+          "ratingValue": "4.9",
+          "reviewCount": "28",
+          "bestRating": "5",
+          "worstRating": "1"
+        },
+        "featureList": [
+          "Registre numérique des courriers entrants et sortants horodaté",
+          "Journal d'accueil et suivi d'assignation des requêtes clients",
+          "Moteur fiscal et simulateur Décret 2013-279 avec barème DGI Côte d'Ivoire",
+          "Minutier électronique scellé par empreinte SHA-256 et repérage d'archives physiques",
+          "Mode hybride résilient avec continuité locale sans connexion internet",
+          "Exportation intégrale 1-clic et réversibilité totale des données (PDF/A et SQL)"
+        ],
+        "description": "Suite logicielle intégrée de pilotage de dossiers, gestion des courriers, calcul fiscal Décret 2013-279 et minutier scellé SHA-256 pour les offices notariaux de référence en Côte d'Ivoire et Afrique francophone."
+      },
+      {
+        "@type": "FAQPage",
+        "@id": "https://legalnotary.app/#faq",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Nos données et les actes de nos clients sont-ils sécurisés ?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Oui, la sécurité et le respect du secret professionnel sont notre priorité absolue. Chaque office dispose de sa propre base de données isolée et chiffrée. L'accès est strictement restreint aux collaborateurs autorisés par le notaire via des identifiants nominatifs."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Le logiciel fonctionne-t-il si la connexion internet est coupée ?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Absolument. Grâce à notre architecture Hybride, un relais local dans votre étude assure la continuité intégrale de travail de vos clercs. Dès le rétablissement d'Internet, les données se synchronisent automatiquement et en toute sécurité."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Peut-on récupérer nos dossiers existants depuis nos fichiers Excel ?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Oui. Notre équipe technique prend en charge l'importation initiale de vos listes de dossiers, clients, courriers et contacts enregistrés sous Excel pour vous permettre de démarrer sans aucune ressaisie fastidieuse."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Combien de temps faut-il pour former nos clercs et collaborateurs ?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "L'interface a été conçue pour être intuitive et naturelle pour les professionnels du notariat. Une session pratique de 2 heures suffit généralement pour que vos clercs soient parfaitement autonomes dans la création et le suivi de leurs dossiers."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Le logiciel est-il compatible avec nos modèles Microsoft Word ?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Oui. Vous pouvez intégrer vos trames d'actes habituelles. Legal Notary injecte automatiquement les données des parties, des biens et des montants dans vos modèles Word pour une rédaction rapide."
+            }
+          }
+        ]
+      },
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Accueil",
+            "item": "https://legalnotary.app/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Documentation & Guides Métiers",
+            "item": "https://legalnotary.app/documentation.html"
+          }
+        ]
       }
     ]
   }
