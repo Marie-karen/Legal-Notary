@@ -262,4 +262,23 @@ router.post("/renvoyer-email", async (req, res, next) => {
   }
 });
 
+// 13. Tester la configuration SMTP en direct
+router.post("/tester-smtp", async (req, res, next) => {
+  try {
+    const { emailTest } = req.body || {};
+    const dest = emailTest || (req.utilisateur && req.utilisateur.email) || "contact@legalnotary.app";
+    const resultat = await superadminService.envoyerEmailBienvenueCollaborateur({
+      destinataireEmail: dest,
+      nomComplet: "Administrateur Test",
+      role: "superadmin",
+      motDePasse: "TestPass123!",
+      nomEtude: "Legal Notary — Test SMTP",
+      domaine: "legalnotary.app",
+    });
+    res.json(resultat);
+  } catch (e) {
+    next(e);
+  }
+});
+
 module.exports = router;
