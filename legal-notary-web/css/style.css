@@ -465,7 +465,7 @@ select.input { -webkit-appearance: none; appearance: none; }
 .status-dot-etape-5 { background: #fb923c; box-shadow: 0 0 6px rgba(251, 146, 60, 0.6); }
 .status-dot-etape-6 { background: #34d399; box-shadow: 0 0 6px rgba(52, 211, 153, 0.6); }
 
-/* Bouton sélecteur de thème ☀️ / 🌙 */
+/* Bouton sélecteur de thème vectoriel SVG */
 .theme-switch-btn {
   display: inline-flex;
   align-items: center;
@@ -478,12 +478,26 @@ select.input { -webkit-appearance: none; appearance: none; }
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  transition: all .15s ease;
+  transition: all .2s ease;
 }
 .theme-switch-btn:hover {
   background: var(--color-surface);
   border-color: var(--color-gold);
   color: var(--color-gold);
+}
+.theme-switch-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+.theme-switch-icon svg {
+  display: block;
+  stroke: currentColor;
+  transition: transform .25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.theme-switch-btn:hover .theme-switch-icon svg {
+  transform: rotate(15deg) scale(1.08);
 }
 
 /* Grille et cartes KPI */

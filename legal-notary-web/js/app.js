@@ -422,12 +422,15 @@
   // -----------------------------------------------------------------
   // GESTION DU THÈME DUAL (LIGHT MODE / DARK MODE FINTECH)
   // -----------------------------------------------------------------
+  var SVG_THEME_SUN = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>';
+  var SVG_THEME_MOON = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>';
+
   function actualiserAffichageBoutonTheme(theme) {
     var icones = document.querySelectorAll(".theme-switch-icon");
     var labels = document.querySelectorAll(".theme-switch-label");
     var estClair = (theme === "light");
     icones.forEach(function (ic) {
-      ic.textContent = estClair ? "☀️" : "🌙";
+      ic.innerHTML = estClair ? SVG_THEME_SUN : SVG_THEME_MOON;
     });
     labels.forEach(function (lb) {
       lb.textContent = estClair ? "Mode Clair" : "Mode Sombre";
@@ -446,7 +449,7 @@
     var themeActuel = document.documentElement.getAttribute("data-theme") || "dark";
     var nouveauTheme = (themeActuel === "light") ? "dark" : "light";
     appliquerTheme(nouveauTheme);
-    toast("Thème appliqué : " + (nouveauTheme === "light" ? "Mode Clair" : "Mode Sombre"));
+    toast("Affichage : " + (nouveauTheme === "light" ? "Mode Clair activé" : "Mode Sombre activé"));
   }
 
   function basculerMenuMobile() {
@@ -779,12 +782,12 @@
     html += '<p style="font-size:13.5px;color:var(--color-text-dim);line-height:1.6;margin:0">' + item.message + '</p>';
 
     html += '<div style="margin-top:6px">';
-    html += '<button type="button" class="btn btn-primary" id="btn-fermer-popup-motivation" style="padding:10px 28px;font-size:14px;font-weight:700;border-radius:8px;cursor:pointer">' + (estSoir ? "Merci, bonne soirée ! 🌙" : "C'est parti, à mes dossiers ! ✨") + '</button>';
+    html += '<button type="button" class="btn btn-primary" id="btn-fermer-popup-motivation" style="padding:10px 28px;font-size:14px;font-weight:700;border-radius:8px;cursor:pointer">' + (estSoir ? "Merci, bonne fin de journée" : "Accéder à l'espace de travail") + '</button>';
     html += '</div>';
     html += '</div>';
 
     ouvrirModal({
-      titre: '<span style="color:#f59e0b">☀️</span> Mot d\'Accueil & Pensée du Jour',
+      titre: 'Mot d\'Accueil & Pensée du Jour',
       corps: html,
       boutonFermer: true,
       largeur: "490px",
