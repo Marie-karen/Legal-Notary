@@ -131,6 +131,54 @@ Ouvrez ensuite votre navigateur sur :
 
 ---
 
+## 🛠️ Guide d'Architecture & Directives pour Développeur Full-Time
+
+Si vous intervenez en tant que développeur sur le projet **Legal Notary**, vous devez respecter scrupuleusement les 5 principes fondamentaux ci-dessous pour préserver l'intégrité, la sécurité et la scalabilité du SaaS.
+
+### 1. 🛡️ Scoping Multi-Tenant Strict & Cloisonnement des Données (`etude_id`)
+* **Règle absolue** : Chaque table de données, route d'API et requête SQL doit impérativement filtrer par `etude_id` (injecté automatiquement via le middleware d'authentification JWT `req.utilisateur.etudeId`).
+* **Zéro fuite de données** : Deux offices notariaux ne doivent sous aucun prétexte partager ou apercevoir leurs répertoires, actes, clients ou courriers respectifs.
+
+### 2. 🧩 Ajout de Fonctionnalités & Modules Spécifiques par Étude (Feature Flags)
+Quand une étude demande un module ou une logique personnalisée (ex: *Recouvrement spécialisé, successions coutumières, barèmes fiscaux dérogatoires*) :
+* **Ne JAMAIS casser le tronc commun** : Toute modification spécifique à une étude doit être conditionnée et isolée.
+* **Activation via Feature Flag** : Activer le module dans la configuration de l'étude (`modules_actifs` dans la table `etudes` ou `parametres_etude`) :
+  ```javascript
+  // Backend : Vérification de permission / module actif
+  if (req.utilisateur.codeEtude === 'ETUDE_KOFFI' || req.etude.modules.includes('custom_recouvrement')) {
+    // Exécuter la logique spécifique de cette étude
+    return serviceSpecifiqueKoffi.traiter(req.body);
+  }
+  // Tronc commun préservé pour tout le reste du réseau
+  return serviceStandard.traiter(req.body);
+  ```
+* **Affichage conditionnel Frontend** : Dans l'interface, les onglets et actions sur-mesure ne s'affichent que si l'utilisateur connecté possède le module activé sur son étude.
+
+### 3. 👥 Respect de la Matrice RBAC (6 Rôles Notariaux Déontologiques)
+Toute nouvelle fonctionnalité doit respecter les prérogatives des 6 rôles de l'Office :
+* `notaire` : Validation d'actes, comptabilité globale, clôture d'exercices, scellement SHA-256.
+* `premier_clerc` : Attribution des dossiers, révision juridique, supervision de l'équipe.
+* `clerc_redacteur` : Rédaction des projets d'actes, collecte des pièces KYC, gestion de ses dossiers.
+* `clerc_formaliste` : Formalités préalables/postérieures, DGI, Conservation Foncière, RCCM.
+* `comptable_taxateur` : Fiches de taxe Décret 2013-279, suivi des provisions et comptes séquestres CDCI.
+* `archiviste` / `assistante` : Minutier scellé, repérage physique des cartons, registre des courriers.
+
+### 4. 🌐 Routage Multi-Domaines Automatique (`server.js`)
+* Les domaines vitrine (`legalnotary.app`, `www.legalnotary.app`) servent la **Landing Page commerciale (`index.html`)**.
+* Les domaines dédiés aux études (`etude-mka.ci`, `nom.notaires.ci`, `app.legalnotary.app`) basculent **instantanément sur le Cockpit de Travail (`app.html`)**, sans jamais exposer la vitrine publique.
+
+### 5. 🚀 Workflow de Contribution & Déploiement VPS
+1. **Développement & Tests** : Écrire et tester le code en local. Les scripts de validation de non-régression se trouvent dans `scratch/`.
+2. **Push Git** : Committer avec des messages explicites (`feat:`, `fix:`, `refactor:`) et pousser sur `origin main`.
+3. **Déploiement en Production (Hostinger VPS)** :
+   ```bash
+   ssh root@72.62.39.225
+   cd /var/www/legal-notary && git pull origin main && pm2 restart all
+   ```
+4. **Configuration SMTP Production** : Vérifier que `/var/www/legal-notary/legal-notary-server/.env` contient les identifiants SMTP réels (`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`) pour l'envoi effectif des emails d'accueil.
+
+---
+
 ## 🔒 Sécurité, Audit & Secret Professionnel
 
 - **Garantie Zéro-Accès aux Actes** : Par conception, l'éditeur SaaS et les équipes de support n'ont **aucun accès par défaut** aux actes juridiques rédigés par les études.
@@ -144,3 +192,4 @@ Ouvrez ensuite votre navigateur sur :
 
 Tous droits réservés © 2026 — **Marie-karen / Legal Notary**.  
 Usage propriétaire réservé à l'éditeur et aux études notariales titulaires d'une licence d'exploitation.
+
