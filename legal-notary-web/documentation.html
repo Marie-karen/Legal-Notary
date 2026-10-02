@@ -396,12 +396,12 @@
         <span style="font-size:12.5px;font-weight:700;color:var(--color-text-dim);align-self:center;margin-right:4px">
           Afficher le guide pour :
         </span>
-        <button type="button" class="role-pill-btn active" onclick="selectionnerRole('notaire')">👑 Notaire</button>
-        <button type="button" class="role-pill-btn" onclick="selectionnerRole('premier_clerc')">👔 1er Clerc</button>
-        <button type="button" class="role-pill-btn" onclick="selectionnerRole('clerc_redacteur')">✍️ Rédacteur</button>
-        <button type="button" class="role-pill-btn" onclick="selectionnerRole('comptable')">💳 Comptable</button>
-        <button type="button" class="role-pill-btn" onclick="selectionnerRole('formaliste')">🏛️ Formaliste</button>
-        <button type="button" class="role-pill-btn" onclick="selectionnerRole('archiviste')">📦 Archiviste</button>
+        <button type="button" class="role-pill-btn active" onclick="selectionnerRole('notaire')">Notaire Titulaire</button>
+        <button type="button" class="role-pill-btn" onclick="selectionnerRole('premier_clerc')">Premier Clerc</button>
+        <button type="button" class="role-pill-btn" onclick="selectionnerRole('clerc_redacteur')">Clerc Rédacteur</button>
+        <button type="button" class="role-pill-btn" onclick="selectionnerRole('comptable')">Comptable Taxateur</button>
+        <button type="button" class="role-pill-btn" onclick="selectionnerRole('formaliste')">Clerc aux Formalités</button>
+        <button type="button" class="role-pill-btn" onclick="selectionnerRole('archiviste')">Archiviste</button>
       </div>
 
       <!-- CONTENU DYNAMIQUE PAR RÔLE -->
@@ -417,8 +417,7 @@
     var GUIDES_PAR_ROLE = {
       notaire: {
         roleLabel: "Notaire Titulaire (Maître de l'Étude)",
-        roleIcon: "👑",
-        badge: "Accès & Pouvoir Suprême",
+        badge: "Direction & Décision Suprême",
         resume: "Ce guide détaille les flux stratégiques réservés au Notaire : supervision des rentabilités, validation juridique dans le parapheur électronique, signature numérique et scellement des minutes.",
         steps: [
           {
@@ -426,7 +425,7 @@
             title: "Supervision du Tableau de Bord & Pilotage Financier",
             desc: "Dès votre connexion, visualisez la rentabilité globale de l'office, le nombre d'actes en cours d'instruction et les alertes de forclusion.",
             action: "Cliquer sur 'Tableau de bord' dans la barre latérale.",
-            mockup: "📊 Encaissements du mois : 42 500 000 FCFA | Dossiers en cours : 18 | Actes à signer aujourd'hui : 3",
+            mockup: "Encaissements du mois : 42 500 000 FCFA | Dossiers en cours : 18 | Actes à signer aujourd'hui : 3",
             checklist: [
               "Vérifier les dossiers urgents nécessitant un arbitrage juridique",
               "Contrôler le montant total des provisions reçues en compte séquestre",
@@ -438,7 +437,7 @@
             title: "Revue & Validation dans le Parapheur Électronique",
             desc: "Les actes préparés par les clercs arrivent dans votre Parapheur pour vérification des clauses et accord final.",
             action: "Ouvrir 'Parapheur & Validations' -> Sélectionner l'acte à contrôler.",
-            mockup: "📑 Acte #DOS-2026-0042 (Vente Immobilière 120M FCFA) -> Statut : <span class='cursor-pointer-hint'>En attente Signature Notaire</span>",
+            mockup: "Acte #DOS-2026-0042 (Vente Immobilière 120M FCFA) -> Statut : <span class='cursor-pointer-hint'>En attente Signature Notaire</span>",
             checklist: [
               "Contrôler l'identité des comparants et la fiche KYC / LCB-FT",
               "Vérifier la concordance de la description cadastrale et des servitudes",
@@ -450,7 +449,7 @@
             title: "Attribution de Minute & Scellement Cryptographique SHA-256",
             desc: "Après signature des parties, l'acte est officiellement converti en minute inaltérable avec calcul d'empreinte.",
             action: "Cliquer sur 'Clôturer en Minute Officielle'.",
-            mockup: "🏛️ Minute Numéro : <strong>MIN-2026-0128</strong> | Empreinte SHA-256 : <span style='color:#38bdf8'>e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855</span>",
+            mockup: "Minute Numéro : <strong>MIN-2026-0128</strong> | Empreinte SHA-256 : <span style='color:#38bdf8'>e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855</span>",
             checklist: [
               "Vérifier la génération séquentielle du numéro de minute",
               "Confirmer l'inscription automatique au Répertoire Général des Actes",
@@ -462,7 +461,6 @@
 
       premier_clerc: {
         roleLabel: "Premier Clerc de l'Étude",
-        roleIcon: "👔",
         badge: "Supervision Juridique & Répartition",
         resume: "Le Premier Clerc coordonne l'équipe de rédaction, répartit les affaires entrantes et effectue la première relecture des actes avant transmission au Notaire.",
         steps: [
@@ -483,7 +481,7 @@
             title: "Relecture Contradictoire & Contrôle des Pièces",
             desc: "Vérifier que toutes les pièces obligatoires sont validées et conformes avant transmission au parapheur du Notaire.",
             action: "Cliquer sur 'Valider pour Parapheur Notaire'.",
-            mockup: "Checklist : 6/6 Pièces Validées ✅ | Projet d'acte conforme aux modèles homologués ✅",
+            mockup: "Checklist : 6/6 Pièces Validées (Conforme) | Projet d'acte conforme aux modèles homologués",
             checklist: [
               "Vérifier l'état des droits réels (hypothèque, gage, servitude)",
               "Confirmer le calcul de l'état prévisionnel de frais avec la comptabilité"
@@ -494,7 +492,6 @@
 
       clerc_redacteur: {
         roleLabel: "Clerc Rédacteur",
-        roleIcon: "✍️",
         badge: "Instruction & Rédaction d'Actes",
         resume: "Le Clerc Rédacteur instruit le dossier de A à Z : saisie des comparants, conformité KYC/LCB-FT, pointage des pièces et rédaction de l'acte authentique.",
         steps: [
@@ -503,7 +500,7 @@
             title: "Ouverture & Qualification du Dossier",
             desc: "Créez l'affaire en sélectionnant le type d'acte (Vente, Prêt, Statuts SARL, Donation) et renseignez les valeurs de transaction.",
             action: "Bouton '+ Nouveau Dossier' -> Renseigner l'intitulé et la valeur.",
-            mockup: "📁 Titre : Vente Villa M. KOUAME / SCI HORIZON | Type : Vente Immobilière | Valeur : 85 000 000 FCFA",
+            mockup: "Titre : Vente Villa M. KOUAME / SCI HORIZON | Type : Vente Immobilière | Valeur : 85 000 000 FCFA",
             checklist: [
               "Renseigner l'intitulé clair avec les noms des parties",
               "Saisir le montant exact de la transaction pour la taxation automatique",
@@ -515,7 +512,7 @@
             title: "Saisie des Comparants & Contrôle KYC / LCB-FT",
             desc: "Renseignez l'état civil rigoureux de chaque partie et téléversez les pièces d'identité scannées.",
             action: "Onglet 'Comparants' -> Ajouter Acquéreur et Vendeur.",
-            mockup: "👤 M. KOUAME Koffi (Vendeur) - CNI N° CI00392819 -> <span class='cursor-pointer-hint'>Vérification CENTIF : Conforme ✅</span>",
+            mockup: "M. KOUAME Koffi (Vendeur) - CNI N° CI00392819 -> <span class='cursor-pointer-hint'>Vérification CENTIF : Conforme</span>",
             checklist: [
               "Vérifier le régime matrimonial (Séparation de biens vs Communauté)",
               "Importer la copie scannée de la CNI / Passeport valide",
@@ -527,7 +524,7 @@
             title: "Rédaction avec Modèles Certifiés & Checklist Pièces",
             desc: "Rédigez l'acte en utilisant les matrices certifiées pré-remplies et cochez les pièces au fur et à mesure de leur réception.",
             action: "Onglet 'Rédaction' -> Générer le projet d'acte.",
-            mockup: "📝 Modèle appliqué : Vente_Immobiliere_Urbaine_v2.docx -> Fusion des données comparants terminée.",
+            mockup: "Modèle appliqué : Vente_Immobiliere_Urbaine_v2.docx -> Fusion des données comparants terminée.",
             checklist: [
               "Vérifier le CMPF (Certificat de Mutation sur Propriété Foncière)",
               "S'assurer du quitus fiscal et des quittances CIE/SODECI",
@@ -539,7 +536,6 @@
 
       comptable: {
         roleLabel: "Comptable & Taxateur de l'Étude",
-        roleIcon: "💳",
         badge: "Fiscalité & Sécurité Financière",
         resume: "Le Comptable Taxateur maîtrise le calcul d'émoluments (Décret 2013-279), gère les provisions sur frais, émet les quittances et assure le rapprochement des comptes clients.",
         steps: [
@@ -560,7 +556,7 @@
             title: "Émission du Compte Provisoire de Frais & Reçus de Provision",
             desc: "Générez le document d'appel de fonds avant signature et enregistrez les versements par virement ou chèque de banque.",
             action: "Cliquer sur 'Imprimer le Compte Provisoire de Frais'.",
-            mockup: "📄 Compte de Frais N° CPF-2026-0089 | Montant Total à Percevoir : <strong>8 250 100 FCFA</strong>",
+            mockup: "Compte de Frais N° CPF-2026-0089 | Montant Total à Percevoir : <strong>8 250 100 FCFA</strong>",
             checklist: [
               "Émettre le reçu de provision horodaté pour le client",
               "Ventiler les sommes versées sur le compte séquestre de l'affaire",
@@ -571,8 +567,7 @@
       },
 
       formaliste: {
-        roleLabel: "Clerc Formaliste",
-        roleIcon: "🏛️",
+        roleLabel: "Clerc aux Formalités",
         badge: "DGI, Conservation Foncière & RCCM",
         resume: "Le Formaliste prend en charge l'acte signé : enregistrement fiscal dans les délais légaux (30 jours), dépôt à la Conservation Foncière ou au Greffe du Tribunal.",
         steps: [
@@ -581,7 +576,7 @@
             title: "Bordereau de Dépôt & Enregistrement Fiscal (DGI)",
             desc: "Préparez les bordereaux de dépôt groupés pour la recette des impôts et suivez le compte à rebours des délais de forclusion.",
             action: "Menu 'Formalités' -> Sélectionner les actes à enregistrer.",
-            mockup: "⏳ Acte MIN-2026-0128 -> Délai restant : <span class='cursor-pointer-hint'>18 Jours avant pénalités</span>",
+            mockup: "Acte MIN-2026-0128 -> Délai restant : <span class='cursor-pointer-hint'>18 Jours avant pénalités</span>",
             checklist: [
               "Éditer le bordereau officiel de présentation à l'enregistrement",
               "Déposer les exemplaires timbrés au centre des impôts compétent",
@@ -605,7 +600,6 @@
 
       archiviste: {
         roleLabel: "Archiviste & Documentaliste",
-        roleIcon: "📦",
         badge: "Conservation Trentenaire & Magasin",
         resume: "L'Archiviste gère le Minutier Centralisé, attribue les cotes de rangement physiques et assure la traçabilité des sorties de dossiers.",
         steps: [
@@ -614,7 +608,7 @@
             title: "Cotation & Rangement Physique en Boîte d'Archives",
             desc: "Affectez le dossier physique clos à son carton et son rayon selon la norme de classement de l'Étude.",
             action: "Dans 'Archives & Minutier' -> Cliquer sur 'Affecter une Cote'.",
-            mockup: "📦 Cote de Rangement : <strong>RAYON-B / TRAVEE-02 / CARTON-2026-08 / DOS-042</strong>",
+            mockup: "Cote de Rangement : <strong>RAYON-B / TRAVEE-02 / CARTON-2026-08 / DOS-042</strong>",
             checklist: [
               "Imprimer l'étiquette code-barres / QR Code du carton",
               "Placer la chemise physique dans la boîte dédiée",
@@ -637,8 +631,7 @@
       },
 
       assistante: {
-        roleLabel: "Assistante & Standardiste d'Accueil",
-        roleIcon: "🛎️",
+        roleLabel: "Chargé(e) d'Accueil & Secrétariat",
         badge: "Accueil & Communication Clients",
         resume: "L'Assistante accueille les clients, crée la fiche préliminaire de contact et déclenche les notifications WhatsApp/SMS pour les rendez-vous et pièces manquantes.",
         steps: [
@@ -647,7 +640,7 @@
             title: "Création de la Fiche de Contact Préliminaire",
             desc: "Enregistrez le client dès son arrivée à l'accueil pour faciliter le travail du clerc.",
             action: "Menu 'Annuaire Clients' -> '+ Nouveau Client'.",
-            mockup: "👤 Nom : MME TOURE Fatou | Téléphone : +225 07 08 09 10 11 | Motif : Conseil Création Société",
+            mockup: "Nom : MME TOURE Fatou | Téléphone : +225 07 08 09 10 11 | Motif : Conseil Création Société",
             checklist: [
               "Vérifier le numéro de téléphone pour les notifications WhatsApp",
               "Renseigner l'adresse email et la pièce d'identité",
@@ -659,7 +652,7 @@
             title: "Envoi de Rappels Automatiques WhatsApp / SMS",
             desc: "Relancez les clients pour les pièces manquantes ou rappelez la date de signature de l'acte en 1 clic.",
             action: "Bouton 'Envoyer Rappel WhatsApp' sur le dossier.",
-            mockup: "📱 Message envoyé : <em>« Bonjour MME TOURE, votre acte est prêt pour signature ce jeudi à 15h à l'Étude. »</em>",
+            mockup: "Message transmis : <em>« Bonjour MME TOURE, votre acte est prêt pour signature ce jeudi à 15h à l'Étude. »</em>",
             checklist: [
               "Sélectionner le modèle de notification homologué par l'Étude",
               "Vérifier la confirmation de remise du message"
@@ -670,7 +663,6 @@
 
       superadmin: {
         roleLabel: "SuperAdmin SaaS & Référent Informatique",
-        roleIcon: "🛠️",
         badge: "Infrastructure, Licences & Sauvegardes",
         resume: "L'Administrateur gère les accès des utilisateurs (postes illimités), surveille la santé du serveur, les sauvegardes automatiques et la résilience hors-ligne.",
         steps: [
@@ -679,7 +671,7 @@
             title: "Gestion des Utilisateurs & Postes Illimités",
             desc: "Créez autant de comptes de clercs, comptables et stagiaires que nécessaire sans surcoût de licence.",
             action: "Menu 'Paramètres Étude' -> 'Utilisateurs & Collaborateurs'.",
-            mockup: "👥 Collaborateurs actifs : 14 | Postes autorisés : <strong>ILLIMITÉS (Offre Étude)</strong>",
+            mockup: "Collaborateurs actifs : 14 | Postes autorisés : <strong>ILLIMITÉS (Offre Étude)</strong>",
             checklist: [
               "Créer le compte avec l'adresse email professionnelle de l'Étude",
               "Attribuer le rôle RBAC correspondant avec précision",
@@ -691,7 +683,7 @@
             title: "Surveillance de la Synchronisation & Sauvegardes",
             desc: "Contrôlez l'état de la base de données PostgreSQL et les sauvegardes automatiques quotidiennes chiffrées.",
             action: "Menu 'Supervision & Contrôle Interne'.",
-            mockup: "🛡️ Latence API : <strong style='color:#34d399'>1.2 ms</strong> | Santé Base de données : <strong style='color:#34d399'>100% Opérationnelle</strong>",
+            mockup: "Latence système : <strong style='color:#34d399'>1.2 ms</strong> | État Base de données : <strong style='color:#34d399'>100% Opérationnelle</strong>",
             checklist: [
               "Vérifier l'exécution de la sauvegarde nocturne quotidienne",
               "Tester la résilience en mode déconnecté (Cache SWR)",
@@ -739,14 +731,14 @@
       html += '<span style="font-size:12px;color:var(--color-text-dim)">Norme ISO/IEC/IEEE 26514:2022</span>';
       html += '</div>';
       html += '<h1 style="margin:0 0 10px 0;font-family:\'Playfair Display\',serif;font-size:30px;color:var(--color-text)">';
-      html += data.roleIcon + ' ' + data.roleLabel;
+      html += data.roleLabel;
       html += '</h1>';
       html += '<p style="font-size:14.5px;color:var(--color-text-dim);margin:0;line-height:1.6">' + data.resume + '</p>';
       html += '</div>';
 
       // Alert info Glitter
       html += '<div class="callout-pro">';
-      html += '<strong>✨ Guide d\'Action Pas à Pas :</strong> Suivez les étapes ci-dessous dans l\'ordre chronologique pour accomplir vos missions quotidiennes sur <em>Legal Notary ERP</em> avec une conformité totale.';
+      html += '<strong>Guide d\'Action Opérationnel :</strong> Suivez les étapes ci-dessous dans l\'ordre chronologique pour accomplir vos missions quotidiennes sur <em>Legal Notary</em> avec une rigueur absolue.';
       html += '</div>';
 
       // Étapes Glitter
@@ -759,17 +751,17 @@
 
         html += '<p style="font-size:14px;color:var(--color-text);margin-bottom:12px">' + step.desc + '</p>';
 
-        html += '<div style="font-size:13px;font-weight:600;color:#38bdf8;margin-bottom:8px">🎯 Action Requise : ' + step.action + '</div>';
+        html += '<div style="font-size:13px;font-weight:600;color:#38bdf8;margin-bottom:8px">Action requise : ' + step.action + '</div>';
 
         if (step.mockup) {
           html += '<div class="step-screenshot-mockup">';
-          html += '<div style="font-size:10.5px;text-transform:uppercase;color:#64748b;margin-bottom:6px">Aperçu Visuel Écran ERP :</div>';
+          html += '<div style="font-size:10.5px;text-transform:uppercase;color:#64748b;margin-bottom:6px">Aperçu Visuel Écran :</div>';
           html += '<div>' + step.mockup + '</div>';
           html += '</div>';
         }
 
         if (step.checklist && step.checklist.length > 0) {
-          html += '<div style="font-size:12.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--color-text-dim);margin-top:14px">Checklist de Conformité à Cocher :</div>';
+          html += '<div style="font-size:12.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--color-text-dim);margin-top:14px">Checklist de Conformité :</div>';
           html += '<ul class="interactive-checklist">';
           step.checklist.forEach(function(chk, idx) {
             var chkId = 'chk-' + roleActuel + '-' + step.num + '-' + idx;
@@ -786,8 +778,8 @@
 
       // Pied de page du guide
       html += '<div style="margin-top:32px;padding-top:20px;border-top:1px solid var(--color-border);display:flex;justify-content:space-between;align-items:center">';
-      html += '<div style="font-size:13px;color:var(--color-text-dim)">Besoin d\'aide sur ce module ? Contactez votre référent interne ou le support 24/7.</div>';
-      html += '<button type="button" onclick="imprimerManuelRole()" class="btn btn-secondary" style="padding:8px 16px;font-size:13px;cursor:pointer">🖨️ Imprimer la Fiche ' + data.roleLabel.split(' ')[0] + '</button>';
+      html += '<div style="font-size:13px;color:var(--color-text-dim)">Besoin d\'assistance sur ce module ? Contactez votre référent interne ou l\'assistance dédiée.</div>';
+      html += '<button type="button" onclick="imprimerManuelRole()" class="btn btn-secondary" style="padding:8px 16px;font-size:13px;cursor:pointer">Imprimer le Guide</button>';
       html += '</div>';
 
       conteneur.innerHTML = html;
