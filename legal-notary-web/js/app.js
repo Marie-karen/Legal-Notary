@@ -10517,24 +10517,25 @@
   }
 
   // =========================================================================
+  // =========================================================================
   // MODALE : DÉPLOYER UN NOUVEL OFFICE NOTARIAL (ONBOARDING CLÉ EN MAIN B2B)
   // =========================================================================
   function modalDeployerNouvelleEtude() {
     var collaborateursInitiaux = [
-      { role: "notaire", roleLabel: "👑 Notaire Titulaire", nomComplet: "Maître Notaire Titulaire", emailPrefix: "notaire", telephone: "+225 07 00 00 01", mdp: "Pass" + Math.floor(Math.random() * 9000 + 1000) + "!" },
-      { role: "premier_clerc", roleLabel: "🥇 Premier Clerc", nomComplet: "Premier Clerc", emailPrefix: "premier.clerc", telephone: "+225 07 00 00 02", mdp: "Pass" + Math.floor(Math.random() * 9000 + 1000) + "!" },
-      { role: "clerc_redacteur", roleLabel: "✍️ Clerc Rédacteur", nomComplet: "Clerc Rédacteur", emailPrefix: "clerc1", telephone: "+225 07 00 00 03", mdp: "Pass" + Math.floor(Math.random() * 9000 + 1000) + "!" },
-      { role: "clerc_formaliste", roleLabel: "🏛️ Clerc Formaliste", nomComplet: "Clerc Formaliste", emailPrefix: "formalites", telephone: "+225 07 00 00 04", mdp: "Pass" + Math.floor(Math.random() * 9000 + 1000) + "!" },
-      { role: "comptable_taxateur", roleLabel: "💰 Comptable / Taxateur", nomComplet: "Comptable Taxateur", emailPrefix: "comptable", telephone: "+225 07 00 00 05", mdp: "Pass" + Math.floor(Math.random() * 9000 + 1000) + "!" },
-      { role: "assistante", roleLabel: "🤝 Assistante Accueil", nomComplet: "Assistante Accueil", emailPrefix: "accueil", telephone: "+225 07 00 00 06", mdp: "Pass" + Math.floor(Math.random() * 9000 + 1000) + "!" },
-      { role: "archiviste", roleLabel: "📦 Archiviste", nomComplet: "Archiviste du Cabinet", emailPrefix: "archiviste", telephone: "+225 07 00 00 07", mdp: "Pass" + Math.floor(Math.random() * 9000 + 1000) + "!" },
+      { role: "notaire", nomComplet: "", emailPrefix: "notaire", telephone: "+225 07 00 00 01", mdp: "Pass" + Math.floor(Math.random() * 9000 + 1000) + "!" },
+      { role: "premier_clerc", nomComplet: "Premier Clerc", emailPrefix: "premier.clerc", telephone: "+225 07 00 00 02", mdp: "Pass" + Math.floor(Math.random() * 9000 + 1000) + "!" },
+      { role: "clerc_redacteur", nomComplet: "Clerc Rédacteur 1", emailPrefix: "clerc1", telephone: "+225 07 00 00 03", mdp: "Pass" + Math.floor(Math.random() * 9000 + 1000) + "!" },
+      { role: "clerc_redacteur", nomComplet: "Clerc Rédacteur 2", emailPrefix: "clerc2", telephone: "+225 07 00 00 04", mdp: "Pass" + Math.floor(Math.random() * 9000 + 1000) + "!" },
+      { role: "clerc_formaliste", nomComplet: "Clerc aux Formalités", emailPrefix: "formalites", telephone: "+225 07 00 00 05", mdp: "Pass" + Math.floor(Math.random() * 9000 + 1000) + "!" },
+      { role: "comptable_taxateur", nomComplet: "Comptable Taxateur", emailPrefix: "comptable", telephone: "+225 07 00 00 06", mdp: "Pass" + Math.floor(Math.random() * 9000 + 1000) + "!" },
+      { role: "assistante", nomComplet: "Assistante Accueil", emailPrefix: "accueil", telephone: "+225 07 00 00 07", mdp: "Pass" + Math.floor(Math.random() * 9000 + 1000) + "!" },
     ];
 
     var html = '<form id="form-deployer-etude" style="display:flex;flex-direction:column;gap:var(--space-3)">';
 
     // SECTION 1 : Coordonnées du Cabinet
     html += '<div style="background:var(--color-surface-2);padding:12px;border-radius:var(--radius);border:1px solid var(--color-border)">';
-    html += '<div style="font-weight:700;font-size:14px;color:var(--color-text);margin-bottom:8px">🏛️ 1. Identité & Coordonnées de l\'Office Notarial</div>';
+    html += '<div style="font-weight:700;font-size:14px;color:var(--color-text);margin-bottom:8px">1. Identité & Coordonnées de l\'Office Notarial</div>';
     
     html += '<div class="field"><label>Nom officiel du cabinet / étude</label><input class="input" name="nomEtude" id="dep-nom-etude" placeholder="Ex. Étude Notariale Maître Kouassi & Associés" required></div>';
 
@@ -10568,121 +10569,192 @@
     html += '</div>';
     html += '</div>';
 
-    // SECTION 2 : Collaborateurs & Comptes Clé en Main
+    // SECTION 2 : Collaborateurs & Comptes Clé en Main (Multi-Clercs)
     html += '<div style="background:var(--color-surface-2);padding:12px;border-radius:var(--radius);border:1px solid var(--color-border)">';
     html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:6px">';
-    html += '<div><strong style="font-size:14px;color:var(--color-text)">👥 2. Collaborateurs & Comptes Clé en Main</strong><div style="font-size:11px;color:var(--color-text-dim)">Chaque compte sera activé et recevra ses identifiants.</div></div>';
-    html += '<button type="button" class="btn btn-secondary" id="btn-pre-remplir-7-roles" style="font-size:11px;padding:4px 8px;font-weight:600">⚡ Réinitialiser les 7 Postes Types</button>';
+    html += '<div><strong style="font-size:14px;color:var(--color-text)">2. Équipe, Clercs & Comptes Clé en Main</strong><div style="font-size:11px;color:var(--color-text-dim)">Ajoutez autant de clercs et collaborateurs que nécessaire (collaborateurs illimités).</div></div>';
+    html += '<button type="button" class="btn btn-secondary" id="btn-reinitialiser-grille-types" style="font-size:11px;padding:4px 8px;font-weight:600">Réinitialiser les postes standards</button>';
     html += '</div>';
 
-    html += '<div style="max-height:260px;overflow-y:auto;border:1px solid var(--color-border);border-radius:var(--radius);background:var(--color-bg)">';
+    html += '<div style="max-height:280px;overflow-y:auto;border:1px solid var(--color-border);border-radius:var(--radius);background:var(--color-bg)">';
     html += '<table class="table" style="font-size:12px;margin:0" id="table-collabs-deploiement">';
-    html += '<thead><tr><th>Poste / Rôle</th><th>Nom Complet</th><th>Email de Connexion</th><th>Mot de passe Initial</th><th></th></tr></thead>';
+    html += '<thead><tr><th style="min-width:140px">Poste / Rôle</th><th style="min-width:160px">Nom & Prénom</th><th style="min-width:180px">Email de Connexion</th><th style="min-width:120px">Mot de Passe</th><th style="width:36px"></th></tr></thead>';
     html += '<tbody id="tbody-collabs-deploiement"></tbody>';
     html += '</table>';
     html += '</div>';
 
-    html += '<div style="margin-top:8px"><button type="button" class="btn btn-ghost" id="btn-ajouter-ligne-collab" style="font-size:11px">+ Ajouter une ligne collaborateur</button></div>';
+    html += '<div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">';
+    html += '<button type="button" class="btn btn-primary" id="btn-ajouter-ligne-collab" style="font-size:11px;padding:4px 10px">+ Ajouter un Clerc / Collaborateur</button>';
+    html += '<button type="button" class="btn btn-ghost" id="btn-ajouter-clerc-specifique" style="font-size:11px;padding:4px 10px">+ Ajouter un Clerc Rédacteur supplémentaire</button>';
+    html += '</div>';
     html += '</div>';
 
     // SECTION 3 : Synchronisation et Options
     html += '<div style="background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.3);padding:10px 12px;border-radius:var(--radius);font-size:12px;display:flex;flex-direction:column;gap:6px">';
-    html += '<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600;color:var(--color-text)"><input type="checkbox" name="envoyerEmails" checked> ✉️ Envoyer immédiatement par email les identifiants de connexion à chaque collaborateur</label>';
-    html += '<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600;color:var(--color-text)"><input type="checkbox" name="syncParams" checked> ⚙️ Synchroniser automatiquement ces coordonnées dans les paramètres de l\'étude du notaire</label>';
+    html += '<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600;color:var(--color-text)"><input type="checkbox" name="envoyerEmails" checked> Envoyer immédiatement par email les identifiants de connexion à chaque collaborateur</label>';
+    html += '<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600;color:var(--color-text)"><input type="checkbox" name="syncParams" checked> Synchroniser automatiquement ces coordonnées dans les paramètres de l\'étude du notaire</label>';
     html += '</div>';
 
     html += '<div id="erreur-deployer-etude" class="erreur-inline" style="display:none"></div>';
-    html += '<div style="display:flex;justify-content:flex-end;gap:var(--space-2);margin-top:var(--space-2)"><button type="button" class="btn btn-ghost" id="btn-annuler-deploy">Annuler</button><button type="submit" class="btn btn-primary" style="font-weight:700">🏛️ Déployer, Initialiser & Activer l\'Office</button></div>';
+    html += '<div style="display:flex;justify-content:flex-end;gap:var(--space-2);margin-top:var(--space-2)"><button type="button" class="btn btn-ghost" id="btn-annuler-deploy">Annuler</button><button type="submit" class="btn btn-primary" style="font-weight:700">Déployer, Initialiser & Activer l\'Office</button></div>';
     html += '</form>';
 
     ouvrirModal({
-      titre: '<span>🏛️</span> Déploiement d\'un Nouvel Office Notarial (Onboarding Clé en Main)',
+      titre: 'Déploiement d\'un Nouvel Office Notarial (Onboarding Clé en Main)',
       corps: html,
       boutonFermer: true,
-      largeur: "750px",
+      largeur: "780px",
       apresOuverture: function () {
         var tbody = document.getElementById("tbody-collabs-deploiement");
         var domaineInput = document.getElementById("dep-domaine");
+        var titreNotaireInput = document.getElementById("dep-titre-notaire");
 
         function obtenirDomaineActuel() {
           var d = domaineInput.value.trim().replace(/^@/, "");
           return d || "etude-notaire.ci";
         }
 
-        function rendreLignesCollaborateurs(liste) {
+        // Fonction pour créer et attacher une ligne de tableau SANS toucher aux autres lignes
+        function insererLigneCollabDOM(data) {
+          if (!tbody) return;
+          var dom = obtenirDomaineActuel();
+          var emailDefaut = data.email || (data.emailPrefix ? data.emailPrefix + "@" + dom : "collab" + (tbody.children.length + 1) + "@" + dom);
+          var mdpDefaut = data.mdp || ("Pass" + Math.floor(Math.random() * 9000 + 1000) + "!");
+          var roleDefaut = data.role || "clerc_redacteur";
+          var nomDefaut = data.nomComplet !== undefined ? data.nomComplet : "";
+
+          var tr = document.createElement("tr");
+          tr.className = "tr-collab-deploiement";
+          tr.innerHTML =
+            '<td>' +
+              '<select class="input collab-role" style="font-size:11px;padding:3px 6px">' +
+                '<option value="notaire"' + (roleDefaut === "notaire" ? " selected" : "") + '>Notaire Titulaire</option>' +
+                '<option value="premier_clerc"' + (roleDefaut === "premier_clerc" ? " selected" : "") + '>Premier Clerc</option>' +
+                '<option value="clerc_redacteur"' + (roleDefaut === "clerc_redacteur" ? " selected" : "") + '>Clerc Rédacteur</option>' +
+                '<option value="clerc_formaliste"' + (roleDefaut === "clerc_formaliste" ? " selected" : "") + '>Clerc aux Formalités</option>' +
+                '<option value="comptable_taxateur"' + (roleDefaut === "comptable_taxateur" ? " selected" : "") + '>Comptable Taxateur</option>' +
+                '<option value="assistante"' + (roleDefaut === "assistante" ? " selected" : "") + '>Assistante Accueil</option>' +
+                '<option value="archiviste"' + (roleDefaut === "archiviste" ? " selected" : "") + '>Archiviste</option>' +
+                '<option value="collaborateur"' + (roleDefaut === "collaborateur" ? " selected" : "") + '>Juriste / Collaborateur</option>' +
+              '</select>' +
+            '</td>' +
+            '<td><input class="input collab-nom" value="' + nomDefaut.replace(/"/g, "&quot;") + '" placeholder="Nom et prénom" style="font-size:11px;padding:3px 6px" required></td>' +
+            '<td><input class="input collab-email" type="email" value="' + emailDefaut.replace(/"/g, "&quot;") + '" placeholder="email@domaine.ci" style="font-size:11px;padding:3px 6px" required></td>' +
+            '<td><input class="input collab-mdp" value="' + mdpDefaut.replace(/"/g, "&quot;") + '" style="font-size:11px;padding:3px 6px" required></td>' +
+            '<td style="text-align:center"><button type="button" class="btn btn-ghost btn-suppr-collab-row" style="color:#ef4444;padding:2px 6px;font-size:12px" title="Retirer ce collaborateur">✕</button></td>';
+
+          // Suppression ciblée de la ligne sans re-rendering global
+          var btnSuppr = tr.querySelector(".btn-suppr-collab-row");
+          if (btnSuppr) {
+            btnSuppr.addEventListener("click", function () {
+              if (tbody.children.length > 1) {
+                tr.remove();
+              } else {
+                toast("L'office doit contenir au moins un compte d'accès notaire.", "warning");
+              }
+            });
+          }
+
+          tbody.appendChild(tr);
+        }
+
+        // Initialisation initiale de la grille
+        function initialiserGrille(liste) {
           if (!tbody) return;
           tbody.innerHTML = "";
-          var dom = obtenirDomaineActuel();
-          liste.forEach(function (c, idx) {
-            var emailVal = c.email || (c.emailPrefix + "@" + dom);
-            var tr = document.createElement("tr");
-            tr.innerHTML =
-              '<td>' +
-                '<select class="input collab-role" data-idx="' + idx + '" style="font-size:11px;padding:3px 6px">' +
-                  '<option value="notaire"' + (c.role === "notaire" ? " selected" : "") + '>👑 Notaire Titulaire</option>' +
-                  '<option value="premier_clerc"' + (c.role === "premier_clerc" ? " selected" : "") + '>🥇 Premier Clerc</option>' +
-                  '<option value="clerc_redacteur"' + (c.role === "clerc_redacteur" ? " selected" : "") + '>✍️ Clerc Rédacteur</option>' +
-                  '<option value="clerc_formaliste"' + (c.role === "clerc_formaliste" ? " selected" : "") + '>🏛️ Clerc Formaliste</option>' +
-                  '<option value="comptable_taxateur"' + (c.role === "comptable_taxateur" ? " selected" : "") + '>💰 Comptable / Taxateur</option>' +
-                  '<option value="assistante"' + (c.role === "assistante" ? " selected" : "") + '>🤝 Assistante Accueil</option>' +
-                  '<option value="archiviste"' + (c.role === "archiviste" ? " selected" : "") + '>📦 Archiviste</option>' +
-                '</select>' +
-              '</td>' +
-              '<td><input class="input collab-nom" data-idx="' + idx + '" value="' + (c.nomComplet || "") + '" placeholder="Nom complet" style="font-size:11px;padding:3px 6px" required></td>' +
-              '<td><input class="input collab-email" data-idx="' + idx + '" type="email" value="' + emailVal + '" style="font-size:11px;padding:3px 6px" required></td>' +
-              '<td><input class="input collab-mdp" data-idx="' + idx + '" value="' + (c.mdp || "Pass1234!") + '" style="font-size:11px;padding:3px 6px" required></td>' +
-              '<td style="text-align:center"><button type="button" class="btn btn-ghost btn-suppr-collab-row" data-idx="' + idx + '" style="color:#ef4444;padding:2px 6px;font-size:11px">✕</button></td>';
-            tbody.appendChild(tr);
-          });
-
-          // Handlers de suppression de ligne
-          tbody.querySelectorAll(".btn-suppr-collab-row").forEach(function (b) {
-            b.addEventListener("click", function () {
-              var i = parseInt(b.dataset.idx, 10);
-              collaborateursInitiaux.splice(i, 1);
-              rendreLignesCollaborateurs(collaborateursInitiaux);
-            });
+          liste.forEach(function (item) {
+            insererLigneCollabDOM(item);
           });
         }
 
-        rendreLignesCollaborateurs(collaborateursInitiaux);
+        initialiserGrille(collaborateursInitiaux);
 
-        // Mise à jour des emails quand le domaine change
+        // Mise à jour douce du notaire titulaire dans la ligne notaire si modifié
+        if (titreNotaireInput) {
+          titreNotaireInput.addEventListener("input", function () {
+            var val = titreNotaireInput.value.trim();
+            var premiereLigne = tbody.querySelector("tr");
+            if (premiereLigne) {
+              var roleSel = premiereLigne.querySelector(".collab-role");
+              var nomInp = premiereLigne.querySelector(".collab-nom");
+              if (roleSel && roleSel.value === "notaire" && nomInp && !nomInp.dataset.customized) {
+                nomInp.value = val || "Maître Notaire Titulaire";
+              }
+            }
+          });
+        }
+
+        // Marquer le nom comme personnalisé dès que l'utilisateur tape dedans
+        tbody.addEventListener("input", function (e) {
+          if (e.target && e.target.classList.contains("collab-nom")) {
+            e.target.dataset.customized = "true";
+          }
+        });
+
+        // Mise à jour douce du nom de domaine dans les emails existants SANS écraser le préfixe
         domaineInput.addEventListener("input", function () {
           var dom = obtenirDomaineActuel();
-          tbody.querySelectorAll("tr").forEach(function (tr, i) {
+          tbody.querySelectorAll("tr").forEach(function (tr) {
             var emailInput = tr.querySelector(".collab-email");
-            if (emailInput && collaborateursInitiaux[i] && collaborateursInitiaux[i].emailPrefix) {
-              emailInput.value = collaborateursInitiaux[i].emailPrefix + "@" + dom;
+            if (emailInput && emailInput.value) {
+              var emailActuel = emailInput.value.trim();
+              var prefixe = emailActuel.indexOf("@") !== -1 ? emailActuel.split("@")[0] : emailActuel;
+              if (prefixe) {
+                emailInput.value = prefixe + "@" + dom;
+              }
             }
           });
         });
 
-        // Bouton pré-remplir
-        document.getElementById("btn-pre-remplir-7-roles").addEventListener("click", function () {
-          var dom = obtenirDomaineActuel();
-          collaborateursInitiaux = [
-            { role: "notaire", roleLabel: "👑 Notaire Titulaire", nomComplet: document.getElementById("dep-titre-notaire").value || "Maître Notaire Titulaire", emailPrefix: "notaire", telephone: "+225 07 00 00 01", mdp: "Pass" + Math.floor(Math.random() * 9000 + 1000) + "!" },
-            { role: "premier_clerc", roleLabel: "🥇 Premier Clerc", nomComplet: "Premier Clerc", emailPrefix: "premier.clerc", telephone: "+225 07 00 00 02", mdp: "Pass" + Math.floor(Math.random() * 9000 + 1000) + "!" },
-            { role: "clerc_redacteur", roleLabel: "✍️ Clerc Rédacteur", nomComplet: "Clerc Rédacteur", emailPrefix: "clerc1", telephone: "+225 07 00 00 03", mdp: "Pass" + Math.floor(Math.random() * 9000 + 1000) + "!" },
-            { role: "clerc_formaliste", roleLabel: "🏛️ Clerc Formaliste", nomComplet: "Clerc Formaliste", emailPrefix: "formalites", telephone: "+225 07 00 00 04", mdp: "Pass" + Math.floor(Math.random() * 9000 + 1000) + "!" },
-            { role: "comptable_taxateur", roleLabel: "💰 Comptable / Taxateur", nomComplet: "Comptable Taxateur", emailPrefix: "comptable", telephone: "+225 07 00 00 05", mdp: "Pass" + Math.floor(Math.random() * 9000 + 1000) + "!" },
-            { role: "assistante", roleLabel: "🤝 Assistante Accueil", nomComplet: "Assistante Accueil", emailPrefix: "accueil", telephone: "+225 07 00 00 06", mdp: "Pass" + Math.floor(Math.random() * 9000 + 1000) + "!" },
-            { role: "archiviste", roleLabel: "📦 Archiviste", nomComplet: "Archiviste du Cabinet", emailPrefix: "archiviste", telephone: "+225 07 00 00 07", mdp: "Pass" + Math.floor(Math.random() * 9000 + 1000) + "!" },
-          ];
-          rendreLignesCollaborateurs(collaborateursInitiaux);
+        // Bouton : Réinitialiser la grille aux postes standards
+        document.getElementById("btn-reinitialiser-grille-types").addEventListener("click", function () {
+          if (confirm("Voulez-vous réinitialiser le tableau aux postes types standards ?")) {
+            var notaireNom = (titreNotaireInput && titreNotaireInput.value.trim()) || "Maître Notaire Titulaire";
+            var listeTypes = [
+              { role: "notaire", nomComplet: notaireNom, emailPrefix: "notaire", mdp: "Pass" + Math.floor(Math.random() * 9000 + 1000) + "!" },
+              { role: "premier_clerc", nomComplet: "Premier Clerc", emailPrefix: "premier.clerc", mdp: "Pass" + Math.floor(Math.random() * 9000 + 1000) + "!" },
+              { role: "clerc_redacteur", nomComplet: "Clerc Rédacteur 1", emailPrefix: "clerc1", mdp: "Pass" + Math.floor(Math.random() * 9000 + 1000) + "!" },
+              { role: "clerc_redacteur", nomComplet: "Clerc Rédacteur 2", emailPrefix: "clerc2", mdp: "Pass" + Math.floor(Math.random() * 9000 + 1000) + "!" },
+              { role: "clerc_formaliste", nomComplet: "Clerc aux Formalités", emailPrefix: "formalites", mdp: "Pass" + Math.floor(Math.random() * 9000 + 1000) + "!" },
+              { role: "comptable_taxateur", nomComplet: "Comptable Taxateur", emailPrefix: "comptable", mdp: "Pass" + Math.floor(Math.random() * 9000 + 1000) + "!" },
+              { role: "assistante", nomComplet: "Assistante Accueil", emailPrefix: "accueil", mdp: "Pass" + Math.floor(Math.random() * 9000 + 1000) + "!" },
+            ];
+            initialiserGrille(listeTypes);
+          }
         });
 
-        // Bouton ajouter ligne
+        // Bouton : Ajouter une ligne générique SANS effacer les lignes existantes
         document.getElementById("btn-ajouter-ligne-collab").addEventListener("click", function () {
           var dom = obtenirDomaineActuel();
-          collaborateursInitiaux.push({
+          var nbLignes = tbody.children.length + 1;
+          insererLigneCollabDOM({
             role: "clerc_redacteur",
             nomComplet: "",
-            email: "collab" + (collaborateursInitiaux.length + 1) + "@" + dom,
+            emailPrefix: "collab" + nbLignes,
             mdp: "Pass" + Math.floor(Math.random() * 9000 + 1000) + "!"
           });
-          rendreLignesCollaborateurs(collaborateursInitiaux);
+          var derniereLigne = tbody.lastElementChild;
+          if (derniereLigne) {
+            var inputNom = derniereLigne.querySelector(".collab-nom");
+            if (inputNom) inputNom.focus();
+          }
+        });
+
+        // Bouton : Ajouter un clerc rédacteur supplémentaire
+        document.getElementById("btn-ajouter-clerc-specifique").addEventListener("click", function () {
+          var dom = obtenirDomaineActuel();
+          var nbClercs = tbody.querySelectorAll("select.collab-role option[value='clerc_redacteur']:checked").length + 1;
+          insererLigneCollabDOM({
+            role: "clerc_redacteur",
+            nomComplet: "Clerc Rédacteur " + nbClercs,
+            emailPrefix: "clerc" + nbClercs,
+            mdp: "Pass" + Math.floor(Math.random() * 9000 + 1000) + "!"
+          });
+          var derniereLigne = tbody.lastElementChild;
+          if (derniereLigne) {
+            var inputNom = derniereLigne.querySelector(".collab-nom");
+            if (inputNom) inputNom.focus();
+          }
         });
 
         document.getElementById("btn-annuler-deploy").addEventListener("click", fermerModal);
@@ -10694,14 +10766,20 @@
           var errZone = document.getElementById("erreur-deployer-etude");
           errZone.style.display = "none";
 
-          // Lecture des collaborateurs du tableau
+          // Lecture directe des lignes existantes dans le DOM
           var collabsPayload = [];
           tbody.querySelectorAll("tr").forEach(function (tr) {
-            var r = tr.querySelector(".collab-role").value;
-            var nom = tr.querySelector(".collab-nom").value.trim();
-            var em = tr.querySelector(".collab-email").value.trim();
-            var pw = tr.querySelector(".collab-mdp").value.trim();
-            if (em) {
+            var roleSelect = tr.querySelector(".collab-role");
+            var nomInput = tr.querySelector(".collab-nom");
+            var emailInput = tr.querySelector(".collab-email");
+            var mdpInput = tr.querySelector(".collab-mdp");
+
+            if (emailInput && emailInput.value.trim()) {
+              var r = roleSelect ? roleSelect.value : "clerc_redacteur";
+              var nom = nomInput ? nomInput.value.trim() : "";
+              var em = emailInput.value.trim();
+              var pw = mdpInput ? mdpInput.value.trim() : "Pass1234!";
+
               collabsPayload.push({
                 role: r,
                 nomComplet: nom || em.split("@")[0],
@@ -10711,8 +10789,14 @@
             }
           });
 
+          if (collabsPayload.length === 0) {
+            errZone.textContent = "Veuillez configurer au moins un compte pour cette étude.";
+            errZone.style.display = "block";
+            return;
+          }
+
           var notaireAccount = collabsPayload.find(function (c) { return c.role === "notaire"; });
-          var emailAdminPrincipal = notaireAccount ? notaireAccount.email : (collabsPayload[0] ? collabsPayload[0].email : "notaire@" + form.domaine.value.trim());
+          var emailAdminPrincipal = notaireAccount ? notaireAccount.email : collabsPayload[0].email;
 
           var payload = {
             nomEtude: form.nomEtude.value.trim(),
@@ -11008,25 +11092,101 @@
 
         // Bouton ajouter collaborateur direct
         document.getElementById("btn-ajouter-collab-direct").addEventListener("click", function () {
-          var nom = prompt("Nom complet du nouveau collaborateur :");
-          if (!nom) return;
-          var role = prompt("Rôle (notaire, premier_clerc, clerc_redacteur, clerc_formaliste, comptable_taxateur, assistante, archiviste) :", "clerc_redacteur");
-          var email = prompt("Email professionnel :", nom.toLowerCase().replace(/\s+/g, ".") + "@" + (etude.domaine || "notaires.ci"));
-          if (!email) return;
-          var mdp = prompt("Mot de passe initial :", "Pass" + Math.floor(Math.random() * 9000 + 1000) + "!");
-
-          API.post("/api/superadmin/etudes/" + etude.id + "/utilisateurs", {
-            nomComplet: nom,
-            role: role || "clerc_redacteur",
-            email: email,
-            motDePasse: mdp,
-          }).then(function () {
-            toast("Collaborateur ajouté avec succès !");
-            rechargerComptes();
-            renderSuperAdmin();
-          }).catch(function (e) { toast(e.message); });
+          modalAjouterCollaborateurEtudeDirect(etude, rechargerComptes);
         });
       },
+    });
+  }
+
+  // Sous-modale : Formulaire propre d'ajout de collaborateur à un office existant
+  function modalAjouterCollaborateurEtudeDirect(etude, callbackRecharge) {
+    var mdpGenere = "Pass" + Math.floor(Math.random() * 9000 + 1000) + "!";
+    var dom = etude.domaine || "etude-notaire.ci";
+    var html = '<form id="form-ajout-collab-direct" style="display:flex;flex-direction:column;gap:var(--space-3)">';
+    html += '<div class="field"><label>Nom & Prénom du collaborateur</label><input class="input" id="inp-dir-nom" placeholder="Ex. Me Kouadio Guy / Fatou Bamba" required></div>';
+    
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2)">';
+    html += '<div class="field"><label>Rôle / Fonction</label><select class="input" id="inp-dir-role">';
+    html += '<option value="clerc_redacteur" selected>Clerc Rédacteur</option>';
+    html += '<option value="premier_clerc">Premier Clerc</option>';
+    html += '<option value="clerc_formaliste">Clerc aux Formalités</option>';
+    html += '<option value="comptable_taxateur">Comptable Taxateur</option>';
+    html += '<option value="notaire">Notaire Associé / Salarié</option>';
+    html += '<option value="assistante">Assistante / Accueil</option>';
+    html += '<option value="archiviste">Archiviste</option>';
+    html += '<option value="collaborateur">Juriste / Collaborateur</option>';
+    html += '</select></div>';
+    html += '<div class="field"><label>Téléphone portable</label><input class="input" id="inp-dir-tel" placeholder="+225 07 00 00 00"></div>';
+    html += '</div>';
+
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2)">';
+    html += '<div class="field"><label>Email de connexion</label><input class="input" type="email" id="inp-dir-email" placeholder="nom@' + dom + '" required></div>';
+    html += '<div class="field"><label>Mot de passe initial</label><input class="input" id="inp-dir-mdp" value="' + mdpGenere + '" required></div>';
+    html += '</div>';
+
+    html += '<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;font-weight:600;color:var(--color-text)"><input type="checkbox" id="chk-dir-email" checked> Envoyer immédiatement l\'email d\'accès sécurisé avec identifiants</label>';
+
+    html += '<div id="err-dir-collab" class="erreur-inline" style="display:none"></div>';
+    html += '<div style="display:flex;justify-content:flex-end;gap:var(--space-2);margin-top:var(--space-2)"><button type="button" class="btn btn-ghost" id="btn-annuler-dir-collab">Annuler</button><button type="submit" class="btn btn-primary" style="font-weight:700">Enregistrer & Activer le Compte</button></div>';
+    html += '</form>';
+
+    ouvrirModal({
+      titre: 'Ajouter un Collaborateur — ' + etude.nomEtude,
+      corps: html,
+      boutonFermer: true,
+      largeur: "580px",
+      apresOuverture: function () {
+        var nomInp = document.getElementById("inp-dir-nom");
+        var emailInp = document.getElementById("inp-dir-email");
+        
+        // Auto-remplissage suggéré de l'email
+        nomInp.addEventListener("input", function () {
+          if (!emailInp.dataset.manual) {
+            var slug = nomInp.value.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, ".");
+            if (slug) {
+              emailInp.value = slug + "@" + dom;
+            }
+          }
+        });
+        emailInp.addEventListener("input", function () {
+          emailInp.dataset.manual = "true";
+        });
+
+        document.getElementById("btn-annuler-dir-collab").addEventListener("click", fermerModal);
+        document.getElementById("form-ajout-collab-direct").addEventListener("submit", function (ev) {
+          ev.preventDefault();
+          var errDiv = document.getElementById("err-dir-collab");
+          errDiv.style.display = "none";
+
+          var payload = {
+            nomComplet: nomInp.value.trim(),
+            role: document.getElementById("inp-dir-role").value,
+            telephone: document.getElementById("inp-dir-tel").value.trim(),
+            email: emailInp.value.trim(),
+            motDePasse: document.getElementById("inp-dir-mdp").value.trim() || mdpGenere,
+          };
+
+          API.post("/api/superadmin/etudes/" + etude.id + "/utilisateurs", payload).then(function () {
+            if (document.getElementById("chk-dir-email").checked) {
+              API.post("/api/superadmin/renvoyer-email", {
+                email: payload.email,
+                nomComplet: payload.nomComplet,
+                role: payload.role,
+                motDePasse: payload.motDePasse,
+                nomEtude: etude.nomEtude,
+                domaine: etude.domaine,
+              }).catch(function () {});
+            }
+            toast("Collaborateur ajouté avec succès à l'office !");
+            fermerModal();
+            if (callbackRecharge) callbackRecharge();
+            renderSuperAdmin();
+          }).catch(function (e) {
+            errDiv.textContent = e.message;
+            errDiv.style.display = "block";
+          });
+        });
+      }
     });
   }
 
