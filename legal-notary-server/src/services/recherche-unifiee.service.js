@@ -62,7 +62,7 @@ async function rechercher({ etudeId = "a0000000-0000-0000-0000-000000000001", qu
   } catch (_) {}
 
   // Repli instantané mémoire (< 0.1ms)
-  const tous = await dossiersService.listerDossiersPourUtilisateur({ role: "notaire", id: "000" });
+  const tous = await dossiersService.listerDossiersPourUtilisateur({ role: "notaire", id: "000", etudeId });
   const filtres = tous.filter(d => {
     if (!qStr) return true;
     return (

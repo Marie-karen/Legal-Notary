@@ -168,10 +168,10 @@ async function archiverEnLot(nombre, utilisateurId) {
   return resultats;
 }
 
-async function listerCartons() {
+async function listerCartons(etudeId) {
+  const estCompteDemo = !etudeId || etudeId === "etude-abidjan-01" || etudeId === "a0000000-0000-0000-0000-000000000001";
   try {
-    const { rows } = await pool.query(
-      `SELECT k.*,
+    let query = `SELECT k.*,
          COALESCE(
            json_agg(
              json_build_object(
@@ -190,11 +190,18 @@ async function listerCartons() {
          ) AS dossiers
        FROM cartons_archive k
        LEFT JOIN minutes_archive m ON m.carton_id = k.id
-       LEFT JOIN dossiers d ON d.id = m.dossier_id
-       GROUP BY k.id
-       ORDER BY k.created_at DESC, k.numero_carton ASC`
-    );
-    if (rows && rows.length) {
+       LEFT JOIN dossiers d ON d.id = m.dossier_id`;
+    const params = [];
+    if (etudeId && !estCompteDemo) {
+      params.push(etudeId);
+      query += ` WHERE k.etude_id = $1`;
+    } else if (estCompteDemo) {
+      query += ` WHERE (k.etude_id = 'a0000000-0000-0000-0000-000000000001' OR k.etude_id IS NULL)`;
+    }
+    query += ` GROUP BY k.id ORDER BY k.created_at DESC, k.numero_carton ASC`;
+
+    const { rows } = await pool.query(query, params);
+    if (Array.isArray(rows)) {
       return rows.map((r) => ({
         id: r.id,
         numeroCarton: r.numero_carton,
@@ -210,6 +217,10 @@ async function listerCartons() {
       }));
     }
   } catch (_) {}
+
+  if (!estCompteDemo) {
+    return [];
+  }
 
   return CARTONS_MEMOIRE.map(c => ({
     id: c.id,
@@ -233,14 +244,15 @@ async function listerCartons() {
   }));
 }
 
-async function creerCarton({ numeroCarton, salle, armoire, rayonnage, capaciteMax = 50 }) {
+async function creerCarton({ numeroCarton, salle, armoire, rayonnage, capaciteMax = 50, etudeId }) {
   let numero = numeroCarton || `CARTON-${String(CARTONS_MEMOIRE.length + 1).padStart(3, "0")}`;
+  const eid = etudeId || "a0000000-0000-0000-0000-000000000001";
   try {
     const { rows } = await pool.query(
-      `INSERT INTO cartons_archive (numero_carton, salle, armoire, rayonnage, capacite_max, nombre_dossiers, statut)
-       VALUES ($1, $2, $3, $4, $5, 0, 'ouvert')
+      `INSERT INTO cartons_archive (numero_carton, salle, armoire, rayonnage, capacite_max, nombre_dossiers, statut, etude_id)
+       VALUES ($1, $2, $3, $4, $5, 0, 'ouvert', $6)
        RETURNING *`,
-      [numero, salle || "Salle principale", armoire || "Armoire A", rayonnage || "Rayon 1", capaciteMax || 50]
+      [numero, salle || "Salle principale", armoire || "Armoire A", rayonnage || "Rayon 1", capaciteMax || 50, eid]
     );
     if (rows && rows.length) {
       const r = rows[0];
@@ -259,6 +271,7 @@ async function creerCarton({ numeroCarton, salle, armoire, rayonnage, capaciteMa
 
   const c = {
     id: "carton-" + crypto.randomUUID().slice(0, 8),
+    etudeId: eid,
     numeroCarton: numero,
     salle: salle || "Salle principale",
     armoire: armoire || "Armoire A",
@@ -279,39 +292,57 @@ async function attacherScan(dossierId, scanUrl) {
   if (m) m.scan_url = scanUrl;
 }
 
-async function listerEnAttenteArchivage() {
+async function listerEnAttenteArchivage(etudeId) {
+  const estCompteDemo = !etudeId || etudeId === "etude-abidjan-01" || etudeId === "a0000000-0000-0000-0000-000000000001";
   try {
-    const { rows } = await pool.query(
-      `SELECT m.*, d.numero_dossier, d.montant_assiette, d.type_acte_id,
+    let query = `SELECT m.*, d.numero_dossier, d.montant_assiette, d.type_acte_id,
               COALESCE(string_agg(c.nom || ' (' || c.qualite || ')', ', '), '') AS comparants_noms
        FROM minutes_archive m
        JOIN dossiers d ON d.id = m.dossier_id
        LEFT JOIN dossier_comparants c ON c.dossier_id = d.id
-       WHERE m.statut_archivage = 'a_archiver'
-       GROUP BY m.id, d.id
-       ORDER BY m.date_cloture ASC`
-    );
-    if (rows && rows.length) return rows;
+       WHERE m.statut_archivage = 'a_archiver'`;
+    const params = [];
+    if (etudeId && !estCompteDemo) {
+      params.push(etudeId);
+      query += ` AND (m.etude_id = $1 OR d.etude_id = $1)`;
+    } else if (estCompteDemo) {
+      query += ` AND (m.etude_id = 'a0000000-0000-0000-0000-000000000001' OR m.etude_id IS NULL)`;
+    }
+    query += ` GROUP BY m.id, d.id ORDER BY m.date_cloture ASC`;
+
+    const { rows } = await pool.query(query, params);
+    if (Array.isArray(rows)) return rows;
   } catch (_) {}
+
+  if (!estCompteDemo) return [];
   return MINUTES_MEMOIRE.filter(m => m.statut_archivage === "a_archiver");
 }
 
-async function listerRepertoire() {
+async function listerRepertoire(etudeId) {
+  const estCompteDemo = !etudeId || etudeId === "etude-abidjan-01" || etudeId === "a0000000-0000-0000-0000-000000000001";
   try {
-    const { rows } = await pool.query(
-      `SELECT m.*, d.numero_dossier, d.montant_assiette, d.type_acte_id,
+    let query = `SELECT m.*, d.numero_dossier, d.montant_assiette, d.type_acte_id,
               COALESCE(string_agg(c.nom || ' (' || c.qualite || ')', ', '), '') AS comparants_noms,
               k.numero_carton, k.salle AS carton_salle, k.armoire AS carton_armoire, k.rayonnage AS carton_rayonnage
        FROM minutes_archive m
        JOIN dossiers d ON d.id = m.dossier_id
        LEFT JOIN dossier_comparants c ON c.dossier_id = d.id
        LEFT JOIN cartons_archive k ON k.id = m.carton_id
-       WHERE m.statut_archivage = 'archive'
-       GROUP BY m.id, d.id, k.id
-       ORDER BY m.numero_minute DESC`
-    );
-    if (rows && rows.length) return rows;
+       WHERE m.statut_archivage = 'archive'`;
+    const params = [];
+    if (etudeId && !estCompteDemo) {
+      params.push(etudeId);
+      query += ` AND (m.etude_id = $1 OR d.etude_id = $1)`;
+    } else if (estCompteDemo) {
+      query += ` AND (m.etude_id = 'a0000000-0000-0000-0000-000000000001' OR m.etude_id IS NULL)`;
+    }
+    query += ` GROUP BY m.id, d.id, k.id ORDER BY m.numero_minute DESC`;
+
+    const { rows } = await pool.query(query, params);
+    if (Array.isArray(rows)) return rows;
   } catch (_) {}
+
+  if (!estCompteDemo) return [];
 
   return MINUTES_MEMOIRE.filter(m => m.statut_archivage === "archive").map(m => ({
     ...m,

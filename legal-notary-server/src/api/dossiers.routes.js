@@ -37,7 +37,12 @@ router.get("/mes-dossiers", async (req, res, next) => {
 
 router.post("/", exigerPermission("dossiers:creer"), async (req, res, next) => {
   try {
-    const dossier = await dossiersService.creerDossier({ ...req.body, creeParId: req.utilisateur.id, creeParRole: req.utilisateur.role });
+    const dossier = await dossiersService.creerDossier({
+      ...req.body,
+      creeParId: req.utilisateur.id,
+      creeParRole: req.utilisateur.role,
+      etudeId: req.utilisateur.etudeId,
+    });
     res.status(201).json(dossier);
   } catch (e) { next(e); }
 });

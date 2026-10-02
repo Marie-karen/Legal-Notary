@@ -278,20 +278,27 @@ function verifierJeton(jeton) {
   }
 }
 
-async function listerUtilisateurs({ avecSalaires = false } = {}) {
+async function listerUtilisateurs({ avecSalaires = false, etudeId } = {}) {
   try {
-    const { rows } = await pool.query(
-      "SELECT * FROM utilisateurs WHERE archived_at IS NULL ORDER BY nom_complet"
-    );
+    let query = "SELECT * FROM utilisateurs WHERE archived_at IS NULL";
+    const params = [];
+    if (etudeId) {
+      params.push(etudeId);
+      query += ` AND etude_id = $${params.length}`;
+    }
+    query += " ORDER BY nom_complet";
+    const { rows } = await pool.query(query, params);
     if (rows && rows.length) {
       return rows.map((l) => utilisateurVersCamel(l, { avecSalaire: avecSalaires }));
     }
   } catch (errDb) {
     // Repli instantané mémoire
   }
-  return Array.from(UTILISATEURS_MEMOIRE.values())
-    .filter(u => u.actif !== false)
-    .map((l) => utilisateurVersCamel(l, { avecSalaire: avecSalaires }));
+  let list = Array.from(UTILISATEURS_MEMOIRE.values()).filter(u => u.actif !== false);
+  if (etudeId) {
+    list = list.filter(u => u.etude_id === etudeId || u.etudeId === etudeId);
+  }
+  return list.map((l) => utilisateurVersCamel(l, { avecSalaire: avecSalaires }));
 }
 
 async function listerUtilisateursParEtude(etudeId) {

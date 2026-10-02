@@ -9475,34 +9475,7 @@
         };
       }),
       API.get("/api/superadmin/etudes").catch(function () {
-        return [
-          {
-            id: "a0000000-0000-0000-0000-000000000001",
-            codeEtude: "ETUDE-ABJ-001",
-            nomEtude: "Office Notarial — Legal Notary (Abidjan Plateau)",
-            titreNotaire: "Maître Titulaire",
-            modeInfrastructure: "hybride",
-            totalDossiers: cache.dossiers.length,
-            totalMinutes: 28,
-            totalUtilisateurs: 6,
-            espaceUtiliseMo: 1450,
-            versionDeployee: "v2.4.0",
-            statutSante: "En ligne (Sync OK)",
-          },
-          {
-            id: "a0000000-0000-0000-0000-000000000002",
-            codeEtude: "ETUDE-ABJ-002",
-            nomEtude: "Étude Notariale Maître Touré (Cocody Deux Plateaux)",
-            titreNotaire: "Maître Touré Amadou",
-            modeInfrastructure: "cloud",
-            totalDossiers: 42,
-            totalMinutes: 65,
-            totalUtilisateurs: 8,
-            espaceUtiliseMo: 2890,
-            versionDeployee: "v2.4.0",
-            statutSante: "En ligne (Cloud Vault)",
-          },
-        ];
+        return [];
       }),
       API.get("/api/superadmin/equipe").catch(function () {
         return [

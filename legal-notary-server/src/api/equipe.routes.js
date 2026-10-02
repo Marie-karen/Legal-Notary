@@ -20,14 +20,16 @@ const router = express.Router();
 router.get("/", async (req, res, next) => {
   try {
     const avecSalaires = aPermission(req.utilisateur.role, "equipe:voir_salaires");
-    res.json(await authService.listerUtilisateurs({ avecSalaires }));
+    const etudeId = req.utilisateur ? req.utilisateur.etudeId : null;
+    res.json(await authService.listerUtilisateurs({ avecSalaires, etudeId }));
   } catch (e) { next(e); }
 });
 
 router.post("/", exigerPermission("equipe:gerer"), async (req, res, next) => {
   try {
     const avecSalaires = aPermission(req.utilisateur.role, "equipe:voir_salaires");
-    const utilisateur = await authService.creerUtilisateur(req.body, { avecSalaire: avecSalaires });
+    const etudeId = req.utilisateur ? req.utilisateur.etudeId : null;
+    const utilisateur = await authService.creerUtilisateur({ ...req.body, etudeId }, { avecSalaire: avecSalaires });
     await auditService.consigner("utilisateurs", utilisateur.id, "creation", req.utilisateur.id, { role: utilisateur.role, email: utilisateur.email });
     res.status(201).json(utilisateur);
   } catch (e) { next(e); }

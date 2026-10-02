@@ -253,29 +253,36 @@ async function ajouterMouvement(client, dossierId, utilisateurId, description) {
   await toucherDerniereActivite(client, dossierId);
 }
 
-async function prochainNumeroDossier(client, annee) {
+async function prochainNumeroDossier(client, annee, etudeId) {
   try {
-    const { rows } = await client.query("SELECT COUNT(*)::int AS n FROM dossiers WHERE annee_ouverture = $1", [annee]);
+    let query = "SELECT COUNT(*)::int AS n FROM dossiers WHERE annee_ouverture = $1";
+    const params = [annee];
+    if (etudeId) {
+      params.push(etudeId);
+      query += ` AND etude_id = $${params.length}`;
+    }
+    const { rows } = await client.query(query, params);
     if (rows && rows.length) {
       const n = rows[0].n + 1;
       return `DOS-${annee}-${String(n).padStart(3, "0")}`;
     }
   } catch (_) {}
-  const count = DOSSIERS_DEMO_COMPLETS.filter(d => d.anneeOuverture === annee).length + 1;
+  const count = DOSSIERS_DEMO_COMPLETS.filter(d => d.anneeOuverture === annee && (d.etudeId === etudeId || !etudeId)).length + 1;
   return `DOS-${annee}-${String(count).padStart(3, "0")}`;
 }
 
-async function creerDossier({ typeActeId, anneeOuverture, montantAssiette, comparants, clercAssigneId, creeParId, creeParRole }) {
+async function creerDossier({ typeActeId, anneeOuverture, montantAssiette, comparants, clercAssigneId, creeParId, creeParRole, etudeId }) {
   const annee = anneeOuverture || new Date().getFullYear();
-  const assigneFinal = clercAssigneId || (porteeDossiers(creeParRole) === "assignes" ? creeParId : "demo-clerc1-id");
+  const assigneFinal = clercAssigneId || (porteeDossiers(creeParRole) === "assignes" ? creeParId : null);
+  const eid = etudeId || "a0000000-0000-0000-0000-000000000001";
 
   try {
     return await avecTransaction(async (client) => {
-      const numeroDossier = await prochainNumeroDossier(client, annee);
+      const numeroDossier = await prochainNumeroDossier(client, annee, eid);
       const { rows: dossierRows } = await client.query(
-        `INSERT INTO dossiers (numero_dossier, type_acte_id, annee_ouverture, montant_assiette, clerc_assigne_id, cree_par_id)
-         VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-        [numeroDossier, typeActeId, annee, montantAssiette || 0, assigneFinal, creeParId || null]
+        `INSERT INTO dossiers (numero_dossier, type_acte_id, annee_ouverture, montant_assiette, clerc_assigne_id, cree_par_id, etude_id)
+         VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+        [numeroDossier, typeActeId, annee, montantAssiette || 0, assigneFinal, creeParId || null, eid]
       );
       if (dossierRows && dossierRows.length) {
         const dossier = dossierRows[0];
@@ -294,12 +301,14 @@ async function creerDossier({ typeActeId, anneeOuverture, montantAssiette, compa
   }
 
   // Fallback mémoire instantané
-  const nouveauNum = `DOS-${annee}-${String(DOSSIERS_DEMO_COMPLETS.length + 1).padStart(3, "0")}`;
+  const count = DOSSIERS_DEMO_COMPLETS.filter(x => x.etudeId === eid).length + 1;
+  const nouveauNum = `DOS-${annee}-${String(count).padStart(3, "0")}`;
   const nouvelId = "dos-" + crypto.randomUUID().slice(0, 8);
   const compNoms = (comparants || []).map(c => c.nom).join(" & ") || "Comparant Principal";
 
   const nouveauDossier = {
     id: nouvelId,
+    etudeId: eid,
     numeroDossier: nouveauNum,
     typeActeId: typeActeId || "vente_immobiliere",
     anneeOuverture: annee,
@@ -325,9 +334,20 @@ async function listerDossiersPourUtilisateur(utilisateur, filtres = {}) {
   const portee = porteeDossiers(utilisateur ? utilisateur.role : "notaire");
   if (portee === "aucune") return [];
 
+  const etudeId = utilisateur ? utilisateur.etudeId : null;
+  const estCompteDemo = !utilisateur || etudeId === "etude-abidjan-01" || etudeId === "a0000000-0000-0000-0000-000000000001" || (utilisateur.email && utilisateur.email.endsWith("@notaire.ci"));
+
   try {
     const conditions = ["archived_at IS NULL"];
     const valeurs = [];
+
+    // Isolation stricte par tenant / étude
+    if (etudeId && !estCompteDemo) {
+      valeurs.push(etudeId);
+      conditions.push(`etude_id = $${valeurs.length}`);
+    } else if (estCompteDemo) {
+      conditions.push(`(etude_id = 'a0000000-0000-0000-0000-000000000001' OR etude_id IS NULL)`);
+    }
 
     if (portee === "assignes" && utilisateur) {
       valeurs.push(utilisateur.id);
@@ -364,15 +384,20 @@ async function listerDossiersPourUtilisateur(utilisateur, filtres = {}) {
        ORDER BY d.date_ouverture DESC`,
       valeurs
     );
-    if (rows && rows.length) return rows.map(dossierVersCamel);
+    if (Array.isArray(rows)) return rows.map(dossierVersCamel);
   } catch (err) {
     // Repli instantané mémoire (< 0.1ms)
   }
 
-  const estCompteDemo = !utilisateur || utilisateur.etudeId === "etude-abidjan-01" || (utilisateur.email && utilisateur.email.endsWith("@notaire.ci"));
   if (!estCompteDemo) {
     // Espace de travail strictement vierge pour toute nouvelle étude réelle
-    return [];
+    return DOSSIERS_DEMO_COMPLETS.filter(d => d.etudeId === etudeId).filter(d => {
+      if (portee === "formalites" && ![5, 6].includes(d.etapeActuelle)) return false;
+      if (portee === "assignes" && utilisateur && d.clercAssigneId && d.clercAssigneId !== utilisateur.id) return false;
+      if (filtres.statut && d.statut !== filtres.statut) return false;
+      if (filtres.typeActeId && d.typeActeId !== filtres.typeActeId) return false;
+      return true;
+    });
   }
 
   return DOSSIERS_DEMO_COMPLETS.filter(d => {
@@ -388,9 +413,20 @@ async function listerClientsPourUtilisateur(utilisateur) {
   const portee = porteeDossiers(utilisateur ? utilisateur.role : "notaire");
   if (portee === "aucune") return [];
 
+  const etudeId = utilisateur ? utilisateur.etudeId : null;
+  const estCompteDemo = !utilisateur || etudeId === "etude-abidjan-01" || etudeId === "a0000000-0000-0000-0000-000000000001" || (utilisateur.email && utilisateur.email.endsWith("@notaire.ci"));
+
   try {
     const conditions = ["d.archived_at IS NULL"];
     const valeurs = [];
+
+    if (etudeId && !estCompteDemo) {
+      valeurs.push(etudeId);
+      conditions.push(`d.etude_id = $${valeurs.length}`);
+    } else if (estCompteDemo) {
+      conditions.push(`(d.etude_id = 'a0000000-0000-0000-0000-000000000001' OR d.etude_id IS NULL)`);
+    }
+
     if (portee === "assignes" && utilisateur) {
       valeurs.push(utilisateur.id);
       conditions.push(`d.clerc_assigne_id = $${valeurs.length}`);
@@ -408,7 +444,7 @@ async function listerClientsPourUtilisateur(utilisateur) {
       valeurs
     );
 
-    if (rows && rows.length) {
+    if (Array.isArray(rows)) {
       const parClient = new Map();
       for (const r of rows) {
         const cle = r.nom.trim().toLowerCase();
@@ -432,9 +468,7 @@ async function listerClientsPourUtilisateur(utilisateur) {
     // Repli instantané mémoire
   }
 
-  const estCompteDemo = !utilisateur || utilisateur.etudeId === "etude-abidjan-01" || (utilisateur.email && utilisateur.email.endsWith("@notaire.ci"));
   if (!estCompteDemo) {
-    // Espace de travail strictement vierge pour toute nouvelle étude réelle
     return [];
   }
 

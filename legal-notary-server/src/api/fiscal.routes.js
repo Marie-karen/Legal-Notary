@@ -501,12 +501,20 @@ router.post("/dossiers/:dossierId/valider-facture", async (req, res, next) => {
 // =========================================================================
 router.get("/validations/parapheur-global", async (req, res, next) => {
   try {
+    const etudeId = req.utilisateur ? req.utilisateur.etudeId : null;
+    const estCompteDemo = !etudeId || etudeId === "etude-abidjan-01" || etudeId === "a0000000-0000-0000-0000-000000000001" || (req.utilisateur && req.utilisateur.email && req.utilisateur.email.endsWith("@notaire.ci"));
+
     let fichesTaxe = [];
     let notesFrais = [];
     let factures = [];
     let projetsActe = [];
+    let salairesEtCharges = [];
+    let deboursCharges = [];
 
     try {
+      const etudeCondition = (etudeId && !estCompteDemo) ? "AND d.etude_id = $1" : "";
+      const etudeParams = (etudeId && !estCompteDemo) ? [etudeId] : [];
+
       // 1. Fiches de taxe soumises
       const fichesTaxeRes = await pool.query(`
         SELECT f.id, f.dossier_id, f.donnees, f.statut, f.commentaire_notaire, f.created_at, f.version,
@@ -520,9 +528,9 @@ router.get("/validations/parapheur-global", async (req, res, next) => {
         FROM fiches_taxe f
         JOIN dossiers d ON d.id = f.dossier_id
         LEFT JOIN utilisateurs u ON u.id = f.utilisateur_id
-        WHERE f.statut = 'soumis'
+        WHERE f.statut = 'soumis' ${etudeCondition}
         ORDER BY f.created_at DESC
-      `);
+      `, etudeParams);
       fichesTaxe = fichesTaxeRes.rows || [];
 
       // 2. Notes de frais soumises
@@ -541,9 +549,9 @@ router.get("/validations/parapheur-global", async (req, res, next) => {
         FROM fiches_taxe f
         JOIN dossiers d ON d.id = f.dossier_id
         LEFT JOIN utilisateurs u ON u.id = f.utilisateur_id
-        WHERE (f.donnees->>'statutNoteFrais') = 'soumis'
+        WHERE (f.donnees->>'statutNoteFrais') = 'soumis' ${etudeCondition}
         ORDER BY f.created_at DESC
-      `);
+      `, etudeParams);
       notesFrais = notesFraisRes.rows || [];
 
       // 3. Factures soumises
@@ -562,9 +570,9 @@ router.get("/validations/parapheur-global", async (req, res, next) => {
         FROM fiches_taxe f
         JOIN dossiers d ON d.id = f.dossier_id
         LEFT JOIN utilisateurs u ON u.id = f.utilisateur_id
-        WHERE (f.donnees->>'statutFacture') = 'soumis'
+        WHERE (f.donnees->>'statutFacture') = 'soumis' ${etudeCondition}
         ORDER BY f.created_at DESC
-      `);
+      `, etudeParams);
       factures = facturesRes.rows || [];
 
       // 4. Projets d'actes soumis
@@ -580,43 +588,20 @@ router.get("/validations/parapheur-global", async (req, res, next) => {
         FROM dossier_projets_acte p
         JOIN dossiers d ON d.id = p.dossier_id
         LEFT JOIN utilisateurs u ON u.id = p.redige_par_id
-        WHERE p.statut = 'soumis'
+        WHERE p.statut = 'soumis' ${etudeCondition}
         ORDER BY p.soumis_le DESC NULLS LAST, p.created_at DESC
-      `);
+      `, etudeParams);
       projetsActe = projetsActeRes.rows || [];
-    } catch (dbErr) {
-      // Repli mémoire autonome pour la démo
-      const fiches = Array.from(FICHES_MEMOIRE.values());
-      fichesTaxe = fiches.filter(f => f.statut === "soumis");
-      notesFrais = fiches.filter(f => f.donnees && (f.donnees.statutNoteFrais === "soumis" || f.statut === "soumis"));
-      factures = fiches.filter(f => f.donnees && f.donnees.statutFacture === "soumis");
-      projetsActe = [
-        {
-          id: "proj-demo-1",
-          dossier_id: "dos-demo-001",
-          numero_dossier: "DOS-2026-001",
-          type_acte_id: "vente_immobiliere",
-          numero_version: 1,
-          contenu: "Projet d'acte de vente immobilière parcelle TF N° 124 589...",
-          statut: "soumis",
-          soumis_le: new Date().toISOString(),
-          created_at: new Date().toISOString(),
-          redige_par_nom: "Me KOUAMÉ N'Guessan",
-          comparants_noms: "M. KOUASSI K. & MME KOFFI A."
-        }
-      ];
-    }
 
-    // 5. Salaires & Charges à valider
-    let salairesEtCharges = [];
-    try {
+      // 5. Salaires
+      const userCondition = (etudeId && !estCompteDemo) ? "AND u.etude_id = $1" : "";
       const equipeRes = await pool.query(`
         SELECT u.id, u.nom_complet, u.email, u.role, u.telephone, u.type_contrat, u.salaire_net
         FROM utilisateurs u
-        WHERE u.actif = true AND u.salaire_net > 0
+        WHERE u.actif = true AND u.salaire_net > 0 ${userCondition}
         ORDER BY u.nom_complet ASC
-      `);
-      if (equipeRes.rows.length) {
+      `, etudeParams);
+      if (equipeRes.rows && equipeRes.rows.length) {
         salairesEtCharges = equipeRes.rows.map(m => ({
           id: m.id,
           nomComplet: m.nom_complet,
@@ -629,115 +614,45 @@ router.get("/validations/parapheur-global", async (req, res, next) => {
           statut: "a_valider"
         }));
       }
-    } catch (err) {}
+    } catch (dbErr) {
+      if (estCompteDemo) {
+        const fiches = Array.from(FICHES_MEMOIRE.values());
+        fichesTaxe = fiches.filter(f => f.statut === "soumis");
+        notesFrais = fiches.filter(f => f.donnees && (f.donnees.statutNoteFrais === "soumis" || f.statut === "soumis"));
+        factures = fiches.filter(f => f.donnees && f.donnees.statutFacture === "soumis");
+        projetsActe = [
+          {
+            id: "proj-demo-1",
+            dossier_id: "dos-demo-001",
+            numero_dossier: "DOS-2026-001",
+            type_acte_id: "vente_immobiliere",
+            numero_version: 1,
+            contenu: "Projet d'acte de vente immobilière parcelle TF N° 124 589...",
+            statut: "soumis",
+            soumis_le: new Date().toISOString(),
+            created_at: new Date().toISOString(),
+            redige_par_nom: "Me KOUAMÉ N'Guessan",
+            comparants_noms: "M. KOUASSI K. & MME KOFFI A."
+          }
+        ];
+      }
+    }
 
-    if (!salairesEtCharges.length) {
-      salairesEtCharges = [
+    if (estCompteDemo && deboursCharges.length === 0) {
+      deboursCharges = [
         {
-          id: "sal-1",
-          nomComplet: "Me KOUAMÉ N'Guessan",
-          role: "premier_clerc",
-          typeContrat: "CDI",
-          salaireNet: 650000,
-          chargesPatronales: 97500,
-          type: "salaire_mensuel",
-          periode: new Date().toLocaleDateString("fr-CI", { month: "long", year: "numeric" }),
-          statut: "a_valider"
-        },
-        {
-          id: "sal-2",
-          nomComplet: "M. YAO Koffi Emmanuel",
-          role: "clerc_redacteur",
-          typeContrat: "CDI",
-          salaireNet: 450000,
-          chargesPatronales: 67500,
-          type: "salaire_mensuel",
-          periode: new Date().toLocaleDateString("fr-CI", { month: "long", year: "numeric" }),
-          statut: "a_valider"
-        },
-        {
-          id: "sal-3",
-          nomComplet: "Mme TOURE Aminata",
-          role: "comptable_taxateur",
-          typeContrat: "CDI",
-          salaireNet: 500000,
-          chargesPatronales: 75000,
-          type: "salaire_mensuel",
-          periode: new Date().toLocaleDateString("fr-CI", { month: "long", year: "numeric" }),
-          statut: "a_valider"
-        },
-        {
-          id: "sal-4",
-          nomComplet: "M. KONE Bakary",
-          role: "clerc_formaliste",
-          typeContrat: "CDI",
-          salaireNet: 380000,
-          chargesPatronales: 57000,
-          type: "salaire_mensuel",
-          periode: new Date().toLocaleDateString("fr-CI", { month: "long", year: "numeric" }),
-          statut: "a_valider"
-        },
-        {
-          id: "sal-5",
-          nomComplet: "Mlle DIALLO Fatoumata",
-          role: "assistante",
-          typeContrat: "CDI",
-          salaireNet: 300000,
-          chargesPatronales: 45000,
-          type: "salaire_mensuel",
-          periode: new Date().toLocaleDateString("fr-CI", { month: "long", year: "numeric" }),
-          statut: "a_valider"
-        },
-        {
-          id: "sal-6",
-          nomComplet: "M. BLE Gaston",
-          role: "archiviste",
-          typeContrat: "CDI",
-          salaireNet: 280000,
-          chargesPatronales: 42000,
-          type: "salaire_mensuel",
-          periode: new Date().toLocaleDateString("fr-CI", { month: "long", year: "numeric" }),
-          statut: "a_valider"
+          id: "deb-1",
+          objet: "Droits d'immatriculation foncière (Conservation Foncière Cocody)",
+          numeroDossier: "2024-VTE-0042",
+          clientNom: "M. KOUASSI Jean-Baptiste",
+          montant: 1850000,
+          type: "conservation_fonciere",
+          beneficiaire: "Trésor Public / Conservation Foncière",
+          statut: "a_valider",
+          soumisLe: new Date(Date.now() - 86400000).toISOString()
         }
       ];
     }
-
-    // 6. Débours & Frais externes à décaisser
-    const deboursCharges = [
-      {
-        id: "deb-1",
-        objet: "Droits d'immatriculation foncière (Conservation Foncière Cocody)",
-        numeroDossier: "2024-VTE-0042",
-        clientNom: "M. KOUASSI Jean-Baptiste",
-        montant: 1850000,
-        type: "conservation_fonciere",
-        beneficiaire: "Trésor Public / Conservation Foncière",
-        statut: "a_valider",
-        soumisLe: new Date(Date.now() - 86400000).toISOString()
-      },
-      {
-        id: "deb-2",
-        objet: "Frais d'insertion légale Journal d'Annonces Légales (Fraternité Matin)",
-        numeroDossier: "2024-SUC-0018",
-        clientNom: "Succession DIOMANDÉ",
-        montant: 120000,
-        type: "publicite_legale",
-        beneficiaire: "Fraternité Matin",
-        statut: "a_valider",
-        soumisLe: new Date(Date.now() - 2 * 86400000).toISOString()
-      },
-      {
-        id: "deb-3",
-        objet: "Honoraires de bornage contradictoire Cabinet Géomètre Expert",
-        numeroDossier: "2024-HYP-0015",
-        clientNom: "Société SIB SA",
-        montant: 450000,
-        type: "geometre_expert",
-        beneficiaire: "Cabinet Géomètre Agréé",
-        statut: "a_valider",
-        soumisLe: new Date(Date.now() - 3 * 86400000).toISOString()
-      }
-    ];
 
     const totalEnAttente = fichesTaxe.length +
                            notesFrais.length +

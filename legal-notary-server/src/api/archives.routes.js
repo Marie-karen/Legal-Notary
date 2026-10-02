@@ -15,25 +15,29 @@ const router = express.Router();
 
 router.get("/en-attente", exigerPermission("archives:acceder"), async (req, res, next) => {
   try {
-    res.json(await archivesService.listerEnAttenteArchivage());
+    const etudeId = req.utilisateur ? req.utilisateur.etudeId : null;
+    res.json(await archivesService.listerEnAttenteArchivage(etudeId));
   } catch (e) { next(e); }
 });
 
 router.get("/repertoire", exigerPermission("archives:acceder"), async (req, res, next) => {
   try {
-    res.json(await archivesService.listerRepertoire());
+    const etudeId = req.utilisateur ? req.utilisateur.etudeId : null;
+    res.json(await archivesService.listerRepertoire(etudeId));
   } catch (e) { next(e); }
 });
 
 router.get("/cartons", exigerPermission("archives:acceder"), async (req, res, next) => {
   try {
-    res.json(await archivesService.listerCartons());
+    const etudeId = req.utilisateur ? req.utilisateur.etudeId : null;
+    res.json(await archivesService.listerCartons(etudeId));
   } catch (e) { next(e); }
 });
 
 router.post("/cartons", exigerPermission("archives:archiver_physiquement"), async (req, res, next) => {
   try {
-    const carton = await archivesService.creerCarton(req.body || {});
+    const etudeId = req.utilisateur ? req.utilisateur.etudeId : null;
+    const carton = await archivesService.creerCarton({ ...(req.body || {}), etudeId });
     res.status(201).json(carton);
   } catch (e) { next(e); }
 });
