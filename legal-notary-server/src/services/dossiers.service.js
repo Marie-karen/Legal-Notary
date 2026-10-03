@@ -1,10 +1,32 @@
 /**
- * src/services/dossiers.service.js — Cycle de vie des dossiers avec Haute Disponibilité & Zéro Latence (< 1ms).
+ * src/services/dossiers.service.js — Cycle de vie des dossiers avec DNO (Dossier Non Ouvert),
+ * Numérotation Paramétrable (Continuité de l'étude) & Règlements Comptables.
  */
 
 const { pool, avecTransaction } = require("../db/pool");
 const { porteeDossiers } = require("../rbac/roles");
 const crypto = require("crypto");
+const parametresService = require("./parametres.service");
+const emailDeploiementService = require("./email-deploiement.service");
+const authService = require("./auth.service");
+const recusService = require("./recus.service");
+
+const CODES_NATURE_ACTE = {
+  vente_immobiliere: "VTE",
+  constitution_societe: "SOC",
+  succession: "SUC",
+  donation: "DON",
+  pret_hypothecaire: "PRT",
+  bail_commercial: "BAL",
+  promesse_vente: "PRM",
+  realisation_promesse: "RLS",
+  mainlevee_hypotheque: "MLV",
+  procuration: "PRO",
+  augmentation_capital: "AUG",
+  vente_usage: "VTU",
+  notoriete: "NOT",
+  testament: "TST",
+};
 
 function dossierVersCamel(l) {
   if (!l) return null;
@@ -25,6 +47,21 @@ function dossierVersCamel(l) {
     createdAt: l.created_at || l.createdAt || new Date().toISOString(),
     comparantsNoms: l.comparants_noms || l.comparantsNoms || "",
     estArchiveNumerique: Boolean(l.est_archive_numerique || l.estArchiveNumerique || l.statut === "cloture" || l.etape_actuelle === 6 || l.etapeActuelle === 6),
+    etudeId: l.etude_id || l.etudeId || null,
+
+    // Nouveaux champs DNO & Règlements
+    typeCreation: l.type_creation || l.typeCreation || "dossier_ouvert",
+    numeroDno: l.numero_dno || l.numeroDno || null,
+    statutDno: l.statut_dno || l.statutDno || (l.numero_dno ? "en_attente_paiement" : "ouvert"),
+    typePersonne: l.type_personne || l.typePersonne || "physique",
+    piecesJointesDno: Array.isArray(l.pieces_jointes_dno) ? l.pieces_jointes_dno : (Array.isArray(l.piecesJointesDno) ? l.piecesJointesDno : []),
+    fraisOuverture: Number(l.frais_ouverture !== undefined ? l.frais_ouverture : l.fraisOuverture) || 0,
+    provisionVersee: Number(l.provision_versee !== undefined ? l.provision_versee : l.provisionVersee) || 0,
+    modePaiementProvision: l.mode_paiement_provision || l.modePaiementProvision || null,
+    datePaiementProvision: l.date_paiement_provision || l.datePaiementProvision || null,
+    comptableValidateurId: l.comptable_validateur_id || l.comptableValidateurId || null,
+    emailClient: l.email_client || l.emailClient || "",
+    telephoneClient: l.telephone_client || l.telephoneClient || "",
   };
 }
 
@@ -43,6 +80,10 @@ const DOSSIERS_DEMO_COMPLETS = [
     clercAssigneId: "demo-clerc1-id",
     comparantsNoms: "M. KOUASSI K. & MME KOFFI A.",
     estArchiveNumerique: false,
+    typeCreation: "dossier_ouvert",
+    statutDno: "regle_ouvert",
+    fraisOuverture: 25000,
+    provisionVersee: 500000,
   },
   {
     id: "dos-demo-002",
@@ -58,6 +99,10 @@ const DOSSIERS_DEMO_COMPLETS = [
     clercAssigneId: "demo-clerc1-id",
     comparantsNoms: "GROUPE IVOIRE TECH SARL (M. BAKAYOKO)",
     estArchiveNumerique: false,
+    typeCreation: "dossier_ouvert",
+    statutDno: "regle_ouvert",
+    fraisOuverture: 25000,
+    provisionVersee: 300000,
   },
   {
     id: "dos-demo-003",
@@ -73,6 +118,10 @@ const DOSSIERS_DEMO_COMPLETS = [
     clercAssigneId: "demo-clerc1-id",
     comparantsNoms: "M. DIALLO AMADOU & SCI RESIDENCE PALMA",
     estArchiveNumerique: false,
+    typeCreation: "dossier_ouvert",
+    statutDno: "regle_ouvert",
+    fraisOuverture: 25000,
+    provisionVersee: 400000,
   },
   {
     id: "dos-demo-004",
@@ -88,6 +137,8 @@ const DOSSIERS_DEMO_COMPLETS = [
     clercAssigneId: "demo-clerc1-id",
     comparantsNoms: "FAMILLE KONE (DONATEUR & DONATAIRES)",
     estArchiveNumerique: false,
+    typeCreation: "dossier_ouvert",
+    statutDno: "regle_ouvert",
   },
   {
     id: "dos-demo-005",
@@ -103,6 +154,8 @@ const DOSSIERS_DEMO_COMPLETS = [
     clercAssigneId: "demo-clerc1-id",
     comparantsNoms: "SOCIÉTÉ BTP ATLANTIQUE SAS",
     estArchiveNumerique: false,
+    typeCreation: "dossier_ouvert",
+    statutDno: "regle_ouvert",
   },
   {
     id: "dos-demo-006",
@@ -118,6 +171,8 @@ const DOSSIERS_DEMO_COMPLETS = [
     clercAssigneId: "demo-clerc1-id",
     comparantsNoms: "M. & MME TOURE / SOCIÉTÉ GÉNÉRALE CI",
     estArchiveNumerique: false,
+    typeCreation: "dossier_ouvert",
+    statutDno: "regle_ouvert",
   },
   {
     id: "dos-demo-007",
@@ -133,6 +188,8 @@ const DOSSIERS_DEMO_COMPLETS = [
     clercAssigneId: "demo-formalites-id",
     comparantsNoms: "M. ADJA SERGE & SCI PALMA",
     estArchiveNumerique: false,
+    typeCreation: "dossier_ouvert",
+    statutDno: "regle_ouvert",
   },
   {
     id: "dos-demo-008",
@@ -148,6 +205,8 @@ const DOSSIERS_DEMO_COMPLETS = [
     clercAssigneId: "demo-clerc1-id",
     comparantsNoms: "DISTRIBUTION PLUS SARL & BAILLEUR IMMO",
     estArchiveNumerique: false,
+    typeCreation: "dossier_ouvert",
+    statutDno: "regle_ouvert",
   },
   {
     id: "dos-demo-009",
@@ -163,6 +222,8 @@ const DOSSIERS_DEMO_COMPLETS = [
     clercAssigneId: "demo-clerc1-id",
     comparantsNoms: "HÉRITIERS FEU DR. BAMBA SOULEYMANE",
     estArchiveNumerique: false,
+    typeCreation: "dossier_ouvert",
+    statutDno: "regle_ouvert",
   },
   {
     id: "dos-demo-010",
@@ -178,6 +239,8 @@ const DOSSIERS_DEMO_COMPLETS = [
     clercAssigneId: "demo-formalites-id",
     comparantsNoms: "M. N'GUESSAN PASCAL & BICICI",
     estArchiveNumerique: false,
+    typeCreation: "dossier_ouvert",
+    statutDno: "regle_ouvert",
   },
   {
     id: "dos-demo-011",
@@ -193,6 +256,8 @@ const DOSSIERS_DEMO_COMPLETS = [
     clercAssigneId: "demo-clerc1-id",
     comparantsNoms: "MME OUATTARA FATOU",
     estArchiveNumerique: false,
+    typeCreation: "dossier_ouvert",
+    statutDno: "regle_ouvert",
   },
   {
     id: "dos-demo-012",
@@ -208,6 +273,8 @@ const DOSSIERS_DEMO_COMPLETS = [
     clercAssigneId: "demo-clerc1-id",
     comparantsNoms: "M. SANOGO IBRAHIM & ACQUÉREUR",
     estArchiveNumerique: false,
+    typeCreation: "dossier_ouvert",
+    statutDno: "regle_ouvert",
   }
 ];
 
@@ -241,48 +308,173 @@ async function toucherDerniereActivite(client, dossierId) {
 
 async function ajouterMouvement(client, dossierId, utilisateurId, description) {
   try {
-    await client.query(
-      "INSERT INTO dossier_mouvements (dossier_id, utilisateur_id, description) VALUES ($1, $2, $3)",
-      [dossierId, utilisateurId, description]
-    );
+    if (client) {
+      await client.query(
+        "INSERT INTO dossier_mouvements (dossier_id, utilisateur_id, description) VALUES ($1, $2, $3)",
+        [dossierId, utilisateurId, description]
+      );
+    } else {
+      await pool.query(
+        "INSERT INTO dossier_mouvements (dossier_id, utilisateur_id, description) VALUES ($1, $2, $3)",
+        [dossierId, utilisateurId, description]
+      );
+    }
   } catch (_) {}
 
   const m = { id: "mouv-" + crypto.randomUUID().slice(0, 8), dossier_id: dossierId, utilisateur_id: utilisateurId, description, created_at: new Date().toISOString() };
   if (!MOUVEMENTS_MEMOIRE.has(dossierId)) MOUVEMENTS_MEMOIRE.set(dossierId, []);
   MOUVEMENTS_MEMOIRE.get(dossierId).unshift(m);
-  await toucherDerniereActivite(client, dossierId);
+  if (client) await toucherDerniereActivite(client, dossierId);
 }
 
-async function prochainNumeroDossier(client, annee, etudeId) {
+// ---------------------------------------------------------------------
+// Numérotation DNO (Dossier Non Ouvert)
+// ---------------------------------------------------------------------
+async function prochainNumeroDNO(client, annee, etudeId) {
   try {
-    let query = "SELECT COUNT(*)::int AS n FROM dossiers WHERE annee_ouverture = $1";
+    let query = "SELECT COUNT(*)::int AS n FROM dossiers WHERE (type_creation = 'dno' OR numero_dno IS NOT NULL) AND annee_ouverture = $1";
     const params = [annee];
     if (etudeId) {
       params.push(etudeId);
       query += ` AND etude_id = $${params.length}`;
     }
-    const { rows } = await client.query(query, params);
+    const c = client || pool;
+    const { rows } = await c.query(query, params);
     if (rows && rows.length) {
       const n = rows[0].n + 1;
-      return `DOS-${annee}-${String(n).padStart(3, "0")}`;
+      return `DNO-${annee}-${String(n).padStart(4, "0")}`;
     }
   } catch (_) {}
-  const count = DOSSIERS_DEMO_COMPLETS.filter(d => d.anneeOuverture === annee && (d.etudeId === etudeId || !etudeId)).length + 1;
-  return `DOS-${annee}-${String(count).padStart(3, "0")}`;
+
+  const count = DOSSIERS_DEMO_COMPLETS.filter(d => (d.typeCreation === "dno" || d.numeroDno) && d.anneeOuverture === annee && (d.etudeId === etudeId || !etudeId)).length + 1;
+  return `DNO-${annee}-${String(count).padStart(4, "0")}`;
 }
 
-async function creerDossier({ typeActeId, anneeOuverture, montantAssiette, comparants, clercAssigneId, creeParId, creeParRole, etudeId }) {
+function formaterNumeroDossier(format, annee, num, codeActe = "ACT") {
+  const padLength = (format && format.includes("{NUM}")) ? 4 : 3;
+  return (format || "DOS-{AAAA}-{NUM}")
+    .replace("{AAAA}", String(annee))
+    .replace("{CODE}", String(codeActe))
+    .replace("{NUM}", String(num).padStart(padLength, "0"));
+}
+
+// ---------------------------------------------------------------------
+// Numérotation Dossier Ouvert Paramétrable (Continuité de l'Étude)
+// ---------------------------------------------------------------------
+async function prochainNumeroDossier(client, annee, etudeId, typeActeId) {
+  const paramsEtude = await parametresService.obtenir(etudeId);
+  const mode = paramsEtude.modeNumerotation || "global"; // 'global' | 'par_nature_acte'
+  const c = client || pool;
+
+  if (mode === "par_nature_acte" && typeActeId) {
+    const codeActe = CODES_NATURE_ACTE[typeActeId] || "ACT";
+    const baseNum = (paramsEtude.derniersNumerosParNature && Number(paramsEtude.derniersNumerosParNature[typeActeId])) || 0;
+
+    let countExistant = 0;
+    try {
+      let query = "SELECT COUNT(*)::int AS n FROM dossiers WHERE type_acte_id = $1 AND statut_dno = 'regle_ouvert'";
+      const qParams = [typeActeId];
+      if (etudeId) {
+        qParams.push(etudeId);
+        query += ` AND etude_id = $${qParams.length}`;
+      }
+      const { rows } = await c.query(query, qParams);
+      if (rows && rows.length) countExistant = rows[0].n;
+    } catch (_) {
+      countExistant = DOSSIERS_DEMO_COMPLETS.filter(d => d.typeActeId === typeActeId && (d.etudeId === etudeId || !etudeId)).length;
+    }
+
+    const nFinal = baseNum + countExistant + 1;
+    const format = paramsEtude.formatNumerotation && paramsEtude.formatNumerotation.includes("{CODE}") 
+      ? paramsEtude.formatNumerotation 
+      : "{AAAA}-{CODE}-{NUM}";
+    return formaterNumeroDossier(format, annee, nFinal, codeActe);
+  }
+
+  // Mode Global Unique (défaut)
+  const baseGlobal = Number(paramsEtude.dernierNumeroGlobal || 0);
+  let countExistant = 0;
+  try {
+    let query = "SELECT COUNT(*)::int AS n FROM dossiers WHERE (type_creation = 'dossier_ouvert' OR statut_dno = 'regle_ouvert') AND annee_ouverture = $1";
+    const qParams = [annee];
+    if (etudeId) {
+      qParams.push(etudeId);
+      query += ` AND etude_id = $${qParams.length}`;
+    }
+    const { rows } = await c.query(query, qParams);
+    if (rows && rows.length) countExistant = rows[0].n;
+  } catch (_) {
+    countExistant = DOSSIERS_DEMO_COMPLETS.filter(d => d.anneeOuverture === annee && (d.etudeId === etudeId || !etudeId)).length;
+  }
+
+  const nFinal = baseGlobal + countExistant + 1;
+  const format = paramsEtude.formatNumerotation || "DOS-{AAAA}-{NUM}";
+  return formaterNumeroDossier(format, annee, nFinal);
+}
+
+// ---------------------------------------------------------------------
+// Création de Dossier / DNO
+// ---------------------------------------------------------------------
+async function creerDossier({
+  typeCreation = "dossier_ouvert",
+  estDno = false,
+  typeActeId,
+  anneeOuverture,
+  montantAssiette,
+  typePersonne = "physique",
+  piecesJointesDno = [],
+  emailClient = "",
+  telephoneClient = "",
+  comparants = [],
+  clercAssigneId,
+  creeParId,
+  creeParRole,
+  etudeId,
+}) {
   const annee = anneeOuverture || new Date().getFullYear();
   const assigneFinal = clercAssigneId || (porteeDossiers(creeParRole) === "assignes" ? creeParId : null);
   const eid = etudeId || "a0000000-0000-0000-0000-000000000001";
+  const estVraiDno = estDno || typeCreation === "dno";
+
+  let numeroDossier = "";
+  let numeroDno = null;
+  let statutDno = "ouvert";
+
+  if (estVraiDno) {
+    numeroDno = await prochainNumeroDNO(null, annee, eid);
+    numeroDossier = numeroDno; // Identifiant visible en attendant le paiement
+    statutDno = "en_attente_paiement";
+  } else {
+    numeroDossier = await prochainNumeroDossier(null, annee, eid, typeActeId);
+    statutDno = "regle_ouvert";
+  }
+
+  let dossierResultat = null;
 
   try {
-    return await avecTransaction(async (client) => {
-      const numeroDossier = await prochainNumeroDossier(client, annee, eid);
+    dossierResultat = await avecTransaction(async (client) => {
       const { rows: dossierRows } = await client.query(
-        `INSERT INTO dossiers (numero_dossier, type_acte_id, annee_ouverture, montant_assiette, clerc_assigne_id, cree_par_id, etude_id)
-         VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
-        [numeroDossier, typeActeId, annee, montantAssiette || 0, assigneFinal, creeParId || null, eid]
+        `INSERT INTO dossiers (
+           numero_dossier, type_acte_id, annee_ouverture, montant_assiette, clerc_assigne_id, cree_par_id, etude_id,
+           type_creation, numero_dno, statut_dno, type_personne, pieces_jointes_dno, email_client, telephone_client
+         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+         RETURNING *`,
+        [
+          numeroDossier,
+          typeActeId || "vente_immobiliere",
+          annee,
+          Number(montantAssiette) || 0,
+          assigneFinal,
+          creeParId || null,
+          eid,
+          estVraiDno ? "dno" : "dossier_ouvert",
+          numeroDno,
+          statutDno,
+          typePersonne,
+          JSON.stringify(piecesJointesDno || []),
+          emailClient || null,
+          telephoneClient || null,
+        ]
       );
       if (dossierRows && dossierRows.length) {
         const dossier = dossierRows[0];
@@ -292,7 +484,8 @@ async function creerDossier({ typeActeId, anneeOuverture, montantAssiette, compa
             [dossier.id, c.nom, c.qualite || "Comparant"]
           );
         }
-        await ajouterMouvement(client, dossier.id, creeParId, "Ouverture du dossier");
+        const descAction = estVraiDno ? "Création du DNO (Dossier Non Ouvert — En attente règlement provision)" : "Ouverture directe du dossier";
+        await ajouterMouvement(client, dossier.id, creeParId, descAction);
         return dossierVersCamel(dossier);
       }
     });
@@ -300,34 +493,219 @@ async function creerDossier({ typeActeId, anneeOuverture, montantAssiette, compa
     console.warn("[Dossiers] Création résiliente en mémoire :", errDb.message);
   }
 
-  // Fallback mémoire instantané
-  const count = DOSSIERS_DEMO_COMPLETS.filter(x => x.etudeId === eid).length + 1;
-  const nouveauNum = `DOS-${annee}-${String(count).padStart(3, "0")}`;
-  const nouvelId = "dos-" + crypto.randomUUID().slice(0, 8);
-  const compNoms = (comparants || []).map(c => c.nom).join(" & ") || "Comparant Principal";
+  if (!dossierResultat) {
+    // Fallback mémoire instantané
+    const nouvelId = "dos-" + crypto.randomUUID().slice(0, 8);
+    const compNoms = (comparants || []).map(c => c.nom).join(" & ") || "Comparant Principal";
 
-  const nouveauDossier = {
-    id: nouvelId,
+    const nouveauDossier = {
+      id: nouvelId,
+      etudeId: eid,
+      numeroDossier,
+      typeActeId: typeActeId || "vente_immobiliere",
+      anneeOuverture: annee,
+      dateOuverture: new Date().toISOString().split("T")[0],
+      montantAssiette: Number(montantAssiette) || 0,
+      statut: "actif",
+      etapeActuelle: 1,
+      dateEntreeEtape: new Date().toISOString().split("T")[0],
+      reportJours: 0,
+      clercAssigneId: assigneFinal,
+      comparantsNoms: compNoms,
+      estArchiveNumerique: false,
+      derniereActivite: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
+      typeCreation: estVraiDno ? "dno" : "dossier_ouvert",
+      numeroDno,
+      statutDno,
+      typePersonne,
+      piecesJointesDno: piecesJointesDno || [],
+      emailClient,
+      telephoneClient,
+    };
+
+    DOSSIERS_DEMO_COMPLETS.unshift(nouveauDossier);
+    await ajouterMouvement(null, nouvelId, creeParId, estVraiDno ? "Création du DNO (Dossier Non Ouvert)" : "Ouverture directe du dossier");
+    dossierResultat = nouveauDossier;
+  }
+
+  // Notification Email au Clerc Assigné (Notaire ou Secrétariat)
+  if (assigneFinal) {
+    (async () => {
+      try {
+        const clerc = await authService.trouverUtilisateurParId(assigneFinal);
+        const initiateur = creeParId ? await authService.trouverUtilisateurParId(creeParId) : null;
+        const paramsEtude = await parametresService.obtenir(eid);
+
+        if (clerc && clerc.email) {
+          const compNoms = (comparants || []).map(c => c.nom).join(" & ") || "Comparant Principal";
+          await emailDeploiementService.envoyerEmailAssignationClerc({
+            destinataireEmail: clerc.email,
+            nomClerc: clerc.nomComplet,
+            nomInitiateur: initiateur ? initiateur.nomComplet : (creeParRole === "notaire" ? "Le Notaire" : "Le Secrétariat"),
+            roleInitiateur: creeParRole || "Direction",
+            numeroDossier: dossierResultat.numeroDossier,
+            typeActe: dossierResultat.typeActeId,
+            comparantsNoms: compNoms,
+            urlConnexion: "https://legalnotary.app",
+            nomEtude: paramsEtude.nomEtude,
+          });
+        }
+      } catch (e) {
+        console.warn("[Dossiers] Erreur notification email assignation clerc :", e.message);
+      }
+    })();
+  }
+
+  return dossierResultat;
+}
+
+// ---------------------------------------------------------------------
+// Règlement de la Provision & Passage de DNO à Dossier Ouvert (Comptable)
+// ---------------------------------------------------------------------
+async function reglerProvisionEtOuvrirDossier(dossierId, {
+  fraisOuverture = 0,
+  provisionVersee = 0,
+  montantAssiette = 0,
+  modePaiement = "Espèces",
+  datePaiement,
+  observations = "",
+}, utilisateur) {
+  const totalRegle = (Number(fraisOuverture) || 0) + (Number(provisionVersee) || 0);
+  const datePaiementEffective = datePaiement || new Date().toISOString();
+
+  let dossier = null;
+  try {
+    const { rows } = await pool.query("SELECT * FROM dossiers WHERE id = $1", [dossierId]);
+    if (rows && rows.length) dossier = rows[0];
+  } catch (_) {}
+
+  if (!dossier) {
+    dossier = DOSSIERS_DEMO_COMPLETS.find(d => d.id === dossierId);
+  }
+  if (!dossier) throw new Error("Dossier introuvable.");
+
+  const annee = dossier.annee_ouverture || dossier.anneeOuverture || new Date().getFullYear();
+  const eid = dossier.etude_id || dossier.etudeId || (utilisateur ? utilisateur.etudeId : null);
+  const typeActe = dossier.type_acte_id || dossier.typeActeId;
+
+  // Si c'était un DNO, attribuer le numéro officiel de dossier ouvert maintenant !
+  let nouveauNumeroDossier = dossier.numero_dossier || dossier.numeroDossier;
+  if (dossier.type_creation === "dno" || (dossier.numero_dossier && dossier.numero_dossier.startsWith("DNO-"))) {
+    nouveauNumeroDossier = await prochainNumeroDossier(null, annee, eid, typeActe);
+  }
+
+  // Récupérer le nom du client comparant
+  let nomClient = dossier.email_client || dossier.emailClient || "Client";
+  try {
+    const { rows: compRows } = await pool.query("SELECT nom FROM dossier_comparants WHERE dossier_id = $1 LIMIT 1", [dossierId]);
+    if (compRows && compRows.length) nomClient = compRows[0].nom;
+  } catch (_) {
+    if (dossier.comparantsNoms) nomClient = dossier.comparantsNoms.split(/ & |, /)[0];
+  }
+
+  // 1. Mettre à jour le dossier
+  try {
+    await pool.query(
+      `UPDATE dossiers SET
+         numero_dossier = $1,
+         montant_assiette = $2,
+         frais_ouverture = $3,
+         provision_versee = $4,
+         mode_paiement_provision = $5,
+         date_paiement_provision = $6,
+         statut_dno = 'regle_ouvert',
+         comptable_validateur_id = $7,
+         derniere_activite = now()
+       WHERE id = $8`,
+      [
+        nouveauNumeroDossier,
+        Number(montantAssiette) || 0,
+        Number(fraisOuverture) || 0,
+        Number(provisionVersee) || 0,
+        modePaiement,
+        datePaiementEffective,
+        utilisateur.id,
+        dossierId,
+      ]
+    );
+  } catch (_) {}
+
+  // Mise à jour mémoire locale
+  const dLocal = DOSSIERS_DEMO_COMPLETS.find(d => d.id === dossierId);
+  if (dLocal) {
+    dLocal.numeroDossier = nouveauNumeroDossier;
+    dLocal.montantAssiette = Number(montantAssiette) || 0;
+    dLocal.fraisOuverture = Number(fraisOuverture) || 0;
+    dLocal.provisionVersee = Number(provisionVersee) || 0;
+    dLocal.modePaiementProvision = modePaiement;
+    dLocal.datePaiementProvision = datePaiementEffective;
+    dLocal.statutDno = "regle_ouvert";
+    dLocal.comptableValidateurId = utilisateur.id;
+  }
+
+  // 2. Passer les écritures au compte client
+  if (Number(fraisOuverture) > 0) {
+    await ajouterEcritureCompteClient(
+      dossierId,
+      { sens: "provision", categorie: "honoraires", montant: Number(fraisOuverture), libelle: "Frais d'ouverture de dossier" },
+      utilisateur.id
+    );
+  }
+  if (Number(provisionVersee) > 0) {
+    await ajouterEcritureCompteClient(
+      dossierId,
+      { sens: "provision", categorie: "droits", montant: Number(provisionVersee), libelle: "Provision sur frais & débours" },
+      utilisateur.id
+    );
+  }
+
+  // 3. Générer le Reçu de Paiement
+  const recu = await recusService.creerRecuPaiement({
     etudeId: eid,
-    numeroDossier: nouveauNum,
-    typeActeId: typeActeId || "vente_immobiliere",
-    anneeOuverture: annee,
-    dateOuverture: new Date().toISOString().split("T")[0],
+    dossierId,
+    numeroDossier: nouveauNumeroDossier,
+    typeActeId: typeActe,
+    clientNom: nomClient,
+    clientEmail: dossier.email_client || dossier.emailClient,
+    clientTelephone: dossier.telephone_client || dossier.telephoneClient,
+    fraisOuverture: Number(fraisOuverture) || 0,
+    provision: Number(provisionVersee) || 0,
     montantAssiette: Number(montantAssiette) || 0,
-    statut: "actif",
-    etapeActuelle: 1,
-    dateEntreeEtape: new Date().toISOString().split("T")[0],
-    reportJours: 0,
-    clercAssigneId: assigneFinal,
-    comparantsNoms: compNoms,
-    estArchiveNumerique: false,
-    derniereActivite: new Date().toISOString(),
-    createdAt: new Date().toISOString(),
-  };
+    modePaiement,
+    observations,
+    creeParId: utilisateur.id,
+  });
 
-  DOSSIERS_DEMO_COMPLETS.unshift(nouveauDossier);
-  await ajouterMouvement(null, nouvelId, creeParId, "Ouverture du dossier");
-  return nouveauDossier;
+  // 4. Créer la tâche automatique pour le Secrétariat / Accueil : Scanner le reçu
+  try {
+    await pool.query(
+      `INSERT INTO dossier_taches (dossier_id, etape, ordre, libelle, bloquante, duree_jours, statut)
+       VALUES ($1, 1, 0, $2, false, 1, 'non_demarree')`,
+      [dossierId, `Scanner le reçu de paiement émargé N° ${recu.numeroRecu} et le rattacher au dossier`]
+    );
+  } catch (_) {}
+
+  const tMem = TACHES_MEMOIRE.get(dossierId) || [];
+  tMem.unshift({
+    id: "tache-scan-recu-" + recu.id,
+    etape: 1,
+    ordre: 0,
+    libelle: `Scanner le reçu de paiement émargé N° ${recu.numeroRecu} et le rattacher au dossier`,
+    bloquante: false,
+    dureeJours: 1,
+    statut: "non_demarree",
+  });
+  TACHES_MEMOIRE.set(dossierId, tMem);
+
+  await ajouterMouvement(
+    null,
+    dossierId,
+    utilisateur.id,
+    `Règlement provision (${totalRegle.toLocaleString("fr-FR")} FCFA) — Dossier ouvert officiellement sous le N° ${nouveauNumeroDossier} — Reçu ${recu.numeroRecu} soumis au Notaire — Tâche de scan transmise au secrétariat.`
+  );
+
+  return { dossier: dLocal || dossierVersCamel(dossier), recu };
 }
 
 async function listerDossiersPourUtilisateur(utilisateur, filtres = {}) {
@@ -368,6 +746,10 @@ async function listerDossiersPourUtilisateur(utilisateur, filtres = {}) {
       valeurs.push(filtres.typeActeId);
       conditions.push(`type_acte_id = $${valeurs.length}`);
     }
+    if (filtres.statutDno) {
+      valeurs.push(filtres.statutDno);
+      conditions.push(`statut_dno = $${valeurs.length}`);
+    }
 
     const { rows } = await pool.query(
       `SELECT d.*,
@@ -390,12 +772,12 @@ async function listerDossiersPourUtilisateur(utilisateur, filtres = {}) {
   }
 
   if (!estCompteDemo) {
-    // Espace de travail strictement vierge pour toute nouvelle étude réelle
     return DOSSIERS_DEMO_COMPLETS.filter(d => d.etudeId === etudeId).filter(d => {
       if (portee === "formalites" && ![5, 6].includes(d.etapeActuelle)) return false;
       if (portee === "assignes" && utilisateur && d.clercAssigneId && d.clercAssigneId !== utilisateur.id) return false;
       if (filtres.statut && d.statut !== filtres.statut) return false;
       if (filtres.typeActeId && d.typeActeId !== filtres.typeActeId) return false;
+      if (filtres.statutDno && d.statutDno !== filtres.statutDno) return false;
       return true;
     });
   }
@@ -405,6 +787,7 @@ async function listerDossiersPourUtilisateur(utilisateur, filtres = {}) {
     if (portee === "assignes" && utilisateur && d.clercAssigneId && d.clercAssigneId !== utilisateur.id && d.clercAssigneId !== "demo-clerc1-id") return false;
     if (filtres.statut && d.statut !== filtres.statut) return false;
     if (filtres.typeActeId && d.typeActeId !== filtres.typeActeId) return false;
+    if (filtres.statutDno && d.statutDno !== filtres.statutDno) return false;
     return true;
   });
 }
@@ -472,7 +855,6 @@ async function listerClientsPourUtilisateur(utilisateur) {
     return [];
   }
 
-  // Fallback clients depuis la mémoire pour compte démo uniquement
   const clientsMap = new Map();
   DOSSIERS_DEMO_COMPLETS.forEach(d => {
     const nomBrut = d.comparantsNoms || "Client Démo";
@@ -564,7 +946,6 @@ async function changerEtape(dossierId, nouvelleEtape, utilisateur) {
     });
   } catch (_) {}
 
-  // Repli mémoire instantané
   const d = DOSSIERS_DEMO_COMPLETS.find(x => x.id === dossierId);
   if (d) {
     d.etapeActuelle = Number(nouvelleEtape);
@@ -655,6 +1036,10 @@ async function ajouterEcritureCompteClient(dossierId, { sens, categorie, montant
 module.exports = {
   dossierVersCamel,
   creerDossier,
+  reglerProvisionEtOuvrirDossier,
+  prochainNumeroDNO,
+  prochainNumeroDossier,
+  formaterNumeroDossier,
   listerDossiersPourUtilisateur,
   listerClientsPourUtilisateur,
   obtenirDossierPourUtilisateur,

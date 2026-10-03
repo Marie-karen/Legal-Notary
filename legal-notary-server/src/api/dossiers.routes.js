@@ -99,6 +99,19 @@ router.post("/:id/compte-client", exigerPermission("finances:modifier_compte_cli
   } catch (e) { next(e); }
 });
 
+// Règlement de la provision, enregistrement assiette et ouverture officielle du dossier (Comptable / Notaire)
+router.post("/:id/regler-provision-ouvrir", async (req, res, next) => {
+  try {
+    const role = req.utilisateur ? req.utilisateur.role : "";
+    const peutRegler = role === "comptable_taxateur" || role === "notaire" || role === "superadmin";
+    if (!peutRegler) {
+      return res.status(403).json({ erreur: "Seul le Comptable Taxateur ou le Notaire est habilité à enregistrer le règlement de la provision et ouvrir officiellement le dossier." });
+    }
+    const resultat = await dossiersService.reglerProvisionEtOuvrirDossier(req.params.id, req.body, req.utilisateur);
+    res.json(resultat);
+  } catch (e) { next(e); }
+});
+
 router.post("/:id/cloturer", exigerPermission("dossiers:cloturer"), async (req, res, next) => {
   try {
     const minute = await archivesService.cloturerDossier(req.params.id, req.utilisateur.id);

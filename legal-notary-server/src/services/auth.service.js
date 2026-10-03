@@ -339,6 +339,20 @@ async function supprimerUtilisateursParEtude(etudeId) {
   persisterUtilisateursSurDisque();
 }
 
+async function trouverUtilisateurParId(id) {
+  if (!id) return null;
+  try {
+    const { rows } = await pool.query(
+      "SELECT * FROM utilisateurs WHERE id = $1 AND archived_at IS NULL",
+      [id]
+    );
+    if (rows && rows.length) return utilisateurVersCamel(rows[0]);
+  } catch (_) {}
+
+  const u = UTILISATEURS_MEMOIRE.get(id) || Array.from(UTILISATEURS_MEMOIRE.values()).find(x => x.id === id);
+  return u ? utilisateurVersCamel(u) : null;
+}
+
 module.exports = {
   creerUtilisateur,
   modifierUtilisateur,
@@ -349,5 +363,6 @@ module.exports = {
   listerUtilisateursParEtude,
   desactiverUtilisateur,
   supprimerUtilisateursParEtude,
+  trouverUtilisateurParId,
   utilisateurVersCamel,
 };

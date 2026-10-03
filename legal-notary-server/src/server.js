@@ -41,6 +41,7 @@ const rapportsRoutes = require("./api/rapports.routes");
 const agendaRoutes = require("./api/agenda.routes");
 const kycRoutes = require("./api/kyc.routes");
 const internalRoutes = require("./api/internal.routes");
+const recusRoutes = require("./api/recus.routes");
 const telemetrieService = require("./services/telemetrie.service");
 const { notifyControlHub } = require("./services/webhook-dispatcher.service");
 const { appliquerEnTetesSecurite } = require("./middleware/securite.middleware");
@@ -92,6 +93,7 @@ app.use("/api/support", supportRoutes);
 app.use("/api/superadmin", superadminRoutes);
 app.use("/api/rapports", rapportsRoutes);
 app.use("/api/agenda", agendaRoutes);
+app.use("/api/recus", recusRoutes);
 
 /**
  * Sert aussi le frontend statique (legal-notary-web/) depuis ce même processus.

@@ -1,8 +1,9 @@
 /**
- * src/services/parametres.service.js — Réglages du cabinet avec tolérance de panne in-memory.
+ * src/services/parametres.service.js — Réglages du cabinet avec tolérance de panne in-memory & stockage persistant.
  */
 
 const { pool } = require("../db/pool");
+const { lireFichierJson, ecrireFichierJson } = require("./stockage-persistant.service");
 
 function versCamel(ligne) {
   if (!ligne) return null;
@@ -33,6 +34,17 @@ function versCamel(ligne) {
     seuilAlerteEcheanceHeures: Number(ligne.seuil_alerte_echeance_heures !== undefined ? ligne.seuil_alerte_echeance_heures : (ligne.seuilAlerteEcheanceHeures || 48)),
     capaciteCartonArchive: Number(ligne.capacite_carton_archive !== undefined ? ligne.capacite_carton_archive : (ligne.capaciteCartonArchive || 50)),
     presenceArchiviste: ligne.presence_archiviste !== false && ligne.presenceArchiviste !== false,
+    
+    // Paramètres de Numérotation & Continuité de l'Étude
+    modeNumerotation: ligne.mode_numerotation || ligne.modeNumerotation || "global", // 'global' | 'par_nature_acte'
+    formatNumerotation: ligne.format_numerotation || ligne.formatNumerotation || "DOS-{AAAA}-{NUM}",
+    dernierNumeroGlobal: Number(ligne.dernier_numero_global !== undefined ? ligne.dernier_numero_global : (ligne.dernierNumeroGlobal || 0)),
+    derniersNumerosParNature: (ligne.derniers_numeros_par_nature && typeof ligne.derniers_numeros_par_nature === "object")
+      ? ligne.derniers_numeros_par_nature
+      : (ligne.derniersNumerosParNature && typeof ligne.derniersNumerosParNature === "object" ? ligne.derniersNumerosParNature : {}),
+    
+    // Confidentialité financière pour le Premier Clerc
+    premierClercVoirFinances: Boolean(ligne.premier_clerc_voir_finances || ligne.premierClercVoirFinances),
   };
 }
 
@@ -62,9 +74,12 @@ let PARAMETRES_ACTUELS = {
   seuilAlerteEcheanceHeures: 48,
   capaciteCartonArchive: 50,
   presenceArchiviste: true,
+  modeNumerotation: "global",
+  formatNumerotation: "DOS-{AAAA}-{NUM}",
+  dernierNumeroGlobal: 0,
+  derniersNumerosParNature: {},
+  premierClercVoirFinances: false,
 };
-
-const { lireFichierJson } = require("./stockage-persistant.service");
 
 async function obtenir(etudeIdOuDomaine) {
   try {
@@ -104,8 +119,11 @@ async function obtenir(etudeIdOuDomaine) {
         (e.domaine && e.domaine.toLowerCase().includes(cle))
       );
       if (etudeTrouvee) {
+        const paramsMap = lireFichierJson("parametres_etudes_map.json", {});
+        const perso = paramsMap[etudeTrouvee.id] || {};
         return {
           ...PARAMETRES_ACTUELS,
+          ...perso,
           id: etudeTrouvee.id,
           etudeId: etudeTrouvee.id,
           nomEtude: etudeTrouvee.nomEtude || PARAMETRES_ACTUELS.nomEtude,
@@ -118,6 +136,12 @@ async function obtenir(etudeIdOuDomaine) {
       }
     } catch (_) {}
   }
+
+  // Vérifier si des réglages ont été personnalisés sur disque
+  try {
+    const paramsGlobal = lireFichierJson("parametres_etude_global.json", null);
+    if (paramsGlobal) return { ...PARAMETRES_ACTUELS, ...paramsGlobal };
+  } catch (_) {}
 
   return PARAMETRES_ACTUELS;
 }
@@ -137,8 +161,10 @@ async function mettreAJour(champs, etudeId) {
          taxe_fonciere_taux_proportionnel = $18, taxe_fonciere_droit_fixe = $19, forfait_divers = $20,
          seuil_stagnation_jours = $21, seuil_alerte_echeance_heures = $22, capacite_carton_archive = $23,
          presence_archiviste = $24,
+         mode_numerotation = $25, format_numerotation = $26, dernier_numero_global = $27,
+         derniers_numeros_par_nature = $28, premier_clerc_voir_finances = $29,
          updated_at = now()
-       WHERE id = $25 OR etude_id = $26
+       WHERE id = $30 OR etude_id = $31
        RETURNING *`,
       [
         fusion.nomEtude, fusion.titreNotaire, fusion.nomNotaire, fusion.numeroOrdre, fusion.adresse,
@@ -148,6 +174,11 @@ async function mettreAJour(champs, etudeId) {
         fusion.taxeFonciereTauxProportionnel, fusion.taxeFonciereDroitFixe, fusion.forfaitDivers,
         fusion.seuilStagnationJours, fusion.seuilAlerteEcheanceHeures, fusion.capaciteCartonArchive,
         fusion.presenceArchiviste !== false,
+        fusion.modeNumerotation || "global",
+        fusion.formatNumerotation || "DOS-{AAAA}-{NUM}",
+        Number(fusion.dernierNumeroGlobal || 0),
+        JSON.stringify(fusion.derniersNumerosParNature || {}),
+        Boolean(fusion.premierClercVoirFinances),
         targetId,
         etudeId || targetId,
       ]
@@ -158,6 +189,17 @@ async function mettreAJour(champs, etudeId) {
         PARAMETRES_ACTUELS = maj;
       }
       return maj;
+    }
+  } catch (_) {}
+
+  // Sauvegarde persistante sur disque JSON
+  try {
+    if (etudeId && etudeId !== "saas-bttech" && etudeId !== "etude-abidjan-01") {
+      const paramsMap = lireFichierJson("parametres_etudes_map.json", {});
+      paramsMap[etudeId] = fusion;
+      ecrireFichierJson("parametres_etudes_map.json", paramsMap);
+    } else {
+      ecrireFichierJson("parametres_etude_global.json", fusion);
     }
   } catch (_) {}
 

@@ -272,9 +272,403 @@ function listerEmailsEnvoyes(limite = 50) {
   return Array.isArray(journal) ? journal.slice(0, limite) : [];
 }
 
+function genererTemplateAssignation({ nomClerc, nomInitiateur, roleInitiateur, numeroDossier, typeActe, comparantsNoms, urlConnexion, nomEtude }) {
+  const etudeAffichee = nomEtude || "Office Notarial";
+  const lienConnexion = urlConnexion || "https://legalnotary.app";
+  const sujet = `⚖️ Assignation du dossier ${numeroDossier} — ${etudeAffichee}`;
+
+  const texte = `Bonjour ${nomClerc},
+
+Le dossier suivant vous a été assigné pour instruction :
+• Numéro de dossier : ${numeroDossier}
+• Nature de l'acte : ${typeActe}
+• Client(s) / Comparant(s) : ${comparantsNoms || "À renseigner"}
+• Assigné par : ${nomInitiateur || "Le Notaire"} (${roleInitiateur || "Direction"})
+• Office : ${etudeAffichee}
+
+Accéder directement au dossier : ${lienConnexion}
+
+Legal Notary — Système de Gestion Intégrée d'Office Notarial`;
+
+  const html = `
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>${sujet}</title>
+</head>
+<body style="margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background-color:#0f172a;color:#f8fafc;">
+  <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color:#0f172a;padding:30px 15px;">
+    <tr>
+      <td align="center">
+        <table width="600" border="0" cellspacing="0" cellpadding="0" style="background-color:#1e293b;border-radius:12px;overflow:hidden;border:1px solid #334155;">
+          <tr>
+            <td style="padding:28px;background:linear-gradient(135deg, #1e293b 0%, #0f172a 100%);border-bottom:1px solid #334155;text-align:center;">
+              <div style="display:inline-block;padding:6px 14px;background:rgba(56,189,248,0.15);border:1px solid rgba(56,189,248,0.3);border-radius:20px;color:#38bdf8;font-size:12px;font-weight:700;text-transform:uppercase;margin-bottom:8px;">
+                ⚖️ Notification d'Assignation de Dossier
+              </div>
+              <h1 style="margin:0;font-size:20px;color:#ffffff;font-weight:700;">${etudeAffichee}</h1>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:28px;">
+              <p style="font-size:15px;line-height:22px;color:#f8fafc;margin:0 0 16px 0;">
+                Bonjour <strong style="color:#38bdf8;">${nomClerc}</strong>,
+              </p>
+              <p style="font-size:14px;line-height:22px;color:#94a3b8;margin:0 0 20px 0;">
+                Un nouveau dossier vous a été assigné pour instruction juridique par <strong>${nomInitiateur || "le Notaire"}</strong> (${roleInitiateur || "Office"}).
+              </p>
+
+              <table width="100%" border="0" cellspacing="0" cellpadding="10" style="background-color:#0f172a;border-radius:8px;border:1px solid #334155;margin-bottom:24px;font-size:13.5px;">
+                <tr>
+                  <td width="38%" style="color:#94a3b8;border-bottom:1px solid #1e293b;">N° Dossier :</td>
+                  <td style="color:#f59e0b;font-weight:700;border-bottom:1px solid #1e293b;">${numeroDossier}</td>
+                </tr>
+                <tr>
+                  <td style="color:#94a3b8;border-bottom:1px solid #1e293b;">Nature de l'acte :</td>
+                  <td style="color:#ffffff;font-weight:600;border-bottom:1px solid #1e293b;">${typeActe}</td>
+                </tr>
+                <tr>
+                  <td style="color:#94a3b8;border-bottom:1px solid #1e293b;">Comparant(s) :</td>
+                  <td style="color:#ffffff;border-bottom:1px solid #1e293b;">${comparantsNoms || "Comparant principal"}</td>
+                </tr>
+                <tr>
+                  <td style="color:#94a3b8;">Assigné par :</td>
+                  <td style="color:#38bdf8;">${nomInitiateur || "Le Notaire"}</td>
+                </tr>
+              </table>
+
+              <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-bottom:20px;">
+                <tr>
+                  <td align="center">
+                    <a href="${lienConnexion}" target="_blank" style="display:inline-block;padding:12px 26px;background:linear-gradient(135deg, #0284c7 0%, #0369a1 100%);color:#ffffff;text-decoration:none;font-size:14px;font-weight:700;border-radius:6px;">
+                      📂 Ouvrir & Traiter le Dossier
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+
+  return { sujet, texte, html };
+}
+
+function genererTemplateRecuClient({
+  clientNom,
+  numeroRecu,
+  numeroDossier,
+  typeActe,
+  montantTotal,
+  fraisOuverture,
+  provision,
+  modePaiement,
+  datePaiement,
+  nomNotaire,
+  nomEtude,
+  adresseEtude,
+  telephoneEtude,
+  emailEtude,
+}) {
+  const etudeAffichee = nomEtude || "Office Notarial";
+  const notaireAffiche = nomNotaire || "Maître Notaire";
+  const sujet = `Reçu de Paiement & Quittance N° ${numeroRecu} — ${etudeAffichee}`;
+  const dateFormatee = new Date(datePaiement || Date.now()).toLocaleDateString("fr-CI", { day: "numeric", month: "long", year: "numeric" });
+  const montantFmt = Number(montantTotal || 0).toLocaleString("fr-FR") + " FCFA";
+  const fraisFmt = Number(fraisOuverture || 0).toLocaleString("fr-FR") + " FCFA";
+  const provFmt = Number(provision || 0).toLocaleString("fr-FR") + " FCFA";
+
+  const texte = `QUITTANCE & REÇU DE PAIEMENT N° ${numeroRecu}
+${etudeAffichee} — ${notaireAffiche}
+Adresse : ${adresseEtude || "Abidjan, Côte d'Ivoire"} | Tél : ${telephoneEtude || ""}
+
+Reçu de : ${clientNom}
+Dossier N° : ${numeroDossier} (${typeActe})
+Date du règlement : ${dateFormatee}
+Mode de paiement : ${modePaiement || "Espèces"}
+
+DÉTAIL DU RÈGLEMENT :
+• Frais d'ouverture de dossier : ${fraisFmt}
+• Provision sur frais d'acte & débours : ${provFmt}
+--------------------------------------------------
+TOTAL REÇU : ${montantFmt}
+
+Ce reçu officiel certifie le règlement des sommes ci-dessus indiquées pour l'instruction de votre dossier notarié.
+${etudeAffichee}`;
+
+  const html = `
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>${sujet}</title>
+</head>
+<body style="margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background-color:#0f172a;color:#f8fafc;">
+  <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color:#0f172a;padding:30px 15px;">
+    <tr>
+      <td align="center">
+        <table width="620" border="0" cellspacing="0" cellpadding="0" style="background-color:#1e293b;border-radius:12px;overflow:hidden;border:1px solid #334155;">
+          
+          <!-- Entête Cabinet Notarial -->
+          <tr>
+            <td style="padding:28px 32px;background:linear-gradient(135deg, #1e293b 0%, #0f172a 100%);border-bottom:2px solid #d97706;text-align:center;">
+              <div style="font-size:11px;font-weight:700;color:#f59e0b;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">
+                RÉPUBLIQUE DE CÔTE D'IVOIRE · NOTARIAT
+              </div>
+              <h1 style="margin:0 0 4px 0;font-size:22px;color:#ffffff;font-weight:800;">${etudeAffichee}</h1>
+              <div style="font-size:14px;color:#38bdf8;font-weight:600;margin-bottom:8px;">${notaireAffiche}</div>
+              <div style="font-size:12px;color:#94a3b8;">${adresseEtude || "Plateau, Abidjan"} · Tél : ${telephoneEtude || "+225 27 20 00 00 00"}</div>
+            </td>
+          </tr>
+
+          <!-- Corps du Reçu -->
+          <tr>
+            <td style="padding:28px 32px;">
+              <div style="text-align:center;margin-bottom:24px;">
+                <div style="display:inline-block;padding:6px 18px;background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);border-radius:20px;color:#10b981;font-size:13px;font-weight:700;text-transform:uppercase;">
+                  ✓ REÇU DE PAIEMENT & QUITTANCE OFFICIELLE
+                </div>
+                <div style="font-size:13px;color:#94a3b8;margin-top:6px;">N° ${numeroRecu} · Émis le ${dateFormatee}</div>
+              </div>
+
+              <!-- Bloc Client & Dossier -->
+              <table width="100%" border="0" cellspacing="0" cellpadding="8" style="background-color:#0f172a;border-radius:8px;border:1px solid #334155;margin-bottom:20px;font-size:13.5px;">
+                <tr>
+                  <td width="35%" style="color:#94a3b8;border-bottom:1px solid #1e293b;">Client / Payeur :</td>
+                  <td style="color:#ffffff;font-weight:700;border-bottom:1px solid #1e293b;">${clientNom}</td>
+                </tr>
+                <tr>
+                  <td style="color:#94a3b8;border-bottom:1px solid #1e293b;">Dossier Notarial :</td>
+                  <td style="color:#38bdf8;font-weight:600;border-bottom:1px solid #1e293b;">${numeroDossier}</td>
+                </tr>
+                <tr>
+                  <td style="color:#94a3b8;border-bottom:1px solid #1e293b;">Nature de l'acte :</td>
+                  <td style="color:#ffffff;border-bottom:1px solid #1e293b;">${typeActe}</td>
+                </tr>
+                <tr>
+                  <td style="color:#94a3b8;">Mode de règlement :</td>
+                  <td style="color:#10b981;font-weight:600;">${modePaiement || "Espèces"}</td>
+                </tr>
+              </table>
+
+              <!-- Décomposition Financière -->
+              <table width="100%" border="0" cellspacing="0" cellpadding="10" style="background-color:#0f172a;border-radius:8px;border:1px solid #334155;margin-bottom:24px;font-size:13.5px;">
+                <thead>
+                  <tr style="background:#1e293b;border-bottom:1px solid #334155;">
+                    <th align="left" style="color:#94a3b8;font-size:12px;text-transform:uppercase;">Désignation des Sommes</th>
+                    <th align="right" style="color:#94a3b8;font-size:12px;text-transform:uppercase;">Montant Versé</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style="color:#f8fafc;border-bottom:1px solid #1e293b;">Frais d'ouverture de dossier</td>
+                    <td align="right" style="color:#ffffff;font-weight:600;border-bottom:1px solid #1e293b;">${fraisFmt}</td>
+                  </tr>
+                  <tr>
+                    <td style="color:#f8fafc;border-bottom:1px solid #1e293b;">Provision sur frais & débours de formalités</td>
+                    <td align="right" style="color:#ffffff;font-weight:600;border-bottom:1px solid #1e293b;">${provFmt}</td>
+                  </tr>
+                  <tr style="background:rgba(217,119,6,0.12);">
+                    <td style="color:#f59e0b;font-weight:700;font-size:14.5px;">TOTAL ENCAISSÉ</td>
+                    <td align="right" style="color:#f59e0b;font-weight:800;font-size:16px;">${montantFmt}</td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <div style="background:rgba(59,130,246,0.08);border-left:3px solid #38bdf8;padding:12px 16px;border-radius:4px;font-size:12px;color:#94a3b8;line-height:18px;margin-bottom:20px;">
+                📜 <strong style="color:#f8fafc;">Validité Légale :</strong> Ce document atteste de la consignation régulière des fonds en la comptabilité de l'office notarial conformément au Règlement Déontologique Notarial.
+              </div>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding:16px 32px;background-color:#0f172a;border-top:1px solid #334155;text-align:center;font-size:11.5px;color:#64748b;">
+              ${etudeAffichee} · Email : <a href="mailto:${emailEtude || "contact@notaires.ci"}" style="color:#38bdf8;text-decoration:none;">${emailEtude || "contact@notaires.ci"}</a>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+
+  return { sujet, texte, html };
+}
+
+async function envoyerEmailAssignationClerc({
+  destinataireEmail,
+  nomClerc,
+  nomInitiateur,
+  roleInitiateur,
+  numeroDossier,
+  typeActe,
+  comparantsNoms,
+  urlConnexion,
+  nomEtude,
+}) {
+  const emailNorm = (destinataireEmail || "").toLowerCase().trim();
+  if (!emailNorm) return { succes: false, erreur: "Email clerc manquant" };
+
+  const { sujet, texte, html } = genererTemplateAssignation({
+    nomClerc: nomClerc || emailNorm.split("@")[0],
+    nomInitiateur,
+    roleInitiateur,
+    numeroDossier,
+    typeActe,
+    comparantsNoms,
+    urlConnexion,
+    nomEtude,
+  });
+
+  let statutEnvoi = {
+    succes: false,
+    mode: "journalise",
+    destinataire: emailNorm,
+    nomComplet: nomClerc || emailNorm,
+    type: "assignation_dossier",
+    numeroDossier,
+    sujet,
+    dateEnvoi: new Date().toISOString(),
+    erreur: null,
+  };
+
+  try {
+    const configSmtp = await obtenirTransporteurSMTP();
+    if (configSmtp && configSmtp.transporteur) {
+      await configSmtp.transporteur.sendMail({
+        from: `"${configSmtp.fromNom}" <${configSmtp.fromEmail}>`,
+        to: emailNorm,
+        subject: sujet,
+        text: texte,
+        html: html,
+      });
+      statutEnvoi.succes = true;
+      statutEnvoi.mode = "smtp_reel";
+      console.log(`[EmailAssignation] ✅ Email d'assignation envoyé à : ${emailNorm} (${numeroDossier})`);
+    } else {
+      statutEnvoi.succes = true;
+      statutEnvoi.mode = "journal_local_pret";
+      console.log(`[EmailAssignation] ℹ️ Email d'assignation préparé pour ${emailNorm} (${numeroDossier})`);
+    }
+  } catch (errSmtp) {
+    statutEnvoi.succes = false;
+    statutEnvoi.erreur = errSmtp.message;
+    console.warn(`[EmailAssignation] ⚠️ Erreur SMTP pour ${emailNorm} :`, errSmtp.message);
+  }
+
+  // Journalisation
+  try {
+    const journalActuel = lireFichierJson("emails_envoyes.json", []);
+    const journalMaj = Array.isArray(journalActuel) ? journalActuel : [];
+    journalMaj.unshift(statutEnvoi);
+    if (journalMaj.length > 200) journalMaj.length = 200;
+    ecrireFichierJson("emails_envoyes.json", journalMaj);
+  } catch (_) {}
+
+  return statutEnvoi;
+}
+
+async function envoyerEmailRecuPaiementClient({
+  destinataireEmail,
+  clientNom,
+  numeroRecu,
+  numeroDossier,
+  typeActe,
+  montantTotal,
+  fraisOuverture,
+  provision,
+  modePaiement,
+  datePaiement,
+  nomNotaire,
+  nomEtude,
+  adresseEtude,
+  telephoneEtude,
+  emailEtude,
+}) {
+  const emailNorm = (destinataireEmail || "").toLowerCase().trim();
+  if (!emailNorm) return { succes: false, erreur: "Email client manquant" };
+
+  const { sujet, texte, html } = genererTemplateRecuClient({
+    clientNom: clientNom || "Client",
+    numeroRecu,
+    numeroDossier,
+    typeActe,
+    montantTotal,
+    fraisOuverture,
+    provision,
+    modePaiement,
+    datePaiement,
+    nomNotaire,
+    nomEtude,
+    adresseEtude,
+    telephoneEtude,
+    emailEtude,
+  });
+
+  let statutEnvoi = {
+    succes: false,
+    mode: "journalise",
+    destinataire: emailNorm,
+    nomComplet: clientNom || emailNorm,
+    type: "recu_paiement_client",
+    numeroRecu,
+    numeroDossier,
+    sujet,
+    dateEnvoi: new Date().toISOString(),
+    erreur: null,
+  };
+
+  try {
+    const configSmtp = await obtenirTransporteurSMTP();
+    if (configSmtp && configSmtp.transporteur) {
+      await configSmtp.transporteur.sendMail({
+        from: `"${nomEtude || configSmtp.fromNom}" <${emailEtude || configSmtp.fromEmail}>`,
+        to: emailNorm,
+        subject: sujet,
+        text: texte,
+        html: html,
+      });
+      statutEnvoi.succes = true;
+      statutEnvoi.mode = "smtp_reel";
+      console.log(`[EmailReçuClient] ✅ Reçu N° ${numeroRecu} envoyé par email au client : ${emailNorm}`);
+    } else {
+      statutEnvoi.succes = true;
+      statutEnvoi.mode = "journal_local_pret";
+      console.log(`[EmailReçuClient] ℹ️ Reçu N° ${numeroRecu} préparé pour le client : ${emailNorm}`);
+    }
+  } catch (errSmtp) {
+    statutEnvoi.succes = false;
+    statutEnvoi.erreur = errSmtp.message;
+    console.warn(`[EmailReçuClient] ⚠️ Erreur SMTP pour ${emailNorm} :`, errSmtp.message);
+  }
+
+  // Journalisation
+  try {
+    const journalActuel = lireFichierJson("emails_envoyes.json", []);
+    const journalMaj = Array.isArray(journalActuel) ? journalActuel : [];
+    journalMaj.unshift(statutEnvoi);
+    if (journalMaj.length > 200) journalMaj.length = 200;
+    ecrireFichierJson("emails_envoyes.json", journalMaj);
+  } catch (_) {}
+
+  return statutEnvoi;
+}
+
 module.exports = {
   envoyerEmailBienvenueCollaborateur,
+  envoyerEmailAssignationClerc,
+  envoyerEmailRecuPaiementClient,
   genererTemplateEmail,
+  genererTemplateAssignation,
+  genererTemplateRecuClient,
   listerEmailsEnvoyes,
   ROLE_LABELS,
 };

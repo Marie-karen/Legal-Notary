@@ -300,8 +300,26 @@
     }
   }
 
+  function peutVoirFinances() {
+    if (!cache.utilisateur) return false;
+    var role = cache.utilisateur.role;
+    if (role === "notaire" || role === "superadmin" || role === "comptable_taxateur") return true;
+    if (role === "premier_clerc" && cache.parametres && cache.parametres.premierClercVoirFinances) return true;
+    return false;
+  }
+
+  function formaterMontantSecurise(montant) {
+    if (peutVoirFinances()) {
+      return fmtFCFA(montant);
+    }
+    return '<span style="color:var(--color-text-dim);font-style:italic;font-size:11px" title="Confidentialité financière active">••• (Confidentiel)</span>';
+  }
+
   function badgeStatutDossier(d) {
     if (!d) return '<span class="tag tag-outline">—</span>';
+    if (d.statutDno === "en_attente_paiement" || (d.typeCreation === "dno" && d.statutDno !== "regle_ouvert")) {
+      return '<span class="tag" style="background:rgba(217,119,6,0.12);color:#d97706;border:1px solid rgba(217,119,6,0.35);font-weight:700" title="DNO en attente du règlement de la provision"><span class="status-dot status-dot-overdue"></span> 📋 DNO (Attente provision)</span>';
+    }
     if (d.statut === "cloture" || d.etapeActuelle === 6 || d.estArchiveNumerique) {
       return '<span class="tag tag-statut-cloture" title="Minute scellée et archivée"><span class="status-dot status-dot-signed"></span> Clôturé & Archivé</span>';
     }
@@ -2359,9 +2377,33 @@
   }
 
   // -----------------------------------------------------------------
-  // Nouveau dossier
+  // Nouveau dossier / DNO (Dossier Non Ouvert)
   // -----------------------------------------------------------------
   var compteurComparants = 0;
+  var etatNouveauDossier = {
+    typeCreation: "dno", // "dno" | "dossier_ouvert"
+    typePersonne: "physique", // "physique" | "morale"
+    piecesJointes: [], // [{ id, nomPiece, typePersonne, nomFichier, taille, dateUpload, dataUrl }]
+  };
+
+  var SUGGESTIONS_PIECES = {
+    physique: [
+      "Fiche KYC Personne Physique",
+      "CNI / Passeport (Recto-Verso)",
+      "Extrait d'acte de naissance",
+      "Livret de famille / Contrat de mariage",
+      "Justificatif de domicile",
+      "Titre foncier / Certificat de propriété"
+    ],
+    morale: [
+      "Fiche KYC Personne Morale",
+      "Extrait RCCM récent",
+      "Statuts certifiés conformes",
+      "CNI du Représentant Légal",
+      "PV de nomination / Pouvoirs du signataire",
+      "Déclaration de Régularité (DRFE)"
+    ]
+  };
 
   function renderNouveauDossier() {
     var c = document.getElementById("vue-nouveau-dossier");
@@ -2369,17 +2411,52 @@
 
     var html = '<div class="btn btn-ghost bouton-retour-nouveau" style="padding-left:0;margin-bottom:var(--space-3)">‹ Retour aux dossiers</div>';
     html += '<div style="position:sticky;top:calc(-1 * var(--space-6));background:var(--color-bg);z-index:2;padding-top:var(--space-1);margin-bottom:var(--space-4)">';
-    html += '<h1 style="margin-bottom:2px">Nouveau dossier</h1><p style="opacity:.65;font-size:14px;margin:0">Ouvre un dossier et sa checklist, copiée depuis le référentiel du type d\'acte choisi.</p></div>';
+    html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:var(--space-2)">';
+    html += '<div><h1 style="margin-bottom:2px">' + (etatNouveauDossier.typeCreation === "dno" ? "Nouveau DNO (Dossier Non Ouvert)" : "Nouveau Dossier Ouvert") + '</h1>';
+    html += '<p style="opacity:.65;font-size:14px;margin:0">' + (etatNouveauDossier.typeCreation === "dno" ? "Enregistre les pièces d'ouverture et transmet le DNO à la comptabilité pour provision." : "Ouverture directe avec constitution du dossier et checklist.") + '</p></div>';
+    html += '<div style="display:flex;gap:6px">';
+    html += '<button type="button" class="btn ' + (etatNouveauDossier.typeCreation === "dno" ? "btn-primary" : "btn-secondary") + '" id="btn-toggle-mode-dno" style="font-size:12.5px;padding:6px 12px;font-weight:700">📋 Circuit DNO (Recommandé)</button>';
+    html += '<button type="button" class="btn ' + (etatNouveauDossier.typeCreation === "dossier_ouvert" ? "btn-primary" : "btn-secondary") + '" id="btn-toggle-mode-ouvert" style="font-size:12.5px;padding:6px 12px">⚡ Dossier Ouvert Direct</button>';
+    html += '</div></div></div>';
 
-    html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:var(--space-3);max-width:720px;margin-bottom:var(--space-4)">';
-    html += '<div class="field"><label>Type d\'acte</label><select class="input" id="nd-type-acte"><option value="">Choisir un type d\'acte…</option>';
+    // BANDEAU EXPLICATIF DNO
+    if (etatNouveauDossier.typeCreation === "dno") {
+      html += '<div class="card" style="background:rgba(217,119,6,0.06);border:1.5px solid rgba(217,119,6,0.35);padding:12px 16px;border-radius:var(--radius);max-width:760px;margin-bottom:var(--space-4)">';
+      html += '<div style="display:flex;align-items:flex-start;gap:10px">';
+      html += '<span style="font-size:20px">ℹ️</span>';
+      html += '<div style="font-size:12.5px;color:var(--color-text);line-height:1.45">';
+      html += '<strong style="color:#d97706">Circuit Notarial DNO ➔ Dossier Ouvert :</strong><br>';
+      html += '1. Le secrétariat / accueil crée le <strong>DNO</strong> avec la fiche KYC et les pièces scannées jointes.<br>';
+      html += '2. Le DNO est transmis au <strong>Comptable Taxateur</strong> pour enregistrer les frais d\'ouverture, la provision et la base de calcul.<br>';
+      html += '3. Le clerc assigné est automatiquement notifié par email et prend en charge l\'instruction juridique.';
+      html += '</div></div></div>';
+    }
+
+    // TYPE DE COMPARANT / CLIENT
+    html += '<div class="card" style="max-width:760px;padding:14px 16px;margin-bottom:var(--space-4);background:var(--color-surface);border:1px solid var(--color-border)">';
+    html += '<div style="font-weight:700;font-size:13.5px;margin-bottom:10px">1. Type de Personne & Profil Juridique</div>';
+    html += '<div style="display:flex;gap:16px;flex-wrap:wrap">';
+    html += '<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13.5px"><input type="radio" name="nd-type-personne" value="physique"' + (etatNouveauDouveauPersonneChecked("physique")) + ' style="cursor:pointer"> <strong>👤 Personne Physique</strong> (Particulier, Acquéreur, Vendeur)</label>';
+    html += '<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13.5px"><input type="radio" name="nd-type-personne" value="morale"' + (etatNouveauDouveauPersonneChecked("morale")) + ' style="cursor:pointer"> <strong>🏢 Personne Morale</strong> (Société, SARL, SAS, SCI, Établissement)</label>';
+    html += '</div></div>';
+
+    // FORMULAIRE PRINCIPAL (TYPE D'ACTE & CLERC)
+    html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:var(--space-3);max-width:760px;margin-bottom:var(--space-4)">';
+    html += '<div class="field"><label>Nature de l\'acte notarié</label><select class="input" id="nd-type-acte"><option value="">Choisir un type d\'acte…</option>';
     cache.typesActesListe.forEach(function (t) { html += '<option value="' + t.id + '">' + t.libelle + '</option>'; });
     html += '</select></div>';
-    html += '<div class="field"><label>Montant (assiette, FCFA)</label><input class="input" type="number" min="0" id="nd-montant" placeholder="1000000"></div>';
+
+    // Montant d'assiette uniquement visible si création directe "dossier_ouvert"
+    if (etatNouveauDossier.typeCreation === "dossier_ouvert") {
+      html += '<div class="field"><label>Montant (Assiette / Base de calcul, FCFA)</label><input class="input" type="number" min="0" id="nd-montant" placeholder="ex: 50000000"></div>';
+    } else {
+      html += '<div class="field"><label>Montant de l\'assiette</label><div class="input" style="background:var(--color-surface-2);color:var(--color-text-dim);font-size:12.5px;display:flex;align-items:center">💳 Saisi par la comptabilité au règlement de la provision</div></div>';
+    }
     html += '</div>';
 
-    html += '<div style="max-width:720px;margin-bottom:var(--space-2)">';
-    html += '<div class="field"><label>Clerc assigné / Responsable de l\'instruction</label><select class="input" id="nd-clerc"><option value="">Sélectionner un clerc de l\'étude…</option>';
+    // CLERC ASSIGNÉ
+    html += '<div style="max-width:760px;margin-bottom:var(--space-4)">';
+    html += '<div class="field"><label>Clerc assigné / Responsable d\'instruction <span class="tag tag-accent" style="font-size:10px;margin-left:6px">Notification Email Automatique</span></label><select class="input" id="nd-clerc"><option value="">Sélectionner un clerc de l\'étude…</option>';
     (cache.equipeListe || []).forEach(function (m) {
       if (["superadmin", "dev", "commercial", "support", "assistante_editeur"].indexOf(m.role) !== -1) return;
       var isMe = (cache.utilisateur && m.id === cache.utilisateur.id) ? " (Vous)" : "";
@@ -2388,12 +2465,57 @@
     html += '</select></div>';
     html += '</div>';
 
-    html += '<h3 style="margin-bottom:var(--space-2)">Comparants</h3>';
-    html += '<div id="nd-comparants" style="max-width:720px;display:flex;flex-direction:column;gap:var(--space-2);margin-bottom:var(--space-2)"></div>';
-    html += '<button class="btn btn-secondary" id="nd-ajouter-comparant" style="margin-bottom:var(--space-4)">+ Ajouter un comparant</button>';
+    // SECTION SCAN & PIÈCES JOINTES DNO
+    html += '<div class="card" style="max-width:760px;padding:16px;margin-bottom:var(--space-4);background:var(--color-surface);border:1px solid var(--color-border)">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:6px">';
+    html += '<div style="font-weight:700;font-size:13.5px">2. Pièces Justificatives & Documents Scannés</div>';
+    html += '<span class="tag tag-outline" style="font-size:11px">' + etatNouveauDossier.piecesJointes.length + ' pièce(s) jointe(s)</span>';
+    html += '</div>';
 
-    html += '<div style="display:flex;gap:var(--space-2);margin-bottom:var(--space-3)"><button class="btn btn-primary" id="nd-creer">Créer le dossier</button></div>';
-    html += '<div id="nd-erreur" class="erreur-inline" style="display:none;max-width:720px"></div>';
+    html += '<p style="font-size:12px;color:var(--color-text-dim);margin:0 0 12px">Saisissez l\'intitulé de la pièce (ex: CNI, Fiche KYC, Extrait de naissance) puis sélectionnez le fichier scanné.</p>';
+
+    // Suggestions rapides selon type personne
+    var suggs = SUGGESTIONS_PIECES[etatNouveauDossier.typePersonne] || SUGGESTIONS_PIECES.physique;
+    html += '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">';
+    suggs.forEach(function (sg) {
+      html += '<button type="button" class="btn btn-secondary btn-suggestion-piece" data-nom="' + escapeHtml(sg) + '" style="font-size:11px;padding:3px 8px;border-radius:12px;background:var(--color-surface-2)">+ ' + escapeHtml(sg) + '</button>';
+    });
+    html += '</div>';
+
+    // Zone d'ajout de pièce
+    html += '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px">';
+    html += '<input class="input" id="nd-nom-piece" placeholder="Nom de la pièce (ex: CNI Recto-Verso M. Koffi)" style="flex:2;min-width:220px">';
+    html += '<input type="file" id="nd-fichier-scan" accept=".pdf,.png,.jpg,.jpeg" style="display:none">';
+    html += '<button type="button" class="btn btn-primary" id="btn-trigger-scan" style="font-size:12.5px;padding:8px 14px;white-space:nowrap">📎 Scanner / Joindre le fichier</button>';
+    html += '</div>';
+
+    // Liste des pièces déjà jointes
+    if (!etatNouveauDossier.piecesJointes.length) {
+      html += '<div style="padding:10px;text-align:center;font-size:12px;color:var(--color-text-dim);border:1px dashed var(--color-border);border-radius:var(--radius)">Aucune pièce scannée n\'a encore été jointe.</div>';
+    } else {
+      html += '<div style="display:flex;flex-direction:column;gap:6px">';
+      etatNouveauDossier.piecesJointes.forEach(function (pj, idx) {
+        html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--color-surface-2);border-radius:6px;border:1px solid var(--color-border);font-size:12.5px">';
+        html += '<div style="display:flex;align-items:center;gap:8px">';
+        html += '<span>📄</span>';
+        html += '<div><strong>' + escapeHtml(pj.nomPiece) + '</strong> <span class="text-muted" style="font-size:11px">(' + escapeHtml(pj.nomFichier) + ' · ' + pj.taille + ')</span></div>';
+        html += '</div>';
+        html += '<button type="button" class="btn btn-ghost btn-suppr-piece-scan" data-idx="' + idx + '" style="color:var(--color-danger);font-size:11.5px;padding:2px 6px">Retirer</button>';
+        html += '</div>';
+      });
+      html += '</div>';
+    }
+    html += '</div>';
+
+    // COMPARANTS & CONTACTS CLIENT
+    html += '<div class="card" style="max-width:760px;padding:16px;margin-bottom:var(--space-4);background:var(--color-surface);border:1px solid var(--color-border)">';
+    html += '<div style="font-weight:700;font-size:13.5px;margin-bottom:8px">3. Comparants & Coordonnées Client (Pour Reçus & Suivi)</div>';
+    html += '<div id="nd-comparants" style="display:flex;flex-direction:column;gap:var(--space-2);margin-bottom:var(--space-3)"></div>';
+    html += '<button class="btn btn-secondary" id="nd-ajouter-comparant" style="font-size:12px;padding:6px 12px">+ Ajouter un comparant</button>';
+    html += '</div>';
+
+    html += '<div style="display:flex;gap:var(--space-2);margin-bottom:var(--space-3)"><button class="btn btn-primary" id="nd-creer" style="padding:10px 20px;font-size:14px;font-weight:700">' + (etatNouveauDossier.typeCreation === "dno" ? "📋 Créer le DNO & Transmettre" : "⚡ Créer le Dossier Ouvert") + '</button></div>';
+    html += '<div id="nd-erreur" class="erreur-inline" style="display:none;max-width:760px"></div>';
 
     c.innerHTML = html;
     ajouterLigneComparant();
@@ -2401,18 +2523,108 @@
 
     var retour = c.querySelector(".bouton-retour-nouveau");
     if (retour) retour.addEventListener("click", function () { irVers(etat.vuePrecedente); });
+
+    // Mode Toggle Buttons
+    var btnModeDno = document.getElementById("btn-toggle-mode-dno");
+    if (btnModeDno) {
+      btnModeDno.addEventListener("click", function () {
+        etatNouveauDossier.typeCreation = "dno";
+        renderNouveauDossier();
+      });
+    }
+    var btnModeOuvert = document.getElementById("btn-toggle-mode-ouvert");
+    if (btnModeOuvert) {
+      btnModeOuvert.addEventListener("click", function () {
+        etatNouveauDossier.typeCreation = "dossier_ouvert";
+        renderNouveauDossier();
+      });
+    }
+
+    // Type personne change
+    c.querySelectorAll('input[name="nd-type-personne"]').forEach(function (radio) {
+      radio.addEventListener("change", function (e) {
+        etatNouveauDossier.typePersonne = e.target.value;
+        renderNouveauDossier();
+      });
+    });
+
+    // Suggestions rapides de pièces
+    c.querySelectorAll(".btn-suggestion-piece").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var champNom = document.getElementById("nd-nom-piece");
+        if (champNom) {
+          champNom.value = btn.dataset.nom;
+          champNom.focus();
+        }
+      });
+    });
+
+    // Upload de pièces scannées
+    var btnTriggerScan = document.getElementById("btn-trigger-scan");
+    var inputFichierScan = document.getElementById("nd-fichier-scan");
+    if (btnTriggerScan && inputFichierScan) {
+      btnTriggerScan.addEventListener("click", function () {
+        var nomPiece = (document.getElementById("nd-nom-piece").value || "").trim();
+        if (!nomPiece) {
+          toast("Veuillez d'abord renseigner le nom de la pièce scannée.");
+          document.getElementById("nd-nom-piece").focus();
+          return;
+        }
+        inputFichierScan.click();
+      });
+
+      inputFichierScan.addEventListener("change", function (e) {
+        var file = e.target.files && e.target.files[0];
+        if (!file) return;
+        var nomPiece = (document.getElementById("nd-nom-piece").value || "").trim() || file.name;
+
+        var reader = new FileReader();
+        reader.onload = function (evt) {
+          var tailleFmt = file.size > 1024 * 1024 ? (file.size / (1024 * 1024)).toFixed(1) + " Mo" : Math.round(file.size / 1024) + " Ko";
+          etatNouveauDossier.piecesJointes.push({
+            id: "pj-" + Date.now(),
+            nomPiece: nomPiece,
+            nomFichier: file.name,
+            taille: tailleFmt,
+            typePersonne: etatNouveauDossier.typePersonne,
+            dateUpload: new Date().toISOString(),
+            dataUrl: evt.target.result,
+          });
+          toast("Pièce « " + nomPiece + " » rattachée avec succès !");
+          inputFichierScan.value = "";
+          renderNouveauDossier();
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // Retirer une pièce
+    c.querySelectorAll(".btn-suppr-piece-scan").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var idx = parseInt(btn.dataset.idx, 10);
+        etatNouveauDossier.piecesJointes.splice(idx, 1);
+        renderNouveauDossier();
+      });
+    });
+
     document.getElementById("nd-ajouter-comparant").addEventListener("click", ajouterLigneComparant);
     document.getElementById("nd-creer").addEventListener("click", soumettreNouveauDossier);
+  }
+
+  function etatNouveauDouveauPersonneChecked(type) {
+    return etatNouveauDossier.typePersonne === type ? " checked" : "";
   }
 
   function ajouterLigneComparant() {
     var conteneur = document.getElementById("nd-comparants");
     var idx = compteurComparants++;
-    var ligne = el("div", { style: "display:flex;gap:var(--space-2);align-items:center" });
+    var ligne = el("div", { style: "display:flex;gap:var(--space-2);align-items:center;flex-wrap:wrap" });
     ligne.innerHTML =
-      '<input class="input" placeholder="Nom du comparant" data-comparant-nom="' + idx + '" style="flex:2">' +
-      '<input class="input" placeholder="Qualité (ex. Vendeur, Acquéreur)" data-comparant-qualite="' + idx + '" style="flex:2">' +
-      '<span class="btn btn-ghost nd-retirer-comparant" style="flex:none">Retirer</span>';
+      '<input class="input" placeholder="Nom complet ou Raison Sociale" data-comparant-nom="' + idx + '" style="flex:2;min-width:180px">' +
+      '<input class="input" placeholder="Qualité (ex. Vendeur, Acquéreur, Société)" data-comparant-qualite="' + idx + '" style="flex:1.5;min-width:140px">' +
+      '<input class="input" placeholder="Email client (envoi reçu)" data-comparant-email="' + idx + '" style="flex:2;min-width:180px">' +
+      '<input class="input" placeholder="Téléphone" data-comparant-tel="' + idx + '" style="flex:1.2;min-width:120px">' +
+      '<span class="btn btn-ghost nd-retirer-comparant" style="flex:none;color:var(--color-danger)">Retirer</span>';
     conteneur.appendChild(ligne);
     ligne.querySelector(".nd-retirer-comparant").addEventListener("click", function () {
       if (conteneur.children.length > 1) ligne.remove();
@@ -2424,20 +2636,55 @@
     erreurZone.style.display = "none";
 
     var typeActeId = document.getElementById("nd-type-acte").value;
-    var montant = parseInt(document.getElementById("nd-montant").value, 10) || 0;
+    var champMontant = document.getElementById("nd-montant");
+    var montant = champMontant ? (parseInt(champMontant.value, 10) || 0) : 0;
+
     var comparants = [];
+    var emailPrincipal = "";
+    var telPrincipal = "";
+
     document.querySelectorAll("[data-comparant-nom]").forEach(function (input) {
       var idx = input.dataset.comparantNom;
       var nom = input.value.trim();
       var qualiteInput = document.querySelector('[data-comparant-qualite="' + idx + '"]');
-      if (nom) comparants.push({ nom: nom, qualite: (qualiteInput.value.trim() || "Comparant") });
+      var emailInput = document.querySelector('[data-comparant-email="' + idx + '"]');
+      var telInput = document.querySelector('[data-comparant-tel="' + idx + '"]');
+
+      var emailVal = emailInput ? emailInput.value.trim() : "";
+      var telVal = telInput ? telInput.value.trim() : "";
+
+      if (nom) {
+        comparants.push({
+          nom: nom,
+          qualite: (qualiteInput && qualiteInput.value.trim()) || "Comparant",
+          email: emailVal,
+          telephone: telVal,
+        });
+        if (!emailPrincipal && emailVal) emailPrincipal = emailVal;
+        if (!telPrincipal && telVal) telPrincipal = telVal;
+      }
     });
 
     if (!typeActeId) { erreurZone.textContent = "Choisissez un type d'acte."; erreurZone.style.display = "block"; return; }
-    if (!montant || montant <= 0) { erreurZone.textContent = "Indiquez un montant."; erreurZone.style.display = "block"; return; }
     if (!comparants.length) { erreurZone.textContent = "Ajoutez au moins un comparant."; erreurZone.style.display = "block"; return; }
+    if (etatNouveauDossier.typeCreation === "dossier_ouvert" && (!montant || montant <= 0)) {
+      erreurZone.textContent = "Indiquez le montant de l'assiette pour une ouverture directe.";
+      erreurZone.style.display = "block";
+      return;
+    }
 
-    var corps = { typeActeId: typeActeId, montantAssiette: montant, comparants: comparants };
+    var corps = {
+      typeCreation: etatNouveauDossier.typeCreation,
+      estDno: etatNouveauDossier.typeCreation === "dno",
+      typePersonne: etatNouveauDossier.typePersonne,
+      typeActeId: typeActeId,
+      montantAssiette: montant,
+      piecesJointesDno: etatNouveauDossier.piecesJointes,
+      emailClient: emailPrincipal,
+      telephoneClient: telPrincipal,
+      comparants: comparants,
+    };
+
     var champClerc = document.getElementById("nd-clerc");
     if (champClerc && champClerc.value) corps.clercAssigneId = champClerc.value;
 
@@ -2445,7 +2692,12 @@
     btn.setAttribute("disabled", "disabled");
     API.post("/api/dossiers", corps)
       .then(function (dossier) {
-        toast(dossier.numeroDossier + " créé.");
+        if (dossier.typeCreation === "dno" || dossier.numeroDno) {
+          toast("✅ " + (dossier.numeroDno || dossier.numeroDossier) + " créé avec succès ! Transmis à la comptabilité pour règlement de la provision.");
+        } else {
+          toast("✅ Dossier " + dossier.numeroDossier + " ouvert avec succès !");
+        }
+        etatNouveauDossier.piecesJointes = [];
         return chargerDossiersEtAlertes().then(function () { ouvrirDossier(dossier.id, "dossiers"); });
       })
       .catch(function (e) {
@@ -6725,6 +6977,45 @@
         html += champ("param-compteSequestreCDCI", "Compte séquestre CDCI (Caisse des Dépôts)", paramsEtude.compteSequestreCDCI);
         html += '</div>';
 
+        // SECTION NUMÉROTATION DES DOSSIERS
+        html += '<h3 style="margin-top:var(--space-5);margin-bottom:var(--space-2)">Numérotation des Dossiers & Continuité de l\'Étude</h3>';
+        html += '<div class="card" style="max-width:720px;margin-bottom:var(--space-4);padding:16px;background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius)">';
+        html += '<div style="font-weight:700;font-size:13.5px;margin-bottom:8px">Mode d\'attribution du numéro de dossier ouvert</div>';
+        html += '<div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px">';
+        var modeNum = paramsEtude.modeNumerotation || "global";
+        html += '<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px"><input type="radio" name="param-modeNumerotation" value="global"' + (modeNum === "global" ? ' checked' : '') + ' style="cursor:pointer"> <strong>Séquentiel Unique Global</strong> (ex: <code>DOS-2026-0042</code> ou <code>2026-0042</code>)</label>';
+        html += '<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px"><input type="radio" name="param-modeNumerotation" value="par_nature_acte"' + (modeNum === "par_nature_acte" ? ' checked' : '') + ' style="cursor:pointer"> <strong>Par Nature d\'Acte Notarié</strong> (ex: <code>2026-VTE-0012</code>, <code>2026-SOC-0005</code>, <code>2026-SUC-0003</code>)</label>';
+        html += '</div>';
+
+        html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:var(--space-3);margin-bottom:14px">';
+        html += champ("param-formatNumerotation", "Format du préfixe", paramsEtude.formatNumerotation || "DOS-{AAAA}-{NUM}");
+        html += champ("param-dernierNumeroGlobal", "Dernier numéro global utilisé", String(paramsEtude.dernierNumeroGlobal || 0));
+        html += '</div>';
+
+        html += '<div id="zone-compteurs-par-nature" style="' + (modeNum === "par_nature_acte" ? "" : "display:none;") + 'background:var(--color-surface-2);border-radius:6px;padding:12px;margin-bottom:10px;border:1px solid var(--color-border)">';
+        html += '<div style="font-weight:700;font-size:12px;margin-bottom:8px;color:var(--color-text-dim);text-transform:uppercase">Compteurs de départ par Nature d\'Acte (Reprise d\'historique) :</div>';
+        html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px">';
+        var derniersParNat = paramsEtude.derniersNumerosParNature || {};
+        cache.typesActesListe.forEach(function (t) {
+          var valNat = derniersParNat[t.id] !== undefined ? derniersParNat[t.id] : 0;
+          html += '<div class="field" style="margin:0"><label style="font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + escapeHtml(t.libelle) + '">' + escapeHtml(t.libelle) + '</label><input class="input input-compteur-nature" type="number" min="0" data-type-id="' + t.id + '" value="' + valNat + '" style="min-height:32px;font-size:12px"></div>';
+        });
+        html += '</div></div>';
+        html += '<p style="font-size:11.5px;color:var(--color-text-dim);margin:0">Permet d\'assurer une transition sans rupture avec vos registres papier ou votre ancien logiciel.</p>';
+        html += '</div>';
+
+        // SECTION CONFIDENTIALITÉ FINANCIÈRE
+        html += '<h3 style="margin-top:var(--space-5);margin-bottom:var(--space-2)">Confidentialité Financière & Droits d\'Accès</h3>';
+        html += '<div class="card" style="max-width:720px;margin-bottom:var(--space-4);background:rgba(99,102,241,0.03);border:1px solid var(--color-border);padding:14px 16px;border-radius:var(--radius)">';
+        html += '<div class="toggle" style="display:flex;align-items:center;gap:10px">';
+        html += '<input type="checkbox" id="param-premierClercVoirFinances"' + (paramsEtude.premierClercVoirFinances ? ' checked' : '') + ' style="width:18px;height:18px;cursor:pointer">';
+        html += '<label for="param-premierClercVoirFinances" style="font-weight:700;font-size:14px;color:var(--color-text);cursor:pointer">Autoriser le Premier Clerc à consulter les montants financiers et provisions</label>';
+        html += '</div>';
+        html += '<p style="font-size:12px;color:var(--color-text-dim);margin:6px 0 0;line-height:1.4">';
+        html += 'Par défaut, seuls le <strong>Notaire Titulaire</strong> et le <strong>Comptable Taxateur</strong> ont accès aux montants d\'assiette, règlements et provisions. Si cochée, cette option permet au Premier Clerc de superviser la gestion financière.';
+        html += '</p>';
+        html += '</div>';
+
         html += '<h3 style="margin-top:var(--space-5);margin-bottom:var(--space-2)">Organisation & Pôle Archivage</h3>';
         html += '<div class="card" style="max-width:720px;margin-bottom:var(--space-4);background:rgba(56,189,248,0.03);border:1px solid var(--color-border);padding:14px 16px;border-radius:var(--radius)">';
         html += '<div class="toggle" style="display:flex;align-items:center;gap:10px">';
@@ -6941,12 +7232,42 @@
         });
       });
 
-      // Enregistrement Identité
+      // Changement dynamique du mode de numérotation
+      c.querySelectorAll("input[name='param-modeNumerotation']").forEach(function (radio) {
+        radio.addEventListener("change", function () {
+          var zoneNat = document.getElementById("zone-compteurs-par-nature");
+          if (zoneNat) {
+            zoneNat.style.display = (radio.value === "par_nature_acte") ? "block" : "none";
+          }
+        });
+      });
+
+      // Enregistrement Identité & Organisation & Numérotation
       var btnSaveIdentite = document.getElementById("bouton-save-identite");
       if (btnSaveIdentite) {
         btnSaveIdentite.addEventListener("click", function () {
           var chkArch = document.getElementById("param-presenceArchiviste");
           var presenceArch = chkArch ? chkArch.checked : true;
+
+          var chkFinance = document.getElementById("param-premierClercVoirFinances");
+          var premierClercFinances = chkFinance ? chkFinance.checked : false;
+
+          var radioModeNum = c.querySelector("input[name='param-modeNumerotation']:checked");
+          var modeNumerotation = radioModeNum ? radioModeNum.value : "global";
+
+          var formatNumEl = document.getElementById("param-formatNumerotation");
+          var formatNumerotation = formatNumEl ? formatNumEl.value.trim() : "DOS-{AAAA}-{NUM}";
+
+          var dernierGlobalEl = document.getElementById("param-dernierNumeroGlobal");
+          var dernierNumeroGlobal = dernierGlobalEl ? parseInt(dernierGlobalEl.value, 10) || 0 : 0;
+
+          var derniersNumerosParNature = {};
+          c.querySelectorAll(".input-compteur-nature").forEach(function (inp) {
+            var tId = inp.dataset.typeId;
+            var v = parseInt(inp.value, 10) || 0;
+            if (tId) derniersNumerosParNature[tId] = v;
+          });
+
           API.put("/api/parametres", {
             nomEtude: document.getElementById("param-nomEtude").value.trim(),
             titreNotaire: document.getElementById("param-titreNotaire").value.trim(),
@@ -6961,14 +7282,19 @@
             centreImpots: document.getElementById("param-centreImpots").value.trim(),
             compteSequestreCDCI: document.getElementById("param-compteSequestreCDCI").value.trim(),
             presenceArchiviste: presenceArch,
+            premierClercVoirFinances: premierClercFinances,
+            modeNumerotation: modeNumerotation,
+            formatNumerotation: formatNumerotation,
+            dernierNumeroGlobal: dernierNumeroGlobal,
+            derniersNumerosParNature: derniersNumerosParNature
           }).then(function (misAJour) {
             cache.parametres = misAJour;
             if (cache.permissions) {
-              cache.permissions.archives = (misAJour.presenceArchiviste === false || cache.utilisateur.role === "archiviste" || cache.utilisateur.role === "notaire" || cache.utilisateur.role === "premier_clerc" || cache.utilisateur.role === "superadmin");
+              cache.permissions.archives = (misAJour.presenceArchiviste !== false || cache.utilisateur.role === "archiviste" || cache.utilisateur.role === "notaire" || cache.utilisateur.role === "premier_clerc" || cache.utilisateur.role === "superadmin");
             }
             actualiserBarreSelecteurRoles(cache.utilisateur.role);
             renderMenuNavigation(cache.utilisateur.role);
-            toast("Identité & organisation de l'étude mises à jour avec succès !");
+            toast("Identité, numérotation & paramètres de l'étude mis à jour avec succès !");
           }).catch(function (e) { toast("Erreur : " + e.message); });
         });
       }
@@ -9005,19 +9331,83 @@
     var nv = niveauDossier(d.id);
     var backLabel = { kanban: "Retour au circuit", dossiers: "Retour aux dossiers", clients: "Retour aux clients", archives: "Retour aux archives", dashboard: "Retour au tableau de bord" }[etat.vuePrecedente] || "Retour";
 
-    var pcts = d.taches.map(function (t) { return STATUT_PCT[t.statut]; });
+    var pcts = (d.taches || []).map(function (t) { return STATUT_PCT[t.statut] || 0; });
     var avgPct = pcts.length ? Math.round(pcts.reduce(function (a, b) { return a + b; }, 0) / pcts.length) : 0;
+
+    var estDnoEnAttente = d.statutDno === "en_attente_paiement" || (d.typeCreation === "dno" && d.statutDno !== "regle_ouvert");
+    var estComptableOuNotaire = cache.utilisateur && (cache.utilisateur.role === "comptable_taxateur" || cache.utilisateur.role === "notaire" || cache.utilisateur.role === "superadmin");
+    var estNotaire = cache.utilisateur && (cache.utilisateur.role === "notaire" || cache.utilisateur.role === "superadmin");
 
     var html = '<div class="btn btn-ghost bouton-retour" style="padding-left:0;margin-bottom:var(--space-3)">‹ ' + backLabel + '</div>';
     html += '<div style="position:sticky;top:calc(-1 * var(--space-6));background:var(--color-bg);z-index:2;padding-top:var(--space-1);margin-bottom:var(--space-3)">';
-    html += '<div style="display:flex;align-items:baseline;gap:var(--space-3);flex-wrap:wrap;margin-bottom:2px"><h1 style="margin:0">' + d.numeroDossier + ' — ' + labelActe(d.typeActeId) + '</h1><span class="tag ' + nv.tag + '" style="font-weight:700">' + nv.label + '</span></div>';
-    html += '<p style="opacity:.65;font-size:14px;margin:0">' + (d.statut === "cloture" ? "Dossier clôturé" : "Étape " + d.etapeActuelle + " / 6 — " + labelEtape(d.etapeActuelle)) + '</p></div>';
+    html += '<div style="display:flex;align-items:baseline;gap:var(--space-3);flex-wrap:wrap;margin-bottom:2px"><h1 style="margin:0">' + (d.numeroDno && estDnoEnAttente ? d.numeroDno : d.numeroDossier) + ' — ' + labelActe(d.typeActeId) + '</h1><span class="tag ' + nv.tag + '" style="font-weight:700">' + nv.label + '</span></div>';
+    html += '<p style="opacity:.65;font-size:14px;margin:0">' + (estDnoEnAttente ? "📋 Dossier Non Ouvert (DNO) — En attente du règlement de la provision" : (d.statut === "cloture" ? "Dossier clôturé" : "Étape " + d.etapeActuelle + " / 6 — " + labelEtape(d.etapeActuelle))) + '</p></div>';
+
+    // BANDEAU WORKFLOW DNO (Attente de provision & Comptabilité)
+    if (estDnoEnAttente) {
+      html += '<div class="card" style="background:rgba(217,119,6,0.08);border:1.5px solid rgba(217,119,6,0.4);border-radius:var(--radius);padding:14px 18px;margin-bottom:var(--space-4)">';
+      html += '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">';
+      html += '<div>';
+      html += '<div style="font-weight:800;font-size:14.5px;color:#d97706;display:flex;align-items:center;gap:6px">📋 Dossier Non Ouvert (DNO N° ' + escapeHtml(d.numeroDno || d.numeroDossier) + ')</div>';
+      html += '<div style="font-size:12.5px;color:var(--color-text);margin-top:4px">Créé par le secrétariat avec KYC et pièces scannées jointes. Transmis à la comptabilité pour enregistrement de la provision et attribution du numéro officiel de dossier ouvert.</div>';
+      html += '</div>';
+      if (estComptableOuNotaire) {
+        html += '<button type="button" class="btn btn-primary btn-ouvrir-reglement-dno" data-id="' + d.id + '" style="background:#d97706;border-color:#d97706;font-weight:700;padding:8px 16px;white-space:nowrap">💳 Enregistrer le Paiement & Ouvrir le Dossier</button>';
+      } else {
+        html += '<span class="tag tag-outline" style="font-weight:700;color:#d97706;border-color:rgba(217,119,6,0.5)">⏳ En attente de règlement comptable</span>';
+      }
+      html += '</div></div>';
+    } else if (d.provisionVersee || d.recuGenereId) {
+      // BANDEAU REÇU DE PAIEMENT DE PROVISION
+      var recuValide = d.recuValideParNotaire || d.statutRecu === "valide_envoye";
+      html += '<div class="card" style="background:rgba(16,185,129,0.06);border:1.5px solid rgba(16,185,129,0.35);border-radius:var(--radius);padding:12px 18px;margin-bottom:var(--space-4)">';
+      html += '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">';
+      html += '<div>';
+      html += '<div style="font-weight:800;font-size:14px;color:#059669;display:flex;align-items:center;gap:6px">✅ Provision & Frais d\'Ouverture Réglés — Reçu N° ' + escapeHtml(d.recuGenereId || "REC-" + d.numeroDossier) + '</div>';
+      html += '<div style="font-size:12px;color:var(--color-text-dim);margin-top:3px">';
+      if (peutVoirFinances()) {
+        html += 'Frais ouverture : <strong>' + fmtFCFA(d.fraisOuverture || 50000) + '</strong> · Provision versée : <strong>' + fmtFCFA(d.provisionVersee || 0) + '</strong> (' + escapeHtml(d.modePaiementProvision || "Virement CDCI") + ') · ';
+      }
+      html += 'Statut reçu : <strong>' + (recuValide ? "Certifié par le Notaire & Transmis par email" : "Soumis au Notaire pour validation") + '</strong>';
+      html += '</div></div>';
+      html += '<div style="display:flex;gap:8px;align-items:center">';
+      html += '<button type="button" class="btn btn-secondary btn-imprimer-recu-provision" data-id="' + d.id + '" style="font-size:12px;padding:6px 12px">📄 Voir / Imprimer le Reçu</button>';
+      if (!recuValide && estNotaire) {
+        html += '<button type="button" class="btn btn-primary btn-valider-recu-notaire" data-recuid="' + (d.recuGenereId || d.id) + '" data-dossierid="' + d.id + '" style="background:#059669;border-color:#059669;font-weight:700;font-size:12px;padding:6px 12px">⚖️ Viser le Reçu & Envoyer au Client</button>';
+      }
+      html += '</div></div></div>';
+    }
 
     html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:var(--space-4);margin-bottom:var(--space-4)">';
     html += '<div><div class="text-muted" style="font-size:11px;text-transform:uppercase">Comparants</div><div style="font-size:15px">' + d.comparants.map(function (c2) { return c2.nom + " (" + c2.qualite + ")"; }).join(", ") + '</div></div>';
-    html += '<div><div class="text-muted" style="font-size:11px;text-transform:uppercase">Montant</div><div style="font-size:15px">' + fmtFCFA(d.montantAssiette) + '</div></div>';
+    html += '<div><div class="text-muted" style="font-size:11px;text-transform:uppercase">Montant (Assiette)</div><div style="font-size:15px">' + formaterMontantSecurise(d.montantAssiette) + '</div></div>';
     html += '<div><div class="text-muted" style="font-size:11px;text-transform:uppercase">Clerc assigné</div><div style="font-size:15px">' + nomClerc(d.clercAssigneId) + '</div></div>';
     html += '<div><div class="text-muted" style="font-size:11px;text-transform:uppercase">Avancement Tâches</div><div style="font-size:15px">' + avgPct + ' %</div></div></div>';
+
+    // SECTION PIÈCES JUSTIFICATIVES & SCANS DNO
+    var piecesDno = d.piecesJointesDno || [];
+    if (piecesDno.length > 0) {
+      html += '<div class="card" style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius);padding:14px 16px;margin-bottom:var(--space-4)">';
+      html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">';
+      html += '<div style="font-weight:700;font-size:13px;color:var(--color-text)">📁 Pièces Justificatives Scannées (Constitution DNO)</div>';
+      html += '<span class="tag tag-outline" style="font-size:11px">' + piecesDno.length + ' pièce(s)</span>';
+      html += '</div>';
+      html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px">';
+      piecesDno.forEach(function (pj) {
+        html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--color-surface-2);border-radius:6px;border:1px solid var(--color-border);font-size:12px">';
+        html += '<div style="display:flex;align-items:center;gap:8px;overflow:hidden">';
+        html += '<span>📄</span>';
+        html += '<div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><strong style="color:var(--color-text)">' + escapeHtml(pj.nomPiece || pj.nomFichier) + '</strong><br><span class="text-muted" style="font-size:10.5px">' + escapeHtml(pj.nomFichier || "document") + '</span></div>';
+        html += '</div>';
+        if (pj.dataUrl) {
+          html += '<a href="' + pj.dataUrl + '" download="' + escapeHtml(pj.nomFichier || "piece.pdf") + '" class="btn btn-ghost" style="font-size:11px;padding:2px 6px;color:var(--color-accent);flex-shrink:0">Télécharger ↓</a>';
+        } else {
+          html += '<span class="tag tag-neutral" style="font-size:10px">Archivé</span>';
+        }
+        html += '</div>';
+      });
+      html += '</div></div>';
+    }
 
     // Stepper Visuel 6 Étapes Notariales
     html += '<div style="background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:var(--space-4);margin-bottom:var(--space-4);box-shadow:var(--shadow-sm)">';
@@ -9053,7 +9443,7 @@
 
     html += '<h3 style="margin-bottom:var(--space-3)">Checklist des tâches</h3>';
     var groupes = {};
-    d.taches.forEach(function (t) { (groupes[t.etape] = groupes[t.etape] || []).push(t); });
+    (d.taches || []).forEach(function (t) { (groupes[t.etape] = groupes[t.etape] || []).push(t); });
     Object.keys(groupes).sort(function (a, b) { return a - b; }).forEach(function (etapeId) {
       html += '<div style="margin-bottom:var(--space-4)"><h5 style="margin-bottom:var(--space-2);opacity:.7">' + labelEtape(Number(etapeId)) + '</h5>';
       html += '<table class="table"><thead><tr><th>Tâche</th><th>Durée standard</th><th>Statut</th><th>Avancement</th></tr></thead><tbody>';
@@ -9066,14 +9456,18 @@
       html += '</tbody></table></div>';
     });
 
-    html += '<h3 style="margin-bottom:var(--space-3)">Compte client</h3><table class="table" style="margin-bottom:var(--space-3)"><thead><tr><th>Type</th><th>Libellé</th><th>Date</th><th>Montant</th></tr></thead><tbody>';
-    if (!d.compteClient.length) html += '<tr><td colspan="4" class="text-muted">Aucune écriture.</td></tr>';
-    d.compteClient.forEach(function (e) {
-      var estProvision = e.sens === "provision";
-      html += '<tr><td><span class="tag ' + (estProvision ? "tag-accent" : "tag-neutral") + '">' + (estProvision ? "Provision" : "Décaissement") + '</span></td><td>' + e.libelle + '</td><td>' + fmtDate(e.date_ecriture) + '</td><td>' + (estProvision ? "" : "− ") + fmtFCFA(e.montant) + '</td></tr>';
-    });
+    html += '<h3 style="margin-bottom:var(--space-3)">Compte client & Provisions</h3><table class="table" style="margin-bottom:var(--space-3)"><thead><tr><th>Type</th><th>Libellé</th><th>Date</th><th>Montant</th></tr></thead><tbody>';
+    if (!d.compteClient || !d.compteClient.length) {
+      html += '<tr><td colspan="4" class="text-muted">Aucune écriture enregistrée.</td></tr>';
+    } else {
+      d.compteClient.forEach(function (e) {
+        var estProvision = e.sens === "provision";
+        var montantAffiche = peutVoirFinances() ? ((estProvision ? "" : "− ") + fmtFCFA(e.montant)) : formaterMontantSecurise(e.montant);
+        html += '<tr><td><span class="tag ' + (estProvision ? "tag-accent" : "tag-neutral") + '">' + (estProvision ? "Provision" : "Décaissement") + '</span></td><td>' + escapeHtml(e.libelle) + '</td><td>' + fmtDate(e.date_ecriture) + '</td><td>' + montantAffiche + '</td></tr>';
+      });
+    }
     html += '</tbody></table>';
-    if (cache.permissions.manageCompte) html += '<button class="btn btn-secondary" id="bouton-ajouter-ecriture" style="margin-bottom:var(--space-6)">+ Ajouter une écriture</button>';
+    if (cache.permissions.manageCompte && peutVoirFinances()) html += '<button class="btn btn-secondary" id="bouton-ajouter-ecriture" style="margin-bottom:var(--space-6)">+ Ajouter une écriture</button>';
 
     html += renderFicheTaxe(d);
     html += renderProjetActe(d.id);
