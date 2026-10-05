@@ -10,19 +10,20 @@ require("dotenv").config();
 const { Pool } = require("pg");
 
 let isDbConnected = false;
-let derniereVerification = 0;
+let derniereTentativeEchouee = 0;
 const DELAI_REVERIFICATION_MS = 30000; // Re-tester la connexion DB toutes les 30s en tâche de fond
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  connectionTimeoutMillis: 1500, // Timeout court pour ne jamais bloquer l'UI
-  query_timeout: 2000,
+  connectionTimeoutMillis: 3000, // 3s de timeout pour permettre la connexion initiale
+  query_timeout: 5000,
   idleTimeoutMillis: 10000,
   max: 10,
 });
 
 pool.on("error", (err) => {
   isDbConnected = false;
+  derniereTentativeEchouee = Date.now();
   console.warn("[PostgreSQL Pool Notice] Connexion DB perdue, mode résilient actif :", err.message);
 });
 
@@ -105,6 +106,51 @@ async function autoMigrerSchema() {
         ALTER TABLE parametres_etude ADD COLUMN IF NOT EXISTS telephone_portable text;
         ALTER TABLE parametres_etude ADD COLUMN IF NOT EXISTS presence_archiviste boolean DEFAULT false;
         ALTER TABLE parametres_etude ADD COLUMN IF NOT EXISTS presence_comptable boolean DEFAULT true;
+        ALTER TABLE parametres_etude ADD COLUMN IF NOT EXISTS mode_numerotation VARCHAR(30) DEFAULT 'global';
+        ALTER TABLE parametres_etude ADD COLUMN IF NOT EXISTS format_numerotation VARCHAR(100) DEFAULT 'DOS-{AAAA}-{NUM}';
+        ALTER TABLE parametres_etude ADD COLUMN IF NOT EXISTS dernier_numero_global INTEGER DEFAULT 0;
+        ALTER TABLE parametres_etude ADD COLUMN IF NOT EXISTS derniers_numeros_par_nature JSONB DEFAULT '{}'::jsonb;
+        ALTER TABLE parametres_etude ADD COLUMN IF NOT EXISTS premier_clerc_voir_finances BOOLEAN DEFAULT false;
+
+        -- Dossiers : DNO, statut de paiement provision, pièces jointes
+        ALTER TABLE dossiers ADD COLUMN IF NOT EXISTS type_creation VARCHAR(30) DEFAULT 'dossier_ouvert';
+        ALTER TABLE dossiers ADD COLUMN IF NOT EXISTS numero_dno VARCHAR(50);
+        ALTER TABLE dossiers ADD COLUMN IF NOT EXISTS statut_dno VARCHAR(30) DEFAULT 'ouvert';
+        ALTER TABLE dossiers ADD COLUMN IF NOT EXISTS type_personne VARCHAR(20) DEFAULT 'physique';
+        ALTER TABLE dossiers ADD COLUMN IF NOT EXISTS pieces_jointes_dno JSONB DEFAULT '[]'::jsonb;
+        ALTER TABLE dossiers ADD COLUMN IF NOT EXISTS frais_ouverture BIGINT DEFAULT 0;
+        ALTER TABLE dossiers ADD COLUMN IF NOT EXISTS provision_versee BIGINT DEFAULT 0;
+        ALTER TABLE dossiers ADD COLUMN IF NOT EXISTS mode_paiement_provision VARCHAR(50);
+        ALTER TABLE dossiers ADD COLUMN IF NOT EXISTS date_paiement_provision TIMESTAMPTZ;
+        ALTER TABLE dossiers ADD COLUMN IF NOT EXISTS comptable_validateur_id UUID;
+        ALTER TABLE dossiers ADD COLUMN IF NOT EXISTS email_client VARCHAR(255);
+        ALTER TABLE dossiers ADD COLUMN IF NOT EXISTS telephone_client VARCHAR(50);
+
+        -- Table des reçus de paiement
+        CREATE TABLE IF NOT EXISTS recus_paiement (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          etude_id UUID,
+          numero_recu VARCHAR(50) NOT NULL UNIQUE,
+          dossier_id UUID REFERENCES dossiers(id) ON DELETE CASCADE,
+          client_nom VARCHAR(255) NOT NULL,
+          client_email VARCHAR(255),
+          client_telephone VARCHAR(50),
+          montant_total BIGINT NOT NULL,
+          frais_ouverture BIGINT NOT NULL DEFAULT 0,
+          provision BIGINT NOT NULL DEFAULT 0,
+          montant_assiette BIGINT DEFAULT 0,
+          mode_paiement VARCHAR(50) NOT NULL,
+          statut VARCHAR(30) NOT NULL DEFAULT 'en_attente_validation',
+          cree_par_id UUID REFERENCES utilisateurs(id),
+          valide_par_id UUID REFERENCES utilisateurs(id),
+          valide_le TIMESTAMPTZ,
+          envoye_au_client_le TIMESTAMPTZ,
+          recu_scanne_url TEXT,
+          recu_scanne_nom TEXT,
+          recu_scanne_le TIMESTAMPTZ,
+          observations TEXT,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+        );
       `);
       console.log("[PostgreSQL] Schéma auto-migré et colonnes synchronisées avec succès.");
     } finally {
@@ -117,16 +163,17 @@ async function autoMigrerSchema() {
 
 // Test rapide de la connexion au démarrage sans bloquer le serveur
 async function verifierConnexionRapide() {
-  derniereVerification = Date.now();
   try {
     const client = await pool.connect();
     await client.query("SELECT 1");
     client.release();
     isDbConnected = true;
+    derniereTentativeEchouee = 0;
     console.log("[PostgreSQL] Connecté avec succès à la base de données.");
     autoMigrerSchema().catch(() => {});
   } catch (err) {
     isDbConnected = false;
+    derniereTentativeEchouee = Date.now();
     console.warn("[PostgreSQL] Base distante injoignable (" + err.message + ") -> Moteur résilient In-Memory activé (< 1ms).");
   }
 }
@@ -134,18 +181,18 @@ async function verifierConnexionRapide() {
 // Lancement de la première vérification
 verifierConnexionRapide().catch(() => {});
 
-// Interception de pool.query pour un repli ultra-rapide (< 0.1ms) si DB hors-ligne
+// Interception de pool.query pour un repli ultra-rapide (< 0.1ms) si DB hors-ligne confirmée
 const originalQuery = pool.query.bind(pool);
 pool.query = async function (text, params) {
-  // Si la DB est connue comme hors-ligne et que le délai de revérification n'est pas écoulé
-  if (!isDbConnected && (Date.now() - derniereVerification < DELAI_REVERIFICATION_MS)) {
+  // Si une tentative précédente a échoué il y a moins de 30 secondes, basculer sans attendre
+  if (!isDbConnected && derniereTentativeEchouee > 0 && (Date.now() - derniereTentativeEchouee < DELAI_REVERIFICATION_MS)) {
     throw new Error("DB_OFFLINE: Base de données distante temporairement inaccessible");
   }
 
   try {
-    derniereVerification = Date.now();
     const res = await originalQuery(text, params);
     isDbConnected = true;
+    derniereTentativeEchouee = 0;
     return res;
   } catch (err) {
     const msg = (err && err.message) || "";
@@ -158,7 +205,7 @@ pool.query = async function (text, params) {
       msg.includes("tenant")
     ) {
       isDbConnected = false;
-      derniereVerification = Date.now();
+      derniereTentativeEchouee = Date.now();
     }
     throw err;
   }

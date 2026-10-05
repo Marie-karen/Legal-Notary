@@ -24,44 +24,55 @@ const { pool } = require("./pool");
 const DOSSIER_MIGRATIONS = path.join(__dirname, "..", "..", "migrations");
 
 async function migrer() {
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS migrations_appliquees (
-      nom text PRIMARY KEY,
-      applique_le timestamptz NOT NULL DEFAULT now()
-    );
-  `);
-
-  const { rows } = await pool.query("SELECT nom FROM migrations_appliquees");
-  const dejaAppliquees = new Set(rows.map((r) => r.nom));
-
-  const fichiers = fs
-    .readdirSync(DOSSIER_MIGRATIONS)
-    .filter((f) => f.endsWith(".sql"))
-    .sort();
-
-  for (const fichier of fichiers) {
-    if (dejaAppliquees.has(fichier)) {
-      console.log(`[migrate] déjà appliquée : ${fichier}`);
-      continue;
-    }
-    const sql = fs.readFileSync(path.join(DOSSIER_MIGRATIONS, fichier), "utf-8");
-    const client = await pool.connect();
-    try {
-      await client.query("BEGIN");
-      await client.query(sql);
-      await client.query("INSERT INTO migrations_appliquees (nom) VALUES ($1)", [fichier]);
-      await client.query("COMMIT");
-      console.log(`[migrate] appliquée : ${fichier}`);
-    } catch (erreur) {
-      await client.query("ROLLBACK");
-      console.error(`[migrate] ÉCHEC sur ${fichier} :`, erreur.message);
-      throw erreur;
-    } finally {
-      client.release();
-    }
+  console.log("[migrate] Démarrage de la vérification des migrations...");
+  let client;
+  try {
+    client = await pool.connect();
+  } catch (errConnect) {
+    console.warn("[migrate] Connexion directe PostgreSQL non disponible :", errConnect.message);
+    console.log("[migrate] Le serveur synchronisera automatiquement le schéma au démarrage via autoMigrerSchema.");
+    return;
   }
 
-  console.log("[migrate] terminé.");
+  try {
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS migrations_appliquees (
+        nom text PRIMARY KEY,
+        applique_le timestamptz NOT NULL DEFAULT now()
+      );
+    `);
+
+    const { rows } = await client.query("SELECT nom FROM migrations_appliquees");
+    const dejaAppliquees = new Set(rows.map((r) => r.nom));
+
+    const fichiers = fs
+      .readdirSync(DOSSIER_MIGRATIONS)
+      .filter((f) => f.endsWith(".sql"))
+      .sort();
+
+    for (const fichier of fichiers) {
+      if (dejaAppliquees.has(fichier)) {
+        console.log(`[migrate] déjà appliquée : ${fichier}`);
+        continue;
+      }
+      const sql = fs.readFileSync(path.join(DOSSIER_MIGRATIONS, fichier), "utf-8");
+      try {
+        await client.query("BEGIN");
+        await client.query(sql);
+        await client.query("INSERT INTO migrations_appliquees (nom) VALUES ($1)", [fichier]);
+        await client.query("COMMIT");
+        console.log(`[migrate] appliquée : ${fichier}`);
+      } catch (erreur) {
+        await client.query("ROLLBACK");
+        console.error(`[migrate] ÉCHEC sur ${fichier} :`, erreur.message);
+        throw erreur;
+      }
+    }
+  } finally {
+    if (client) client.release();
+  }
+
+  console.log("[migrate] terminé avec succès.");
 }
 
 if (require.main === module) {
