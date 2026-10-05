@@ -6,20 +6,54 @@
  * d'attente sur les magasins de données résilients en mémoire.
  */
 
-require("dotenv").config();
+const fs = require("fs");
+const path = require("path");
+const dotenv = require("dotenv");
+
+// Recherche multi-chemins robuste du fichier .env
+const cheminsPossibles = [
+  path.join(process.cwd(), ".env"),
+  path.join(__dirname, "..", "..", ".env"),
+  path.join(__dirname, "..", ".env"),
+  path.join(process.cwd(), "legal-notary-server", ".env"),
+  "/var/www/legal-notary/legal-notary-server/.env",
+  "/var/www/legal-notary/.env",
+];
+
+for (const chemin of cheminsPossibles) {
+  if (fs.existsSync(chemin)) {
+    dotenv.config({ path: chemin });
+    break;
+  }
+}
+dotenv.config(); // Fallback
+
 const { Pool } = require("pg");
 
 let isDbConnected = false;
 let derniereTentativeEchouee = 0;
 const DELAI_REVERIFICATION_MS = 30000; // Re-tester la connexion DB toutes les 30s en tâche de fond
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  connectionTimeoutMillis: 3000, // 3s de timeout pour permettre la connexion initiale
+const poolConfig = {
+  connectionTimeoutMillis: 3000,
   query_timeout: 5000,
   idleTimeoutMillis: 10000,
   max: 10,
-});
+};
+
+if (process.env.DATABASE_URL) {
+  poolConfig.connectionString = process.env.DATABASE_URL;
+  // Prévention du crash SASL SCRAM si le mot de passe est omis dans l'URL
+  poolConfig.password = String(process.env.PGPASSWORD || process.env.DB_PASSWORD || "");
+} else {
+  poolConfig.host = process.env.PGHOST || process.env.DB_HOST || "localhost";
+  poolConfig.port = Number(process.env.PGPORT || process.env.DB_PORT) || 5432;
+  poolConfig.user = process.env.PGUSER || process.env.DB_USER || "postgres";
+  poolConfig.password = String(process.env.PGPASSWORD || process.env.DB_PASSWORD || "");
+  poolConfig.database = process.env.PGDATABASE || process.env.DB_NAME || "legalnotary";
+}
+
+const pool = new Pool(poolConfig);
 
 pool.on("error", (err) => {
   isDbConnected = false;

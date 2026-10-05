@@ -13,9 +13,26 @@
  * docs/DEPLOIEMENT.md pour l'installation complète sur le serveur du
  * cabinet (physique ou cloud).
  */
-
-require("dotenv").config();
+const fs = require("fs");
 const path = require("path");
+const dotenv = require("dotenv");
+
+const cheminsPossibles = [
+  path.join(process.cwd(), ".env"),
+  path.join(__dirname, "..", ".env"),
+  path.join(__dirname, "..", "..", ".env"),
+  path.join(process.cwd(), "legal-notary-server", ".env"),
+  "/var/www/legal-notary/legal-notary-server/.env",
+  "/var/www/legal-notary/.env",
+];
+for (const chemin of cheminsPossibles) {
+  if (fs.existsSync(chemin)) {
+    dotenv.config({ path: chemin });
+    break;
+  }
+}
+dotenv.config();
+
 const express = require("express");
 
 const { authentifier } = require("./middleware/authentifier");
@@ -98,7 +115,6 @@ app.use("/api/recus", recusRoutes);
 /**
  * Sert aussi le frontend statique (legal-notary-web/) depuis ce même processus.
  */
-const fs = require("fs");
 let FRONTEND_DIR = process.env.FRONTEND_DIR || path.join(__dirname, "..", "..", "legal-notary-web");
 if (!fs.existsSync(FRONTEND_DIR)) {
   const candidats = [
