@@ -52,9 +52,9 @@
     assistante_editeur: { addDossier: false, editTasks: false, decideProjet: false, closeDossier: false, manageCompte: false, fiscal: false, settingsAdvanced: false, equipe: false, dossiersTous: false, referentielFixerDelais: false, referentielCreerActe: false, superadmin: true, archives: false },
   };
   var ROLE_LABEL = {
-    notaire: "Notaire Titulaire", premier_clerc: "Premier Clerc", clerc_redacteur: "Clerc Rédacteur",
-    clerc_formaliste: "Clerc aux Formalités", comptable_taxateur: "Comptable Taxateur", assistante: "Assistante / Accueil",
-    archiviste: "Archiviste / Minutier",
+    notaire: "Notaire Titulaire", premier_clerc: "Principal", clerc_redacteur: "Clerc Rédacteur",
+    clerc_formaliste: "Formaliste", comptable_taxateur: "Comptable Taxateur", assistante: "Assistante / Accueil",
+    archiviste: "Archiviste / Service Archives",
     superadmin: "Super Administrateur SaaS",
     dev: "Développeur / DevOps SaaS",
     commercial: "Commercial & Onboarding SaaS",
@@ -4545,11 +4545,12 @@
         '<div class="field"><label>Email de connexion</label><input class="input" type="email" id="membre-email" placeholder="j.kouassi@notaire.ci" required></div>' +
         '<div class="field"><label>Mot de passe initial</label><input class="input" type="password" id="membre-mdp" placeholder="Minimum 8 caractères" required></div>' +
         '<div class="field"><label>Rôle</label><select class="input" id="membre-role">' +
-          '<option value="premier_clerc">Premier Clerc</option>' +
+          '<option value="premier_clerc">Principal</option>' +
           '<option value="clerc_redacteur" selected>Clerc Rédacteur</option>' +
-          '<option value="clerc_formaliste">Clerc aux Formalités</option>' +
+          '<option value="clerc_formaliste">Formaliste</option>' +
           '<option value="comptable_taxateur">Comptable Taxateur</option>' +
           '<option value="assistante">Assistante / Accueil</option>' +
+          '<option value="archiviste">Archiviste / Service Archives</option>' +
         '</select></div>' +
         '<div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2)">' +
           '<div class="field"><label>Téléphone</label><input class="input" id="membre-tel" placeholder="+225 07..."></div>' +

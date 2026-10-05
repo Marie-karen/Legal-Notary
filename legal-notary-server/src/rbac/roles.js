@@ -53,7 +53,7 @@ const ROLES = {
   },
   PREMIER_CLERC: {
     id: "premier_clerc",
-    label: "Premier Clerc",
+    label: "Principal",
     permissions: [
       "dossiers:creer",
       "dossiers:voir_tous",
@@ -86,7 +86,7 @@ const ROLES = {
   },
   CLERC_FORMALISTE: {
     id: "clerc_formaliste",
-    label: "Clerc aux Formalités",
+    label: "Formaliste",
     permissions: [
       "dossiers:voir_formalites", // dossiers en étape "Formalités DGI & Conservation Foncière" ou "Expéditions & clôture"
       "dossiers:modifier_formalites",
@@ -124,7 +124,7 @@ const ROLES = {
   },
   ARCHIVISTE: {
     id: "archiviste",
-    label: "Archiviste / Minutier",
+    label: "Archiviste / Service Archives",
     permissions: [
       "dossiers:voir_tous",
       "archives:acceder",
