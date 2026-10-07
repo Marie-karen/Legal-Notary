@@ -52,8 +52,16 @@ test("excelService — genererFichierExcelLiquidation remplit TEST.xlsx fidèlem
     titreNotaire: "Maître",
   };
 
-  const buffer = excelService.genererFichierExcelLiquidation(dossier, fiche, params, "TEST");
-  assert.ok(buffer && buffer.length > 0, "Le buffer Excel généré ne doit pas être vide");
+  const buffer = excelService.genererFichierExcelLiquidation(
+    dossier,
+    fiche,
+    params,
+    "TEST",
+  );
+  assert.ok(
+    buffer && buffer.length > 0,
+    "Le buffer Excel généré ne doit pas être vide",
+  );
 
   const wb = XLSX.read(buffer, { type: "buffer" });
   assert.ok(wb.SheetNames.includes("BASE"));

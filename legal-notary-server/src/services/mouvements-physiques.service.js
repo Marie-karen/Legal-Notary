@@ -24,7 +24,7 @@ const MOUVEMENTS_PHYS_MEMOIRE = [
     statut: "en_cours",
     est_en_retard: false,
     jours_retard: 0,
-  }
+  },
 ];
 
 async function enregistrerDemandeSortie({
@@ -39,28 +39,44 @@ async function enregistrerDemandeSortie({
   dateRetourPrevue,
   notes = "",
 }) {
-  const autoApprouve = (roleUtilisateur === "archiviste") || (roleUtilisateur === "assistante" || roleUtilisateur === "notaire" || roleUtilisateur === "premier_clerc");
+  const autoApprouve =
+    roleUtilisateur === "archiviste" ||
+    roleUtilisateur === "assistante" ||
+    roleUtilisateur === "notaire" ||
+    roleUtilisateur === "premier_clerc";
   const statutInitial = autoApprouve ? "en_cours" : "en_attente_approbation";
 
   try {
     return await avecTransaction(async (client) => {
       const { rows: minRows } = await client.query(
         "SELECT code_emplacement FROM minutes_archive WHERE dossier_id = $1",
-        [dossierId]
+        [dossierId],
       );
-      const emplacementOrigine = minRows.length && minRows[0].code_emplacement ? minRows[0].code_emplacement : "Carton d'archives principal";
+      const emplacementOrigine =
+        minRows.length && minRows[0].code_emplacement
+          ? minRows[0].code_emplacement
+          : "Carton d'archives principal";
       const { rows: mouv } = await client.query(
         `INSERT INTO mouvements_dossiers_physiques
          (etude_id, dossier_id, type_mouvement, utilisateur_id, nom_demandeur, motif, destination_bureau, emplacement_origine, emplacement_destination, date_sortie, date_retour_prevue, statut, notes, approuve_par_id, date_approbation)
          VALUES ($1, $2, 'sortie_consultation', $3, $4, $5, $6, $7, $8, COALESCE($9::date, CURRENT_DATE), $10, $11, $12, $13, $14)
          RETURNING *`,
         [
-          etudeId, dossierId, utilisateurId, nomDemandeur || "Collaborateur de l'étude",
-          motif || "Consultation pour instruction", destinationBureau || "Bureau Clerc",
-          emplacementOrigine, destinationBureau || "Bureau Clerc", dateSortie || null,
-          dateRetourPrevue || null, statutInitial, notes, autoApprouve ? utilisateurId : null,
+          etudeId,
+          dossierId,
+          utilisateurId,
+          nomDemandeur || "Collaborateur de l'étude",
+          motif || "Consultation pour instruction",
+          destinationBureau || "Bureau Clerc",
+          emplacementOrigine,
+          destinationBureau || "Bureau Clerc",
+          dateSortie || null,
+          dateRetourPrevue || null,
+          statutInitial,
+          notes,
+          autoApprouve ? utilisateurId : null,
           autoApprouve ? new Date() : null,
-        ]
+        ],
       );
       if (mouv && mouv.length) return mouv[0];
     });
@@ -79,7 +95,8 @@ async function enregistrerDemandeSortie({
     destination_bureau: destinationBureau || "Bureau Clerc",
     emplacement_origine: "Carton d'archives",
     date_mouvement: new Date().toISOString(),
-    date_retour_prevue: dateRetourPrevue || new Date(Date.now() + 7 * 86400000).toISOString(),
+    date_retour_prevue:
+      dateRetourPrevue || new Date(Date.now() + 7 * 86400000).toISOString(),
     statut: statutInitial,
     est_en_retard: false,
     jours_retard: 0,
@@ -95,13 +112,13 @@ async function approuverDemandeSortie({ mouvementId, utilisateurId }) {
         `UPDATE mouvements_dossiers_physiques
          SET statut = 'en_cours', approuve_par_id = $1, date_approbation = now()
          WHERE id = $2 RETURNING *`,
-        [utilisateurId, mouvementId]
+        [utilisateurId, mouvementId],
       );
       if (updated && updated.length) return updated[0];
     });
   } catch (_) {}
 
-  const m = MOUVEMENTS_PHYS_MEMOIRE.find(x => x.id === mouvementId);
+  const m = MOUVEMENTS_PHYS_MEMOIRE.find((x) => x.id === mouvementId);
   if (m) {
     m.statut = "en_cours";
     m.date_approbation = new Date().toISOString();
@@ -110,25 +127,42 @@ async function approuverDemandeSortie({ mouvementId, utilisateurId }) {
   return { id: mouvementId, statut: "en_cours" };
 }
 
-async function enregistrerRetourPhysique({ etudeId = "a0000000-0000-0000-0000-000000000001", mouvementId, dossierId, notes = "" }) {
+async function enregistrerRetourPhysique({
+  etudeId = "a0000000-0000-0000-0000-000000000001",
+  mouvementId,
+  dossierId,
+  notes = "",
+}) {
   try {
     return await avecTransaction(async (client) => {
       if (mouvementId) {
         await client.query(
           `UPDATE mouvements_dossiers_physiques SET statut = 'retourne', date_retour_effective = now() WHERE id = $1`,
-          [mouvementId]
+          [mouvementId],
         );
       }
-      return { statut: "retourne", dossierId, codeEmplacement: "Carton d'archives" };
+      return {
+        statut: "retourne",
+        dossierId,
+        codeEmplacement: "Carton d'archives",
+      };
     });
   } catch (_) {}
 
-  const m = MOUVEMENTS_PHYS_MEMOIRE.find(x => x.id === mouvementId || (dossierId && x.dossier_id === dossierId));
+  const m = MOUVEMENTS_PHYS_MEMOIRE.find(
+    (x) => x.id === mouvementId || (dossierId && x.dossier_id === dossierId),
+  );
   if (m) m.statut = "retourne";
-  return { statut: "retourne", dossierId, codeEmplacement: "Carton d'archives" };
+  return {
+    statut: "retourne",
+    dossierId,
+    codeEmplacement: "Carton d'archives",
+  };
 }
 
-async function listerMouvements(etudeId = "a0000000-0000-0000-0000-000000000001") {
+async function listerMouvements(
+  etudeId = "a0000000-0000-0000-0000-000000000001",
+) {
   try {
     const { rows } = await pool.query(
       `SELECT m.*, d.numero_dossier, d.type_acte_id,
@@ -149,7 +183,7 @@ async function listerMouvements(etudeId = "a0000000-0000-0000-0000-000000000001"
        WHERE m.etude_id = $1
        GROUP BY m.id, d.id, u.id, u_appr.id
        ORDER BY m.date_mouvement DESC LIMIT 150`,
-      [etudeId]
+      [etudeId],
     );
     if (rows && rows.length) return rows;
   } catch (_) {}
@@ -162,13 +196,16 @@ async function obtenirStatutPhysiqueDossier(dossierId) {
       `SELECT * FROM mouvements_dossiers_physiques
        WHERE dossier_id = $1 AND statut IN ('en_cours', 'en_attente_approbation')
        ORDER BY date_mouvement DESC LIMIT 1`,
-      [dossierId]
+      [dossierId],
     );
     if (mouvs && mouvs.length) {
       const m = mouvs[0];
       return {
         estDisponibleEnCarton: false,
-        statut: m.statut === "en_attente_approbation" ? "DEMANDE DE SORTIE EN ATTENTE" : "SORTI DES ARCHIVES",
+        statut:
+          m.statut === "en_attente_approbation"
+            ? "DEMANDE DE SORTIE EN ATTENTE"
+            : "SORTI DES ARCHIVES",
         statutTechnique: m.statut,
         sortiPar: m.nom_demandeur,
         dateSortie: m.date_sortie || m.date_mouvement,

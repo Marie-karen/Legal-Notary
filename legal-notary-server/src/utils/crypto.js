@@ -17,7 +17,10 @@ const ALGORITHME = "aes-256-gcm";
 const PREFIXE = "enc:v1:";
 
 function obtenirCle() {
-  const secret = process.env.CLE_CHIFFREMENT_NOTIFS || process.env.JWT_SECRET || "cle-secours-legal-notary-2026-ci-32b";
+  const secret =
+    process.env.CLE_CHIFFREMENT_NOTIFS ||
+    process.env.JWT_SECRET ||
+    "cle-secours-legal-notary-2026-ci-32b";
   return crypto.createHash("sha256").update(String(secret)).digest();
 }
 
@@ -53,7 +56,11 @@ function dechiffrer(chaine) {
     if (parties.length !== 3) return chaine;
 
     const [ivHex, tagHex, donneeHex] = parties;
-    const decipher = crypto.createDecipheriv(ALGORITHME, obtenirCle(), Buffer.from(ivHex, "hex"));
+    const decipher = crypto.createDecipheriv(
+      ALGORITHME,
+      obtenirCle(),
+      Buffer.from(ivHex, "hex"),
+    );
     decipher.setAuthTag(Buffer.from(tagHex, "hex"));
 
     let clair = decipher.update(donneeHex, "hex", "utf8");

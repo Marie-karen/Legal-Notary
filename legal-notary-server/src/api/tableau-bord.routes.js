@@ -18,10 +18,20 @@ router.get("/evolution/:utilisateurId", async (req, res, next) => {
     const estSoiMeme = req.params.utilisateurId === req.utilisateur.id;
     const aVueGlobale = porteeDossiers(req.utilisateur.role) === "tous";
     if (!estSoiMeme && !aVueGlobale) {
-      return res.status(403).json({ erreur: "Vous ne pouvez consulter que vos propres statistiques." });
+      return res
+        .status(403)
+        .json({
+          erreur: "Vous ne pouvez consulter que vos propres statistiques.",
+        });
     }
-    res.json(await tableauBordService.obtenirEvolutionUtilisateur(req.params.utilisateurId));
-  } catch (e) { next(e); }
+    res.json(
+      await tableauBordService.obtenirEvolutionUtilisateur(
+        req.params.utilisateurId,
+      ),
+    );
+  } catch (e) {
+    next(e);
+  }
 });
 
 module.exports = router;

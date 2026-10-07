@@ -13,8 +13,12 @@ const router = express.Router();
 
 router.get("/", async (req, res, next) => {
   try {
-    res.json(await dossiersService.listerClientsPourUtilisateur(req.utilisateur));
-  } catch (e) { next(e); }
+    res.json(
+      await dossiersService.listerClientsPourUtilisateur(req.utilisateur),
+    );
+  } catch (e) {
+    next(e);
+  }
 });
 
 module.exports = router;

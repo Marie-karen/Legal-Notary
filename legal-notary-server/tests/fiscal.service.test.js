@@ -69,18 +69,27 @@ test("émoluments — montant nul retombe sur le minimum légal (jamais 0, jamai
 });
 
 test("droit d'enregistrement — pourcentage (vente 4% sur 10M)", () => {
-  const r = fiscal.calculDroitEnregistrement(10000000, { mode: "pourcentage", valeur: 0.04 });
+  const r = fiscal.calculDroitEnregistrement(10000000, {
+    mode: "pourcentage",
+    valeur: 0.04,
+  });
   assert.equal(r.montant, 400000);
   assert.equal(r.confirme, true);
 });
 
 test("droit d'enregistrement — fixe confirmé (mainlevée d'hypothèque, exemple réel du cabinet : 18 000 FCFA)", () => {
-  const r = fiscal.calculDroitEnregistrement(999, { mode: "fixe", valeur: 18000 });
+  const r = fiscal.calculDroitEnregistrement(999, {
+    mode: "fixe",
+    valeur: 18000,
+  });
   assert.equal(r.montant, 18000);
 });
 
 test("droit d'enregistrement — non confirmé => 0, jamais un taux inventé (échec conservateur)", () => {
-  const r = fiscal.calculDroitEnregistrement(50000000, { mode: "a_confirmer", valeur: 0 });
+  const r = fiscal.calculDroitEnregistrement(50000000, {
+    mode: "a_confirmer",
+    valeur: 0,
+  });
   assert.equal(r.montant, 0);
   assert.equal(r.confirme, false);
 });
@@ -94,8 +103,13 @@ test("taxe foncière — 1,2% + 3 000 FCFA fixe, exemple réel du cabinet (mainl
 
 test("timbres/rôles — 500 FCFA par page, exemple réel du cabinet (minute 4 pages, 2 expéditions de 5 pages, bordereau)", () => {
   const r = fiscal.calculDocumentsPage(
-    { pagesMinute: 4, pagesExpedition: 5, nombreExpeditions: 2, pagesTroisiemeDocument: 1 },
-    500
+    {
+      pagesMinute: 4,
+      pagesExpedition: 5,
+      nombreExpeditions: 2,
+      pagesTroisiemeDocument: 1,
+    },
+    500,
   );
   assert.equal(r.minute, 2000); // 4 × 500
   assert.equal(r.expedition, 5000); // 5 × 2 × 500
@@ -115,17 +129,43 @@ test("fiche de taxe complète — cohérence des totaux (aucun flottant, total =
     droitEnregistrementValeur: 0.04,
     taxeFonciereApplicable: true,
   };
-  const fiche = fiscal.calculerFicheDeTaxe(typeActe, 50000000, PARAMETRES_DEFAUT, BAREME_VENTE, {
-    timbres: { pagesMinute: 4, pagesExpedition: 5, nombreExpeditions: 2, pagesBordereau: 1 },
-    roles: { pagesMinute: 4, pagesExpedition: 5, nombreExpeditions: 2, pagesCopie: 1 },
-    vacations: 0,
-    fraisFormalites: { depotBanque: 15000, depotEnregistrement: 15000, inscriptionLivreFoncier: 75000, requisitionEtat: 6000 },
-  });
+  const fiche = fiscal.calculerFicheDeTaxe(
+    typeActe,
+    50000000,
+    PARAMETRES_DEFAUT,
+    BAREME_VENTE,
+    {
+      timbres: {
+        pagesMinute: 4,
+        pagesExpedition: 5,
+        nombreExpeditions: 2,
+        pagesBordereau: 1,
+      },
+      roles: {
+        pagesMinute: 4,
+        pagesExpedition: 5,
+        nombreExpeditions: 2,
+        pagesCopie: 1,
+      },
+      vacations: 0,
+      fraisFormalites: {
+        depotBanque: 15000,
+        depotEnregistrement: 15000,
+        inscriptionLivreFoncier: 75000,
+        requisitionEtat: 6000,
+      },
+    },
+  );
 
-  assert.ok(Number.isInteger(fiche.totaux.general), "le total général doit être un entier (francs CFA)");
+  assert.ok(
+    Number.isInteger(fiche.totaux.general),
+    "le total général doit être un entier (francs CFA)",
+  );
   assert.equal(
     fiche.totaux.general,
-    fiche.totaux.droitsEtat + fiche.totaux.honoraires + fiche.totaux.formalitesEtDivers
+    fiche.totaux.droitsEtat +
+      fiche.totaux.honoraires +
+      fiche.totaux.formalitesEtDivers,
   );
 });
 
@@ -137,7 +177,13 @@ test("fiche de taxe — acte lié au crédit utilise le barème prêt du Décret
     droitEnregistrementValeur: 0.015,
     taxeFonciereApplicable: true,
   };
-  const fiche = fiscal.calculerFicheDeTaxe(typeActe, 10000000, PARAMETRES_DEFAUT, BAREME_PRET, {});
+  const fiche = fiscal.calculerFicheDeTaxe(
+    typeActe,
+    10000000,
+    PARAMETRES_DEFAUT,
+    BAREME_PRET,
+    {},
+  );
   assert.equal(fiche.emoluments.montantHT, 200000); // 10 000 000 × 2 % (1ère tranche prêt)
   assert.equal(fiche.droitEnregistrement.montant, 150000); // 10 000 000 × 1,5 %
 });

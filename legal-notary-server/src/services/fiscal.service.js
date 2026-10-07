@@ -26,9 +26,42 @@ function nombreEnLettresFCFA(montant) {
   const n = Math.floor(Math.abs(Number(montant) || 0));
   if (n === 0) return "ZÉRO FRANC CFA";
 
-  const unites = ["", "UN", "DEUX", "TROIS", "QUATRE", "CINQ", "SIX", "SEPT", "HUIT", "NEUF"];
-  const dix_dixneuf = ["DIX", "ONZE", "DOUZE", "TREIZE", "QUATORZE", "QUINZE", "SEIZE", "DIX-SEPT", "DIX-HUIT", "DIX-NEUF"];
-  const dizaines = ["", "DIX", "VINGT", "TRENTE", "QUARANTE", "CINQUANTE", "SOIXANTE", "SOIXANTE-DIX", "QUATRE-VINGT", "QUATRE-VINGT-DIX"];
+  const unites = [
+    "",
+    "UN",
+    "DEUX",
+    "TROIS",
+    "QUATRE",
+    "CINQ",
+    "SIX",
+    "SEPT",
+    "HUIT",
+    "NEUF",
+  ];
+  const dix_dixneuf = [
+    "DIX",
+    "ONZE",
+    "DOUZE",
+    "TREIZE",
+    "QUATORZE",
+    "QUINZE",
+    "SEIZE",
+    "DIX-SEPT",
+    "DIX-HUIT",
+    "DIX-NEUF",
+  ];
+  const dizaines = [
+    "",
+    "DIX",
+    "VINGT",
+    "TRENTE",
+    "QUARANTE",
+    "CINQUANTE",
+    "SOIXANTE",
+    "SOIXANTE-DIX",
+    "QUATRE-VINGT",
+    "QUATRE-VINGT-DIX",
+  ];
 
   function convertirCentaines(val) {
     let res = "";
@@ -109,7 +142,7 @@ function calculEmoluments(montant, tranches, minimumLegalMinute = 50000) {
   // Formules spéciales de la pratique d'Étude
   if (formuleSpeciale) {
     if (formuleSpeciale === "vente_usage") {
-      const mt = arrondi((montant * 0.01) + 400000);
+      const mt = arrondi(montant * 0.01 + 400000);
       return {
         montantHT: mt,
         detailTranches: [{ de: 0, a: montant, taux: 0.01, montant: mt }],
@@ -120,7 +153,7 @@ function calculEmoluments(montant, tranches, minimumLegalMinute = 50000) {
       };
     }
     if (formuleSpeciale === "promesse_vente_3_4") {
-      const baseCalc = (montant * 0.005) + 850000;
+      const baseCalc = montant * 0.005 + 850000;
       const mt = arrondi(baseCalc * 0.75);
       return {
         montantHT: mt,
@@ -132,7 +165,7 @@ function calculEmoluments(montant, tranches, minimumLegalMinute = 50000) {
       };
     }
     if (formuleSpeciale === "realisation_promesse_1_4") {
-      const baseCalc = (montant * 0.005) + 850000;
+      const baseCalc = montant * 0.005 + 850000;
       const mt = arrondi(baseCalc * 0.25);
       return {
         montantHT: mt,
@@ -144,7 +177,7 @@ function calculEmoluments(montant, tranches, minimumLegalMinute = 50000) {
       };
     }
     if (formuleSpeciale === "donation") {
-      const mt = arrondi((montant * 0.005) + 850000);
+      const mt = arrondi(montant * 0.005 + 850000);
       return {
         montantHT: mt,
         detailTranches: [{ de: 0, a: montant, taux: 0.005, montant: mt }],
@@ -171,26 +204,40 @@ function calculEmoluments(montant, tranches, minimumLegalMinute = 50000) {
   let total = 0;
   const detail = [];
   for (const tranche of tranches) {
-    const borneSup = tranche.jusqua === null ? montant : Math.min(tranche.jusqua, montant);
+    const borneSup =
+      tranche.jusqua === null ? montant : Math.min(tranche.jusqua, montant);
     const largeur = borneSup - borneInf;
     if (largeur > 0) {
       const partiel = largeur * tranche.taux;
       total += partiel;
-      detail.push({ de: borneInf, a: borneSup, taux: tranche.taux, montant: arrondi(partiel) });
+      detail.push({
+        de: borneInf,
+        a: borneSup,
+        taux: tranche.taux,
+        montant: arrondi(partiel),
+      });
     }
     borneInf = borneSup;
     if (borneInf >= montant) break;
   }
   total = arrondi(total);
   let minimumApplique = false;
-  let libelleRegle = baremeNom || "Barème proportionnel dégressif (Décret N° 2013-279)";
+  let libelleRegle =
+    baremeNom || "Barème proportionnel dégressif (Décret N° 2013-279)";
 
   if (minimumLegalMinute && total < minimumLegalMinute) {
     total = minimumLegalMinute;
     minimumApplique = true;
     libelleRegle = `Minimum légal de minute (${minimumLegalMinute} FCFA — Art. 19 Décret N° 2013-279)`;
   }
-  return { montantHT: total, detailTranches: detail, minimumApplique, baremeNom, baremeCode, libelleRegle };
+  return {
+    montantHT: total,
+    detailTranches: detail,
+    minimumApplique,
+    baremeNom,
+    baremeCode,
+    libelleRegle,
+  };
 }
 
 /**
@@ -198,24 +245,49 @@ function calculEmoluments(montant, tranches, minimumLegalMinute = 50000) {
  */
 function calculDroitEnregistrement(montant, regle) {
   if (!regle || regle.mode === "a_confirmer") {
-    return { montant: 0, confirme: false, mode: "a_confirmer", tauxPercent: 0, libelle: "À confirmer" };
+    return {
+      montant: 0,
+      confirme: false,
+      mode: "a_confirmer",
+      tauxPercent: 0,
+      libelle: "À confirmer",
+    };
   }
   if (regle.mode === "fixe") {
     const val = arrondi(regle.valeur);
-    return { montant: val, confirme: true, mode: "fixe", valeurFixe: val, tauxPercent: null, libelle: `Droit fixe (${val.toLocaleString("fr-FR")} FCFA)` };
+    return {
+      montant: val,
+      confirme: true,
+      mode: "fixe",
+      valeurFixe: val,
+      tauxPercent: null,
+      libelle: `Droit fixe (${val.toLocaleString("fr-FR")} FCFA)`,
+    };
   }
   const taux = Number(regle.valeur) || 0;
   const montantDroit = arrondi((montant || 0) * taux);
   const percent = Math.round(taux * 1000) / 10;
-  return { montant: montantDroit, confirme: true, mode: "pourcentage", tauxPercent: percent, libelle: `${percent} % (${montantDroit.toLocaleString("fr-FR")} FCFA)` };
+  return {
+    montant: montantDroit,
+    confirme: true,
+    mode: "pourcentage",
+    tauxPercent: percent,
+    libelle: `${percent} % (${montantDroit.toLocaleString("fr-FR")} FCFA)`,
+  };
 }
 
 /**
  * Taxe foncière de publicité foncière (1,2 % proportionnel + 3 000 FCFA fixe).
  */
 function calculTaxeFonciere(montant, parametresEtude = {}) {
-  const taux = parametresEtude.taxeFonciereTauxProportionnel !== undefined ? Number(parametresEtude.taxeFonciereTauxProportionnel) : 0.012;
-  const fixe = parametresEtude.taxeFonciereDroitFixe !== undefined ? Number(parametresEtude.taxeFonciereDroitFixe) : 3000;
+  const taux =
+    parametresEtude.taxeFonciereTauxProportionnel !== undefined
+      ? Number(parametresEtude.taxeFonciereTauxProportionnel)
+      : 0.012;
+  const fixe =
+    parametresEtude.taxeFonciereDroitFixe !== undefined
+      ? Number(parametresEtude.taxeFonciereDroitFixe)
+      : 3000;
   const proportionnel = arrondi((Number(montant) || 0) * taux);
   return { proportionnel, fixe, total: proportionnel + fixe };
 }
@@ -234,9 +306,16 @@ function calculDocumentsPage(quantites = {}, tarifParPage = 500) {
   const pagesTroisiemeDocument = Number(quantites.pagesTroisiemeDocument) || 0;
 
   const minute = arrondi(pagesMinute * tarifParPage);
-  const expedition = arrondi(pagesExpedition * nombreExpeditions * tarifParPage);
+  const expedition = arrondi(
+    pagesExpedition * nombreExpeditions * tarifParPage,
+  );
   const troisiemeDocument = arrondi(pagesTroisiemeDocument * tarifParPage);
-  return { minute, expedition, troisiemeDocument, total: minute + expedition + troisiemeDocument };
+  return {
+    minute,
+    expedition,
+    troisiemeDocument,
+    total: minute + expedition + troisiemeDocument,
+  };
 }
 
 function calculTVA(montantHT, tauxTVA = 0.18) {
@@ -248,53 +327,262 @@ function calculTVA(montantHT, tauxTVA = 0.18) {
  * S'adapte intelligemment à la nature de l'acte (Immobilier, Société, Prêt, Famille)
  */
 function obtenirCatalogueLignesStandard(typeActe = {}, montant = 0) {
-  const code = ((typeActe && (typeActe.id || typeActe.code || "")) || "").toLowerCase();
-  const libelle = ((typeActe && (typeActe.libelle || typeActe.nom || "")) || "").toLowerCase();
+  const code = (
+    (typeActe && (typeActe.id || typeActe.code || "")) ||
+    ""
+  ).toLowerCase();
+  const libelle = (
+    (typeActe && (typeActe.libelle || typeActe.nom || "")) ||
+    ""
+  ).toLowerCase();
 
-  const estSociete = code.includes("societe") || code.includes("sarl") || code.includes("sas") || code.includes("capital") || code.includes("parts") || libelle.includes("société") || libelle.includes("entreprise") || libelle.includes("capital");
-  const estFoncier = typeActe.taxeFonciereApplicable || code.includes("vente") || code.includes("donation") || code.includes("promesse") || code.includes("hypotheque") || code.includes("morcellement") || code.includes("terrain") || libelle.includes("vente") || libelle.includes("foncier") || libelle.includes("donation") || libelle.includes("hypothèque");
-  const estPret = code.includes("pret") || code.includes("dette") || code.includes("credit") || libelle.includes("prêt") || libelle.includes("reconnaissance");
-  const estSimple = code.includes("procuration") || code.includes("testament") || code.includes("certificat") || libelle.includes("procuration") || libelle.includes("testament");
+  const estSociete =
+    code.includes("societe") ||
+    code.includes("sarl") ||
+    code.includes("sas") ||
+    code.includes("capital") ||
+    code.includes("parts") ||
+    libelle.includes("société") ||
+    libelle.includes("entreprise") ||
+    libelle.includes("capital");
+  const estFoncier =
+    typeActe.taxeFonciereApplicable ||
+    code.includes("vente") ||
+    code.includes("donation") ||
+    code.includes("promesse") ||
+    code.includes("hypotheque") ||
+    code.includes("morcellement") ||
+    code.includes("terrain") ||
+    libelle.includes("vente") ||
+    libelle.includes("foncier") ||
+    libelle.includes("donation") ||
+    libelle.includes("hypothèque");
+  const estPret =
+    code.includes("pret") ||
+    code.includes("dette") ||
+    code.includes("credit") ||
+    libelle.includes("prêt") ||
+    libelle.includes("reconnaissance");
+  const estSimple =
+    code.includes("procuration") ||
+    code.includes("testament") ||
+    code.includes("certificat") ||
+    libelle.includes("procuration") ||
+    libelle.includes("testament");
 
   return [
     // ÉMOLUMENTS DE FORMALITÉS FONCIÈRES
-    { id: "emol_inscription_livre_foncier", code: "inscription_livre_foncier", categorie: "formalite", libelle: "Inscription au Livre Foncier", montantDefaut: 75000, actif: estFoncier && !estSimple },
-    { id: "emol_extrait_topographique", code: "extrait_topographique", categorie: "formalite", libelle: "Demande d'extrait topographique (Cadastre)", montantDefaut: 15000, actif: estFoncier && !estPret && !estSimple },
-    { id: "emol_requisition_fonciere", code: "requisition_fonciere", categorie: "formalite", libelle: "Réquisitions foncières", montantDefaut: 10000, actif: estFoncier && !estSimple },
-    { id: "emol_bordereau_enregistrement", code: "bordereau_enregistrement", categorie: "formalite", libelle: "Émoluments de bordereau d'enregistrement", montantDefaut: 1000, actif: true },
-    { id: "emol_taxe_fonciere_formalite", code: "taxe_fonciere_formalite", categorie: "formalite", libelle: "Émolument de la taxe foncière", montantDefaut: 75000, actif: estFoncier && !estSimple },
-    { id: "emol_etats_fonciers", code: "etats_fonciers", categorie: "formalite", libelle: "Demande d'états fonciers (Conservation)", montantDefaut: 30000, actif: estFoncier && !estSimple },
-    { id: "emol_situation_fiscale", code: "situation_fiscale", categorie: "formalite", libelle: "Demande d'attestation de situation fiscale", montantDefaut: 15000, actif: estFoncier && !estSimple },
-    { id: "emol_certificat_mutation", code: "certificat_mutation", categorie: "formalite", libelle: "Certificat de mutation foncière", montantDefaut: 75000, actif: false },
-    { id: "emol_certificat_localisation", code: "certificat_localisation", categorie: "formalite", libelle: "Émolument du certificat de localisation", montantDefaut: 15000, actif: false },
+    {
+      id: "emol_inscription_livre_foncier",
+      code: "inscription_livre_foncier",
+      categorie: "formalite",
+      libelle: "Inscription au Livre Foncier",
+      montantDefaut: 75000,
+      actif: estFoncier && !estSimple,
+    },
+    {
+      id: "emol_extrait_topographique",
+      code: "extrait_topographique",
+      categorie: "formalite",
+      libelle: "Demande d'extrait topographique (Cadastre)",
+      montantDefaut: 15000,
+      actif: estFoncier && !estPret && !estSimple,
+    },
+    {
+      id: "emol_requisition_fonciere",
+      code: "requisition_fonciere",
+      categorie: "formalite",
+      libelle: "Réquisitions foncières",
+      montantDefaut: 10000,
+      actif: estFoncier && !estSimple,
+    },
+    {
+      id: "emol_bordereau_enregistrement",
+      code: "bordereau_enregistrement",
+      categorie: "formalite",
+      libelle: "Émoluments de bordereau d'enregistrement",
+      montantDefaut: 1000,
+      actif: true,
+    },
+    {
+      id: "emol_taxe_fonciere_formalite",
+      code: "taxe_fonciere_formalite",
+      categorie: "formalite",
+      libelle: "Émolument de la taxe foncière",
+      montantDefaut: 75000,
+      actif: estFoncier && !estSimple,
+    },
+    {
+      id: "emol_etats_fonciers",
+      code: "etats_fonciers",
+      categorie: "formalite",
+      libelle: "Demande d'états fonciers (Conservation)",
+      montantDefaut: 30000,
+      actif: estFoncier && !estSimple,
+    },
+    {
+      id: "emol_situation_fiscale",
+      code: "situation_fiscale",
+      categorie: "formalite",
+      libelle: "Demande d'attestation de situation fiscale",
+      montantDefaut: 15000,
+      actif: estFoncier && !estSimple,
+    },
+    {
+      id: "emol_certificat_mutation",
+      code: "certificat_mutation",
+      categorie: "formalite",
+      libelle: "Certificat de mutation foncière",
+      montantDefaut: 75000,
+      actif: false,
+    },
+    {
+      id: "emol_certificat_localisation",
+      code: "certificat_localisation",
+      categorie: "formalite",
+      libelle: "Émolument du certificat de localisation",
+      montantDefaut: 15000,
+      actif: false,
+    },
 
     // FORMALITÉS SOCIÉTÉS & AFFAIRES
-    { id: "emol_depot_banque", code: "depot_banque", categorie: "formalite", libelle: "Dépôt à la banque", montantDefaut: 15000, actif: estSociete },
-    { id: "emol_depot_enregistrement", code: "depot_enregistrement", categorie: "formalite", libelle: "Dépôt à l'enregistrement", montantDefaut: 15000, actif: estSociete },
-    { id: "emol_modification_rccm", code: "modification_rccm", categorie: "formalite", libelle: "Immatriculation / Modification RCCM (Greffe)", montantDefaut: 15000, actif: estSociete },
-    { id: "emol_publication_legale", code: "publication_legale", categorie: "formalite", libelle: "Publication légale d'annonces (Journal d'annonces)", montantDefaut: 15000, actif: estSociete },
-    { id: "emol_declaration_beneficiaires", code: "declaration_beneficiaires", categorie: "formalite", libelle: "Déclaration des bénéficiaires effectifs", montantDefaut: 15000, actif: estSociete },
-    { id: "emol_bulletins_souscription", code: "bulletins_souscription", categorie: "formalite", libelle: "Bulletins de souscription", montantDefaut: 100000, actif: false },
+    {
+      id: "emol_depot_banque",
+      code: "depot_banque",
+      categorie: "formalite",
+      libelle: "Dépôt à la banque",
+      montantDefaut: 15000,
+      actif: estSociete,
+    },
+    {
+      id: "emol_depot_enregistrement",
+      code: "depot_enregistrement",
+      categorie: "formalite",
+      libelle: "Dépôt à l'enregistrement",
+      montantDefaut: 15000,
+      actif: estSociete,
+    },
+    {
+      id: "emol_modification_rccm",
+      code: "modification_rccm",
+      categorie: "formalite",
+      libelle: "Immatriculation / Modification RCCM (Greffe)",
+      montantDefaut: 15000,
+      actif: estSociete,
+    },
+    {
+      id: "emol_publication_legale",
+      code: "publication_legale",
+      categorie: "formalite",
+      libelle: "Publication légale d'annonces (Journal d'annonces)",
+      montantDefaut: 15000,
+      actif: estSociete,
+    },
+    {
+      id: "emol_declaration_beneficiaires",
+      code: "declaration_beneficiaires",
+      categorie: "formalite",
+      libelle: "Déclaration des bénéficiaires effectifs",
+      montantDefaut: 15000,
+      actif: estSociete,
+    },
+    {
+      id: "emol_bulletins_souscription",
+      code: "bulletins_souscription",
+      categorie: "formalite",
+      libelle: "Bulletins de souscription",
+      montantDefaut: 100000,
+      actif: false,
+    },
 
     // VACATIONS, DÉPLACEMENTS ET ART. 135
-    { id: "emol_vacations", code: "vacations", categorie: "vacation", libelle: "Vacations du Notaire (Signature / Clôture)", montantDefaut: 150000, actif: false },
-    { id: "emol_transport", code: "transport", categorie: "deplacement", libelle: "Frais de transport aller/retour", montantDefaut: 81000, actif: false },
-    { id: "emol_deplacement_sejour", code: "deplacement_sejour", categorie: "deplacement", libelle: "Frais de déplacement et de séjour", montantDefaut: 40000, actif: false },
-    { id: "emol_art_135", code: "art_135", categorie: "art135", libelle: "Honoraires de conseil & diligence (Art. 135)", montantDefaut: 20000, actif: !estSimple },
-    { id: "emol_divers_papeterie", code: "divers_papeterie", categorie: "divers", libelle: "Frais de correspondance, affranchissement et papeterie", montantDefaut: 20000, actif: true },
+    {
+      id: "emol_vacations",
+      code: "vacations",
+      categorie: "vacation",
+      libelle: "Vacations du Notaire (Signature / Clôture)",
+      montantDefaut: 150000,
+      actif: false,
+    },
+    {
+      id: "emol_transport",
+      code: "transport",
+      categorie: "deplacement",
+      libelle: "Frais de transport aller/retour",
+      montantDefaut: 81000,
+      actif: false,
+    },
+    {
+      id: "emol_deplacement_sejour",
+      code: "deplacement_sejour",
+      categorie: "deplacement",
+      libelle: "Frais de déplacement et de séjour",
+      montantDefaut: 40000,
+      actif: false,
+    },
+    {
+      id: "emol_art_135",
+      code: "art_135",
+      categorie: "art135",
+      libelle: "Honoraires de conseil & diligence (Art. 135)",
+      montantDefaut: 20000,
+      actif: !estSimple,
+    },
+    {
+      id: "emol_divers_papeterie",
+      code: "divers_papeterie",
+      categorie: "divers",
+      libelle: "Frais de correspondance, affranchissement et papeterie",
+      montantDefaut: 20000,
+      actif: true,
+    },
 
     // DÉBOURS TIERS
-    { id: "debours_dossier_technique", code: "debours_dossier_technique", categorie: "debours", libelle: "Dossier technique / Morcellement géomètre", montantDefaut: 150000, actif: false },
-    { id: "debours_certificat_localisation", code: "debours_certificat_localisation", categorie: "debours", libelle: "Certificat de localisation (Frais réels)", montantDefaut: 250000, actif: false },
-    { id: "debours_registres_tribunal", code: "debours_registres_tribunal", categorie: "debours", libelle: "Registres légaux & Paraphe Tribunal de Commerce", montantDefaut: 470000, actif: estSociete && montant > 10000000 },
-    { id: "debours_divers_formalites", code: "debours_divers_formalites", categorie: "debours", libelle: "Débours divers de formalités", montantDefaut: 100000, actif: false },
+    {
+      id: "debours_dossier_technique",
+      code: "debours_dossier_technique",
+      categorie: "debours",
+      libelle: "Dossier technique / Morcellement géomètre",
+      montantDefaut: 150000,
+      actif: false,
+    },
+    {
+      id: "debours_certificat_localisation",
+      code: "debours_certificat_localisation",
+      categorie: "debours",
+      libelle: "Certificat de localisation (Frais réels)",
+      montantDefaut: 250000,
+      actif: false,
+    },
+    {
+      id: "debours_registres_tribunal",
+      code: "debours_registres_tribunal",
+      categorie: "debours",
+      libelle: "Registres légaux & Paraphe Tribunal de Commerce",
+      montantDefaut: 470000,
+      actif: estSociete && montant > 10000000,
+    },
+    {
+      id: "debours_divers_formalites",
+      code: "debours_divers_formalites",
+      categorie: "debours",
+      libelle: "Débours divers de formalités",
+      montantDefaut: 100000,
+      actif: false,
+    },
   ];
 }
 
 /**
  * Moteur de calcul complet de la Fiche de Taxe, de la Note de Frais et de la Facture Normalisée.
  */
-function calculerFicheDeTaxe(typeActe, montant, parametresEtude = {}, tranchesBareme = [], saisies = {}) {
+function calculerFicheDeTaxe(
+  typeActe,
+  montant,
+  parametresEtude = {},
+  tranchesBareme = [],
+  saisies = {},
+) {
   montant = Number(montant) || 0;
   saisies = saisies || {};
   parametresEtude = {
@@ -309,12 +597,19 @@ function calculerFicheDeTaxe(typeActe, montant, parametresEtude = {}, tranchesBa
   };
 
   // 1. Émolument proportionnel d'acte
-  const emolumentsProportionnels = calculEmoluments(montant, tranchesBareme, parametresEtude.minimumLegalMinute);
+  const emolumentsProportionnels = calculEmoluments(
+    montant,
+    tranchesBareme,
+    parametresEtude.minimumLegalMinute,
+  );
 
   // 2. Droits d'Enregistrement DGI
   const droitEnregistrement = calculDroitEnregistrement(montant, {
     mode: typeActe.droitEnregistrementMode || "pourcentage",
-    valeur: typeActe.droitEnregistrementValeur !== undefined ? typeActe.droitEnregistrementValeur : 0.04,
+    valeur:
+      typeActe.droitEnregistrementValeur !== undefined
+        ? typeActe.droitEnregistrementValeur
+        : 0.04,
   });
 
   // 3. Taxe Foncière (Livre Foncier)
@@ -329,9 +624,14 @@ function calculerFicheDeTaxe(typeActe, montant, parametresEtude = {}, tranchesBa
       pagesMinute: qteTimbres.pagesMinute,
       pagesExpedition: qteTimbres.pagesExpedition,
       nombreExpeditions: qteTimbres.nombreExpeditions,
-      pagesTroisiemeDocument: qteTimbres.pagesBordereau !== undefined ? qteTimbres.pagesBordereau : (qteTimbres.pagesTroisiemeDocument !== undefined ? qteTimbres.pagesTroisiemeDocument : 0),
+      pagesTroisiemeDocument:
+        qteTimbres.pagesBordereau !== undefined
+          ? qteTimbres.pagesBordereau
+          : qteTimbres.pagesTroisiemeDocument !== undefined
+            ? qteTimbres.pagesTroisiemeDocument
+            : 0,
     },
-    parametresEtude.tarifPageTimbre
+    parametresEtude.tarifPageTimbre,
   );
 
   // 5. Émoluments de Rôles (Invariables : 500 F / page)
@@ -341,9 +641,14 @@ function calculerFicheDeTaxe(typeActe, montant, parametresEtude = {}, tranchesBa
       pagesMinute: qteRoles.pagesMinute,
       pagesExpedition: qteRoles.pagesExpedition,
       nombreExpeditions: qteRoles.nombreExpeditions,
-      pagesTroisiemeDocument: qteRoles.pagesCopie !== undefined ? qteRoles.pagesCopie : (qteRoles.pagesTroisiemeDocument !== undefined ? qteRoles.pagesTroisiemeDocument : 0),
+      pagesTroisiemeDocument:
+        qteRoles.pagesCopie !== undefined
+          ? qteRoles.pagesCopie
+          : qteRoles.pagesTroisiemeDocument !== undefined
+            ? qteRoles.pagesTroisiemeDocument
+            : 0,
     },
-    parametresEtude.tarifPageRole
+    parametresEtude.tarifPageRole,
   );
 
   // 6. Vacations et Frais de formalités
@@ -356,18 +661,23 @@ function calculerFicheDeTaxe(typeActe, montant, parametresEtude = {}, tranchesBa
     requisitionEtat: arrondi(ff.requisitionEtat || 0),
   };
   const totalFraisFormalites =
-    fraisFormalites.depotBanque + fraisFormalites.depotEnregistrement +
-    fraisFormalites.inscriptionLivreFoncier + fraisFormalites.requisitionEtat;
+    fraisFormalites.depotBanque +
+    fraisFormalites.depotEnregistrement +
+    fraisFormalites.inscriptionLivreFoncier +
+    fraisFormalites.requisitionEtat;
 
-  const divers = parametresEtude.forfaitDivers + arrondi(saisies.diversSupplementaire || 0);
+  const divers =
+    parametresEtude.forfaitDivers + arrondi(saisies.diversSupplementaire || 0);
 
   const honorairesHT = emolumentsProportionnels.montantHT + vacations;
   const tva = calculTVA(honorairesHT, parametresEtude.tauxTVA);
 
-  const totalDroitsEtat = droitEnregistrement.montant + taxeFonciere.total + timbres.total;
+  const totalDroitsEtat =
+    droitEnregistrement.montant + taxeFonciere.total + timbres.total;
   const totalHonoraires = honorairesHT + tva + roles.total;
   const totalFormalitesEtDivers = totalFraisFormalites + divers;
-  const totalGeneral = totalDroitsEtat + totalHonoraires + totalFormalitesEtDivers;
+  const totalGeneral =
+    totalDroitsEtat + totalHonoraires + totalFormalitesEtDivers;
   const totalGeneralEnLettres = nombreEnLettresFCFA(totalGeneral);
 
   // 7. Lignes détaillées d'émoluments (Chiffre d'Affaires de l'Étude)
@@ -418,22 +728,58 @@ function calculerFicheDeTaxe(typeActe, montant, parametresEtude = {}, tranchesBa
 
   // Ajout des formalités actives
   if (fraisFormalites.inscriptionLivreFoncier > 0) {
-    lignesEmolumentsDetaillees.push({ code: "inscription_livre_foncier", categorie: "formalite", libelle: "Inscription au Livre Foncier", montant: fraisFormalites.inscriptionLivreFoncier, actif: true });
+    lignesEmolumentsDetaillees.push({
+      code: "inscription_livre_foncier",
+      categorie: "formalite",
+      libelle: "Inscription au Livre Foncier",
+      montant: fraisFormalites.inscriptionLivreFoncier,
+      actif: true,
+    });
   }
   if (fraisFormalites.requisitionEtat > 0) {
-    lignesEmolumentsDetaillees.push({ code: "requisition_fonciere", categorie: "formalite", libelle: "Réquisitions foncières", montant: fraisFormalites.requisitionEtat, actif: true });
+    lignesEmolumentsDetaillees.push({
+      code: "requisition_fonciere",
+      categorie: "formalite",
+      libelle: "Réquisitions foncières",
+      montant: fraisFormalites.requisitionEtat,
+      actif: true,
+    });
   }
   if (fraisFormalites.depotBanque > 0) {
-    lignesEmolumentsDetaillees.push({ code: "depot_banque", categorie: "formalite", libelle: "Dépôt à la banque", montant: fraisFormalites.depotBanque, actif: true });
+    lignesEmolumentsDetaillees.push({
+      code: "depot_banque",
+      categorie: "formalite",
+      libelle: "Dépôt à la banque",
+      montant: fraisFormalites.depotBanque,
+      actif: true,
+    });
   }
   if (fraisFormalites.depotEnregistrement > 0) {
-    lignesEmolumentsDetaillees.push({ code: "depot_enregistrement", categorie: "formalite", libelle: "Dépôt à l'enregistrement", montant: fraisFormalites.depotEnregistrement, actif: true });
+    lignesEmolumentsDetaillees.push({
+      code: "depot_enregistrement",
+      categorie: "formalite",
+      libelle: "Dépôt à l'enregistrement",
+      montant: fraisFormalites.depotEnregistrement,
+      actif: true,
+    });
   }
   if (vacations > 0) {
-    lignesEmolumentsDetaillees.push({ code: "vacations", categorie: "vacation", libelle: "Vacations du Notaire", montant: vacations, actif: true });
+    lignesEmolumentsDetaillees.push({
+      code: "vacations",
+      categorie: "vacation",
+      libelle: "Vacations du Notaire",
+      montant: vacations,
+      actif: true,
+    });
   }
   if (divers > 0) {
-    lignesEmolumentsDetaillees.push({ code: "divers_papeterie", categorie: "divers", libelle: "Frais de correspondance et papeterie", montant: divers, actif: true });
+    lignesEmolumentsDetaillees.push({
+      code: "divers_papeterie",
+      categorie: "divers",
+      libelle: "Frais de correspondance et papeterie",
+      montant: divers,
+      actif: true,
+    });
   }
 
   // Traitement des lignes additionnelles personnalisées
@@ -452,16 +798,47 @@ function calculerFicheDeTaxe(typeActe, montant, parametresEtude = {}, tranchesBa
 
   // Lignes Trésor et Débours détaillées
   const lignesTresor = [];
-  if (timbres.minute > 0) lignesTresor.push({ code: "timbres_minute", libelle: `Timbres fiscaux — Minute (${qteTimbres.pagesMinute || 0} pages × 500 F)`, montant: timbres.minute });
-  if (timbres.expedition > 0) lignesTresor.push({ code: "timbres_expedition", libelle: `Timbres fiscaux — Expéditions (${qteTimbres.nombreExpeditions || 0} exp. × ${qteTimbres.pagesExpedition || 0} p. × 500 F)`, montant: timbres.expedition });
-  if (timbres.troisiemeDocument > 0) lignesTresor.push({ code: "timbres_bordereau", libelle: `Timbres fiscaux — Bordereau (${qteTimbres.pagesBordereau || 0} p. × 500 F)`, montant: timbres.troisiemeDocument });
-  if (droitEnregistrement.montant > 0) lignesTresor.push({ code: "droit_enregistrement", libelle: `Droits d'enregistrement DGI (${typeActe.droitEnregistrementMode === "fixe" ? "Droit fixe" : (typeActe.droitEnregistrementValeur * 100) + " %"})`, montant: droitEnregistrement.montant });
-  if (taxeFonciere.total > 0) lignesTresor.push({ code: "taxe_fonciere", libelle: `Taxe de publicité foncière (1,2 % + 3 000 FCFA)`, montant: taxeFonciere.total });
+  if (timbres.minute > 0)
+    lignesTresor.push({
+      code: "timbres_minute",
+      libelle: `Timbres fiscaux — Minute (${qteTimbres.pagesMinute || 0} pages × 500 F)`,
+      montant: timbres.minute,
+    });
+  if (timbres.expedition > 0)
+    lignesTresor.push({
+      code: "timbres_expedition",
+      libelle: `Timbres fiscaux — Expéditions (${qteTimbres.nombreExpeditions || 0} exp. × ${qteTimbres.pagesExpedition || 0} p. × 500 F)`,
+      montant: timbres.expedition,
+    });
+  if (timbres.troisiemeDocument > 0)
+    lignesTresor.push({
+      code: "timbres_bordereau",
+      libelle: `Timbres fiscaux — Bordereau (${qteTimbres.pagesBordereau || 0} p. × 500 F)`,
+      montant: timbres.troisiemeDocument,
+    });
+  if (droitEnregistrement.montant > 0)
+    lignesTresor.push({
+      code: "droit_enregistrement",
+      libelle: `Droits d'enregistrement DGI (${typeActe.droitEnregistrementMode === "fixe" ? "Droit fixe" : typeActe.droitEnregistrementValeur * 100 + " %"})`,
+      montant: droitEnregistrement.montant,
+    });
+  if (taxeFonciere.total > 0)
+    lignesTresor.push({
+      code: "taxe_fonciere",
+      libelle: `Taxe de publicité foncière (1,2 % + 3 000 FCFA)`,
+      montant: taxeFonciere.total,
+    });
 
   const lignesDebours = [];
-  saisiesLignes.filter(s => s.categorie === "debours" && s.actif).forEach(s => {
-    lignesDebours.push({ code: s.code, libelle: s.libelle || "Frais débours tiers", montant: arrondi(s.montant) });
-  });
+  saisiesLignes
+    .filter((s) => s.categorie === "debours" && s.actif)
+    .forEach((s) => {
+      lignesDebours.push({
+        code: s.code,
+        libelle: s.libelle || "Frais débours tiers",
+        montant: arrondi(s.montant),
+      });
+    });
 
   const totalDeboursCalc = lignesDebours.reduce((acc, d) => acc + d.montant, 0);
 
@@ -471,7 +848,12 @@ function calculerFicheDeTaxe(typeActe, montant, parametresEtude = {}, tranchesBa
     emoluments: {
       ...emolumentsProportionnels,
       lignesDetaillees: lignesEmolumentsDetaillees,
-      totalEmolumentsHT: emolumentsProportionnels.montantHT + vacations + totalFraisFormalites + roles.total + divers,
+      totalEmolumentsHT:
+        emolumentsProportionnels.montantHT +
+        vacations +
+        totalFraisFormalites +
+        roles.total +
+        divers,
     },
     droitEnregistrement,
     taxeFonciere,
@@ -492,8 +874,21 @@ function calculerFicheDeTaxe(typeActe, montant, parametresEtude = {}, tranchesBa
       formalitesEtDivers: totalFormalitesEtDivers,
       general: totalGeneral + totalDeboursCalc,
       generalEnLettres: nombreEnLettresFCFA(totalGeneral + totalDeboursCalc),
-      emolumentsHT: emolumentsProportionnels.montantHT + vacations + totalFraisFormalites + roles.total + divers,
-      factureNormaliseeTTC: totalDroitsEtat + totalDeboursCalc + (emolumentsProportionnels.montantHT + vacations + totalFraisFormalites + roles.total + divers) + tva,
+      emolumentsHT:
+        emolumentsProportionnels.montantHT +
+        vacations +
+        totalFraisFormalites +
+        roles.total +
+        divers,
+      factureNormaliseeTTC:
+        totalDroitsEtat +
+        totalDeboursCalc +
+        (emolumentsProportionnels.montantHT +
+          vacations +
+          totalFraisFormalites +
+          roles.total +
+          divers) +
+        tva,
     },
   };
 }

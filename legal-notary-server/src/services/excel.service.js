@@ -10,7 +10,10 @@ const path = require("path");
 const XLSX = require("xlsx");
 
 const DOSSIER_MODELES_DEFAUT = path.resolve(__dirname, "../../../");
-const DOSSIER_MODELES_PERSO = path.resolve(__dirname, "../../data/modeles_excel");
+const DOSSIER_MODELES_PERSO = path.resolve(
+  __dirname,
+  "../../data/modeles_excel",
+);
 
 // S'assurer que le dossier des modèles personnalisés existe
 if (!fs.existsSync(DOSSIER_MODELES_PERSO)) {
@@ -25,15 +28,52 @@ function listerModelesExcel() {
 
   // Modèles racine
   const fichiersRacine = [
-    { id: "TEST", nom: "Modèle Standard Officiel (TEST.xlsx - 4 Feuilles)", fichier: "TEST.xlsx", parDefaut: true },
-    { id: "TP_VENTE_ACQUEREUR", nom: "Vente Immobilière — Côté Acquéreur (TP VENTE ACQUEREUR.xlsx)", fichier: "TP VENTE  (ACQUEREUR).xlsx" },
-    { id: "TP_VENTE_VENDEUR", nom: "Vente Immobilière — Côté Vendeur (TP VENTE VENDEUR.xlsx)", fichier: "TP VENTE  (VENDEUR).xlsx" },
-    { id: "TP_PROMESSE_VENTE", nom: "Promesse de Vente (TP PROMESSE DE VENTE.xlsx)", fichier: "TP PROMESSE DE VENTE   (ACQUEREUR).xlsx" },
-    { id: "TP_REALISATION_PROMESSE", nom: "Réalisation de Promesse (TP REALISATION PROMESSE.xlsx)", fichier: "TP DE REALISATION DE LA PROMESSE DE VENTE.xlsx" },
-    { id: "TP_DONATION", nom: "Donation Entre Vifs (TP DE DONATION.xlsx)", fichier: "TP DE DONATION.xlsx" },
-    { id: "TP_CONSTITUTION_SARL", nom: "Constitution SARL (TP CONSTITUTION D'UNE SARL.xlsx)", fichier: "TP CONSTITUTION D'UNE SARL  AU CAPITAL DE 1 000 000 FCFA.xlsx" },
-    { id: "TP_AUGMENTATION_CAPITAL", nom: "Augmentation de Capital (TP AUGMENTATION DE CAPITAL.xlsx)", fichier: "TP AUGMENTATION DE CAPITAL.xlsx" },
-    { id: "TP_PROCURATION", nom: "Procuration Notariée (TP PROCURATION.xlsx)", fichier: "TP PROCURATION.xlsx" },
+    {
+      id: "TEST",
+      nom: "Modèle Standard Officiel (TEST.xlsx - 4 Feuilles)",
+      fichier: "TEST.xlsx",
+      parDefaut: true,
+    },
+    {
+      id: "TP_VENTE_ACQUEREUR",
+      nom: "Vente Immobilière — Côté Acquéreur (TP VENTE ACQUEREUR.xlsx)",
+      fichier: "TP VENTE  (ACQUEREUR).xlsx",
+    },
+    {
+      id: "TP_VENTE_VENDEUR",
+      nom: "Vente Immobilière — Côté Vendeur (TP VENTE VENDEUR.xlsx)",
+      fichier: "TP VENTE  (VENDEUR).xlsx",
+    },
+    {
+      id: "TP_PROMESSE_VENTE",
+      nom: "Promesse de Vente (TP PROMESSE DE VENTE.xlsx)",
+      fichier: "TP PROMESSE DE VENTE   (ACQUEREUR).xlsx",
+    },
+    {
+      id: "TP_REALISATION_PROMESSE",
+      nom: "Réalisation de Promesse (TP REALISATION PROMESSE.xlsx)",
+      fichier: "TP DE REALISATION DE LA PROMESSE DE VENTE.xlsx",
+    },
+    {
+      id: "TP_DONATION",
+      nom: "Donation Entre Vifs (TP DE DONATION.xlsx)",
+      fichier: "TP DE DONATION.xlsx",
+    },
+    {
+      id: "TP_CONSTITUTION_SARL",
+      nom: "Constitution SARL (TP CONSTITUTION D'UNE SARL.xlsx)",
+      fichier: "TP CONSTITUTION D'UNE SARL  AU CAPITAL DE 1 000 000 FCFA.xlsx",
+    },
+    {
+      id: "TP_AUGMENTATION_CAPITAL",
+      nom: "Augmentation de Capital (TP AUGMENTATION DE CAPITAL.xlsx)",
+      fichier: "TP AUGMENTATION DE CAPITAL.xlsx",
+    },
+    {
+      id: "TP_PROCURATION",
+      nom: "Procuration Notariée (TP PROCURATION.xlsx)",
+      fichier: "TP PROCURATION.xlsx",
+    },
   ];
 
   for (const m of fichiersRacine) {
@@ -75,22 +115,35 @@ function listerModelesExcel() {
  * Résout le chemin absolu d'un modèle Excel donné
  */
 function obtenirCheminModele(modeleIdOuFichier) {
-  if (!modeleIdOuFichier || modeleIdOuFichier === "TEST" || modeleIdOuFichier === "default") {
+  if (
+    !modeleIdOuFichier ||
+    modeleIdOuFichier === "TEST" ||
+    modeleIdOuFichier === "default"
+  ) {
     return path.join(DOSSIER_MODELES_DEFAUT, "TEST.xlsx");
   }
 
   // Vérifier dans les modèles personnalisés
-  const cheminPerso = path.join(DOSSIER_MODELES_PERSO, String(modeleIdOuFichier).replace(/^perso_/, ""));
+  const cheminPerso = path.join(
+    DOSSIER_MODELES_PERSO,
+    String(modeleIdOuFichier).replace(/^perso_/, ""),
+  );
   if (fs.existsSync(cheminPerso)) return cheminPerso;
 
   // Vérifier dans les modèles de base
-  const cheminRacine = path.join(DOSSIER_MODELES_DEFAUT, String(modeleIdOuFichier));
+  const cheminRacine = path.join(
+    DOSSIER_MODELES_DEFAUT,
+    String(modeleIdOuFichier),
+  );
   if (fs.existsSync(cheminRacine)) return cheminRacine;
 
   const liste = listerModelesExcel();
-  const trouve = liste.find((m) => m.id === modeleIdOuFichier || m.fichier === modeleIdOuFichier);
+  const trouve = liste.find(
+    (m) => m.id === modeleIdOuFichier || m.fichier === modeleIdOuFichier,
+  );
   if (trouve) {
-    if (trouve.type === "personnalise") return path.join(DOSSIER_MODELES_PERSO, trouve.fichier);
+    if (trouve.type === "personnalise")
+      return path.join(DOSSIER_MODELES_PERSO, trouve.fichier);
     return path.join(DOSSIER_MODELES_DEFAUT, trouve.fichier);
   }
 
@@ -103,9 +156,11 @@ function obtenirCheminModele(modeleIdOuFichier) {
  */
 function genererFichierExcelLiquidation(dossier, fiche, parametres, modeleId) {
   const cheminModele = obtenirCheminModele(modeleId);
-  
+
   if (!fs.existsSync(cheminModele)) {
-    throw new Error(`Modèle Excel introuvable à l'emplacement : ${cheminModele}`);
+    throw new Error(
+      `Modèle Excel introuvable à l'emplacement : ${cheminModele}`,
+    );
   }
 
   const wb = XLSX.readFile(cheminModele, {
@@ -116,9 +171,15 @@ function genererFichierExcelLiquidation(dossier, fiche, parametres, modeleId) {
   });
 
   const baseSheet = wb.Sheets["BASE"];
-  const montantAssiette = Number(dossier.montantAssiette || dossier.montant_assiette) || 0;
-  const clientNom = dossier.comparantsNoms || dossier.clientNom || dossier.client_nom || "CLIENT DU DOSSIER";
-  const numDossier = dossier.numeroDossier || dossier.numero_dossier || "DOSSIER";
+  const montantAssiette =
+    Number(dossier.montantAssiette || dossier.montant_assiette) || 0;
+  const clientNom =
+    dossier.comparantsNoms ||
+    dossier.clientNom ||
+    dossier.client_nom ||
+    "CLIENT DU DOSSIER";
+  const numDossier =
+    dossier.numeroDossier || dossier.numero_dossier || "DOSSIER";
   const dateJour = new Date().toLocaleDateString("fr-CI");
 
   const emo = fiche.emoluments || {};
@@ -128,7 +189,7 @@ function genererFichierExcelLiquidation(dossier, fiche, parametres, modeleId) {
 
   const pagesMin = Number(timbres.pagesMinute) || 4;
   const nbExp = Number(timbres.nombreExpeditions) || 2;
-  const pagesExp = Number(timbres.pagesExpedition) || (pagesMin + 1);
+  const pagesExp = Number(timbres.pagesExpedition) || pagesMin + 1;
 
   // 1. Remplissage de la feuille 'BASE' si elle existe (Architecture type TEST.xlsx)
   if (baseSheet) {
@@ -144,24 +205,36 @@ function genererFichierExcelLiquidation(dossier, fiche, parametres, modeleId) {
     // Comparants / Désignation
     baseSheet["F9"] = { t: "s", v: clientNom };
     // Nature de l'acte
-    baseSheet["F10"] = { t: "s", v: (dossier.typeActeLibelle || dossier.type_acte_libelle || "ACTE NOTARIÉ").toUpperCase() };
+    baseSheet["F10"] = {
+      t: "s",
+      v: (
+        dossier.typeActeLibelle ||
+        dossier.type_acte_libelle ||
+        "ACTE NOTARIÉ"
+      ).toUpperCase(),
+    };
     // Date
     baseSheet["F11"] = { t: "s", v: dateJour };
 
     // Droits fixes Enregistrement
-    const ligneDGI = (fiche.lignesTresor || []).find((t) => t.code === "dgi_fixe" || t.code === "enregistrement_dgi");
+    const ligneDGI = (fiche.lignesTresor || []).find(
+      (t) => t.code === "dgi_fixe" || t.code === "enregistrement_dgi",
+    );
     if (ligneDGI && baseSheet["C13"]) {
       baseSheet["C13"] = { t: "n", v: ligneDGI.montant };
     }
 
     // Droits fixes taxe foncière
-    const ligneFoncierFixe = (fiche.lignesTresor || []).find((t) => t.code === "taxe_fonciere_fixe");
+    const ligneFoncierFixe = (fiche.lignesTresor || []).find(
+      (t) => t.code === "taxe_fonciere_fixe",
+    );
     if (ligneFoncierFixe && baseSheet["C14"]) {
       baseSheet["C14"] = { t: "n", v: ligneFoncierFixe.montant };
     }
 
     // Émoluments proportionnels
-    const montantEmolHT = totaux.emolumentsHT || emo.montantHT || emo.totalEmolumentsHT || 0;
+    const montantEmolHT =
+      totaux.emolumentsHT || emo.montantHT || emo.totalEmolumentsHT || 0;
     if (baseSheet["C20"]) {
       baseSheet["C20"] = { t: "n", v: montantEmolHT };
     }
@@ -175,7 +248,11 @@ function genererFichierExcelLiquidation(dossier, fiche, parametres, modeleId) {
 
     // Mise à jour de l'en-tête de l'étude
     if (parametres && parametres.nomNotaire) {
-      if (taxSheet["B1"]) taxSheet["B1"] = { t: "s", v: `${parametres.titreNotaire || "Maître"} ${parametres.nomNotaire}` };
+      if (taxSheet["B1"])
+        taxSheet["B1"] = {
+          t: "s",
+          v: `${parametres.titreNotaire || "Maître"} ${parametres.nomNotaire}`,
+        };
     }
   }
 
@@ -185,9 +262,15 @@ function genererFichierExcelLiquidation(dossier, fiche, parametres, modeleId) {
     if (parametres && parametres.nomEtude && noteSheet["A1"]) {
       noteSheet["A1"] = { t: "s", v: parametres.nomEtude };
     }
-    if (noteSheet["A12"]) noteSheet["A12"] = { t: "s", v: `Identité du client : ${clientNom}` };
-    if (noteSheet["A15"]) noteSheet["A15"] = { t: "s", v: `Numéro de dossier : ${numDossier}` };
-    if (noteSheet["A17"]) noteSheet["A17"] = { t: "s", v: `Base de calcul : ${montantAssiette.toLocaleString("fr-FR")} FRANCS/CFA` };
+    if (noteSheet["A12"])
+      noteSheet["A12"] = { t: "s", v: `Identité du client : ${clientNom}` };
+    if (noteSheet["A15"])
+      noteSheet["A15"] = { t: "s", v: `Numéro de dossier : ${numDossier}` };
+    if (noteSheet["A17"])
+      noteSheet["A17"] = {
+        t: "s",
+        v: `Base de calcul : ${montantAssiette.toLocaleString("fr-FR")} FRANCS/CFA`,
+      };
   }
 
   // 4. Remplissage de la feuille 'FACTURE NORMALISE' si elle existe
@@ -195,7 +278,11 @@ function genererFichierExcelLiquidation(dossier, fiche, parametres, modeleId) {
   if (factureSheet) {
     if (factureSheet["C6"]) factureSheet["C6"] = { t: "s", v: clientNom };
     if (factureSheet["C10"]) factureSheet["C10"] = { t: "s", v: numDossier };
-    if (factureSheet["C29"]) factureSheet["C29"] = { t: "s", v: `TOTAL GENERAL : ${(totaux.general || 0).toLocaleString("fr-FR")} FCFA` };
+    if (factureSheet["C29"])
+      factureSheet["C29"] = {
+        t: "s",
+        v: `TOTAL GENERAL : ${(totaux.general || 0).toLocaleString("fr-FR")} FCFA`,
+      };
   }
 
   // Générer et retourner le tampon binaire XLSX
@@ -221,7 +308,9 @@ function enregistrerModelePersonnalise(nomFichier, buffer) {
  * Supprime un modèle Excel personnalisé
  */
 function supprimerModelePersonnalise(nomFichier) {
-  const nomSecurise = String(nomFichier).replace(/^perso_/, "").replace(/[^a-zA-Z0-9._-]/g, "_");
+  const nomSecurise = String(nomFichier)
+    .replace(/^perso_/, "")
+    .replace(/[^a-zA-Z0-9._-]/g, "_");
   const destination = path.join(DOSSIER_MODELES_PERSO, nomSecurise);
   if (fs.existsSync(destination)) {
     fs.unlinkSync(destination);

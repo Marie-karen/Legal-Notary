@@ -23,7 +23,9 @@ function chargerPacksDepuisDisque() {
       const fichiersReg = fs.readdirSync(CHEMIN_PACKS_REGIONAL);
       for (const f of fichiersReg) {
         if (f.endsWith(".json")) {
-          const contenu = JSON.parse(fs.readFileSync(path.join(CHEMIN_PACKS_REGIONAL, f), "utf8"));
+          const contenu = JSON.parse(
+            fs.readFileSync(path.join(CHEMIN_PACKS_REGIONAL, f), "utf8"),
+          );
           CACHE_PACKS_REGIONAL.set(contenu.code, contenu);
         }
       }
@@ -33,13 +35,18 @@ function chargerPacksDepuisDisque() {
       const fichiersPays = fs.readdirSync(CHEMIN_PACKS_PAYS);
       for (const f of fichiersPays) {
         if (f.endsWith(".json")) {
-          const contenu = JSON.parse(fs.readFileSync(path.join(CHEMIN_PACKS_PAYS, f), "utf8"));
+          const contenu = JSON.parse(
+            fs.readFileSync(path.join(CHEMIN_PACKS_PAYS, f), "utf8"),
+          );
           CACHE_PACKS_PAYS_BRUTS.set(contenu.code, contenu);
         }
       }
     }
   } catch (err) {
-    console.warn("[Packs Service] Erreur lors de la lecture des packs :", err.message);
+    console.warn(
+      "[Packs Service] Erreur lors de la lecture des packs :",
+      err.message,
+    );
   }
 }
 
@@ -66,24 +73,37 @@ function fusionnerObjets(cible, source) {
  * Obtient un pack pays compilé avec tout son héritage régional
  */
 function obtenirPackPays(codePays = "ci") {
-  const codeNormalise = String(codePays || "ci").toLowerCase().trim();
+  const codeNormalise = String(codePays || "ci")
+    .toLowerCase()
+    .trim();
   if (CACHE_PACKS_COMPILES.has(codeNormalise)) {
     return CACHE_PACKS_COMPILES.get(codeNormalise);
   }
 
-  const packBrut = CACHE_PACKS_PAYS_BRUTS.get(codeNormalise) || CACHE_PACKS_PAYS_BRUTS.get("ci");
+  const packBrut =
+    CACHE_PACKS_PAYS_BRUTS.get(codeNormalise) ||
+    CACHE_PACKS_PAYS_BRUTS.get("ci");
   if (!packBrut) {
     // Fallback minimal de sécurité
     return {
       code: "ci",
       nom: "Côte d'Ivoire",
-      monnaie: { code: "XOF", symbole: "FCFA", libelle: "Franc CFA", decimales: 0 },
+      monnaie: {
+        code: "XOF",
+        symbole: "FCFA",
+        libelle: "Franc CFA",
+        decimales: 0,
+      },
       fuseauHoraire: "Africa/Abidjan",
       indicatifTelephonique: "+225",
       langueDefaut: "fr",
-      fiscalite: { tauxTva: 0.18, timbreFiscalPage: 500, emolumentRolePage: 500 },
+      fiscalite: {
+        tauxTva: 0.18,
+        timbreFiscalPage: 500,
+        emolumentRolePage: 500,
+      },
       joursFeries: [],
-      administrations: {}
+      administrations: {},
     };
   }
 
@@ -94,9 +114,12 @@ function obtenirPackPays(codePays = "ci") {
   const packCompile = fusionnerObjets(packRegional, packBrut);
 
   // Fusion intelligente des barèmes
-  const baremesFinaux = Array.isArray(packBrut.baremes) && packBrut.baremes.length > 0
-    ? packBrut.baremes
-    : (Array.isArray(packRegional.baremes) ? packRegional.baremes : []);
+  const baremesFinaux =
+    Array.isArray(packBrut.baremes) && packBrut.baremes.length > 0
+      ? packBrut.baremes
+      : Array.isArray(packRegional.baremes)
+        ? packRegional.baremes
+        : [];
   packCompile.baremes = baremesFinaux;
 
   CACHE_PACKS_COMPILES.set(codeNormalise, packCompile);
@@ -128,7 +151,7 @@ function listerPacksPays(options = {}) {
       timbreFiscalPage: p.fiscalite?.timbreFiscalPage ?? 500,
       totalJoursFeries: Array.isArray(p.joursFeries) ? p.joursFeries.length : 0,
       administrations: p.administrations,
-      textesReference: p.textesReference || []
+      textesReference: p.textesReference || [],
     });
   }
   return liste;

@@ -19,7 +19,10 @@ router.get("/evenements", async (req, res, next) => {
       debut: req.query.debut,
       fin: req.query.fin,
     };
-    const evenements = await agendaService.listerEvenements(filtres, req.utilisateur || {});
+    const evenements = await agendaService.listerEvenements(
+      filtres,
+      req.utilisateur || {},
+    );
     res.json(evenements);
   } catch (e) {
     next(e);
@@ -29,7 +32,10 @@ router.get("/evenements", async (req, res, next) => {
 // POST /api/agenda/evenements
 router.post("/evenements", async (req, res, next) => {
   try {
-    const nouveau = await agendaService.creerEvenement(req.body, req.utilisateur || {});
+    const nouveau = await agendaService.creerEvenement(
+      req.body,
+      req.utilisateur || {},
+    );
     res.status(201).json(nouveau);
   } catch (e) {
     next(e);
@@ -39,7 +45,10 @@ router.post("/evenements", async (req, res, next) => {
 // GET /api/agenda/prerequis-signature/:dossierId
 router.get("/prerequis-signature/:dossierId", async (req, res, next) => {
   try {
-    const verif = await agendaService.verifierPrerequisSignature(req.params.dossierId, req.utilisateur || {});
+    const verif = await agendaService.verifierPrerequisSignature(
+      req.params.dossierId,
+      req.utilisateur || {},
+    );
     res.json(verif);
   } catch (e) {
     next(e);
@@ -49,7 +58,11 @@ router.get("/prerequis-signature/:dossierId", async (req, res, next) => {
 // PUT /api/agenda/evenements/:id
 router.put("/evenements/:id", async (req, res, next) => {
   try {
-    const maj = await agendaService.mettreAJourEvenement(req.params.id, req.body, req.utilisateur || {});
+    const maj = await agendaService.mettreAJourEvenement(
+      req.params.id,
+      req.body,
+      req.utilisateur || {},
+    );
     res.json(maj);
   } catch (e) {
     next(e);
@@ -78,7 +91,10 @@ router.get("/taches", async (req, res, next) => {
       dossierId: req.query.dossierId,
       statut: req.query.statut,
     };
-    const taches = await agendaService.listerTaches(filtres, req.utilisateur || {});
+    const taches = await agendaService.listerTaches(
+      filtres,
+      req.utilisateur || {},
+    );
     res.json(taches);
   } catch (e) {
     next(e);
@@ -88,7 +104,10 @@ router.get("/taches", async (req, res, next) => {
 // POST /api/agenda/taches
 router.post("/taches", async (req, res, next) => {
   try {
-    const nouvelle = await agendaService.creerTache(req.body, req.utilisateur || {});
+    const nouvelle = await agendaService.creerTache(
+      req.body,
+      req.utilisateur || {},
+    );
     res.status(201).json(nouvelle);
   } catch (e) {
     next(e);

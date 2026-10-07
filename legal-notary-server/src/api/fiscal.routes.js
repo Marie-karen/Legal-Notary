@@ -26,23 +26,113 @@ const FICHES_MEMOIRE = new Map();
 async function initFichesMemoire() {
   if (FICHES_MEMOIRE.size > 0) return;
   const demoDossiers = [
-    { id: "dos-demo-001", numero_dossier: "DOS-2026-001", type_acte_id: "vente_immobiliere", montant_assiette: 50000000, statut: "valide", comparants_noms: "M. KOUASSI K. & MME KOFFI A." },
-    { id: "dos-demo-002", numero_dossier: "DOS-2026-002", type_acte_id: "constitution_societe", montant_assiette: 1000000, statut: "soumis", comparants_noms: "GROUPE IVOIRE TECH SARL" },
-    { id: "dos-demo-003", numero_dossier: "DOS-2026-003", type_acte_id: "promesse_vente", montant_assiette: 30000000, statut: "valide", comparants_noms: "M. DIALLO AMADOU" },
-    { id: "dos-demo-004", numero_dossier: "DOS-2026-004", type_acte_id: "donation", montant_assiette: 40000000, statut: "a_corriger", commentaire_notaire: "Veuillez vérifier l'état foncier et réajuster les formalités.", comparants_noms: "FAMILLE KONE" },
-    { id: "dos-demo-005", numero_dossier: "DOS-2026-005", type_acte_id: "augmentation_capital", montant_assiette: 25000000, statut: "brouillon", comparants_noms: "SOCIÉTÉ BTP ATLANTIQUE SAS" },
-    { id: "dos-demo-006", numero_dossier: "DOS-2026-006", type_acte_id: "pret_hypothecaire", montant_assiette: 100000000, statut: "valide", comparants_noms: "M. & MME TOURE" },
-    { id: "dos-demo-007", numero_dossier: "DOS-2026-007", type_acte_id: "realisation_promesse", montant_assiette: 30000000, statut: "valide", comparants_noms: "M. ADJA SERGE" },
-    { id: "dos-demo-008", numero_dossier: "DOS-2026-008", type_acte_id: "bail_commercial", montant_assiette: 12000000, statut: "soumis", comparants_noms: "DISTRIBUTION PLUS SARL" },
-    { id: "dos-demo-009", numero_dossier: "DOS-2026-009", type_acte_id: "succession", montant_assiette: 80000000, statut: "brouillon", comparants_noms: "HÉRITIERS FEU DR. BAMBA" },
-    { id: "dos-demo-010", numero_dossier: "DOS-2026-010", type_acte_id: "mainlevee_hypotheque", montant_assiette: 20000000, statut: "valide", comparants_noms: "M. N'GUESSAN PASCAL" },
-    { id: "dos-demo-011", numero_dossier: "DOS-2026-011", type_acte_id: "procuration", montant_assiette: 500000, statut: "valide", comparants_noms: "MME OUATTARA FATOU" },
-    { id: "dos-demo-012", numero_dossier: "DOS-2026-012", type_acte_id: "vente_usage", montant_assiette: 35000000, statut: "brouillon", comparants_noms: "M. SANOGO IBRAHIM" },
+    {
+      id: "dos-demo-001",
+      numero_dossier: "DOS-2026-001",
+      type_acte_id: "vente_immobiliere",
+      montant_assiette: 50000000,
+      statut: "valide",
+      comparants_noms: "M. KOUASSI K. & MME KOFFI A.",
+    },
+    {
+      id: "dos-demo-002",
+      numero_dossier: "DOS-2026-002",
+      type_acte_id: "constitution_societe",
+      montant_assiette: 1000000,
+      statut: "soumis",
+      comparants_noms: "GROUPE IVOIRE TECH SARL",
+    },
+    {
+      id: "dos-demo-003",
+      numero_dossier: "DOS-2026-003",
+      type_acte_id: "promesse_vente",
+      montant_assiette: 30000000,
+      statut: "valide",
+      comparants_noms: "M. DIALLO AMADOU",
+    },
+    {
+      id: "dos-demo-004",
+      numero_dossier: "DOS-2026-004",
+      type_acte_id: "donation",
+      montant_assiette: 40000000,
+      statut: "a_corriger",
+      commentaire_notaire:
+        "Veuillez vérifier l'état foncier et réajuster les formalités.",
+      comparants_noms: "FAMILLE KONE",
+    },
+    {
+      id: "dos-demo-005",
+      numero_dossier: "DOS-2026-005",
+      type_acte_id: "augmentation_capital",
+      montant_assiette: 25000000,
+      statut: "brouillon",
+      comparants_noms: "SOCIÉTÉ BTP ATLANTIQUE SAS",
+    },
+    {
+      id: "dos-demo-006",
+      numero_dossier: "DOS-2026-006",
+      type_acte_id: "pret_hypothecaire",
+      montant_assiette: 100000000,
+      statut: "valide",
+      comparants_noms: "M. & MME TOURE",
+    },
+    {
+      id: "dos-demo-007",
+      numero_dossier: "DOS-2026-007",
+      type_acte_id: "realisation_promesse",
+      montant_assiette: 30000000,
+      statut: "valide",
+      comparants_noms: "M. ADJA SERGE",
+    },
+    {
+      id: "dos-demo-008",
+      numero_dossier: "DOS-2026-008",
+      type_acte_id: "bail_commercial",
+      montant_assiette: 12000000,
+      statut: "soumis",
+      comparants_noms: "DISTRIBUTION PLUS SARL",
+    },
+    {
+      id: "dos-demo-009",
+      numero_dossier: "DOS-2026-009",
+      type_acte_id: "succession",
+      montant_assiette: 80000000,
+      statut: "brouillon",
+      comparants_noms: "HÉRITIERS FEU DR. BAMBA",
+    },
+    {
+      id: "dos-demo-010",
+      numero_dossier: "DOS-2026-010",
+      type_acte_id: "mainlevee_hypotheque",
+      montant_assiette: 20000000,
+      statut: "valide",
+      comparants_noms: "M. N'GUESSAN PASCAL",
+    },
+    {
+      id: "dos-demo-011",
+      numero_dossier: "DOS-2026-011",
+      type_acte_id: "procuration",
+      montant_assiette: 500000,
+      statut: "valide",
+      comparants_noms: "MME OUATTARA FATOU",
+    },
+    {
+      id: "dos-demo-012",
+      numero_dossier: "DOS-2026-012",
+      type_acte_id: "vente_usage",
+      montant_assiette: 35000000,
+      statut: "brouillon",
+      comparants_noms: "M. SANOGO IBRAHIM",
+    },
   ];
 
   for (const d of demoDossiers) {
     try {
-      const calcul = await calculerPourTypeActe(d.type_acte_id, d.montant_assiette, {});
+      const calcul = await calculerPourTypeActe(
+        d.type_acte_id,
+        d.montant_assiette,
+        {},
+      );
       const fId = "fiche-" + d.id;
       FICHES_MEMOIRE.set(fId, {
         id: fId,
@@ -72,7 +162,13 @@ async function calculerPourTypeActe(typeActeId, montant, saisies) {
     parametresService.obtenir(),
     referentielService.obtenirTranchesBareme(typeActe.baremeEmolumentsId),
   ]);
-  return fiscalService.calculerFicheDeTaxe(typeActe, montant, parametres, tranches, saisies);
+  return fiscalService.calculerFicheDeTaxe(
+    typeActe,
+    montant,
+    parametres,
+    tranches,
+    saisies,
+  );
 }
 
 // Catalogue des lignes et formalités sélectionnables
@@ -83,127 +179,205 @@ router.get("/catalogue-lignes", async (req, res, next) => {
     if (typeActeId) {
       typeActe = (await referentielService.obtenirTypeActe(typeActeId)) || {};
     }
-    const catalogue = fiscalService.obtenirCatalogueLignesStandard(typeActe, Number(montant) || 0);
+    const catalogue = fiscalService.obtenirCatalogueLignesStandard(
+      typeActe,
+      Number(montant) || 0,
+    );
     res.json(catalogue);
-  } catch (e) { next(e); }
+  } catch (e) {
+    next(e);
+  }
 });
 
 // Calcul temps réel de la fiche de taxe (Aperçu)
-router.post("/calculer", exigerPermission("fiscal:calculer"), async (req, res, next) => {
-  try {
-    const { typeActeId, montant, saisies } = req.body || {};
-    const fiche = await calculerPourTypeActe(typeActeId, montant, saisies);
-    if (!fiche) return res.status(404).json({ erreur: "Type d'acte introuvable." });
-    res.json(fiche);
-  } catch (e) { next(e); }
-});
+router.post(
+  "/calculer",
+  exigerPermission("fiscal:calculer"),
+  async (req, res, next) => {
+    try {
+      const { typeActeId, montant, saisies } = req.body || {};
+      const fiche = await calculerPourTypeActe(typeActeId, montant, saisies);
+      if (!fiche)
+        return res.status(404).json({ erreur: "Type d'acte introuvable." });
+      res.json(fiche);
+    } catch (e) {
+      next(e);
+    }
+  },
+);
 
 // Enregistrer une fiche de taxe (Brouillon, Soumise ou Validée)
-router.post("/dossiers/:dossierId/enregistrer", exigerPermission("fiscal:enregistrer_fiche_taxe"), async (req, res, next) => {
-  try {
-    let dossier = null;
+router.post(
+  "/dossiers/:dossierId/enregistrer",
+  exigerPermission("fiscal:enregistrer_fiche_taxe"),
+  async (req, res, next) => {
     try {
-      const { rows } = await pool.query("SELECT * FROM dossiers WHERE id = $1", [req.params.dossierId]);
-      if (rows.length) dossier = rows[0];
-    } catch (err) {}
+      let dossier = null;
+      try {
+        const { rows } = await pool.query(
+          "SELECT * FROM dossiers WHERE id = $1",
+          [req.params.dossierId],
+        );
+        if (rows.length) dossier = rows[0];
+      } catch (err) {}
 
-    const typeActeId = req.body.typeActeId || (dossier ? dossier.type_acte_id : "vente_immobiliere");
-    const montant = req.body.montant !== undefined ? Number(req.body.montant) : (dossier ? Number(dossier.montant_assiette) : 10000000);
-    const statutDemande = req.body.statut || "brouillon"; // 'brouillon', 'soumis', 'valide'
-    const commentaire = req.body.commentaire || null;
+      const typeActeId =
+        req.body.typeActeId ||
+        (dossier ? dossier.type_acte_id : "vente_immobiliere");
+      const montant =
+        req.body.montant !== undefined
+          ? Number(req.body.montant)
+          : dossier
+            ? Number(dossier.montant_assiette)
+            : 10000000;
+      const statutDemande = req.body.statut || "brouillon"; // 'brouillon', 'soumis', 'valide'
+      const commentaire = req.body.commentaire || null;
 
-    const fiche = await calculerPourTypeActe(typeActeId, montant, req.body.saisies);
-    if (!fiche) return res.status(404).json({ erreur: "Type d'acte introuvable." });
+      const fiche = await calculerPourTypeActe(
+        typeActeId,
+        montant,
+        req.body.saisies,
+      );
+      if (!fiche)
+        return res.status(404).json({ erreur: "Type d'acte introuvable." });
 
-    const estNotaire = req.utilisateur && (req.utilisateur.role === "notaire" || req.utilisateur.role === "superadmin");
-    const statutFinal = (estNotaire && statutDemande === "valide") ? "valide" : (statutDemande === "soumis" ? "soumis" : "brouillon");
-    const validePar = statutFinal === "valide" ? (req.utilisateur ? req.utilisateur.id : null) : null;
-    const valideLe = statutFinal === "valide" ? new Date() : null;
+      const estNotaire =
+        req.utilisateur &&
+        (req.utilisateur.role === "notaire" ||
+          req.utilisateur.role === "superadmin");
+      const statutFinal =
+        estNotaire && statutDemande === "valide"
+          ? "valide"
+          : statutDemande === "soumis"
+            ? "soumis"
+            : "brouillon";
+      const validePar =
+        statutFinal === "valide"
+          ? req.utilisateur
+            ? req.utilisateur.id
+            : null
+          : null;
+      const valideLe = statutFinal === "valide" ? new Date() : null;
 
-    try {
-      if (dossier && (req.body.typeActeId || req.body.montant !== undefined)) {
-        await pool.query("UPDATE dossiers SET type_acte_id = $1, montant_assiette = $2 WHERE id = $3", [typeActeId, montant, dossier.id]);
-      }
+      try {
+        if (
+          dossier &&
+          (req.body.typeActeId || req.body.montant !== undefined)
+        ) {
+          await pool.query(
+            "UPDATE dossiers SET type_acte_id = $1, montant_assiette = $2 WHERE id = $3",
+            [typeActeId, montant, dossier.id],
+          );
+        }
 
-      const inseree = await pool.query(
-        `INSERT INTO fiches_taxe 
+        const inseree = await pool.query(
+          `INSERT INTO fiches_taxe 
           (dossier_id, donnees, utilisateur_id, statut, commentaire_notaire, valide_par_id, valide_le) 
          VALUES ($1, $2, $3, $4, $5, $6, $7) 
          RETURNING *`,
-        [req.params.dossierId, fiche, req.utilisateur ? req.utilisateur.id : null, statutFinal, commentaire, validePar, valideLe]
-      );
-      if (inseree && inseree.rows && inseree.rows.length) {
-        return res.status(201).json(inseree.rows[0]);
+          [
+            req.params.dossierId,
+            fiche,
+            req.utilisateur ? req.utilisateur.id : null,
+            statutFinal,
+            commentaire,
+            validePar,
+            valideLe,
+          ],
+        );
+        if (inseree && inseree.rows && inseree.rows.length) {
+          return res.status(201).json(inseree.rows[0]);
+        }
+      } catch (err) {
+        console.warn("[Fiscal] Enregistrement en mémoire :", err.message);
       }
-    } catch (err) {
-      console.warn("[Fiscal] Enregistrement en mémoire :", err.message);
-    }
 
-    // Sauvegarde en mémoire de secours
-    const fId = "fiche-" + req.params.dossierId + "-" + Date.now();
-    const ficheMem = {
-      id: fId,
-      dossier_id: req.params.dossierId,
-      donnees: fiche,
-      statut: statutFinal,
-      commentaire_notaire: commentaire,
-      valide_par_id: validePar,
-      valide_le: valideLe ? valideLe.toISOString() : null,
-      created_at: new Date().toISOString(),
-      utilisateur_id: req.utilisateur ? req.utilisateur.id : null,
-      type_acte_id: typeActeId,
-      montant_assiette: montant,
-    };
-    FICHES_MEMOIRE.set(req.params.dossierId, ficheMem);
-    FICHES_MEMOIRE.set(fId, ficheMem);
-    return res.status(201).json(ficheMem);
-  } catch (e) { next(e); }
-});
+      // Sauvegarde en mémoire de secours
+      const fId = "fiche-" + req.params.dossierId + "-" + Date.now();
+      const ficheMem = {
+        id: fId,
+        dossier_id: req.params.dossierId,
+        donnees: fiche,
+        statut: statutFinal,
+        commentaire_notaire: commentaire,
+        valide_par_id: validePar,
+        valide_le: valideLe ? valideLe.toISOString() : null,
+        created_at: new Date().toISOString(),
+        utilisateur_id: req.utilisateur ? req.utilisateur.id : null,
+        type_acte_id: typeActeId,
+        montant_assiette: montant,
+      };
+      FICHES_MEMOIRE.set(req.params.dossierId, ficheMem);
+      FICHES_MEMOIRE.set(fId, ficheMem);
+      return res.status(201).json(ficheMem);
+    } catch (e) {
+      next(e);
+    }
+  },
+);
 
 // Soumettre une fiche de taxe existante au Notaire
-router.post("/fiches/:ficheId/soumettre", exigerPermission("fiscal:enregistrer_fiche_taxe"), async (req, res, next) => {
-  try {
-    const { rows } = await pool.query(
-      `SELECT f.*, d.numero_dossier 
+router.post(
+  "/fiches/:ficheId/soumettre",
+  exigerPermission("fiscal:enregistrer_fiche_taxe"),
+  async (req, res, next) => {
+    try {
+      const { rows } = await pool.query(
+        `SELECT f.*, d.numero_dossier 
        FROM fiches_taxe f
        JOIN dossiers d ON d.id = f.dossier_id
        WHERE f.id = $1`,
-      [req.params.ficheId]
-    );
-    if (!rows.length) return res.status(404).json({ erreur: "Fiche de taxe introuvable." });
-    const fiche = rows[0];
+        [req.params.ficheId],
+      );
+      if (!rows.length)
+        return res.status(404).json({ erreur: "Fiche de taxe introuvable." });
+      const fiche = rows[0];
 
-    const misAJour = await pool.query(
-      `UPDATE fiches_taxe 
+      const misAJour = await pool.query(
+        `UPDATE fiches_taxe 
        SET statut = 'soumis', created_at = now()
        WHERE id = $1 
        RETURNING *`,
-      [fiche.id]
-    );
-
-    // Notifier le Notaire
-    const notaires = await pool.query("SELECT id FROM utilisateurs WHERE role = 'notaire' OR role = 'premier_clerc'");
-    for (const notaire of notaires.rows) {
-      await pool.query(
-        `INSERT INTO notifications (utilisateur_id, evenement, canal, titre, corps, created_at)
-         VALUES ($1, 'validation_notaire', 'in_app', $2, $3, now())`,
-        [
-          notaire.id,
-          `📑 Fiche de taxe soumise pour visa — ${fiche.numero_dossier}`,
-          `La fiche de taxe du dossier ${fiche.numero_dossier} a été soumise par ${req.utilisateur.nom_complet || "le comptable"}.`
-        ]
+        [fiche.id],
       );
-    }
 
-    res.json(misAJour.rows[0]);
-  } catch (e) { next(e); }
-});
+      // Notifier le Notaire
+      const notaires = await pool.query(
+        "SELECT id FROM utilisateurs WHERE role = 'notaire' OR role = 'premier_clerc'",
+      );
+      for (const notaire of notaires.rows) {
+        await pool.query(
+          `INSERT INTO notifications (utilisateur_id, evenement, canal, titre, corps, created_at)
+         VALUES ($1, 'validation_notaire', 'in_app', $2, $3, now())`,
+          [
+            notaire.id,
+            `📑 Fiche de taxe soumise pour visa — ${fiche.numero_dossier}`,
+            `La fiche de taxe du dossier ${fiche.numero_dossier} a été soumise par ${req.utilisateur.nom_complet || "le comptable"}.`,
+          ],
+        );
+      }
+
+      res.json(misAJour.rows[0]);
+    } catch (e) {
+      next(e);
+    }
+  },
+);
 
 // Valider directement la Fiche de Taxe (Par le Notaire)
 router.post("/fiches/:ficheId/valider", async (req, res, next) => {
   try {
-    if (req.utilisateur.role !== "notaire" && req.utilisateur.role !== "premier_clerc" && req.utilisateur.role !== "superadmin") {
-      return res.status(403).json({ erreur: "Seul le Notaire ou le Premier Clerc peut valider officiellement une fiche de taxe." });
+    if (
+      req.utilisateur.role !== "notaire" &&
+      req.utilisateur.role !== "premier_clerc" &&
+      req.utilisateur.role !== "superadmin"
+    ) {
+      return res
+        .status(403)
+        .json({
+          erreur:
+            "Seul le Notaire ou le Premier Clerc peut valider officiellement une fiche de taxe.",
+        });
     }
 
     const { rows } = await pool.query(
@@ -211,9 +385,10 @@ router.post("/fiches/:ficheId/valider", async (req, res, next) => {
        FROM fiches_taxe f
        JOIN dossiers d ON d.id = f.dossier_id
        WHERE f.id = $1`,
-      [req.params.ficheId]
+      [req.params.ficheId],
     );
-    if (!rows.length) return res.status(404).json({ erreur: "Fiche de taxe introuvable." });
+    if (!rows.length)
+      return res.status(404).json({ erreur: "Fiche de taxe introuvable." });
     const fiche = rows[0];
 
     const validee = await pool.query(
@@ -224,7 +399,7 @@ router.post("/fiches/:ficheId/valider", async (req, res, next) => {
            commentaire_notaire = NULL
        WHERE id = $2 
        RETURNING *`,
-      [req.utilisateur.id, fiche.id]
+      [req.utilisateur.id, fiche.id],
     );
 
     // Notifier l'auteur comptable
@@ -235,20 +410,30 @@ router.post("/fiches/:ficheId/valider", async (req, res, next) => {
         [
           fiche.utilisateur_id,
           `✅ Fiche de taxe validée — ${fiche.numero_dossier}`,
-          `Maître ${req.utilisateur.nom_complet} a validé la fiche de taxe du dossier ${fiche.numero_dossier}. La note de frais client peut être émise.`
-        ]
+          `Maître ${req.utilisateur.nom_complet} a validé la fiche de taxe du dossier ${fiche.numero_dossier}. La note de frais client peut être émise.`,
+        ],
       );
     }
 
     res.json(validee.rows[0]);
-  } catch (e) { next(e); }
+  } catch (e) {
+    next(e);
+  }
 });
 
 // Corriger et Valider directement la Fiche de Taxe (Par le Notaire)
 router.post("/fiches/:ficheId/corriger-valider", async (req, res, next) => {
   try {
-    if (req.utilisateur.role !== "notaire" && req.utilisateur.role !== "premier_clerc" && req.utilisateur.role !== "superadmin") {
-      return res.status(403).json({ erreur: "Seul le Notaire peut corriger et valider une fiche de taxe." });
+    if (
+      req.utilisateur.role !== "notaire" &&
+      req.utilisateur.role !== "premier_clerc" &&
+      req.utilisateur.role !== "superadmin"
+    ) {
+      return res
+        .status(403)
+        .json({
+          erreur: "Seul le Notaire peut corriger et valider une fiche de taxe.",
+        });
     }
 
     const { rows } = await pool.query(
@@ -256,18 +441,28 @@ router.post("/fiches/:ficheId/corriger-valider", async (req, res, next) => {
        FROM fiches_taxe f
        JOIN dossiers d ON d.id = f.dossier_id
        WHERE f.id = $1`,
-      [req.params.ficheId]
+      [req.params.ficheId],
     );
-    if (!rows.length) return res.status(404).json({ erreur: "Fiche de taxe introuvable." });
+    if (!rows.length)
+      return res.status(404).json({ erreur: "Fiche de taxe introuvable." });
     const fiche = rows[0];
 
     const typeActeId = req.body.typeActeId || fiche.type_acte_id;
-    const montant = req.body.montant !== undefined ? Number(req.body.montant) : Number(fiche.montant_assiette);
+    const montant =
+      req.body.montant !== undefined
+        ? Number(req.body.montant)
+        : Number(fiche.montant_assiette);
     const saisiesNouvelles = req.body.saisies || {};
-    const commentaireNotaire = req.body.commentaire || "Ajusté et validé par le Notaire";
+    const commentaireNotaire =
+      req.body.commentaire || "Ajusté et validé par le Notaire";
 
-    const nouvelleDonnees = await calculerPourTypeActe(typeActeId, montant, saisiesNouvelles);
-    if (!nouvelleDonnees) return res.status(404).json({ erreur: "Erreur de recalcul fiscal." });
+    const nouvelleDonnees = await calculerPourTypeActe(
+      typeActeId,
+      montant,
+      saisiesNouvelles,
+    );
+    if (!nouvelleDonnees)
+      return res.status(404).json({ erreur: "Erreur de recalcul fiscal." });
 
     const miseAJour = await pool.query(
       `UPDATE fiches_taxe 
@@ -284,9 +479,13 @@ router.post("/fiches/:ficheId/corriger-valider", async (req, res, next) => {
         nouvelleDonnees,
         commentaireNotaire,
         req.utilisateur.id,
-        JSON.stringify({ date: new Date(), auteur: req.utilisateur.nom_complet, saisies: saisiesNouvelles }),
-        fiche.id
-      ]
+        JSON.stringify({
+          date: new Date(),
+          auteur: req.utilisateur.nom_complet,
+          saisies: saisiesNouvelles,
+        }),
+        fiche.id,
+      ],
     );
 
     // Notifier l'auteur comptable
@@ -297,25 +496,41 @@ router.post("/fiches/:ficheId/corriger-valider", async (req, res, next) => {
         [
           fiche.utilisateur_id,
           `✏️ Fiche de taxe corrigée & validée — ${fiche.numero_dossier}`,
-          `Maître ${req.utilisateur.nom_complet} a apporté des corrections et validé la fiche de taxe du dossier ${fiche.numero_dossier}. Note : « ${commentaireNotaire} »`
-        ]
+          `Maître ${req.utilisateur.nom_complet} a apporté des corrections et validé la fiche de taxe du dossier ${fiche.numero_dossier}. Note : « ${commentaireNotaire} »`,
+        ],
       );
     }
 
     res.json(miseAJour.rows[0]);
-  } catch (e) { next(e); }
+  } catch (e) {
+    next(e);
+  }
 });
 
 // Renvoyer la Fiche de Taxe pour Correction (Par le Notaire)
 router.post("/fiches/:ficheId/renvoyer", async (req, res, next) => {
   try {
-    if (req.utilisateur.role !== "notaire" && req.utilisateur.role !== "premier_clerc" && req.utilisateur.role !== "superadmin") {
-      return res.status(403).json({ erreur: "Seul le Notaire ou le Premier Clerc peut renvoyer une fiche de taxe pour correction." });
+    if (
+      req.utilisateur.role !== "notaire" &&
+      req.utilisateur.role !== "premier_clerc" &&
+      req.utilisateur.role !== "superadmin"
+    ) {
+      return res
+        .status(403)
+        .json({
+          erreur:
+            "Seul le Notaire ou le Premier Clerc peut renvoyer une fiche de taxe pour correction.",
+        });
     }
 
     const { commentaire } = req.body || {};
     if (!commentaire || !commentaire.trim()) {
-      return res.status(400).json({ erreur: "Veuillez préciser vos observations ou remarques pour le comptable." });
+      return res
+        .status(400)
+        .json({
+          erreur:
+            "Veuillez préciser vos observations ou remarques pour le comptable.",
+        });
     }
 
     const { rows } = await pool.query(
@@ -323,9 +538,10 @@ router.post("/fiches/:ficheId/renvoyer", async (req, res, next) => {
        FROM fiches_taxe f
        JOIN dossiers d ON d.id = f.dossier_id
        WHERE f.id = $1`,
-      [req.params.ficheId]
+      [req.params.ficheId],
     );
-    if (!rows.length) return res.status(404).json({ erreur: "Fiche de taxe introuvable." });
+    if (!rows.length)
+      return res.status(404).json({ erreur: "Fiche de taxe introuvable." });
     const fiche = rows[0];
 
     const renvoyee = await pool.query(
@@ -334,7 +550,7 @@ router.post("/fiches/:ficheId/renvoyer", async (req, res, next) => {
            commentaire_notaire = $1
        WHERE id = $2 
        RETURNING *`,
-      [commentaire.trim(), fiche.id]
+      [commentaire.trim(), fiche.id],
     );
 
     // Notifier l'auteur comptable
@@ -345,133 +561,201 @@ router.post("/fiches/:ficheId/renvoyer", async (req, res, next) => {
         [
           fiche.utilisateur_id,
           `⚠️ Fiche de taxe à corriger — ${fiche.numero_dossier}`,
-          `Maître ${req.utilisateur.nom_complet} a renvoyé la fiche de taxe du dossier ${fiche.numero_dossier} pour correction. Remarques : « ${commentaire.trim()} »`
-        ]
+          `Maître ${req.utilisateur.nom_complet} a renvoyé la fiche de taxe du dossier ${fiche.numero_dossier} pour correction. Remarques : « ${commentaire.trim()} »`,
+        ],
       );
     }
 
     res.json(renvoyee.rows[0]);
-  } catch (e) { next(e); }
+  } catch (e) {
+    next(e);
+  }
 });
 
 // Soumettre la Note de Frais au Notaire
-router.post("/dossiers/:dossierId/soumettre-note-frais", async (req, res, next) => {
-  try {
-    const { rows } = await pool.query(
-      `SELECT f.*, d.numero_dossier 
+router.post(
+  "/dossiers/:dossierId/soumettre-note-frais",
+  async (req, res, next) => {
+    try {
+      const { rows } = await pool.query(
+        `SELECT f.*, d.numero_dossier 
        FROM fiches_taxe f
        JOIN dossiers d ON d.id = f.dossier_id
        WHERE f.dossier_id = $1
        ORDER BY f.created_at DESC LIMIT 1`,
-      [req.params.dossierId]
-    );
-    if (!rows.length) return res.status(404).json({ erreur: "Fiche de taxe introuvable." });
-    const fiche = rows[0];
-    if (fiche.statut !== "valide" && fiche.statut !== "valide_corrige") {
-      return res.status(400).json({ erreur: "La Fiche de Taxe doit être validée par le Notaire avant de soumettre la Note de Frais." });
-    }
-
-    const donnees = fiche.donnees || {};
-    donnees.statutNoteFrais = "soumis";
-    donnees.noteFraisSoumiseLe = new Date();
-    donnees.noteFraisSoumisePar = req.utilisateur.nom_complet;
-
-    await pool.query("UPDATE fiches_taxe SET donnees = $1 WHERE id = $2", [donnees, fiche.id]);
-
-    // Notifier le notaire
-    const notaires = await pool.query("SELECT id FROM utilisateurs WHERE role = 'notaire' OR role = 'premier_clerc'");
-    for (const notaire of notaires.rows) {
-      await pool.query(
-        `INSERT INTO notifications (utilisateur_id, evenement, canal, titre, corps, created_at)
-         VALUES ($1, 'validation_notaire', 'in_app', $2, $3, now())`,
-        [
-          notaire.id,
-          `📄 Note de frais soumise pour visa — ${fiche.numero_dossier}`,
-          `La Note de Frais client du dossier ${fiche.numero_dossier} a été soumise par ${req.utilisateur.nom_complet || "le comptable"} pour autorisation de délivrance.`
-        ]
+        [req.params.dossierId],
       );
-    }
+      if (!rows.length)
+        return res.status(404).json({ erreur: "Fiche de taxe introuvable." });
+      const fiche = rows[0];
+      if (fiche.statut !== "valide" && fiche.statut !== "valide_corrige") {
+        return res
+          .status(400)
+          .json({
+            erreur:
+              "La Fiche de Taxe doit être validée par le Notaire avant de soumettre la Note de Frais.",
+          });
+      }
 
-    res.json({ message: "Note de frais soumise avec succès au Notaire.", donnees });
-  } catch (e) { next(e); }
-});
+      const donnees = fiche.donnees || {};
+      donnees.statutNoteFrais = "soumis";
+      donnees.noteFraisSoumiseLe = new Date();
+      donnees.noteFraisSoumisePar = req.utilisateur.nom_complet;
+
+      await pool.query("UPDATE fiches_taxe SET donnees = $1 WHERE id = $2", [
+        donnees,
+        fiche.id,
+      ]);
+
+      // Notifier le notaire
+      const notaires = await pool.query(
+        "SELECT id FROM utilisateurs WHERE role = 'notaire' OR role = 'premier_clerc'",
+      );
+      for (const notaire of notaires.rows) {
+        await pool.query(
+          `INSERT INTO notifications (utilisateur_id, evenement, canal, titre, corps, created_at)
+         VALUES ($1, 'validation_notaire', 'in_app', $2, $3, now())`,
+          [
+            notaire.id,
+            `📄 Note de frais soumise pour visa — ${fiche.numero_dossier}`,
+            `La Note de Frais client du dossier ${fiche.numero_dossier} a été soumise par ${req.utilisateur.nom_complet || "le comptable"} pour autorisation de délivrance.`,
+          ],
+        );
+      }
+
+      res.json({
+        message: "Note de frais soumise avec succès au Notaire.",
+        donnees,
+      });
+    } catch (e) {
+      next(e);
+    }
+  },
+);
 
 // Valider la Note de Frais (Par le Notaire)
-router.post("/dossiers/:dossierId/valider-note-frais", async (req, res, next) => {
-  try {
-    if (req.utilisateur.role !== "notaire" && req.utilisateur.role !== "premier_clerc" && req.utilisateur.role !== "superadmin") {
-      return res.status(403).json({ erreur: "Seul le Notaire ou le Premier Clerc peut valider la Note de Frais." });
-    }
+router.post(
+  "/dossiers/:dossierId/valider-note-frais",
+  async (req, res, next) => {
+    try {
+      if (
+        req.utilisateur.role !== "notaire" &&
+        req.utilisateur.role !== "premier_clerc" &&
+        req.utilisateur.role !== "superadmin"
+      ) {
+        return res
+          .status(403)
+          .json({
+            erreur:
+              "Seul le Notaire ou le Premier Clerc peut valider la Note de Frais.",
+          });
+      }
 
-    const { rows } = await pool.query(
-      `SELECT f.*, d.numero_dossier 
+      const { rows } = await pool.query(
+        `SELECT f.*, d.numero_dossier 
        FROM fiches_taxe f
        JOIN dossiers d ON d.id = f.dossier_id
        WHERE f.dossier_id = $1
        ORDER BY f.created_at DESC LIMIT 1`,
-      [req.params.dossierId]
-    );
-    if (!rows.length) return res.status(404).json({ erreur: "Fiche de taxe introuvable." });
-    const fiche = rows[0];
+        [req.params.dossierId],
+      );
+      if (!rows.length)
+        return res.status(404).json({ erreur: "Fiche de taxe introuvable." });
+      const fiche = rows[0];
 
-    const donnees = fiche.donnees || {};
-    donnees.statutNoteFrais = "valide";
-    donnees.noteFraisValideeLe = new Date();
-    donnees.noteFraisValideePar = req.utilisateur.nom_complet;
+      const donnees = fiche.donnees || {};
+      donnees.statutNoteFrais = "valide";
+      donnees.noteFraisValideeLe = new Date();
+      donnees.noteFraisValideePar = req.utilisateur.nom_complet;
 
-    await pool.query("UPDATE fiches_taxe SET donnees = $1 WHERE id = $2", [donnees, fiche.id]);
+      await pool.query("UPDATE fiches_taxe SET donnees = $1 WHERE id = $2", [
+        donnees,
+        fiche.id,
+      ]);
 
-    res.json({ message: "Note de frais validée par Maître. Elle peut être délivrée au client.", donnees });
-  } catch (e) { next(e); }
-});
+      res.json({
+        message:
+          "Note de frais validée par Maître. Elle peut être délivrée au client.",
+        donnees,
+      });
+    } catch (e) {
+      next(e);
+    }
+  },
+);
 
 // Soumettre la Facture Normalisée au Notaire
-router.post("/dossiers/:dossierId/soumettre-facture", async (req, res, next) => {
-  try {
-    const { rows } = await pool.query(
-      `SELECT f.*, d.numero_dossier 
+router.post(
+  "/dossiers/:dossierId/soumettre-facture",
+  async (req, res, next) => {
+    try {
+      const { rows } = await pool.query(
+        `SELECT f.*, d.numero_dossier 
        FROM fiches_taxe f
        JOIN dossiers d ON d.id = f.dossier_id
        WHERE f.dossier_id = $1
        ORDER BY f.created_at DESC LIMIT 1`,
-      [req.params.dossierId]
-    );
-    if (!rows.length) return res.status(404).json({ erreur: "Fiche de taxe introuvable." });
-    const fiche = rows[0];
-    if (fiche.statut !== "valide" && fiche.statut !== "valide_corrige") {
-      return res.status(400).json({ erreur: "La Fiche de Taxe doit être validée avant d'émettre la facture." });
-    }
-
-    const donnees = fiche.donnees || {};
-    donnees.statutFacture = "soumis";
-    donnees.factureSoumiseLe = new Date();
-    donnees.factureSoumisePar = req.utilisateur.nom_complet;
-
-    await pool.query("UPDATE fiches_taxe SET donnees = $1 WHERE id = $2", [donnees, fiche.id]);
-
-    // Notifier le notaire
-    const notaires = await pool.query("SELECT id FROM utilisateurs WHERE role = 'notaire' OR role = 'premier_clerc'");
-    for (const notaire of notaires.rows) {
-      await pool.query(
-        `INSERT INTO notifications (utilisateur_id, evenement, canal, titre, corps, created_at)
-         VALUES ($1, 'validation_notaire', 'in_app', $2, $3, now())`,
-        [
-          notaire.id,
-          `🧾 Facture soumise pour visa & émission — ${fiche.numero_dossier}`,
-          `La Facture Normalisée du dossier ${fiche.numero_dossier} a été soumise par ${req.utilisateur.nom_complet || "le comptable"} pour émission.`
-        ]
+        [req.params.dossierId],
       );
-    }
+      if (!rows.length)
+        return res.status(404).json({ erreur: "Fiche de taxe introuvable." });
+      const fiche = rows[0];
+      if (fiche.statut !== "valide" && fiche.statut !== "valide_corrige") {
+        return res
+          .status(400)
+          .json({
+            erreur:
+              "La Fiche de Taxe doit être validée avant d'émettre la facture.",
+          });
+      }
 
-    res.json({ message: "Facture soumise avec succès au Notaire.", donnees });
-  } catch (e) { next(e); }
-});
+      const donnees = fiche.donnees || {};
+      donnees.statutFacture = "soumis";
+      donnees.factureSoumiseLe = new Date();
+      donnees.factureSoumisePar = req.utilisateur.nom_complet;
+
+      await pool.query("UPDATE fiches_taxe SET donnees = $1 WHERE id = $2", [
+        donnees,
+        fiche.id,
+      ]);
+
+      // Notifier le notaire
+      const notaires = await pool.query(
+        "SELECT id FROM utilisateurs WHERE role = 'notaire' OR role = 'premier_clerc'",
+      );
+      for (const notaire of notaires.rows) {
+        await pool.query(
+          `INSERT INTO notifications (utilisateur_id, evenement, canal, titre, corps, created_at)
+         VALUES ($1, 'validation_notaire', 'in_app', $2, $3, now())`,
+          [
+            notaire.id,
+            `🧾 Facture soumise pour visa & émission — ${fiche.numero_dossier}`,
+            `La Facture Normalisée du dossier ${fiche.numero_dossier} a été soumise par ${req.utilisateur.nom_complet || "le comptable"} pour émission.`,
+          ],
+        );
+      }
+
+      res.json({ message: "Facture soumise avec succès au Notaire.", donnees });
+    } catch (e) {
+      next(e);
+    }
+  },
+);
 
 // Valider la Facture (Par le Notaire)
 router.post("/dossiers/:dossierId/valider-facture", async (req, res, next) => {
   try {
-    if (req.utilisateur.role !== "notaire" && req.utilisateur.role !== "premier_clerc" && req.utilisateur.role !== "superadmin") {
-      return res.status(403).json({ erreur: "Seul le Notaire ou le Premier Clerc peut émettre et valider la facture." });
+    if (
+      req.utilisateur.role !== "notaire" &&
+      req.utilisateur.role !== "premier_clerc" &&
+      req.utilisateur.role !== "superadmin"
+    ) {
+      return res
+        .status(403)
+        .json({
+          erreur:
+            "Seul le Notaire ou le Premier Clerc peut émettre et valider la facture.",
+        });
     }
 
     const { rows } = await pool.query(
@@ -480,9 +764,10 @@ router.post("/dossiers/:dossierId/valider-facture", async (req, res, next) => {
        JOIN dossiers d ON d.id = f.dossier_id
        WHERE f.dossier_id = $1
        ORDER BY f.created_at DESC LIMIT 1`,
-      [req.params.dossierId]
+      [req.params.dossierId],
     );
-    if (!rows.length) return res.status(404).json({ erreur: "Fiche de taxe introuvable." });
+    if (!rows.length)
+      return res.status(404).json({ erreur: "Fiche de taxe introuvable." });
     const fiche = rows[0];
 
     const donnees = fiche.donnees || {};
@@ -490,10 +775,18 @@ router.post("/dossiers/:dossierId/valider-facture", async (req, res, next) => {
     donnees.factureValideeLe = new Date();
     donnees.factureValideePar = req.utilisateur.nom_complet;
 
-    await pool.query("UPDATE fiches_taxe SET donnees = $1 WHERE id = $2", [donnees, fiche.id]);
+    await pool.query("UPDATE fiches_taxe SET donnees = $1 WHERE id = $2", [
+      donnees,
+      fiche.id,
+    ]);
 
-    res.json({ message: "Facture Normalisée validée et émise par Maître.", donnees });
-  } catch (e) { next(e); }
+    res.json({
+      message: "Facture Normalisée validée et émise par Maître.",
+      donnees,
+    });
+  } catch (e) {
+    next(e);
+  }
 });
 
 // =========================================================================
@@ -503,7 +796,13 @@ router.post("/dossiers/:dossierId/valider-facture", async (req, res, next) => {
 router.get("/validations/parapheur-global", async (req, res, next) => {
   try {
     const etudeId = req.utilisateur ? req.utilisateur.etudeId : null;
-    const estCompteDemo = !etudeId || etudeId === "etude-abidjan-01" || etudeId === "a0000000-0000-0000-0000-000000000001" || (req.utilisateur && req.utilisateur.email && req.utilisateur.email.endsWith("@notaire.ci"));
+    const estCompteDemo =
+      !etudeId ||
+      etudeId === "etude-abidjan-01" ||
+      etudeId === "a0000000-0000-0000-0000-000000000001" ||
+      (req.utilisateur &&
+        req.utilisateur.email &&
+        req.utilisateur.email.endsWith("@notaire.ci"));
 
     let fichesTaxe = [];
     let notesFrais = [];
@@ -513,11 +812,13 @@ router.get("/validations/parapheur-global", async (req, res, next) => {
     let deboursCharges = [];
 
     try {
-      const etudeCondition = (etudeId && !estCompteDemo) ? "AND d.etude_id = $1" : "";
-      const etudeParams = (etudeId && !estCompteDemo) ? [etudeId] : [];
+      const etudeCondition =
+        etudeId && !estCompteDemo ? "AND d.etude_id = $1" : "";
+      const etudeParams = etudeId && !estCompteDemo ? [etudeId] : [];
 
       // 1. Fiches de taxe soumises
-      const fichesTaxeRes = await pool.query(`
+      const fichesTaxeRes = await pool.query(
+        `
         SELECT f.id, f.dossier_id, f.donnees, f.statut, f.commentaire_notaire, f.created_at, f.version,
                d.numero_dossier, d.type_acte_id, d.montant_assiette,
                u.nom_complet AS utilisateur_nom,
@@ -531,11 +832,14 @@ router.get("/validations/parapheur-global", async (req, res, next) => {
         LEFT JOIN utilisateurs u ON u.id = f.utilisateur_id
         WHERE f.statut = 'soumis' ${etudeCondition}
         ORDER BY f.created_at DESC
-      `, etudeParams);
+      `,
+        etudeParams,
+      );
       fichesTaxe = fichesTaxeRes.rows || [];
 
       // 2. Notes de frais soumises
-      const notesFraisRes = await pool.query(`
+      const notesFraisRes = await pool.query(
+        `
         SELECT f.id, f.dossier_id, f.donnees, f.created_at,
                (f.donnees->>'statutNoteFrais') AS statut_note,
                (f.donnees->>'noteFraisSoumisePar') AS soumis_par,
@@ -552,11 +856,14 @@ router.get("/validations/parapheur-global", async (req, res, next) => {
         LEFT JOIN utilisateurs u ON u.id = f.utilisateur_id
         WHERE (f.donnees->>'statutNoteFrais') = 'soumis' ${etudeCondition}
         ORDER BY f.created_at DESC
-      `, etudeParams);
+      `,
+        etudeParams,
+      );
       notesFrais = notesFraisRes.rows || [];
 
       // 3. Factures soumises
-      const facturesRes = await pool.query(`
+      const facturesRes = await pool.query(
+        `
         SELECT f.id, f.dossier_id, f.donnees, f.created_at,
                (f.donnees->>'statutFacture') AS statut_facture,
                (f.donnees->>'factureSoumisePar') AS soumis_par,
@@ -573,11 +880,14 @@ router.get("/validations/parapheur-global", async (req, res, next) => {
         LEFT JOIN utilisateurs u ON u.id = f.utilisateur_id
         WHERE (f.donnees->>'statutFacture') = 'soumis' ${etudeCondition}
         ORDER BY f.created_at DESC
-      `, etudeParams);
+      `,
+        etudeParams,
+      );
       factures = facturesRes.rows || [];
 
       // 4. Projets d'actes soumis
-      const projetsActeRes = await pool.query(`
+      const projetsActeRes = await pool.query(
+        `
         SELECT p.id, p.dossier_id, p.numero_version, p.contenu, p.piece_jointe_url, p.statut, p.soumis_le, p.created_at,
                d.numero_dossier, d.type_acte_id,
                u.nom_complet AS redige_par_nom,
@@ -591,19 +901,25 @@ router.get("/validations/parapheur-global", async (req, res, next) => {
         LEFT JOIN utilisateurs u ON u.id = p.redige_par_id
         WHERE p.statut = 'soumis' ${etudeCondition}
         ORDER BY p.soumis_le DESC NULLS LAST, p.created_at DESC
-      `, etudeParams);
+      `,
+        etudeParams,
+      );
       projetsActe = projetsActeRes.rows || [];
 
       // 5. Salaires
-      const userCondition = (etudeId && !estCompteDemo) ? "AND u.etude_id = $1" : "";
-      const equipeRes = await pool.query(`
+      const userCondition =
+        etudeId && !estCompteDemo ? "AND u.etude_id = $1" : "";
+      const equipeRes = await pool.query(
+        `
         SELECT u.id, u.nom_complet, u.email, u.role, u.telephone, u.type_contrat, u.salaire_net
         FROM utilisateurs u
         WHERE u.actif = true AND u.salaire_net > 0 ${userCondition}
         ORDER BY u.nom_complet ASC
-      `, etudeParams);
+      `,
+        etudeParams,
+      );
       if (equipeRes.rows && equipeRes.rows.length) {
-        salairesEtCharges = equipeRes.rows.map(m => ({
+        salairesEtCharges = equipeRes.rows.map((m) => ({
           id: m.id,
           nomComplet: m.nom_complet,
           role: m.role,
@@ -611,16 +927,25 @@ router.get("/validations/parapheur-global", async (req, res, next) => {
           salaireNet: Number(m.salaire_net) || 0,
           chargesPatronales: Math.round((Number(m.salaire_net) || 0) * 0.15),
           type: "salaire_mensuel",
-          periode: new Date().toLocaleDateString("fr-CI", { month: "long", year: "numeric" }),
-          statut: "a_valider"
+          periode: new Date().toLocaleDateString("fr-CI", {
+            month: "long",
+            year: "numeric",
+          }),
+          statut: "a_valider",
         }));
       }
     } catch (dbErr) {
       if (estCompteDemo) {
         const fiches = Array.from(FICHES_MEMOIRE.values());
-        fichesTaxe = fiches.filter(f => f.statut === "soumis");
-        notesFrais = fiches.filter(f => f.donnees && (f.donnees.statutNoteFrais === "soumis" || f.statut === "soumis"));
-        factures = fiches.filter(f => f.donnees && f.donnees.statutFacture === "soumis");
+        fichesTaxe = fiches.filter((f) => f.statut === "soumis");
+        notesFrais = fiches.filter(
+          (f) =>
+            f.donnees &&
+            (f.donnees.statutNoteFrais === "soumis" || f.statut === "soumis"),
+        );
+        factures = fiches.filter(
+          (f) => f.donnees && f.donnees.statutFacture === "soumis",
+        );
         projetsActe = [
           {
             id: "proj-demo-1",
@@ -628,13 +953,14 @@ router.get("/validations/parapheur-global", async (req, res, next) => {
             numero_dossier: "DOS-2026-001",
             type_acte_id: "vente_immobiliere",
             numero_version: 1,
-            contenu: "Projet d'acte de vente immobilière parcelle TF N° 124 589...",
+            contenu:
+              "Projet d'acte de vente immobilière parcelle TF N° 124 589...",
             statut: "soumis",
             soumis_le: new Date().toISOString(),
             created_at: new Date().toISOString(),
             redige_par_nom: "Me KOUAMÉ N'Guessan",
-            comparants_noms: "M. KOUASSI K. & MME KOFFI A."
-          }
+            comparants_noms: "M. KOUASSI K. & MME KOFFI A.",
+          },
         ];
       }
     }
@@ -643,30 +969,35 @@ router.get("/validations/parapheur-global", async (req, res, next) => {
       deboursCharges = [
         {
           id: "deb-1",
-          objet: "Droits d'immatriculation foncière (Conservation Foncière Cocody)",
+          objet:
+            "Droits d'immatriculation foncière (Conservation Foncière Cocody)",
           numeroDossier: "2024-VTE-0042",
           clientNom: "M. KOUASSI Jean-Baptiste",
           montant: 1850000,
           type: "conservation_fonciere",
           beneficiaire: "Trésor Public / Conservation Foncière",
           statut: "a_valider",
-          soumisLe: new Date(Date.now() - 86400000).toISOString()
-        }
+          soumisLe: new Date(Date.now() - 86400000).toISOString(),
+        },
       ];
     }
 
     let recusPaiement = [];
     try {
-      recusPaiement = await recusService.listerRecusPourUtilisateur(req.utilisateur, { statut: "en_attente_validation" });
+      recusPaiement = await recusService.listerRecusPourUtilisateur(
+        req.utilisateur,
+        { statut: "en_attente_validation" },
+      );
     } catch (_) {}
 
-    const totalEnAttente = fichesTaxe.length +
-                           notesFrais.length +
-                           factures.length +
-                           projetsActe.length +
-                           salairesEtCharges.length +
-                           deboursCharges.length +
-                           recusPaiement.length;
+    const totalEnAttente =
+      fichesTaxe.length +
+      notesFrais.length +
+      factures.length +
+      projetsActe.length +
+      salairesEtCharges.length +
+      deboursCharges.length +
+      recusPaiement.length;
 
     res.json({
       totalEnAttente,
@@ -678,28 +1009,47 @@ router.get("/validations/parapheur-global", async (req, res, next) => {
       deboursCharges: deboursCharges,
       recusPaiement: recusPaiement,
     });
-  } catch (e) { next(e); }
+  } catch (e) {
+    next(e);
+  }
 });
 
 // Validation individuelle de salaire
 router.post("/validations/salaires/:id/valider", async (req, res, next) => {
   try {
-    res.json({ succes: true, message: "Paiement du salaire validé et autorisé pour décaissement bancaire." });
-  } catch (e) { next(e); }
+    res.json({
+      succes: true,
+      message:
+        "Paiement du salaire validé et autorisé pour décaissement bancaire.",
+    });
+  } catch (e) {
+    next(e);
+  }
 });
 
 // Validation globale de l'état de paie mensuel (Masse salariale)
 router.post("/validations/salaires/valider-tout", async (req, res, next) => {
   try {
-    res.json({ succes: true, message: "État de paie global du cabinet validé par Maître Notaire pour virement." });
-  } catch (e) { next(e); }
+    res.json({
+      succes: true,
+      message:
+        "État de paie global du cabinet validé par Maître Notaire pour virement.",
+    });
+  } catch (e) {
+    next(e);
+  }
 });
 
 // Validation de débours
 router.post("/validations/debours/:id/valider", async (req, res, next) => {
   try {
-    res.json({ succes: true, message: "Décaissement du débours autorisé par Maître Notaire." });
-  } catch (e) { next(e); }
+    res.json({
+      succes: true,
+      message: "Décaissement du débours autorisé par Maître Notaire.",
+    });
+  } catch (e) {
+    next(e);
+  }
 });
 
 // Fiches de taxe en attente de visa du notaire
@@ -721,7 +1071,9 @@ router.get("/fiches-en-attente", async (req, res, next) => {
       ORDER BY f.created_at DESC
     `);
     res.json(rows);
-  } catch (e) { next(e); }
+  } catch (e) {
+    next(e);
+  }
 });
 
 // Historique d'un dossier
@@ -734,7 +1086,7 @@ router.get("/dossiers/:dossierId/historique", async (req, res, next) => {
        LEFT JOIN utilisateurs v ON v.id = f.valide_par_id
        WHERE f.dossier_id = $1 
        ORDER BY f.created_at DESC`,
-      [req.params.dossierId]
+      [req.params.dossierId],
     );
     if (rows && rows.length) return res.json(rows);
   } catch (e) {
@@ -742,7 +1094,9 @@ router.get("/dossiers/:dossierId/historique", async (req, res, next) => {
   }
 
   const dId = String(req.params.dossierId);
-  const fichesDossier = Array.from(FICHES_MEMOIRE.values()).filter(f => String(f.dossier_id) === dId || String(f.id) === dId);
+  const fichesDossier = Array.from(FICHES_MEMOIRE.values()).filter(
+    (f) => String(f.dossier_id) === dId || String(f.id) === dId,
+  );
   res.json(fichesDossier);
 });
 
@@ -782,33 +1136,58 @@ router.get("/modeles-excel", async (req, res, next) => {
   try {
     const modeles = excelService.listerModelesExcel();
     res.json(modeles);
-  } catch (e) { next(e); }
+  } catch (e) {
+    next(e);
+  }
 });
 
 // Téléverser un modèle Excel personnalisé pour l'étude
-router.post("/importer-modele-excel", exigerPermission("parametres:modifier"), express.json({ limit: "25mb" }), async (req, res, next) => {
-  try {
-    const { nomFichier, contenuBase64 } = req.body || {};
-    if (!nomFichier || !contenuBase64) {
-      return res.status(400).json({ erreur: "Nom de fichier et contenu base64 requis." });
+router.post(
+  "/importer-modele-excel",
+  exigerPermission("parametres:modifier"),
+  express.json({ limit: "25mb" }),
+  async (req, res, next) => {
+    try {
+      const { nomFichier, contenuBase64 } = req.body || {};
+      if (!nomFichier || !contenuBase64) {
+        return res
+          .status(400)
+          .json({ erreur: "Nom de fichier et contenu base64 requis." });
+      }
+      const buffer = Buffer.from(contenuBase64, "base64");
+      const resultat = excelService.enregistrerModelePersonnalise(
+        nomFichier,
+        buffer,
+      );
+      res.json({
+        message: "Modèle Excel enregistré avec succès.",
+        modele: resultat,
+      });
+    } catch (e) {
+      next(e);
     }
-    const buffer = Buffer.from(contenuBase64, "base64");
-    const resultat = excelService.enregistrerModelePersonnalise(nomFichier, buffer);
-    res.json({ message: "Modèle Excel enregistré avec succès.", modele: resultat });
-  } catch (e) { next(e); }
-});
+  },
+);
 
 // Supprimer un modèle Excel personnalisé
-router.delete("/modeles-excel/:id", exigerPermission("parametres:modifier"), async (req, res, next) => {
-  try {
-    const supprime = excelService.supprimerModelePersonnalise(req.params.id);
-    if (supprime) {
-      res.json({ message: "Modèle supprimé avec succès." });
-    } else {
-      res.status(404).json({ erreur: "Modèle introuvable ou non supprimable." });
+router.delete(
+  "/modeles-excel/:id",
+  exigerPermission("parametres:modifier"),
+  async (req, res, next) => {
+    try {
+      const supprime = excelService.supprimerModelePersonnalise(req.params.id);
+      if (supprime) {
+        res.json({ message: "Modèle supprimé avec succès." });
+      } else {
+        res
+          .status(404)
+          .json({ erreur: "Modèle introuvable ou non supprimable." });
+      }
+    } catch (e) {
+      next(e);
     }
-  } catch (e) { next(e); }
-});
+  },
+);
 
 // Télécharger un modèle type officiel (.xlsx)
 router.get("/modeles-excel/telecharger/:id", async (req, res, next) => {
@@ -818,18 +1197,27 @@ router.get("/modeles-excel/telecharger/:id", async (req, res, next) => {
       return res.status(404).json({ erreur: "Fichier modèle introuvable." });
     }
     const nomFichier = path.basename(chemin);
-    res.setHeader("Content-Disposition", `attachment; filename="${nomFichier}"`);
-    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${nomFichier}"`,
+    );
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    );
     const stream = fs.createReadStream(chemin);
     stream.pipe(res);
-  } catch (e) { next(e); }
+  } catch (e) {
+    next(e);
+  }
 });
 
 // Exporter la liquidation complète dans le modèle Excel de l'étude (.xlsx)
 router.post("/export-excel", async (req, res, next) => {
   try {
-    const { dossierId, typeActeId, montant, saisies, modeleId } = req.body || {};
-    
+    const { dossierId, typeActeId, montant, saisies, modeleId } =
+      req.body || {};
+
     let dossier = {};
     if (dossierId) {
       const { rows } = await pool.query(
@@ -839,40 +1227,67 @@ router.post("/export-excel", async (req, res, next) => {
          FROM dossiers d
          LEFT JOIN types_actes t ON t.id = d.type_acte_id
          WHERE d.id = $1`,
-        [dossierId]
+        [dossierId],
       );
       if (rows.length) dossier = rows[0];
     }
 
     const tActeId = typeActeId || dossier.type_acte_id || "vente_immobiliere";
-    const mAssiette = montant !== undefined ? Number(montant) : (Number(dossier.montant_assiette) || 0);
+    const mAssiette =
+      montant !== undefined
+        ? Number(montant)
+        : Number(dossier.montant_assiette) || 0;
 
     const [typeActe, parametres, tranches] = await Promise.all([
       referentielService.obtenirTypeActe(tActeId),
       parametresService.obtenir(),
-      referentielService.obtenirTranchesBareme(typeActeId ? (await referentielService.obtenirTypeActe(tActeId))?.baremeEmolumentsId : undefined),
+      referentielService.obtenirTranchesBareme(
+        typeActeId
+          ? (await referentielService.obtenirTypeActe(tActeId))
+              ?.baremeEmolumentsId
+          : undefined,
+      ),
     ]);
 
-    const ficheCalculee = fiscalService.calculerFicheDeTaxe(typeActe || {}, mAssiette, parametres, tranches || [], saisies || {});
+    const ficheCalculee = fiscalService.calculerFicheDeTaxe(
+      typeActe || {},
+      mAssiette,
+      parametres,
+      tranches || [],
+      saisies || {},
+    );
 
     const bufferExcel = excelService.genererFichierExcelLiquidation(
       {
         montantAssiette: mAssiette,
-        comparantsNoms: dossier.comparants_noms || req.body.clientNom || "CLIENT DU DOSSIER",
-        numeroDossier: dossier.numero_dossier || req.body.numeroDossier || "DOSSIER",
-        typeActeLibelle: (typeActe && typeActe.libelle) || dossier.type_acte_libelle || "ACTE NOTARIÉ",
+        comparantsNoms:
+          dossier.comparants_noms || req.body.clientNom || "CLIENT DU DOSSIER",
+        numeroDossier:
+          dossier.numero_dossier || req.body.numeroDossier || "DOSSIER",
+        typeActeLibelle:
+          (typeActe && typeActe.libelle) ||
+          dossier.type_acte_libelle ||
+          "ACTE NOTARIÉ",
       },
       ficheCalculee,
       parametres,
-      modeleId
+      modeleId,
     );
 
     const nomFichierSortie = `Liquidation_${(dossier.numero_dossier || "Notaire").replace(/[^a-zA-Z0-9_-]/g, "_")}.xlsx`;
 
-    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-    res.setHeader("Content-Disposition", `attachment; filename="${nomFichierSortie}"`);
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    );
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${nomFichierSortie}"`,
+    );
     res.send(bufferExcel);
-  } catch (e) { next(e); }
+  } catch (e) {
+    next(e);
+  }
 });
 
 // Télécharger directement le fichier Excel d'un dossier
@@ -885,23 +1300,34 @@ router.get("/dossiers/:dossierId/export-excel", async (req, res, next) => {
        FROM dossiers d
        LEFT JOIN types_actes t ON t.id = d.type_acte_id
        WHERE d.id = $1`,
-      [req.params.dossierId]
+      [req.params.dossierId],
     );
-    if (!rows.length) return res.status(404).json({ erreur: "Dossier introuvable." });
+    if (!rows.length)
+      return res.status(404).json({ erreur: "Dossier introuvable." });
     const dossier = rows[0];
 
     const { rows: fiches } = await pool.query(
       "SELECT * FROM fiches_taxe WHERE dossier_id = $1 ORDER BY created_at DESC LIMIT 1",
-      [dossier.id]
+      [dossier.id],
     );
 
     const parametres = await parametresService.obtenir();
     let ficheDonnees = fiches.length ? fiches[0].donnees : null;
 
     if (!ficheDonnees) {
-      const typeActe = await referentielService.obtenirTypeActe(dossier.type_acte_id);
-      const tranches = await referentielService.obtenirTranchesBareme(typeActe?.baremeEmolumentsId);
-      ficheDonnees = fiscalService.calculerFicheDeTaxe(typeActe || {}, Number(dossier.montant_assiette) || 0, parametres, tranches || [], {});
+      const typeActe = await referentielService.obtenirTypeActe(
+        dossier.type_acte_id,
+      );
+      const tranches = await referentielService.obtenirTranchesBareme(
+        typeActe?.baremeEmolumentsId,
+      );
+      ficheDonnees = fiscalService.calculerFicheDeTaxe(
+        typeActe || {},
+        Number(dossier.montant_assiette) || 0,
+        parametres,
+        tranches || [],
+        {},
+      );
     }
 
     const bufferExcel = excelService.genererFichierExcelLiquidation(
@@ -913,20 +1339,29 @@ router.get("/dossiers/:dossierId/export-excel", async (req, res, next) => {
       },
       ficheDonnees,
       parametres,
-      req.query.modeleId
+      req.query.modeleId,
     );
 
     const nomFichierSortie = `Liquidation_${(dossier.numero_dossier || "Notaire").replace(/[^a-zA-Z0-9_-]/g, "_")}.xlsx`;
-    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-    res.setHeader("Content-Disposition", `attachment; filename="${nomFichierSortie}"`);
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    );
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${nomFichierSortie}"`,
+    );
     res.send(bufferExcel);
-  } catch (e) { next(e); }
+  } catch (e) {
+    next(e);
+  }
 });
 
 // Obtenir le rendu HTML interactif fidèle d'un modèle Excel (.xlsx)
 router.post("/excel/rendu-html", async (req, res, next) => {
   try {
-    const { dossierId, typeActeId, montant, saisies, modeleId, feuille } = req.body || {};
+    const { dossierId, typeActeId, montant, saisies, modeleId, feuille } =
+      req.body || {};
 
     let dossier = {};
     if (dossierId) {
@@ -937,37 +1372,58 @@ router.post("/excel/rendu-html", async (req, res, next) => {
          FROM dossiers d
          LEFT JOIN types_actes t ON t.id = d.type_acte_id
          WHERE d.id = $1`,
-        [dossierId]
+        [dossierId],
       );
       if (rows.length) dossier = rows[0];
     }
 
     const tActeId = typeActeId || dossier.type_acte_id || "vente_immobiliere";
-    const mAssiette = montant !== undefined ? Number(montant) : (Number(dossier.montant_assiette) || 0);
+    const mAssiette =
+      montant !== undefined
+        ? Number(montant)
+        : Number(dossier.montant_assiette) || 0;
 
     const [typeActe, parametres, tranches] = await Promise.all([
       referentielService.obtenirTypeActe(tActeId),
       parametresService.obtenir(),
-      referentielService.obtenirTranchesBareme(typeActeId ? (await referentielService.obtenirTypeActe(tActeId))?.baremeEmolumentsId : undefined),
+      referentielService.obtenirTranchesBareme(
+        typeActeId
+          ? (await referentielService.obtenirTypeActe(tActeId))
+              ?.baremeEmolumentsId
+          : undefined,
+      ),
     ]);
 
-    const ficheCalculee = fiscalService.calculerFicheDeTaxe(typeActe || {}, mAssiette, parametres, tranches || [], saisies || {});
+    const ficheCalculee = fiscalService.calculerFicheDeTaxe(
+      typeActe || {},
+      mAssiette,
+      parametres,
+      tranches || [],
+      saisies || {},
+    );
 
     const rendu = excelRendererService.rendreClasseurExcelInteractif(
       modeleId || "TEST",
       {
         montantAssiette: mAssiette,
-        comparantsNoms: dossier.comparants_noms || req.body.clientNom || "CLIENT DU DOSSIER",
-        numeroDossier: dossier.numero_dossier || req.body.numeroDossier || "DOSSIER",
-        typeActeLibelle: (typeActe && typeActe.libelle) || dossier.type_acte_libelle || "ACTE NOTARIÉ",
+        comparantsNoms:
+          dossier.comparants_noms || req.body.clientNom || "CLIENT DU DOSSIER",
+        numeroDossier:
+          dossier.numero_dossier || req.body.numeroDossier || "DOSSIER",
+        typeActeLibelle:
+          (typeActe && typeActe.libelle) ||
+          dossier.type_acte_libelle ||
+          "ACTE NOTARIÉ",
       },
       ficheCalculee,
       parametres,
-      feuille
+      feuille,
     );
 
     res.json(rendu);
-  } catch (e) { next(e); }
+  } catch (e) {
+    next(e);
+  }
 });
 
 module.exports = router;

@@ -15,7 +15,12 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const path = require("path");
 const fs = require("fs");
-const { classifierEtape, detecteTaxeFonciere, estBloquante, normaliser } = require("../scripts/importer-referentiel");
+const {
+  classifierEtape,
+  detecteTaxeFonciere,
+  estBloquante,
+  normaliser,
+} = require("../scripts/importer-referentiel");
 
 test("classifierEtape — cas de référence sur les libellés réels du cabinet", () => {
   const cas = [
@@ -33,13 +38,23 @@ test("classifierEtape — cas de référence sur les libellés réels du cabinet
     ["Transmission de pièces aux clients", 6],
   ];
   for (const [libelle, attendu] of cas) {
-    assert.equal(classifierEtape(libelle), attendu, `"${libelle}" devrait être étape ${attendu}`);
+    assert.equal(
+      classifierEtape(libelle),
+      attendu,
+      `"${libelle}" devrait être étape ${attendu}`,
+    );
   }
 });
 
 test("detecteTaxeFonciere — vrai si une tâche mentionne une inscription/mutation foncière", () => {
-  assert.equal(detecteTaxeFonciere([{ libelle: "Mutation au livre foncier" }]), true);
-  assert.equal(detecteTaxeFonciere([{ libelle: "Collecte d'informations" }]), false);
+  assert.equal(
+    detecteTaxeFonciere([{ libelle: "Mutation au livre foncier" }]),
+    true,
+  );
+  assert.equal(
+    detecteTaxeFonciere([{ libelle: "Collecte d'informations" }]),
+    false,
+  );
 });
 
 test("estBloquante — collecte, rédaction et signature sont bloquantes ; le reste non par défaut", () => {
@@ -50,7 +65,12 @@ test("estBloquante — collecte, rédaction et signature sont bloquantes ; le re
 });
 
 test("classement — aucune tâche réelle du cabinet ne tombe sur le repli par défaut sans raison", () => {
-  const cheminEtude1 = path.join(__dirname, "..", "seed", "etude1_catalogue.json");
+  const cheminEtude1 = path.join(
+    __dirname,
+    "..",
+    "seed",
+    "etude1_catalogue.json",
+  );
   const actes = JSON.parse(fs.readFileSync(cheminEtude1, "utf-8"));
   const nonClassifiees = [];
   for (const acte of actes) {
@@ -62,5 +82,9 @@ test("classement — aucune tâche réelle du cabinet ne tombe sur le repli par 
       }
     }
   }
-  assert.deepEqual(nonClassifiees, [], "des tâches réelles retombent sur le repli par défaut (étape 3) sans contenir 'rédaction'");
+  assert.deepEqual(
+    nonClassifiees,
+    [],
+    "des tâches réelles retombent sur le repli par défaut (étape 3) sans contenir 'rédaction'",
+  );
 });

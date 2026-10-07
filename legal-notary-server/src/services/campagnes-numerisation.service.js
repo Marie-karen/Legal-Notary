@@ -58,10 +58,12 @@ const CAMPAGNES_MEMOIRE = [
     responsableNom: "M. Bakary Cissé (Archiviste)",
     notes: "Campagne 100% clôturée et scellée numériquement SHA-256.",
     createdAt: "2025-11-15T10:00:00.000Z",
-  }
+  },
 ];
 
-async function listerCampagnes(etudeId = "a0000000-0000-0000-0000-000000000001") {
+async function listerCampagnes(
+  etudeId = "a0000000-0000-0000-0000-000000000001",
+) {
   try {
     const { rows } = await pool.query(
       `SELECT c.*, u.nom_complet AS responsable_nom
@@ -69,7 +71,7 @@ async function listerCampagnes(etudeId = "a0000000-0000-0000-0000-000000000001")
        LEFT JOIN utilisateurs u ON u.id = c.responsable_id
        WHERE c.etude_id = $1
        ORDER BY c.created_at DESC`,
-      [etudeId]
+      [etudeId],
     );
     if (rows && rows.length > 0) {
       return rows.map((c) => ({
@@ -82,8 +84,14 @@ async function listerCampagnes(etudeId = "a0000000-0000-0000-0000-000000000001")
         totalDossiers: c.total_dossiers,
         dossiersNumerises: c.dossiers_numerises,
         dossiersEnCours: c.dossiers_en_cours,
-        dossiersRestants: Math.max(0, c.total_dossiers - c.dossiers_numerises - c.dossiers_en_cours),
-        tauxAvancementPct: c.total_dossiers > 0 ? Math.round((c.dossiers_numerises / c.total_dossiers) * 100) : 0,
+        dossiersRestants: Math.max(
+          0,
+          c.total_dossiers - c.dossiers_numerises - c.dossiers_en_cours,
+        ),
+        tauxAvancementPct:
+          c.total_dossiers > 0
+            ? Math.round((c.dossiers_numerises / c.total_dossiers) * 100)
+            : 0,
         statut: c.statut,
         responsableNom: c.responsable_nom,
         notes: c.notes,
@@ -123,7 +131,7 @@ async function creerCampagne({
         Number(totalDossiers) || 1000,
         responsableId,
         notes,
-      ]
+      ],
     );
     if (rows && rows.length) return rows[0];
   } catch (errDb) {
@@ -164,19 +172,28 @@ async function enregistrerAvancementLot({
            updated_at = now()
        WHERE id = $3
        RETURNING *`,
-      [nombreNumerisesAjoutes, nombreEnCours, campagneId]
+      [nombreNumerisesAjoutes, nombreEnCours, campagneId],
     );
     if (rows && rows.length) return rows[0];
   } catch (errDb) {
     // Repli mémoire
   }
 
-  const camp = CAMPAGNES_MEMOIRE.find(c => c.id === campagneId);
+  const camp = CAMPAGNES_MEMOIRE.find((c) => c.id === campagneId);
   if (camp) {
     camp.dossiersNumerises += Number(nombreNumerisesAjoutes) || 0;
-    camp.dossiersEnCours = Math.max(0, camp.dossiersEnCours + (Number(nombreEnCours) || 0));
-    camp.dossiersRestants = Math.max(0, camp.totalDossiers - camp.dossiersNumerises - camp.dossiersEnCours);
-    camp.tauxAvancementPct = camp.totalDossiers > 0 ? Math.round((camp.dossiersNumerises / camp.totalDossiers) * 100) : 0;
+    camp.dossiersEnCours = Math.max(
+      0,
+      camp.dossiersEnCours + (Number(nombreEnCours) || 0),
+    );
+    camp.dossiersRestants = Math.max(
+      0,
+      camp.totalDossiers - camp.dossiersNumerises - camp.dossiersEnCours,
+    );
+    camp.tauxAvancementPct =
+      camp.totalDossiers > 0
+        ? Math.round((camp.dossiersNumerises / camp.totalDossiers) * 100)
+        : 0;
     return camp;
   }
   return null;

@@ -27,7 +27,7 @@ router.post("/public/:token/soumettre", async (req, res, next) => {
       req.params.token,
       req.body,
       req.ip,
-      req.headers["user-agent"]
+      req.headers["user-agent"],
     );
     res.json({ message: "Fiche KYC enregistrée avec succès", kyc: data });
   } catch (e) {
@@ -45,7 +45,7 @@ router.get("/dossier/:dossierId/token", async (req, res, next) => {
   try {
     const data = await kycService.genererOuRecupererTokenKyc(
       req.params.dossierId,
-      req.utilisateur ? req.utilisateur.id : null
+      req.utilisateur ? req.utilisateur.id : null,
     );
     res.json(data);
   } catch (e) {
@@ -66,7 +66,7 @@ router.post("/dossier/:dossierId/valider", async (req, res, next) => {
   try {
     const data = await kycService.validerKycDossier(
       req.params.dossierId,
-      req.utilisateur ? req.utilisateur.id : null
+      req.utilisateur ? req.utilisateur.id : null,
     );
     res.json({ message: "Fiche KYC validée", kyc: data });
   } catch (e) {

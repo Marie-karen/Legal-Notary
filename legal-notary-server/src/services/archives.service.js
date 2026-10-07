@@ -8,28 +8,78 @@ const parametresService = require("./parametres.service");
 const crypto = require("crypto");
 
 const CARTONS_MEMOIRE = [
-  { id: "carton-001", numeroCarton: "CARTON-001", salle: "Salle des Archives A", armoire: "Armoire 1", rayonnage: "Rayon Haut", capaciteMax: 50, nombreDossiers: 12, statut: "ouvert" },
-  { id: "carton-002", numeroCarton: "CARTON-002", salle: "Salle des Archives A", armoire: "Armoire 1", rayonnage: "Rayon Médian", capaciteMax: 50, nombreDossiers: 50, statut: "plein" },
-  { id: "carton-003", numeroCarton: "CARTON-003", salle: "Salle des Archives B", armoire: "Armoire 2", rayonnage: "Rayon Bas", capaciteMax: 50, nombreDossiers: 8, statut: "ouvert" },
+  {
+    id: "carton-001",
+    numeroCarton: "CARTON-001",
+    salle: "Salle des Archives A",
+    armoire: "Armoire 1",
+    rayonnage: "Rayon Haut",
+    capaciteMax: 50,
+    nombreDossiers: 12,
+    statut: "ouvert",
+  },
+  {
+    id: "carton-002",
+    numeroCarton: "CARTON-002",
+    salle: "Salle des Archives A",
+    armoire: "Armoire 1",
+    rayonnage: "Rayon Médian",
+    capaciteMax: 50,
+    nombreDossiers: 50,
+    statut: "plein",
+  },
+  {
+    id: "carton-003",
+    numeroCarton: "CARTON-003",
+    salle: "Salle des Archives B",
+    armoire: "Armoire 2",
+    rayonnage: "Rayon Bas",
+    capaciteMax: 50,
+    nombreDossiers: 8,
+    statut: "ouvert",
+  },
 ];
 
 const MINUTES_MEMOIRE = [
-  { id: "min-001", dossier_id: "dos-demo-001", numero_minute: "MIN-2026/001", annee_minute: 2026, carton_id: "carton-001", position_dans_carton: 1, code_emplacement: "Salle A · Armoire 1 · CARTON-001 · pos 001", statut_archivage: "archive", scan_url: "SCAN_MIN_2026_001.pdf", date_cloture: "2026-02-15T10:00:00Z" },
-  { id: "min-002", dossier_id: "dos-demo-002", numero_minute: "MIN-2026/002", annee_minute: 2026, carton_id: "carton-001", position_dans_carton: 2, code_emplacement: "Salle A · Armoire 1 · CARTON-001 · pos 002", statut_archivage: "archive", scan_url: "SCAN_MIN_2026_002.pdf", date_cloture: "2026-02-20T11:30:00Z" },
+  {
+    id: "min-001",
+    dossier_id: "dos-demo-001",
+    numero_minute: "MIN-2026/001",
+    annee_minute: 2026,
+    carton_id: "carton-001",
+    position_dans_carton: 1,
+    code_emplacement: "Salle A · Armoire 1 · CARTON-001 · pos 001",
+    statut_archivage: "archive",
+    scan_url: "SCAN_MIN_2026_001.pdf",
+    date_cloture: "2026-02-15T10:00:00Z",
+  },
+  {
+    id: "min-002",
+    dossier_id: "dos-demo-002",
+    numero_minute: "MIN-2026/002",
+    annee_minute: 2026,
+    carton_id: "carton-001",
+    position_dans_carton: 2,
+    code_emplacement: "Salle A · Armoire 1 · CARTON-001 · pos 002",
+    statut_archivage: "archive",
+    scan_url: "SCAN_MIN_2026_002.pdf",
+    date_cloture: "2026-02-20T11:30:00Z",
+  },
 ];
 
 async function prochainNumeroMinute(client, annee) {
   try {
     const { rows } = await client.query(
       "SELECT COUNT(*)::int AS n FROM minutes_archive WHERE annee_minute = $1",
-      [annee]
+      [annee],
     );
     if (rows && rows.length) {
       const n = rows[0].n + 1;
       return `MIN-${annee}/${String(n).padStart(3, "0")}`;
     }
   } catch (_) {}
-  const count = MINUTES_MEMOIRE.filter(m => m.annee_minute === annee).length + 1;
+  const count =
+    MINUTES_MEMOIRE.filter((m) => m.annee_minute === annee).length + 1;
   return `MIN-${annee}/${String(count).padStart(3, "0")}`;
 }
 
@@ -38,13 +88,21 @@ async function cloturerDossier(dossierId, utilisateurId) {
   try {
     return await avecTransaction(async (client) => {
       const numeroMinute = await prochainNumeroMinute(client, annee);
-      await client.query("UPDATE dossiers SET statut = 'cloture' WHERE id = $1", [dossierId]);
+      await client.query(
+        "UPDATE dossiers SET statut = 'cloture' WHERE id = $1",
+        [dossierId],
+      );
       const { rows } = await client.query(
         `INSERT INTO minutes_archive (dossier_id, numero_minute, annee_minute, statut_archivage)
          VALUES ($1, $2, $3, 'a_archiver') RETURNING *`,
-        [dossierId, numeroMinute, annee]
+        [dossierId, numeroMinute, annee],
       );
-      await dossiersService.ajouterMouvement(client, dossierId, utilisateurId, `Dossier clôturé — minute ${numeroMinute} attribuée`);
+      await dossiersService.ajouterMouvement(
+        client,
+        dossierId,
+        utilisateurId,
+        `Dossier clôturé — minute ${numeroMinute} attribuée`,
+      );
       if (rows && rows.length) return rows[0];
     });
   } catch (_) {}
@@ -60,13 +118,23 @@ async function cloturerDossier(dossierId, utilisateurId) {
     date_cloture: new Date().toISOString(),
   };
   MINUTES_MEMOIRE.push(minute);
-  await dossiersService.changerEtape(dossierId, 6, { id: utilisateurId, role: "notaire" });
-  await dossiersService.ajouterMouvement(null, dossierId, utilisateurId, `Dossier clôturé — minute ${numMin} attribuée`);
+  await dossiersService.changerEtape(dossierId, 6, {
+    id: utilisateurId,
+    role: "notaire",
+  });
+  await dossiersService.ajouterMouvement(
+    null,
+    dossierId,
+    utilisateurId,
+    `Dossier clôturé — minute ${numMin} attribuée`,
+  );
   return minute;
 }
 
 function composerCodeEmplacement(carton, position) {
-  const partiesLocalisation = [carton.salle, carton.armoire, carton.rayonnage].filter(Boolean).join(" · ");
+  const partiesLocalisation = [carton.salle, carton.armoire, carton.rayonnage]
+    .filter(Boolean)
+    .join(" · ");
   const base = partiesLocalisation ? `${partiesLocalisation} · ` : "";
   return `${base}${carton.numeroCarton || carton.numero_carton} · pos ${String(position).padStart(3, "0")}`;
 }
@@ -74,20 +142,24 @@ function composerCodeEmplacement(carton, position) {
 async function obtenirOuCreerCartonOuvert(client, capaciteParDefaut) {
   try {
     const { rows } = await client.query(
-      "SELECT * FROM cartons_archive WHERE statut = 'ouvert' ORDER BY numero_carton DESC LIMIT 1"
+      "SELECT * FROM cartons_archive WHERE statut = 'ouvert' ORDER BY numero_carton DESC LIMIT 1",
     );
     if (rows && rows.length) return rows[0];
 
-    const { rows: compte } = await client.query("SELECT COUNT(*)::int AS n FROM cartons_archive");
+    const { rows: compte } = await client.query(
+      "SELECT COUNT(*)::int AS n FROM cartons_archive",
+    );
     const numero = `CARTON-${String((compte[0]?.n || 0) + 1).padStart(3, "0")}`;
     const { rows: cree } = await client.query(
       `INSERT INTO cartons_archive (numero_carton, capacite_max) VALUES ($1, $2) RETURNING *`,
-      [numero, capaciteParDefaut || 50]
+      [numero, capaciteParDefaut || 50],
     );
     if (cree && cree.length) return cree[0];
   } catch (_) {}
 
-  let ouvert = CARTONS_MEMOIRE.find(c => c.statut === "ouvert" && c.nombreDossiers < c.capaciteMax);
+  let ouvert = CARTONS_MEMOIRE.find(
+    (c) => c.statut === "ouvert" && c.nombreDossiers < c.capaciteMax,
+  );
   if (!ouvert) {
     ouvert = {
       id: "carton-" + String(CARTONS_MEMOIRE.length + 1).padStart(3, "0"),
@@ -110,42 +182,62 @@ async function archiverProchainDossier(utilisateurId) {
     return await avecTransaction(async (client) => {
       const { rows: candidats } = await client.query(
         `SELECT * FROM minutes_archive WHERE statut_archivage = 'a_archiver'
-         ORDER BY date_cloture ASC, created_at ASC LIMIT 1 FOR UPDATE`
+         ORDER BY date_cloture ASC, created_at ASC LIMIT 1 FOR UPDATE`,
       );
       if (candidats && candidats.length) {
         const minute = candidats[0];
-        const carton = await obtenirOuCreerCartonOuvert(client, parametres.capaciteCartonArchive);
+        const carton = await obtenirOuCreerCartonOuvert(
+          client,
+          parametres.capaciteCartonArchive,
+        );
         const position = (carton.nombre_dossiers || 0) + 1;
         const codeEmplacement = composerCodeEmplacement(carton, position);
 
         await client.query(
           `UPDATE minutes_archive SET carton_id = $1, position_dans_carton = $2, code_emplacement = $3, statut_archivage = 'archive'
            WHERE id = $4`,
-          [carton.id, position, codeEmplacement, minute.id]
+          [carton.id, position, codeEmplacement, minute.id],
         );
 
         const nombreDossiers = position;
         const cartonPlein = nombreDossiers >= (carton.capacite_max || 50);
         await client.query(
           `UPDATE cartons_archive SET nombre_dossiers = $1, statut = $2, date_fermeture = $3 WHERE id = $4`,
-          [nombreDossiers, cartonPlein ? "plein" : "ouvert", cartonPlein ? new Date() : null, carton.id]
+          [
+            nombreDossiers,
+            cartonPlein ? "plein" : "ouvert",
+            cartonPlein ? new Date() : null,
+            carton.id,
+          ],
         );
 
         await dossiersService.ajouterMouvement(
-          client, minute.dossier_id, utilisateurId,
-          `Dossier archivé physiquement — ${codeEmplacement}`
+          client,
+          minute.dossier_id,
+          utilisateurId,
+          `Dossier archivé physiquement — ${codeEmplacement}`,
         );
 
-        return { minuteId: minute.id, numeroMinute: minute.numero_minute, codeEmplacement, cartonNumero: carton.numero_carton };
+        return {
+          minuteId: minute.id,
+          numeroMinute: minute.numero_minute,
+          codeEmplacement,
+          cartonNumero: carton.numero_carton,
+        };
       }
     });
   } catch (_) {}
 
   // Repli mémoire
-  const minuteAttente = MINUTES_MEMOIRE.find(m => m.statut_archivage === "a_archiver");
+  const minuteAttente = MINUTES_MEMOIRE.find(
+    (m) => m.statut_archivage === "a_archiver",
+  );
   if (!minuteAttente) return null;
 
-  const carton = await obtenirOuCreerCartonOuvert(null, parametres.capaciteCartonArchive || 50);
+  const carton = await obtenirOuCreerCartonOuvert(
+    null,
+    parametres.capaciteCartonArchive || 50,
+  );
   carton.nombreDossiers = (carton.nombreDossiers || 0) + 1;
   const codeEmp = composerCodeEmplacement(carton, carton.nombreDossiers);
 
@@ -154,8 +246,18 @@ async function archiverProchainDossier(utilisateurId) {
   minuteAttente.code_emplacement = codeEmp;
   minuteAttente.statut_archivage = "archive";
 
-  await dossiersService.ajouterMouvement(null, minuteAttente.dossier_id, utilisateurId, `Dossier archivé physiquement — ${codeEmp}`);
-  return { minuteId: minuteAttente.id, numeroMinute: minuteAttente.numero_minute, codeEmplacement: codeEmp, cartonNumero: carton.numeroCarton };
+  await dossiersService.ajouterMouvement(
+    null,
+    minuteAttente.dossier_id,
+    utilisateurId,
+    `Dossier archivé physiquement — ${codeEmp}`,
+  );
+  return {
+    minuteId: minuteAttente.id,
+    numeroMinute: minuteAttente.numero_minute,
+    codeEmplacement: codeEmp,
+    cartonNumero: carton.numeroCarton,
+  };
 }
 
 async function archiverEnLot(nombre, utilisateurId) {
@@ -169,7 +271,10 @@ async function archiverEnLot(nombre, utilisateurId) {
 }
 
 async function listerCartons(etudeId) {
-  const estCompteDemo = !etudeId || etudeId === "etude-abidjan-01" || etudeId === "a0000000-0000-0000-0000-000000000001";
+  const estCompteDemo =
+    !etudeId ||
+    etudeId === "etude-abidjan-01" ||
+    etudeId === "a0000000-0000-0000-0000-000000000001";
   try {
     let query = `SELECT k.*,
          COALESCE(
@@ -209,7 +314,8 @@ async function listerCartons(etudeId) {
         armoire: r.armoire,
         rayonnage: r.rayonnage,
         capaciteMax: r.capacite_max,
-        nombreDossiers: r.nombre_dossiers || (r.dossiers ? r.dossiers.length : 0),
+        nombreDossiers:
+          r.nombre_dossiers || (r.dossiers ? r.dossiers.length : 0),
         statut: r.statut,
         dateOuverture: r.date_ouverture,
         dateFermeture: r.date_fermeture,
@@ -222,7 +328,7 @@ async function listerCartons(etudeId) {
     return [];
   }
 
-  return CARTONS_MEMOIRE.map(c => ({
+  return CARTONS_MEMOIRE.map((c) => ({
     id: c.id,
     numeroCarton: c.numeroCarton,
     salle: c.salle,
@@ -231,7 +337,7 @@ async function listerCartons(etudeId) {
     capaciteMax: c.capaciteMax,
     nombreDossiers: c.nombreDossiers,
     statut: c.statut,
-    dossiers: MINUTES_MEMOIRE.filter(m => m.carton_id === c.id).map(m => ({
+    dossiers: MINUTES_MEMOIRE.filter((m) => m.carton_id === c.id).map((m) => ({
       minuteId: m.id,
       dossierId: m.dossier_id,
       numeroMinute: m.numero_minute,
@@ -244,15 +350,31 @@ async function listerCartons(etudeId) {
   }));
 }
 
-async function creerCarton({ numeroCarton, salle, armoire, rayonnage, capaciteMax = 50, etudeId }) {
-  let numero = numeroCarton || `CARTON-${String(CARTONS_MEMOIRE.length + 1).padStart(3, "0")}`;
+async function creerCarton({
+  numeroCarton,
+  salle,
+  armoire,
+  rayonnage,
+  capaciteMax = 50,
+  etudeId,
+}) {
+  let numero =
+    numeroCarton ||
+    `CARTON-${String(CARTONS_MEMOIRE.length + 1).padStart(3, "0")}`;
   const eid = etudeId || "a0000000-0000-0000-0000-000000000001";
   try {
     const { rows } = await pool.query(
       `INSERT INTO cartons_archive (numero_carton, salle, armoire, rayonnage, capacite_max, nombre_dossiers, statut, etude_id)
        VALUES ($1, $2, $3, $4, $5, 0, 'ouvert', $6)
        RETURNING *`,
-      [numero, salle || "Salle principale", armoire || "Armoire A", rayonnage || "Rayon 1", capaciteMax || 50, eid]
+      [
+        numero,
+        salle || "Salle principale",
+        armoire || "Armoire A",
+        rayonnage || "Rayon 1",
+        capaciteMax || 50,
+        eid,
+      ],
     );
     if (rows && rows.length) {
       const r = rows[0];
@@ -286,14 +408,20 @@ async function creerCarton({ numeroCarton, salle, armoire, rayonnage, capaciteMa
 
 async function attacherScan(dossierId, scanUrl) {
   try {
-    await pool.query("UPDATE minutes_archive SET scan_url = $1 WHERE dossier_id = $2", [scanUrl, dossierId]);
+    await pool.query(
+      "UPDATE minutes_archive SET scan_url = $1 WHERE dossier_id = $2",
+      [scanUrl, dossierId],
+    );
   } catch (_) {}
-  const m = MINUTES_MEMOIRE.find(x => x.dossier_id === dossierId);
+  const m = MINUTES_MEMOIRE.find((x) => x.dossier_id === dossierId);
   if (m) m.scan_url = scanUrl;
 }
 
 async function listerEnAttenteArchivage(etudeId) {
-  const estCompteDemo = !etudeId || etudeId === "etude-abidjan-01" || etudeId === "a0000000-0000-0000-0000-000000000001";
+  const estCompteDemo =
+    !etudeId ||
+    etudeId === "etude-abidjan-01" ||
+    etudeId === "a0000000-0000-0000-0000-000000000001";
   try {
     let query = `SELECT m.*, d.numero_dossier, d.montant_assiette, d.type_acte_id,
               COALESCE(string_agg(c.nom || ' (' || c.qualite || ')', ', '), '') AS comparants_noms
@@ -315,11 +443,14 @@ async function listerEnAttenteArchivage(etudeId) {
   } catch (_) {}
 
   if (!estCompteDemo) return [];
-  return MINUTES_MEMOIRE.filter(m => m.statut_archivage === "a_archiver");
+  return MINUTES_MEMOIRE.filter((m) => m.statut_archivage === "a_archiver");
 }
 
 async function listerRepertoire(etudeId) {
-  const estCompteDemo = !etudeId || etudeId === "etude-abidjan-01" || etudeId === "a0000000-0000-0000-0000-000000000001";
+  const estCompteDemo =
+    !etudeId ||
+    etudeId === "etude-abidjan-01" ||
+    etudeId === "a0000000-0000-0000-0000-000000000001";
   try {
     let query = `SELECT m.*, d.numero_dossier, d.montant_assiette, d.type_acte_id,
               COALESCE(string_agg(c.nom || ' (' || c.qualite || ')', ', '), '') AS comparants_noms,
@@ -344,14 +475,16 @@ async function listerRepertoire(etudeId) {
 
   if (!estCompteDemo) return [];
 
-  return MINUTES_MEMOIRE.filter(m => m.statut_archivage === "archive").map(m => ({
-    ...m,
-    numero_dossier: "DOS-2026-001",
-    montant_assiette: 50000000,
-    type_acte_id: "vente_immobiliere",
-    comparants_noms: "M. Kouassi & Mme Koffi",
-    numero_carton: "CARTON-001",
-  }));
+  return MINUTES_MEMOIRE.filter((m) => m.statut_archivage === "archive").map(
+    (m) => ({
+      ...m,
+      numero_dossier: "DOS-2026-001",
+      montant_assiette: 50000000,
+      type_acte_id: "vente_immobiliere",
+      comparants_noms: "M. Kouassi & Mme Koffi",
+      numero_carton: "CARTON-001",
+    }),
+  );
 }
 
 async function obtenirDetailsJumeauDossier(dossierId) {
@@ -364,21 +497,38 @@ async function obtenirDetailsJumeauDossier(dossierId) {
        LEFT JOIN dossier_comparants c ON c.dossier_id = d.id
        WHERE d.id = $1
        GROUP BY d.id, t.id`,
-      [dossierId]
+      [dossierId],
     );
     if (dossiers && dossiers.length) {
       const d = dossiers[0];
       const [docsNum, docsPhys, minutes, mouvs] = await Promise.all([
-        pool.query("SELECT * FROM documents_numeriques WHERE dossier_id = $1 AND archived_at IS NULL ORDER BY created_at DESC", [dossierId]).catch(() => ({ rows: [] })),
-        pool.query("SELECT * FROM documents_physiques WHERE dossier_id = $1 ORDER BY created_at DESC", [dossierId]).catch(() => ({ rows: [] })),
-        pool.query(
-          `SELECT m.*, k.numero_carton, k.salle, k.armoire, k.rayonnage
+        pool
+          .query(
+            "SELECT * FROM documents_numeriques WHERE dossier_id = $1 AND archived_at IS NULL ORDER BY created_at DESC",
+            [dossierId],
+          )
+          .catch(() => ({ rows: [] })),
+        pool
+          .query(
+            "SELECT * FROM documents_physiques WHERE dossier_id = $1 ORDER BY created_at DESC",
+            [dossierId],
+          )
+          .catch(() => ({ rows: [] })),
+        pool
+          .query(
+            `SELECT m.*, k.numero_carton, k.salle, k.armoire, k.rayonnage
            FROM minutes_archive m
            LEFT JOIN cartons_archive k ON k.id = m.carton_id
            WHERE m.dossier_id = $1`,
-          [dossierId]
-        ).catch(() => ({ rows: [] })),
-        pool.query("SELECT * FROM mouvements_dossiers_physiques WHERE dossier_id = $1 ORDER BY date_mouvement DESC", [dossierId]).catch(() => ({ rows: [] })),
+            [dossierId],
+          )
+          .catch(() => ({ rows: [] })),
+        pool
+          .query(
+            "SELECT * FROM mouvements_dossiers_physiques WHERE dossier_id = $1 ORDER BY date_mouvement DESC",
+            [dossierId],
+          )
+          .catch(() => ({ rows: [] })),
       ]);
 
       const min = minutes.rows.length ? minutes.rows[0] : null;
@@ -392,7 +542,9 @@ async function obtenirDetailsJumeauDossier(dossierId) {
           typeActeLibelle: d.type_acte_libelle,
           comparantsNoms: d.comparants_noms,
           statut: d.statut,
-          statutNumerisation: d.statut_numerisation || (docsNum.rows.length ? "NUMERISE" : "NON_NUMERISE"),
+          statutNumerisation:
+            d.statut_numerisation ||
+            (docsNum.rows.length ? "NUMERISE" : "NON_NUMERISE"),
           dateOuverture: d.date_ouverture,
           montantAssiette: Number(d.montant_assiette) || 0,
         },
@@ -401,14 +553,19 @@ async function obtenirDetailsJumeauDossier(dossierId) {
           documents: docsNum.rows,
           aCopieMinute: Boolean(min && min.scan_url),
           scanUrlMinute: min ? min.scan_url : null,
-          empreinteSha256: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          empreinteSha256:
+            "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         },
         jumeauPhysique: {
           totalPiecesPhysiques: docsPhys.rows.length,
           pieces: docsPhys.rows,
           estDisponibleEnCarton: !dernierMouv,
-          statutActuel: dernierMouv ? `SORTI — ${dernierMouv.destination_bureau} (${dernierMouv.nom_demandeur})` : "DISPONIBLE EN ARCHIVES",
-          codeEmplacement: min ? min.code_emplacement : "Salle A · Armoire 1 · CARTON-001 · pos 001",
+          statutActuel: dernierMouv
+            ? `SORTI — ${dernierMouv.destination_bureau} (${dernierMouv.nom_demandeur})`
+            : "DISPONIBLE EN ARCHIVES",
+          codeEmplacement: min
+            ? min.code_emplacement
+            : "Salle A · Armoire 1 · CARTON-001 · pos 001",
           cartonNumero: min ? min.numero_carton : "CARTON-001",
           salle: "Salle des Archives A",
           armoire: "Armoire 1",
@@ -435,16 +592,29 @@ async function obtenirDetailsJumeauDossier(dossierId) {
     jumeauNumerique: {
       totalDocuments: 3,
       documents: [
-        { id: "doc-1", nom_fichier: "Titre_Foncier_2451.pdf", type_document: "piece_fonciere", created_at: new Date().toISOString() },
-        { id: "doc-2", nom_fichier: "CNI_Acheteur.pdf", type_document: "kyc_identite", created_at: new Date().toISOString() },
+        {
+          id: "doc-1",
+          nom_fichier: "Titre_Foncier_2451.pdf",
+          type_document: "piece_fonciere",
+          created_at: new Date().toISOString(),
+        },
+        {
+          id: "doc-2",
+          nom_fichier: "CNI_Acheteur.pdf",
+          type_document: "kyc_identite",
+          created_at: new Date().toISOString(),
+        },
       ],
       aCopieMinute: true,
       scanUrlMinute: "SCAN_MIN_2026_001.pdf",
-      empreinteSha256: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      empreinteSha256:
+        "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     },
     jumeauPhysique: {
       totalPiecesPhysiques: 2,
-      pieces: [{ id: "p1", intitule: "Dossier Chemise Originale Rouge", quantite: 1 }],
+      pieces: [
+        { id: "p1", intitule: "Dossier Chemise Originale Rouge", quantite: 1 },
+      ],
       estDisponibleEnCarton: true,
       statutActuel: "DISPONIBLE EN ARCHIVES",
       codeEmplacement: "Salle A · Armoire 1 · CARTON-001 · pos 001",
@@ -468,12 +638,21 @@ async function numeriserEtArchiver(donnees, utilisateurId) {
     dateCloture,
   } = donnees;
 
-  const annee = dateCloture ? new Date(dateCloture).getFullYear() : new Date().getFullYear();
-  const numMinute = numeroMinute || `MIN-${annee}/${String(MINUTES_MEMOIRE.length + 1).padStart(3, "0")}`;
-  const codeEmplacement = "Salle A · Armoire 1 · CARTON-001 · pos " + String(MINUTES_MEMOIRE.length + 1).padStart(3, "0");
+  const annee = dateCloture
+    ? new Date(dateCloture).getFullYear()
+    : new Date().getFullYear();
+  const numMinute =
+    numeroMinute ||
+    `MIN-${annee}/${String(MINUTES_MEMOIRE.length + 1).padStart(3, "0")}`;
+  const codeEmplacement =
+    "Salle A · Armoire 1 · CARTON-001 · pos " +
+    String(MINUTES_MEMOIRE.length + 1).padStart(3, "0");
 
   try {
-    await pool.query("UPDATE dossiers SET statut = 'cloture', etape_actuelle = 6 WHERE id = $1", [dossierId]);
+    await pool.query(
+      "UPDATE dossiers SET statut = 'cloture', etape_actuelle = 6 WHERE id = $1",
+      [dossierId],
+    );
   } catch (_) {}
 
   const minRec = {
@@ -489,7 +668,12 @@ async function numeriserEtArchiver(donnees, utilisateurId) {
     date_cloture: dateCloture || new Date().toISOString(),
   };
   MINUTES_MEMOIRE.push(minRec);
-  await dossiersService.ajouterMouvement(null, dossierId, utilisateurId, `Dossier numérisé & archivé en minute (${numMinute}) — ${codeEmplacement}`);
+  await dossiersService.ajouterMouvement(
+    null,
+    dossierId,
+    utilisateurId,
+    `Dossier numérisé & archivé en minute (${numMinute}) — ${codeEmplacement}`,
+  );
 
   return {
     minuteId: minRec.id,
@@ -497,7 +681,9 @@ async function numeriserEtArchiver(donnees, utilisateurId) {
     codeEmplacement,
     cartonNumero: "CARTON-001",
     scanUrl: minRec.scan_url,
-    empreinteSha256: empreinteSha256 || "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    empreinteSha256:
+      empreinteSha256 ||
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     dossierId,
   };
 }

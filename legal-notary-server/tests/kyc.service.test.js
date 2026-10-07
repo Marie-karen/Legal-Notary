@@ -5,27 +5,33 @@ const kycService = require("../src/services/kyc.service");
 
 test("KYC Service — Cycle de vie complet Fiche KYC & Signature Client", async (t) => {
   // 1. Récupérer un dossier existant ou en créer un pour le test
-  let dossierRes = await pool.query("SELECT id, numero_dossier FROM dossiers LIMIT 1");
+  let dossierRes = await pool.query(
+    "SELECT id, numero_dossier FROM dossiers LIMIT 1",
+  );
   if (!dossierRes.rows || dossierRes.rows.length === 0) {
     const etudeRes = await pool.query(
       `INSERT INTO etudes (nom_etude, code_etude)
        VALUES ('Etude Test KYC', 'ETD-TEST-KYC')
        ON CONFLICT (code_etude) DO UPDATE SET nom_etude = EXCLUDED.nom_etude
-       RETURNING id`
+       RETURNING id`,
     );
     const etudeId = etudeRes.rows[0].id;
     const typeActeRes = await pool.query("SELECT id FROM types_actes LIMIT 1");
     let typeActeId = typeActeRes.rows[0]?.id;
     if (!typeActeId) {
-      const tRes = await pool.query("INSERT INTO types_actes (libelle) VALUES ('Vente Immobilière Test') RETURNING id");
+      const tRes = await pool.query(
+        "INSERT INTO types_actes (libelle) VALUES ('Vente Immobilière Test') RETURNING id",
+      );
       typeActeId = tRes.rows[0].id;
     }
     await pool.query(
       `INSERT INTO dossiers (etude_id, numero_dossier, type_acte_id, annee_ouverture, statut)
        VALUES ($1, 'DOS-TEST-KYC-001', $2, 2026, 'actif')`,
-      [etudeId, typeActeId]
+      [etudeId, typeActeId],
     );
-    dossierRes = await pool.query("SELECT id, numero_dossier FROM dossiers WHERE numero_dossier = 'DOS-TEST-KYC-001'");
+    dossierRes = await pool.query(
+      "SELECT id, numero_dossier FROM dossiers WHERE numero_dossier = 'DOS-TEST-KYC-001'",
+    );
   }
   assert.ok(dossierRes.rows.length > 0, "Un dossier doit exister en base");
   const dossier = dossierRes.rows[0];
@@ -34,16 +40,23 @@ test("KYC Service — Cycle de vie complet Fiche KYC & Signature Client", async 
   const tokenData = await kycService.genererOuRecupererTokenKyc(dossier.id);
   assert.ok(tokenData.token, "Un token sécurisé doit être généré");
   assert.equal(tokenData.dossierId, dossier.id);
-  assert.ok(tokenData.statut === "en_attente" || tokenData.statut === "renseigne" || tokenData.statut === "valide");
+  assert.ok(
+    tokenData.statut === "en_attente" ||
+      tokenData.statut === "renseigne" ||
+      tokenData.statut === "valide",
+  );
 
   // 3. Obtenir le formulaire public avec le token (simulation du client smartphone)
-  const formPublic = await kycService.obtenirFormulaireKycPublic(tokenData.token);
+  const formPublic = await kycService.obtenirFormulaireKycPublic(
+    tokenData.token,
+  );
   assert.equal(formPublic.token, tokenData.token);
   assert.equal(formPublic.dossier.id, dossier.id);
   assert.ok(formPublic.etude.nomEtude);
 
   // 4. Soumettre le formulaire avec signature client tactile
-  const signatureSimulee = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
+  const signatureSimulee =
+    "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
   const payloadSoumission = {
     typePersonne: "physique",
     signeA: "Abidjan Plateau",
@@ -77,7 +90,7 @@ test("KYC Service — Cycle de vie complet Fiche KYC & Signature Client", async 
     tokenData.token,
     payloadSoumission,
     "127.0.0.1",
-    "Test-Browser/1.0"
+    "Test-Browser/1.0",
   );
   assert.equal(resultatSoumission.statut, "renseigne");
   assert.equal(resultatSoumission.signe_a, "Abidjan Plateau");

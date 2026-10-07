@@ -19,8 +19,18 @@ test("Workflow Fiche de Taxe — Calcul et cohérence des statuts déontologique
   ];
 
   const saisiesComptable = {
-    timbres: { pagesMinute: 4, pagesExpedition: 5, nombreExpeditions: 2, pagesBordereau: 1 },
-    roles: { pagesMinute: 4, pagesExpedition: 5, nombreExpeditions: 2, pagesCopie: 0 },
+    timbres: {
+      pagesMinute: 4,
+      pagesExpedition: 5,
+      nombreExpeditions: 2,
+      pagesBordereau: 1,
+    },
+    roles: {
+      pagesMinute: 4,
+      pagesExpedition: 5,
+      nombreExpeditions: 2,
+      pagesCopie: 0,
+    },
     lignesEmoluments: [
       { code: "inscription_livre_foncier", actif: true, montant: 75000 },
       { code: "extrait_topographique", actif: true, montant: 15000 },
@@ -34,7 +44,13 @@ test("Workflow Fiche de Taxe — Calcul et cohérence des statuts déontologique
   };
 
   // 1. Calcul initial par le comptable
-  const calcul1 = fiscalService.calculerFicheDeTaxe(typeActe, 35000000, {}, tranches, saisiesComptable);
+  const calcul1 = fiscalService.calculerFicheDeTaxe(
+    typeActe,
+    35000000,
+    {},
+    tranches,
+    saisiesComptable,
+  );
   assert.ok(calcul1.totaux.general > 0);
   assert.equal(calcul1.totaux.emolumentsHT, 902000);
   assert.ok(calcul1.totaux.tresor > 0);
@@ -46,16 +62,33 @@ test("Workflow Fiche de Taxe — Calcul et cohérence des statuts déontologique
     vacations: 150000,
     lignesEmoluments: [
       ...saisiesComptable.lignesEmoluments,
-      { code: "debours_divers_formalites", categorie: "debours", actif: true, montant: 100000 },
+      {
+        code: "debours_divers_formalites",
+        categorie: "debours",
+        actif: true,
+        montant: 100000,
+      },
     ],
   };
 
-  const calcul2 = fiscalService.calculerFicheDeTaxe(typeActe, 35000000, {}, tranches, saisiesNotaire);
+  const calcul2 = fiscalService.calculerFicheDeTaxe(
+    typeActe,
+    35000000,
+    {},
+    tranches,
+    saisiesNotaire,
+  );
   assert.equal(calcul2.totaux.emolumentsHT, 902000 + 150000);
   assert.equal(calcul2.totaux.debours, 100000);
   assert.ok(calcul2.totaux.general > calcul1.totaux.general);
 
   // 3. Statuts légaux valides du workflow
-  const statutsLegaux = ["brouillon", "soumis", "valide", "valide_corrige", "a_corriger"];
-  statutsLegaux.forEach(st => assert.ok(typeof st === "string"));
+  const statutsLegaux = [
+    "brouillon",
+    "soumis",
+    "valide",
+    "valide_corrige",
+    "a_corriger",
+  ];
+  statutsLegaux.forEach((st) => assert.ok(typeof st === "string"));
 });

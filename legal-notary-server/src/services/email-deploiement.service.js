@@ -5,7 +5,10 @@
 const nodemailer = require("nodemailer");
 const { pool } = require("../db/pool");
 const { dechiffrer } = require("../utils/crypto");
-const { lireFichierJson, ecrireFichierJson } = require("./stockage-persistant.service");
+const {
+  lireFichierJson,
+  ecrireFichierJson,
+} = require("./stockage-persistant.service");
 
 const ROLE_LABELS = {
   notaire: "Notaire Titulaire",
@@ -31,20 +34,25 @@ async function obtenirTransporteurSMTP() {
         host: process.env.SMTP_HOST,
         port: port,
         secure: secure,
-        auth: process.env.SMTP_USER ? {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS,
-        } : undefined,
+        auth: process.env.SMTP_USER
+          ? {
+              user: process.env.SMTP_USER,
+              pass: process.env.SMTP_PASS,
+            }
+          : undefined,
       }),
       fromNom: process.env.SMTP_FROM_NAME || "Legal Notary SaaS",
-      fromEmail: process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER || "notifications@legalnotary.app",
+      fromEmail:
+        process.env.SMTP_FROM_EMAIL ||
+        process.env.SMTP_USER ||
+        "notifications@legalnotary.app",
     };
   }
 
   // 2. Vérifier la configuration en base de données (table parametres_notifications)
   try {
     const { rows } = await pool.query(
-      "SELECT * FROM parametres_notifications WHERE smtp_hote IS NOT NULL AND smtp_hote != '' ORDER BY created_at ASC LIMIT 1"
+      "SELECT * FROM parametres_notifications WHERE smtp_hote IS NOT NULL AND smtp_hote != '' ORDER BY created_at ASC LIMIT 1",
     );
     if (rows && rows.length > 0) {
       const p = rows[0];
@@ -54,7 +62,9 @@ async function obtenirTransporteurSMTP() {
           host: p.smtp_hote,
           port: p.smtp_port || 587,
           secure: !!p.smtp_securise,
-          auth: p.smtp_utilisateur ? { user: p.smtp_utilisateur, pass: mdp } : undefined,
+          auth: p.smtp_utilisateur
+            ? { user: p.smtp_utilisateur, pass: mdp }
+            : undefined,
         }),
         fromNom: p.smtp_expediteur_nom || "Legal Notary Notifications",
         fromEmail: p.smtp_expediteur_email || "notifications@notaires.ci",
@@ -65,7 +75,14 @@ async function obtenirTransporteurSMTP() {
   return null;
 }
 
-function genererTemplateEmail({ nomComplet, email, motDePasse, role, nomEtude, urlConnexion }) {
+function genererTemplateEmail({
+  nomComplet,
+  email,
+  motDePasse,
+  role,
+  nomEtude,
+  urlConnexion,
+}) {
   const roleAffiche = ROLE_LABELS[role] || role || "Collaborateur";
   const etudeAffichee = nomEtude || "Office Notarial";
   const lienConnexion = urlConnexion || "https://legalnotary.app";
@@ -199,9 +216,16 @@ async function envoyerEmailBienvenueCollaborateur({
   urlConnexion,
 }) {
   const emailNorm = (destinataireEmail || "").toLowerCase().trim();
-  if (!emailNorm) return { succes: false, erreur: "Email destinataire manquant" };
+  if (!emailNorm)
+    return { succes: false, erreur: "Email destinataire manquant" };
 
-  const urlFinale = urlConnexion || (domaine ? (domaine.startsWith("http") ? domaine : `https://${domaine}`) : "https://legalnotary.app");
+  const urlFinale =
+    urlConnexion ||
+    (domaine
+      ? domaine.startsWith("http")
+        ? domaine
+        : `https://${domaine}`
+      : "https://legalnotary.app");
   const { sujet, texte, html, roleAffiche } = genererTemplateEmail({
     nomComplet: nomComplet || emailNorm.split("@")[0],
     email: emailNorm,
@@ -236,17 +260,25 @@ async function envoyerEmailBienvenueCollaborateur({
       });
       statutEnvoi.succes = true;
       statutEnvoi.mode = "smtp_reel";
-      console.log(`[EmailDéploiement] ✅ Email d'identifiants envoyé via SMTP à : ${emailNorm}`);
+      console.log(
+        `[EmailDéploiement] ✅ Email d'identifiants envoyé via SMTP à : ${emailNorm}`,
+      );
     } else {
       statutEnvoi.succes = true;
       statutEnvoi.mode = "journal_local_pret";
-      statutEnvoi.erreur = "SMTP en attente de configuration — message consigné et prêt à l'envoi";
-      console.log(`[EmailDéploiement] ℹ️ Message préparé pour ${emailNorm} (${roleAffiche}) — Lien: ${urlFinale}`);
+      statutEnvoi.erreur =
+        "SMTP en attente de configuration — message consigné et prêt à l'envoi";
+      console.log(
+        `[EmailDéploiement] ℹ️ Message préparé pour ${emailNorm} (${roleAffiche}) — Lien: ${urlFinale}`,
+      );
     }
   } catch (errSmtp) {
     statutEnvoi.succes = false;
     statutEnvoi.erreur = errSmtp.message;
-    console.warn(`[EmailDéploiement] ⚠️ Erreur SMTP pour ${emailNorm} :`, errSmtp.message);
+    console.warn(
+      `[EmailDéploiement] ⚠️ Erreur SMTP pour ${emailNorm} :`,
+      errSmtp.message,
+    );
   }
 
   // Journalisation sur disque JSON
@@ -257,7 +289,10 @@ async function envoyerEmailBienvenueCollaborateur({
     if (journalMaj.length > 200) journalMaj.length = 200; // Garder les 200 derniers emails
     ecrireFichierJson("emails_envoyes.json", journalMaj);
   } catch (e) {
-    console.warn("[EmailDéploiement] Erreur sauvegarde journal emails :", e.message);
+    console.warn(
+      "[EmailDéploiement] Erreur sauvegarde journal emails :",
+      e.message,
+    );
   }
 
   return {
@@ -272,7 +307,16 @@ function listerEmailsEnvoyes(limite = 50) {
   return Array.isArray(journal) ? journal.slice(0, limite) : [];
 }
 
-function genererTemplateAssignation({ nomClerc, nomInitiateur, roleInitiateur, numeroDossier, typeActe, comparantsNoms, urlConnexion, nomEtude }) {
+function genererTemplateAssignation({
+  nomClerc,
+  nomInitiateur,
+  roleInitiateur,
+  numeroDossier,
+  typeActe,
+  comparantsNoms,
+  urlConnexion,
+  nomEtude,
+}) {
   const etudeAffichee = nomEtude || "Office Notarial";
   const lienConnexion = urlConnexion || "https://legalnotary.app";
   const sujet = `⚖️ Assignation du dossier ${numeroDossier} — ${etudeAffichee}`;
@@ -378,9 +422,14 @@ function genererTemplateRecuClient({
   const etudeAffichee = nomEtude || "Office Notarial";
   const notaireAffiche = nomNotaire || "Maître Notaire";
   const sujet = `Reçu de Paiement & Quittance N° ${numeroRecu} — ${etudeAffichee}`;
-  const dateFormatee = new Date(datePaiement || Date.now()).toLocaleDateString("fr-CI", { day: "numeric", month: "long", year: "numeric" });
-  const montantFmt = Number(montantTotal || 0).toLocaleString("fr-FR") + " FCFA";
-  const fraisFmt = Number(fraisOuverture || 0).toLocaleString("fr-FR") + " FCFA";
+  const dateFormatee = new Date(datePaiement || Date.now()).toLocaleDateString(
+    "fr-CI",
+    { day: "numeric", month: "long", year: "numeric" },
+  );
+  const montantFmt =
+    Number(montantTotal || 0).toLocaleString("fr-FR") + " FCFA";
+  const fraisFmt =
+    Number(fraisOuverture || 0).toLocaleString("fr-FR") + " FCFA";
   const provFmt = Number(provision || 0).toLocaleString("fr-FR") + " FCFA";
 
   const texte = `QUITTANCE & REÇU DE PAIEMENT N° ${numeroRecu}
@@ -552,16 +601,23 @@ async function envoyerEmailAssignationClerc({
       });
       statutEnvoi.succes = true;
       statutEnvoi.mode = "smtp_reel";
-      console.log(`[EmailAssignation] ✅ Email d'assignation envoyé à : ${emailNorm} (${numeroDossier})`);
+      console.log(
+        `[EmailAssignation] ✅ Email d'assignation envoyé à : ${emailNorm} (${numeroDossier})`,
+      );
     } else {
       statutEnvoi.succes = true;
       statutEnvoi.mode = "journal_local_pret";
-      console.log(`[EmailAssignation] ℹ️ Email d'assignation préparé pour ${emailNorm} (${numeroDossier})`);
+      console.log(
+        `[EmailAssignation] ℹ️ Email d'assignation préparé pour ${emailNorm} (${numeroDossier})`,
+      );
     }
   } catch (errSmtp) {
     statutEnvoi.succes = false;
     statutEnvoi.erreur = errSmtp.message;
-    console.warn(`[EmailAssignation] ⚠️ Erreur SMTP pour ${emailNorm} :`, errSmtp.message);
+    console.warn(
+      `[EmailAssignation] ⚠️ Erreur SMTP pour ${emailNorm} :`,
+      errSmtp.message,
+    );
   }
 
   // Journalisation
@@ -638,16 +694,23 @@ async function envoyerEmailRecuPaiementClient({
       });
       statutEnvoi.succes = true;
       statutEnvoi.mode = "smtp_reel";
-      console.log(`[EmailReçuClient] ✅ Reçu N° ${numeroRecu} envoyé par email au client : ${emailNorm}`);
+      console.log(
+        `[EmailReçuClient] ✅ Reçu N° ${numeroRecu} envoyé par email au client : ${emailNorm}`,
+      );
     } else {
       statutEnvoi.succes = true;
       statutEnvoi.mode = "journal_local_pret";
-      console.log(`[EmailReçuClient] ℹ️ Reçu N° ${numeroRecu} préparé pour le client : ${emailNorm}`);
+      console.log(
+        `[EmailReçuClient] ℹ️ Reçu N° ${numeroRecu} préparé pour le client : ${emailNorm}`,
+      );
     }
   } catch (errSmtp) {
     statutEnvoi.succes = false;
     statutEnvoi.erreur = errSmtp.message;
-    console.warn(`[EmailReçuClient] ⚠️ Erreur SMTP pour ${emailNorm} :`, errSmtp.message);
+    console.warn(
+      `[EmailReçuClient] ⚠️ Erreur SMTP pour ${emailNorm} :`,
+      errSmtp.message,
+    );
   }
 
   // Journalisation

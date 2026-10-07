@@ -18,7 +18,11 @@ async function notifyControlHub(event, payload = {}) {
   const webhookUrl = process.env.CONTROL_HUB_WEBHOOK_URL;
   const secretKey = process.env.CONTROL_HUB_SECRET_KEY || "";
 
-  if (!webhookUrl || !webhookUrl.trim() || webhookUrl.includes("votredomaine.com")) {
+  if (
+    !webhookUrl ||
+    !webhookUrl.trim() ||
+    webhookUrl.includes("votredomaine.com")
+  ) {
     // Webhook non configuré ou valeur d'exemple : on ne tente pas l'envoi
     return { succes: false, erreur: "CONTROL_HUB_WEBHOOK_URL non configuré" };
   }
@@ -58,13 +62,18 @@ async function notifyControlHub(event, payload = {}) {
     clearTimeout(timeoutId);
 
     if (!response.ok) {
-      console.warn(`[WebhookDispatcher] Le Master Hub a répondu avec le statut HTTP ${response.status} pour l'événement ${event}`);
+      console.warn(
+        `[WebhookDispatcher] Le Master Hub a répondu avec le statut HTTP ${response.status} pour l'événement ${event}`,
+      );
       return { succes: false, statut: response.status };
     }
 
     return { succes: true, statut: response.status };
   } catch (err) {
-    console.error(`[WebhookDispatcher] Échec d'envoi du webhook '${event}' vers ${webhookUrl} :`, err.message);
+    console.error(
+      `[WebhookDispatcher] Échec d'envoi du webhook '${event}' vers ${webhookUrl} :`,
+      err.message,
+    );
     return { succes: false, erreur: err.message };
   }
 }

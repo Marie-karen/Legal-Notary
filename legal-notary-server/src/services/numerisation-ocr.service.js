@@ -12,7 +12,9 @@ async function traiterScanEtProposerIA({
   dossierIdSuggere = null,
   typeDocumentSuggere = null,
 }) {
-  const buffer = fichierBase64 ? Buffer.from(fichierBase64, "base64") : Buffer.from(`Scan Notarial : ${nomFichier}`);
+  const buffer = fichierBase64
+    ? Buffer.from(fichierBase64, "base64")
+    : Buffer.from(`Scan Notarial : ${nomFichier}`);
 
   const texteOcrExtrait = `RÉPUBLIQUE DE CÔTE D'IVOIRE — OFFICE NOTARIAL
 ACTE REÇU PAR DEVANT MAÎTRE TITULAIRE, NOTAIRE À LA RÉSIDENCE D'ABIDJAN.
@@ -25,10 +27,13 @@ ENREGISTRÉ AU LIVRE FONCIER D'ABIDJAN SUD. ACTE EN MINUTE SOUMIS À L'OBLIGATIO
   try {
     const { rows: dossiersDispos } = await pool.query(
       "SELECT id, numero_dossier, type_acte_id FROM dossiers WHERE etude_id = $1 ORDER BY created_at DESC LIMIT 5",
-      [etudeId]
+      [etudeId],
     );
     if (dossierIdSuggere) {
-      const { rows: dRows } = await pool.query("SELECT id, numero_dossier, type_acte_id FROM dossiers WHERE id = $1", [dossierIdSuggere]);
+      const { rows: dRows } = await pool.query(
+        "SELECT id, numero_dossier, type_acte_id FROM dossiers WHERE id = $1",
+        [dossierIdSuggere],
+      );
       if (dRows && dRows.length) cibleDossier = dRows[0];
     }
     if (!cibleDossier && dossiersDispos && dossiersDispos.length) {
@@ -46,10 +51,13 @@ ENREGISTRÉ AU LIVRE FONCIER D'ABIDJAN SUD. ACTE EN MINUTE SOUMIS À L'OBLIGATIO
     propositionIA: {
       typeDocument: typeDetecte,
       dossierId: cibleDossier ? cibleDossier.id : "dos-demo-001",
-      numeroDossier: cibleDossier ? cibleDossier.numero_dossier : "DOS-2026-001",
+      numeroDossier: cibleDossier
+        ? cibleDossier.numero_dossier
+        : "DOS-2026-001",
       typeActeLibelle: "Acte de Vente Immobilière avec ACD",
       scoreConfiance: scoreConfiance,
-      resume: "Acte de vente immobilière entre M. KOUASSI et Société IMMO CI. Montant : 50 000 000 FCFA.",
+      resume:
+        "Acte de vente immobilière entre M. KOUASSI et Société IMMO CI. Montant : 50 000 000 FCFA.",
     },
     statutValidation: "a_valider",
   };
@@ -83,12 +91,12 @@ async function validerEtEnregistrerDocument({
     await avecTransaction(async (client) => {
       await client.query(
         "UPDATE dossiers SET statut_numerisation = 'NUMERISE_ET_VALIDE' WHERE id = $1",
-        [dossierId]
+        [dossierId],
       );
       if (estCopieMinute) {
         await client.query(
           "UPDATE minutes_archive SET scan_url = $1 WHERE dossier_id = $2",
-          [doc.nom_fichier, dossierId]
+          [doc.nom_fichier, dossierId],
         );
       }
     });
@@ -120,9 +128,13 @@ async function enregistrerDocumentPhysiqueNonNumerisable({
     carton_id: cartonId,
     position_carton: positionCarton || 1,
     est_numerisable: false,
-    raison_non_numerisable: raisonNonNumerisable || "Plan cadastral plié / Papier calque ancien fragile",
-    notes_conservation: notesConservation || "Conserver à plat dans chemise neutre sans pliure",
-    localisation_actuelle: localisationActuelle || "Salle Archives 2 · Armoire 04 · Boîte B018",
+    raison_non_numerisable:
+      raisonNonNumerisable ||
+      "Plan cadastral plié / Papier calque ancien fragile",
+    notes_conservation:
+      notesConservation || "Conserver à plat dans chemise neutre sans pliure",
+    localisation_actuelle:
+      localisationActuelle || "Salle Archives 2 · Armoire 04 · Boîte B018",
     cree_par_id: utilisateurId,
   };
 
@@ -133,10 +145,18 @@ async function enregistrerDocumentPhysiqueNonNumerisable({
        VALUES ($1, $2, $3, $4, $5, 'archive', $6, $7, false, $8, $9, $10, $11)
        RETURNING *`,
       [
-        docId, etudeId, dossierId, typeDocument, doc.titre_document,
-        cartonId, positionCarton || 1, doc.raison_non_numerisable,
-        doc.notes_conservation, doc.localisation_actuelle, utilisateurId,
-      ]
+        docId,
+        etudeId,
+        dossierId,
+        typeDocument,
+        doc.titre_document,
+        cartonId,
+        positionCarton || 1,
+        doc.raison_non_numerisable,
+        doc.notes_conservation,
+        doc.localisation_actuelle,
+        utilisateurId,
+      ],
     );
     if (rows && rows.length) return rows[0];
   } catch (_) {}

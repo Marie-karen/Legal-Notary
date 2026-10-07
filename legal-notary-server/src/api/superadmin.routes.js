@@ -40,7 +40,10 @@ router.post("/etudes", async (req, res, next) => {
 // 4. Modification de la configuration complète d'une étude
 router.put("/etudes/:id", async (req, res, next) => {
   try {
-    const maj = await superadminService.mettreAJourEtude(req.params.id, req.body);
+    const maj = await superadminService.mettreAJourEtude(
+      req.params.id,
+      req.body,
+    );
     res.json(maj);
   } catch (e) {
     next(e);
@@ -71,7 +74,9 @@ router.post("/etudes/supprimer-lot", async (req, res, next) => {
 // 4c. Liste des utilisateurs / collaborateurs d'une étude
 router.get("/etudes/:id/utilisateurs", async (req, res, next) => {
   try {
-    const utilisateurs = await superadminService.listerUtilisateursEtude(req.params.id);
+    const utilisateurs = await superadminService.listerUtilisateursEtude(
+      req.params.id,
+    );
     res.json(utilisateurs);
   } catch (e) {
     next(e);
@@ -81,7 +86,10 @@ router.get("/etudes/:id/utilisateurs", async (req, res, next) => {
 // 4d. Ajout d'un collaborateur à une étude depuis le SuperAdmin
 router.post("/etudes/:id/utilisateurs", async (req, res, next) => {
   try {
-    const nouveau = await superadminService.ajouterCollaborateurEtude(req.params.id, req.body);
+    const nouveau = await superadminService.ajouterCollaborateurEtude(
+      req.params.id,
+      req.body,
+    );
     res.status(201).json(nouveau);
   } catch (e) {
     next(e);
@@ -89,19 +97,29 @@ router.post("/etudes/:id/utilisateurs", async (req, res, next) => {
 });
 
 // 4e. Réinitialisation du mot de passe d'un utilisateur d'une étude
-router.post("/etudes/:id/utilisateurs/:userId/reinitialiser-mdp", async (req, res, next) => {
-  try {
-    const resultat = await superadminService.reinitialiserMotDePasseEtude(req.params.id, req.params.userId, req.body.motDePasse);
-    res.json(resultat);
-  } catch (e) {
-    next(e);
-  }
-});
+router.post(
+  "/etudes/:id/utilisateurs/:userId/reinitialiser-mdp",
+  async (req, res, next) => {
+    try {
+      const resultat = await superadminService.reinitialiserMotDePasseEtude(
+        req.params.id,
+        req.params.userId,
+        req.body.motDePasse,
+      );
+      res.json(resultat);
+    } catch (e) {
+      next(e);
+    }
+  },
+);
 
 // 5. Changement rapide de mode infrastructure d'une étude
 router.post("/etudes/:id/basculer-mode", async (req, res, next) => {
   try {
-    const maj = await superadminService.changerModeInfrastructure(req.params.id, req.body.modeInfrastructure);
+    const maj = await superadminService.changerModeInfrastructure(
+      req.params.id,
+      req.body.modeInfrastructure,
+    );
     res.json(maj);
   } catch (e) {
     next(e);
@@ -111,7 +129,9 @@ router.post("/etudes/:id/basculer-mode", async (req, res, next) => {
 // 5b. Informations techniques & guide de déploiement d'une étude (Cloud, Domaine, Serveur physique, Hybride)
 router.get("/etudes/:id/deploiement", async (req, res, next) => {
   try {
-    const infos = await superadminService.obtenirInfosDeploiementEtude(req.params.id);
+    const infos = await superadminService.obtenirInfosDeploiementEtude(
+      req.params.id,
+    );
     res.json(infos);
   } catch (e) {
     next(e);
@@ -139,7 +159,10 @@ router.post("/equipe", async (req, res, next) => {
 
 router.put("/equipe/:id", async (req, res, next) => {
   try {
-    const maj = await superadminService.modifierMembreEditeur(req.params.id, req.body);
+    const maj = await superadminService.modifierMembreEditeur(
+      req.params.id,
+      req.body,
+    );
     res.json(maj);
   } catch (e) {
     next(e);
@@ -247,15 +270,18 @@ router.get("/emails-envoyes", async (req, res, next) => {
 // 12. Renvoyer manuellement un email d'identifiants
 router.post("/renvoyer-email", async (req, res, next) => {
   try {
-    const { email, nomComplet, role, motDePasse, nomEtude, domaine } = req.body || {};
-    const resultat = await superadminService.envoyerEmailBienvenueCollaborateur({
-      destinataireEmail: email,
-      nomComplet,
-      role,
-      motDePasse,
-      nomEtude,
-      domaine,
-    });
+    const { email, nomComplet, role, motDePasse, nomEtude, domaine } =
+      req.body || {};
+    const resultat = await superadminService.envoyerEmailBienvenueCollaborateur(
+      {
+        destinataireEmail: email,
+        nomComplet,
+        role,
+        motDePasse,
+        nomEtude,
+        domaine,
+      },
+    );
     res.json(resultat);
   } catch (e) {
     next(e);
@@ -266,15 +292,20 @@ router.post("/renvoyer-email", async (req, res, next) => {
 router.post("/tester-smtp", async (req, res, next) => {
   try {
     const { emailTest } = req.body || {};
-    const dest = emailTest || (req.utilisateur && req.utilisateur.email) || "contact@legalnotary.app";
-    const resultat = await superadminService.envoyerEmailBienvenueCollaborateur({
-      destinataireEmail: dest,
-      nomComplet: "Administrateur Test",
-      role: "superadmin",
-      motDePasse: "TestPass123!",
-      nomEtude: "Legal Notary — Test SMTP",
-      domaine: "legalnotary.app",
-    });
+    const dest =
+      emailTest ||
+      (req.utilisateur && req.utilisateur.email) ||
+      "contact@legalnotary.app";
+    const resultat = await superadminService.envoyerEmailBienvenueCollaborateur(
+      {
+        destinataireEmail: dest,
+        nomComplet: "Administrateur Test",
+        role: "superadmin",
+        motDePasse: "TestPass123!",
+        nomEtude: "Legal Notary — Test SMTP",
+        domaine: "legalnotary.app",
+      },
+    );
     res.json(resultat);
   } catch (e) {
     next(e);

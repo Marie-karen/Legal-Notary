@@ -13,15 +13,21 @@ const assert = require("node:assert/strict");
 const { rendreModele } = require("../src/services/notifications.service");
 
 test("rendreModele — remplace tous les espaces réservés fournis", () => {
-  const resultat = rendreModele("Dossier {{numeroDossier}} soumis par {{nomRedacteur}}", {
-    numeroDossier: "DOS-2026-004",
-    nomRedacteur: "Fatou Koné",
-  });
+  const resultat = rendreModele(
+    "Dossier {{numeroDossier}} soumis par {{nomRedacteur}}",
+    {
+      numeroDossier: "DOS-2026-004",
+      nomRedacteur: "Fatou Koné",
+    },
+  );
   assert.equal(resultat, "Dossier DOS-2026-004 soumis par Fatou Koné");
 });
 
 test("rendreModele — laisse un espace réservé inconnu tel quel (jamais une exception)", () => {
-  const resultat = rendreModele("Bonjour {{prenom}}, dossier {{numeroDossier}}", { numeroDossier: "DOS-2026-004" });
+  const resultat = rendreModele(
+    "Bonjour {{prenom}}, dossier {{numeroDossier}}",
+    { numeroDossier: "DOS-2026-004" },
+  );
   assert.equal(resultat, "Bonjour {{prenom}}, dossier DOS-2026-004");
 });
 
@@ -31,6 +37,8 @@ test("rendreModele — texte vide/nul renvoyé tel quel", () => {
 });
 
 test("rendreModele — même espace réservé répété plusieurs fois", () => {
-  const resultat = rendreModele("{{numeroDossier}} — voir {{numeroDossier}}", { numeroDossier: "DOS-2026-004" });
+  const resultat = rendreModele("{{numeroDossier}} — voir {{numeroDossier}}", {
+    numeroDossier: "DOS-2026-004",
+  });
   assert.equal(resultat, "DOS-2026-004 — voir DOS-2026-004");
 });

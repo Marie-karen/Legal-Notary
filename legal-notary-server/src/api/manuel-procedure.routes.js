@@ -14,15 +14,26 @@ const router = express.Router();
 router.get("/", async (req, res, next) => {
   try {
     res.json(await manuelProcedureService.listerEtapes());
-  } catch (e) { next(e); }
+  } catch (e) {
+    next(e);
+  }
 });
 
-router.patch("/:id", exigerPermission("referentiel:gerer"), async (req, res, next) => {
-  try {
-    const etape = await manuelProcedureService.modifierEtape(req.params.id, req.body);
-    if (!etape) return res.status(404).json({ erreur: "Étape introuvable." });
-    res.json(etape);
-  } catch (e) { next(e); }
-});
+router.patch(
+  "/:id",
+  exigerPermission("referentiel:gerer"),
+  async (req, res, next) => {
+    try {
+      const etape = await manuelProcedureService.modifierEtape(
+        req.params.id,
+        req.body,
+      );
+      if (!etape) return res.status(404).json({ erreur: "Étape introuvable." });
+      res.json(etape);
+    } catch (e) {
+      next(e);
+    }
+  },
+);
 
 module.exports = router;

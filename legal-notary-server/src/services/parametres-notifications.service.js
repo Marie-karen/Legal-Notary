@@ -4,13 +4,54 @@
 
 const { pool } = require("../db/pool");
 const notificationsService = require("./notifications.service");
-const { chiffrer, dechiffrer, chiffrerObjet, dechiffrerObjet } = require("../utils/crypto");
+const {
+  chiffrer,
+  dechiffrer,
+  chiffrerObjet,
+  dechiffrerObjet,
+} = require("../utils/crypto");
 
 const MODELES_MEMOIRE = [
-  { id: "mod-1", evenement: "dossier_cree", canal: "email", destinataire: "client", sujet: "Ouverture de votre dossier à l'Étude", corps: "Bonjour {{client_nom}}, nous vous confirmons l'ouverture de votre dossier {{numero_dossier}}.", actif: true },
-  { id: "mod-2", evenement: "dossier_cree", canal: "sms", destinataire: "client", sujet: "", corps: "Etude Notariale: Votre dossier {{numero_dossier}} a ete ouvert. Suivi en direct disponible.", actif: true },
-  { id: "mod-3", evenement: "dossier_cree", canal: "whatsapp", destinataire: "client", sujet: "", corps: "🏛 *Étude Notariale*\nBonjour {{client_nom}}, votre dossier *{{numero_dossier}}* est ouvert.", actif: true },
-  { id: "mod-4", evenement: "acte_signe", canal: "whatsapp", destinataire: "client", sujet: "", corps: "🏛 *Étude Notariale*\nVotre acte *{{numero_dossier}}* a été signé avec succès en minute.", actif: true },
+  {
+    id: "mod-1",
+    evenement: "dossier_cree",
+    canal: "email",
+    destinataire: "client",
+    sujet: "Ouverture de votre dossier à l'Étude",
+    corps:
+      "Bonjour {{client_nom}}, nous vous confirmons l'ouverture de votre dossier {{numero_dossier}}.",
+    actif: true,
+  },
+  {
+    id: "mod-2",
+    evenement: "dossier_cree",
+    canal: "sms",
+    destinataire: "client",
+    sujet: "",
+    corps:
+      "Etude Notariale: Votre dossier {{numero_dossier}} a ete ouvert. Suivi en direct disponible.",
+    actif: true,
+  },
+  {
+    id: "mod-3",
+    evenement: "dossier_cree",
+    canal: "whatsapp",
+    destinataire: "client",
+    sujet: "",
+    corps:
+      "🏛 *Étude Notariale*\nBonjour {{client_nom}}, votre dossier *{{numero_dossier}}* est ouvert.",
+    actif: true,
+  },
+  {
+    id: "mod-4",
+    evenement: "acte_signe",
+    canal: "whatsapp",
+    destinataire: "client",
+    sujet: "",
+    corps:
+      "🏛 *Étude Notariale*\nVotre acte *{{numero_dossier}}* a été signé avec succès en minute.",
+    actif: true,
+  },
 ];
 
 function versCamel(l) {
@@ -71,7 +112,8 @@ async function obtenir() {
 
 async function mettreAJour(champs) {
   try {
-    const actuelBrut = await notificationsService.obtenirParametresNotifications();
+    const actuelBrut =
+      await notificationsService.obtenirParametresNotifications();
 
     const motDePasseAEnregistrer = champs.smtpMotDePasse
       ? chiffrer(champs.smtpMotDePasse)
@@ -95,18 +137,22 @@ async function mettreAJour(champs) {
       smtp_securise: champs.smtpSecurise ?? actuelBrut.smtp_securise,
       smtp_utilisateur: champs.smtpUtilisateur ?? actuelBrut.smtp_utilisateur,
       smtp_mot_de_passe: motDePasseAEnregistrer,
-      smtp_expediteur_nom: champs.smtpExpediteurNom ?? actuelBrut.smtp_expediteur_nom,
-      smtp_expediteur_email: champs.smtpExpediteurEmail ?? actuelBrut.smtp_expediteur_email,
+      smtp_expediteur_nom:
+        champs.smtpExpediteurNom ?? actuelBrut.smtp_expediteur_nom,
+      smtp_expediteur_email:
+        champs.smtpExpediteurEmail ?? actuelBrut.smtp_expediteur_email,
       sms_actif: champs.smsActif ?? actuelBrut.sms_actif,
       sms_url_webhook: champs.smsUrlWebhook ?? actuelBrut.sms_url_webhook,
       sms_identifiants: smsIdentifiantsAEnregistrer,
       whatsapp_actif: champs.whatsappActif ?? actuelBrut.whatsapp_actif,
-      whatsapp_url_webhook: champs.whatsappUrlWebhook ?? actuelBrut.whatsapp_url_webhook,
+      whatsapp_url_webhook:
+        champs.whatsappUrlWebhook ?? actuelBrut.whatsapp_url_webhook,
       whatsapp_identifiants: whatsappIdentifiantsAEnregistrer,
       push_actif: champs.pushActif ?? actuelBrut.push_actif,
       push_cle_publique: champs.pushClePublique ?? actuelBrut.push_cle_publique,
       push_cle_privee: pushPriveeAEnregistrer,
-      push_contact_email: champs.pushContactEmail ?? actuelBrut.push_contact_email,
+      push_contact_email:
+        champs.pushContactEmail ?? actuelBrut.push_contact_email,
     };
 
     const { rows } = await pool.query(
@@ -119,13 +165,25 @@ async function mettreAJour(champs) {
          updated_at = now()
        WHERE id = $18 RETURNING *`,
       [
-        valeurs.smtp_hote, valeurs.smtp_port, valeurs.smtp_securise, valeurs.smtp_utilisateur, valeurs.smtp_mot_de_passe,
-        valeurs.smtp_expediteur_nom, valeurs.smtp_expediteur_email,
-        valeurs.sms_actif, valeurs.sms_url_webhook, valeurs.sms_identifiants,
-        valeurs.whatsapp_actif, valeurs.whatsapp_url_webhook, valeurs.whatsapp_identifiants,
-        valeurs.push_actif, valeurs.push_cle_publique, valeurs.push_cle_privee, valeurs.push_contact_email,
+        valeurs.smtp_hote,
+        valeurs.smtp_port,
+        valeurs.smtp_securise,
+        valeurs.smtp_utilisateur,
+        valeurs.smtp_mot_de_passe,
+        valeurs.smtp_expediteur_nom,
+        valeurs.smtp_expediteur_email,
+        valeurs.sms_actif,
+        valeurs.sms_url_webhook,
+        valeurs.sms_identifiants,
+        valeurs.whatsapp_actif,
+        valeurs.whatsapp_url_webhook,
+        valeurs.whatsapp_identifiants,
+        valeurs.push_actif,
+        valeurs.push_cle_publique,
+        valeurs.push_cle_privee,
+        valeurs.push_contact_email,
         actuelBrut.id,
-      ]
+      ],
     );
     if (rows && rows.length) return versCamel(rows[0]);
   } catch (_) {}
@@ -148,7 +206,9 @@ function modeleVersCamel(l) {
 
 async function listerModeles() {
   try {
-    const { rows } = await pool.query("SELECT * FROM modeles_message ORDER BY evenement, canal");
+    const { rows } = await pool.query(
+      "SELECT * FROM modeles_message ORDER BY evenement, canal",
+    );
     if (rows && rows.length) return rows.map(modeleVersCamel);
   } catch (_) {}
   return MODELES_MEMOIRE;
@@ -160,12 +220,12 @@ async function modifierModele(id, { sujet, corps, actif }) {
       `UPDATE modeles_message SET
          sujet = COALESCE($1, sujet), corps = COALESCE($2, corps), actif = COALESCE($3, actif)
        WHERE id = $4 RETURNING *`,
-      [sujet, corps, actif, id]
+      [sujet, corps, actif, id],
     );
     if (rows && rows.length) return modeleVersCamel(rows[0]);
   } catch (_) {}
 
-  const m = MODELES_MEMOIRE.find(x => x.id === id);
+  const m = MODELES_MEMOIRE.find((x) => x.id === id);
   if (m) {
     if (sujet !== undefined) m.sujet = sujet;
     if (corps !== undefined) m.corps = corps;

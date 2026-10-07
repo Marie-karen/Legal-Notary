@@ -4,7 +4,10 @@
 
 const { pool, avecTransaction } = require("../db/pool");
 const crypto = require("crypto");
-const { lireFichierJson, ecrireFichierJson } = require("./stockage-persistant.service");
+const {
+  lireFichierJson,
+  ecrireFichierJson,
+} = require("./stockage-persistant.service");
 const parametresService = require("./parametres.service");
 const emailDeploiementService = require("./email-deploiement.service");
 const { nombreEnLettresFCFA } = require("./fiscal.service");
@@ -21,10 +24,22 @@ function recuVersCamel(l) {
     clientNom: l.client_nom || l.clientNom,
     clientEmail: l.client_email || l.clientEmail,
     clientTelephone: l.client_telephone || l.clientTelephone,
-    montantTotal: Number(l.montant_total !== undefined ? l.montant_total : l.montantTotal) || 0,
-    fraisOuverture: Number(l.frais_ouverture !== undefined ? l.frais_ouverture : l.fraisOuverture) || 0,
-    provision: Number(l.provision !== undefined ? l.provision : l.provision) || 0,
-    montantAssiette: Number(l.montant_assiette !== undefined ? l.montant_assiette : l.montantAssiette) || 0,
+    montantTotal:
+      Number(
+        l.montant_total !== undefined ? l.montant_total : l.montantTotal,
+      ) || 0,
+    fraisOuverture:
+      Number(
+        l.frais_ouverture !== undefined ? l.frais_ouverture : l.fraisOuverture,
+      ) || 0,
+    provision:
+      Number(l.provision !== undefined ? l.provision : l.provision) || 0,
+    montantAssiette:
+      Number(
+        l.montant_assiette !== undefined
+          ? l.montant_assiette
+          : l.montantAssiette,
+      ) || 0,
     modePaiement: l.mode_paiement || l.modePaiement || "Espèces",
     statut: l.statut || "en_attente_validation", // 'en_attente_validation' | 'valide' | 'rejete'
     creeParId: l.cree_par_id || l.creeParId,
@@ -55,14 +70,18 @@ const RECUS_MEMOIRE = new Map();
 
 function persisterRecusSurDisque() {
   try {
-    ecrireFichierJson("recus_paiement_persistants.json", Array.from(RECUS_MEMOIRE.values()));
+    ecrireFichierJson(
+      "recus_paiement_persistants.json",
+      Array.from(RECUS_MEMOIRE.values()),
+    );
   } catch (_) {}
 }
 
 async function prochainNumeroRecu(etudeId) {
   const annee = new Date().getFullYear();
   try {
-    let query = "SELECT COUNT(*)::int AS n FROM recus_paiement WHERE EXTRACT(YEAR FROM created_at) = $1";
+    let query =
+      "SELECT COUNT(*)::int AS n FROM recus_paiement WHERE EXTRACT(YEAR FROM created_at) = $1";
     const params = [annee];
     if (etudeId) {
       params.push(etudeId);
@@ -75,7 +94,10 @@ async function prochainNumeroRecu(etudeId) {
     }
   } catch (_) {}
 
-  const nbMem = Array.from(RECUS_MEMOIRE.values()).filter(r => (!etudeId || r.etudeId === etudeId)).length + 1;
+  const nbMem =
+    Array.from(RECUS_MEMOIRE.values()).filter(
+      (r) => !etudeId || r.etudeId === etudeId,
+    ).length + 1;
   return `RECU-${annee}-${String(nbMem).padStart(4, "0")}`;
 }
 
@@ -95,7 +117,8 @@ async function creerRecuPaiement({
   observations,
   creeParId,
 }) {
-  const provisionReelle = Number(provision !== undefined ? provision : montantProvision) || 0;
+  const provisionReelle =
+    Number(provision !== undefined ? provision : montantProvision) || 0;
   const fraisReels = Number(fraisOuverture) || 0;
   const total = fraisReels + provisionReelle;
   const numero = await prochainNumeroRecu(etudeId);
@@ -111,10 +134,22 @@ async function creerRecuPaiement({
        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, now())
        RETURNING *`,
       [
-        id, eid, numero, dossierId, clientNom, clientEmail || null, clientTelephone || null,
-        total, Number(fraisOuverture) || 0, Number(provision) || 0, Number(montantAssiette) || 0,
-        modePaiement || "Espèces", "en_attente_validation", creeParId || null, observations || null,
-      ]
+        id,
+        eid,
+        numero,
+        dossierId,
+        clientNom,
+        clientEmail || null,
+        clientTelephone || null,
+        total,
+        Number(fraisOuverture) || 0,
+        Number(provision) || 0,
+        Number(montantAssiette) || 0,
+        modePaiement || "Espèces",
+        "en_attente_validation",
+        creeParId || null,
+        observations || null,
+      ],
     );
     if (rows && rows.length) {
       const recu = recuVersCamel(rows[0]);
@@ -125,7 +160,10 @@ async function creerRecuPaiement({
       return recu;
     }
   } catch (errDb) {
-    console.warn("[Reçus] Fallback mémoire pour création de reçu :", errDb.message);
+    console.warn(
+      "[Reçus] Fallback mémoire pour création de reçu :",
+      errDb.message,
+    );
   }
 
   const recuLocal = {
@@ -162,7 +200,11 @@ async function creerRecuPaiement({
 
 async function listerRecusPourUtilisateur(utilisateur, filtres = {}) {
   const etudeId = utilisateur ? utilisateur.etudeId : null;
-  const estCompteDemo = !utilisateur || etudeId === "etude-abidjan-01" || etudeId === "a0000000-0000-0000-0000-000000000001" || (utilisateur.email && utilisateur.email.endsWith("@notaire.ci"));
+  const estCompteDemo =
+    !utilisateur ||
+    etudeId === "etude-abidjan-01" ||
+    etudeId === "a0000000-0000-0000-0000-000000000001" ||
+    (utilisateur.email && utilisateur.email.endsWith("@notaire.ci"));
 
   try {
     let query = `
@@ -195,13 +237,13 @@ async function listerRecusPourUtilisateur(utilisateur, filtres = {}) {
   // Fallback mémoire
   let liste = Array.from(RECUS_MEMOIRE.values());
   if (etudeId && !estCompteDemo) {
-    liste = liste.filter(r => r.etudeId === etudeId);
+    liste = liste.filter((r) => r.etudeId === etudeId);
   }
   if (filtres.statut) {
-    liste = liste.filter(r => r.statut === filtres.statut);
+    liste = liste.filter((r) => r.statut === filtres.statut);
   }
   if (filtres.dossierId) {
-    liste = liste.filter(r => r.dossierId === filtres.dossierId);
+    liste = liste.filter((r) => r.dossierId === filtres.dossierId);
   }
   return liste.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 }
@@ -213,7 +255,7 @@ async function obtenirRecuParId(id) {
        FROM recus_paiement r
        LEFT JOIN dossiers d ON d.id = r.dossier_id
        WHERE r.id = $1`,
-      [id]
+      [id],
     );
     if (rows && rows.length) return recuVersCamel(rows[0]);
   } catch (_) {}
@@ -233,7 +275,7 @@ async function validerEtEnvoyerRecuClient(recuId, valideurUtilisateur) {
       `UPDATE recus_paiement
        SET statut = 'valide', valide_par_id = $1, valide_le = now(), envoye_au_client_le = now()
        WHERE id = $2`,
-      [valideurUtilisateur.id, recuId]
+      [valideurUtilisateur.id, recuId],
     );
   } catch (_) {}
 
@@ -247,23 +289,24 @@ async function validerEtEnvoyerRecuClient(recuId, valideurUtilisateur) {
   // Envoi email au client si son email est renseigné
   if (recu.clientEmail) {
     const params = await parametresService.obtenir(valideurUtilisateur.etudeId);
-    emailEnvoyeResult = await emailDeploiementService.envoyerEmailRecuPaiementClient({
-      destinataireEmail: recu.clientEmail,
-      clientNom: recu.clientNom,
-      numeroRecu: recu.numeroRecu,
-      numeroDossier: recu.numeroDossier || "DOS-OFFICIEL",
-      typeActe: recu.typeActeId || "Dossier Notarié",
-      montantTotal: recu.montantTotal,
-      fraisOuverture: recu.fraisOuverture,
-      provision: recu.provision,
-      modePaiement: recu.modePaiement,
-      datePaiement: recu.createdAt,
-      nomNotaire: params.nomNotaire,
-      nomEtude: params.nomEtude,
-      adresseEtude: params.adresse,
-      telephoneEtude: params.telephoneFixe || params.telephone,
-      emailEtude: params.email,
-    });
+    emailEnvoyeResult =
+      await emailDeploiementService.envoyerEmailRecuPaiementClient({
+        destinataireEmail: recu.clientEmail,
+        clientNom: recu.clientNom,
+        numeroRecu: recu.numeroRecu,
+        numeroDossier: recu.numeroDossier || "DOS-OFFICIEL",
+        typeActe: recu.typeActeId || "Dossier Notarié",
+        montantTotal: recu.montantTotal,
+        fraisOuverture: recu.fraisOuverture,
+        provision: recu.provision,
+        modePaiement: recu.modePaiement,
+        datePaiement: recu.createdAt,
+        nomNotaire: params.nomNotaire,
+        nomEtude: params.nomEtude,
+        adresseEtude: params.adresse,
+        telephoneEtude: params.telephoneFixe || params.telephone,
+        emailEtude: params.email,
+      });
   }
 
   return { recu, emailEnvoye: emailEnvoyeResult };
@@ -280,7 +323,7 @@ async function joindreScanRecu(recuId, { urlScan, nomFichier, utilisateurId }) {
       `UPDATE recus_paiement
        SET recu_scanne_url = $1, recu_scanne_nom = $2, recu_scanne_le = now()
        WHERE id = $3`,
-      [urlScan, nomFichier || "Recu_Emarge.pdf", recuId]
+      [urlScan, nomFichier || "Recu_Emarge.pdf", recuId],
     );
 
     if (recu.dossierId) {
@@ -288,12 +331,16 @@ async function joindreScanRecu(recuId, { urlScan, nomFichier, utilisateurId }) {
         `UPDATE dossier_taches
          SET statut = 'effectuee', updated_at = now()
          WHERE dossier_id = $1 AND libelle LIKE '%Scanner le reçu de paiement%'`,
-        [recu.dossierId]
+        [recu.dossierId],
       );
       await pool.query(
         `INSERT INTO dossier_mouvements (dossier_id, utilisateur_id, description)
          VALUES ($1, $2, $3)`,
-        [recu.dossierId, utilisateurId || null, `Scan du reçu émargé N° ${recu.numeroRecu} rattaché au dossier.`]
+        [
+          recu.dossierId,
+          utilisateurId || null,
+          `Scan du reçu émargé N° ${recu.numeroRecu} rattaché au dossier.`,
+        ],
       );
     }
   } catch (_) {}

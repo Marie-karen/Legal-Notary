@@ -7,7 +7,9 @@
  */
 
 const express = require("express");
-const { exigerCleControlHub } = require("../middleware/controlHubAuth.middleware");
+const {
+  exigerCleControlHub,
+} = require("../middleware/controlHubAuth.middleware");
 const internalControlService = require("../services/internal-control.service");
 
 const router = express.Router();
@@ -70,10 +72,19 @@ router.post("/users/:id/action", async (req, res, next) => {
     const { action, ...payload } = req.body || {};
 
     if (!action) {
-      return res.status(400).json({ erreur: "Le paramètre 'action' est obligatoire dans le corps de la requête." });
+      return res
+        .status(400)
+        .json({
+          erreur:
+            "Le paramètre 'action' est obligatoire dans le corps de la requête.",
+        });
     }
 
-    const resultat = await internalControlService.executerActionUtilisateur(id, action, payload);
+    const resultat = await internalControlService.executerActionUtilisateur(
+      id,
+      action,
+      payload,
+    );
     res.json(resultat);
   } catch (err) {
     next(err);
@@ -89,10 +100,17 @@ router.post("/auth/impersonate", async (req, res, next) => {
     const { userId, email } = req.body || {};
 
     if (!userId && !email) {
-      return res.status(400).json({ erreur: "Veuillez fournir 'userId' ou 'email' pour l'impersonation." });
+      return res
+        .status(400)
+        .json({
+          erreur: "Veuillez fournir 'userId' ou 'email' pour l'impersonation.",
+        });
     }
 
-    const resultat = await internalControlService.genererTokenImpersonation({ userId, email });
+    const resultat = await internalControlService.genererTokenImpersonation({
+      userId,
+      email,
+    });
     res.json(resultat);
   } catch (err) {
     next(err);

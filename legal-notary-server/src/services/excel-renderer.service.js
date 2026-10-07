@@ -22,14 +22,21 @@ function escapeHtml(str) {
 }
 
 function fmtFCFA(montant) {
-  if (montant === null || montant === undefined || isNaN(montant)) return "0 FCFA";
+  if (montant === null || montant === undefined || isNaN(montant))
+    return "0 FCFA";
   return Math.round(Number(montant)).toLocaleString("fr-FR") + " FCFA";
 }
 
 /**
  * Génère le rendu HTML haute fidélité d'une feuille Excel spécifique avec injection des données réelles
  */
-function rendreFeuilleExcelHtml(cheminFichier, nomFeuille, dossier, fiche, parametres) {
+function rendreFeuilleExcelHtml(
+  cheminFichier,
+  nomFeuille,
+  dossier,
+  fiche,
+  parametres,
+) {
   if (!fs.existsSync(cheminFichier)) {
     throw new Error(`Fichier Excel introuvable : ${cheminFichier}`);
   }
@@ -49,11 +56,23 @@ function rendreFeuilleExcelHtml(cheminFichier, nomFeuille, dossier, fiche, param
   }
 
   // 2. Injecter les données dynamiques dans la feuille
-  const montantAssiette = Number((dossier && (dossier.montantAssiette || dossier.montant_assiette)) || 0);
-  const clientNom = (dossier && (dossier.comparantsNoms || dossier.clientNom || dossier.client_nom)) || "CLIENT DU DOSSIER";
-  const numDossier = (dossier && (dossier.numeroDossier || dossier.numero_dossier)) || "DOSSIER";
-  const typeActeLibelle = (dossier && (dossier.typeActeLibelle || dossier.type_acte_libelle)) || "ACTE NOTARIÉ";
-  const dateJour = new Date().toLocaleDateString("fr-CI", { day: "numeric", month: "long", year: "numeric" });
+  const montantAssiette = Number(
+    (dossier && (dossier.montantAssiette || dossier.montant_assiette)) || 0,
+  );
+  const clientNom =
+    (dossier &&
+      (dossier.comparantsNoms || dossier.clientNom || dossier.client_nom)) ||
+    "CLIENT DU DOSSIER";
+  const numDossier =
+    (dossier && (dossier.numeroDossier || dossier.numero_dossier)) || "DOSSIER";
+  const typeActeLibelle =
+    (dossier && (dossier.typeActeLibelle || dossier.type_acte_libelle)) ||
+    "ACTE NOTARIÉ";
+  const dateJour = new Date().toLocaleDateString("fr-CI", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
 
   const emo = (fiche && fiche.emoluments) || {};
   const totaux = (fiche && fiche.totaux) || {};
@@ -63,7 +82,7 @@ function rendreFeuilleExcelHtml(cheminFichier, nomFeuille, dossier, fiche, param
 
   const pagesMin = Number(timbres.pagesMinute) || 4;
   const nbExp = Number(timbres.nombreExpeditions) || 2;
-  const pagesExp = Number(timbres.pagesExpedition) || (pagesMin + 1);
+  const pagesExp = Number(timbres.pagesExpedition) || pagesMin + 1;
 
   // Parcourir et adapter les cellules du modèle
   const range = XLSX.utils.decode_range(ws["!ref"]);
@@ -80,25 +99,42 @@ function rendreFeuilleExcelHtml(cheminFichier, nomFeuille, dossier, fiche, param
       const valStr = String(cell.v).trim();
 
       // En-tête Notaire
-      if (parametres && parametres.nomNotaire && (valStr.includes("OKOUE") || valStr.includes("KOFFI") || valStr.includes("NOTAIRE"))) {
+      if (
+        parametres &&
+        parametres.nomNotaire &&
+        (valStr.includes("OKOUE") ||
+          valStr.includes("KOFFI") ||
+          valStr.includes("NOTAIRE"))
+      ) {
         if (r <= 5 && c <= 2) {
           if (valStr.startsWith("ETUDE") || valStr.startsWith("Etude")) {
-            cell.v = (parametres.nomEtude || `ETUDE DE MAÎTRE ${parametres.nomNotaire}`).toUpperCase();
+            cell.v = (
+              parametres.nomEtude || `ETUDE DE MAÎTRE ${parametres.nomNotaire}`
+            ).toUpperCase();
           }
         }
       }
 
       // Nom du client / Comparants
-      if (valStr.includes("SCI LES HIBISCUS") || valStr.includes("PAR .") || valStr.includes("NOMINATIF")) {
+      if (
+        valStr.includes("SCI LES HIBISCUS") ||
+        valStr.includes("PAR .") ||
+        valStr.includes("NOMINATIF")
+      ) {
         cell.v = clientNom;
       }
 
       // Nature de l'acte / Affaire
-      if (valStr.includes("Mainlevée d'hypothèque") || valStr.includes("VENTE PAR") || valStr.includes("PROMESSE")) {
+      if (
+        valStr.includes("Mainlevée d'hypothèque") ||
+        valStr.includes("VENTE PAR") ||
+        valStr.includes("PROMESSE")
+      ) {
         if (cell.t === "s") {
-          cell.v = valStr.replace(/Mainlevée d'hypothèque SIB/g, typeActeLibelle)
-                         .replace(/VENTE PAR.*/g, `VENTE : ${typeActeLibelle}`)
-                         .replace(/PROMESSE DE VENTE.*/g, `PROMESSE : ${typeActeLibelle}`);
+          cell.v = valStr
+            .replace(/Mainlevée d'hypothèque SIB/g, typeActeLibelle)
+            .replace(/VENTE PAR.*/g, `VENTE : ${typeActeLibelle}`)
+            .replace(/PROMESSE DE VENTE.*/g, `PROMESSE : ${typeActeLibelle}`);
         }
       }
 
@@ -108,7 +144,14 @@ function rendreFeuilleExcelHtml(cheminFichier, nomFeuille, dossier, fiche, param
       }
 
       // Base de calcul / Prix de vente
-      if (valStr === "158200000" || valStr === 158200000 || valStr === "35000000" || valStr === 35000000 || valStr === "120000000" || valStr === 120000000) {
+      if (
+        valStr === "158200000" ||
+        valStr === 158200000 ||
+        valStr === "35000000" ||
+        valStr === 35000000 ||
+        valStr === "120000000" ||
+        valStr === 120000000
+      ) {
         if (montantAssiette > 0) cell.v = montantAssiette;
       }
     }
@@ -116,7 +159,7 @@ function rendreFeuilleExcelHtml(cheminFichier, nomFeuille, dossier, fiche, param
 
   // 3. Construction du tableau HTML pixel-perfect
   let html = `<div class="feuille-excel-notaire-a4" style="background:#fff;color:#111;font-family:'Segoe UI',Roboto,Arial,sans-serif;padding:12mm 15mm;max-width:210mm;margin:0 auto;box-sizing:border-box;box-shadow:0 2px 10px rgba(0,0,0,0.1);border-radius:2px;font-size:11px;line-height:1.3">`;
-  
+
   html += `<table style="width:100%;border-collapse:collapse;table-layout:fixed;margin-bottom:10px">`;
 
   // Définir les largeurs relatives des colonnes
@@ -145,12 +188,14 @@ function rendreFeuilleExcelHtml(cheminFichier, nomFeuille, dossier, fiche, param
     html += `<tr style="min-height:20px">`;
 
     for (let c = range.s.c; c <= range.e.c; c++) {
-      const isMergeCovered = merges.some(m => (r > m.s.r || c > m.s.c) && r <= m.e.r && c <= m.e.c);
+      const isMergeCovered = merges.some(
+        (m) => (r > m.s.r || c > m.s.c) && r <= m.e.r && c <= m.e.c,
+      );
       if (isMergeCovered) continue;
 
-      const mergeInfo = merges.find(m => m.s.r === r && m.s.c === c);
-      const rowspan = mergeInfo ? (mergeInfo.e.r - mergeInfo.s.r + 1) : 1;
-      const colspan = mergeInfo ? (mergeInfo.e.c - mergeInfo.s.c + 1) : 1;
+      const mergeInfo = merges.find((m) => m.s.r === r && m.s.c === c);
+      const rowspan = mergeInfo ? mergeInfo.e.r - mergeInfo.s.r + 1 : 1;
+      const colspan = mergeInfo ? mergeInfo.e.c - mergeInfo.s.c + 1 : 1;
 
       const cellRef = XLSX.utils.encode_cell({ r, c });
       const cell = ws[cellRef];
@@ -197,12 +242,19 @@ function rendreFeuilleExcelHtml(cheminFichier, nomFeuille, dossier, fiche, param
         isBold = true;
       }
 
-      if (valUpper.startsWith("RUBRIQUES") || valUpper.startsWith("POSTES") || (r === 16 && (c === 0 || c === 1))) {
+      if (
+        valUpper.startsWith("RUBRIQUES") ||
+        valUpper.startsWith("POSTES") ||
+        (r === 16 && (c === 0 || c === 1))
+      ) {
         bgColor = "#f3f4f6";
         borderStyle = "border:1.5px solid #111;";
       }
 
-      if (valUpper.includes("TOTAL A PAYER") || valUpper.includes("TOTAL GENERAL")) {
+      if (
+        valUpper.includes("TOTAL A PAYER") ||
+        valUpper.includes("TOTAL GENERAL")
+      ) {
         isBold = true;
         bgColor = "#f9fafb";
         borderStyle = "border-top:2px solid #111;border-bottom:2px solid #111;";
@@ -210,7 +262,8 @@ function rendreFeuilleExcelHtml(cheminFichier, nomFeuille, dossier, fiche, param
 
       let tdStyle = `${borderStyle}padding:3px 6px;vertical-align:middle;text-align:${textAlign};background:${bgColor};`;
       if (isBold) tdStyle += "font-weight:700;";
-      if (isNumeric) tdStyle += "font-variant-numeric:tabular-nums;color:#1e3a8a;";
+      if (isNumeric)
+        tdStyle += "font-variant-numeric:tabular-nums;color:#1e3a8a;";
 
       html += `<td${rowspan > 1 ? ` rowspan="${rowspan}"` : ""}${colspan > 1 ? ` colspan="${colspan}"` : ""} style="${tdStyle}">`;
       html += escapeHtml(cellValue);
@@ -229,13 +282,28 @@ function rendreFeuilleExcelHtml(cheminFichier, nomFeuille, dossier, fiche, param
 /**
  * Génère l'interface complète de prévisualisation avec onglets pour toutes les feuilles du classeur Excel
  */
-function rendreClasseurExcelInteractif(modeleId, dossier, fiche, parametres, feuilleActive) {
+function rendreClasseurExcelInteractif(
+  modeleId,
+  dossier,
+  fiche,
+  parametres,
+  feuilleActive,
+) {
   const cheminFichier = excelService.obtenirCheminModele(modeleId);
   const wb = XLSX.readFile(cheminFichier);
   const feuillesDisponibles = wb.SheetNames;
-  const activeSheet = feuilleActive && feuillesDisponibles.includes(feuilleActive) ? feuilleActive : feuillesDisponibles[0];
+  const activeSheet =
+    feuilleActive && feuillesDisponibles.includes(feuilleActive)
+      ? feuilleActive
+      : feuillesDisponibles[0];
 
-  const htmlContenuFeuille = rendreFeuilleExcelHtml(cheminFichier, activeSheet, dossier, fiche, parametres);
+  const htmlContenuFeuille = rendreFeuilleExcelHtml(
+    cheminFichier,
+    activeSheet,
+    dossier,
+    fiche,
+    parametres,
+  );
 
   return {
     modeleId: modeleId || "TEST",

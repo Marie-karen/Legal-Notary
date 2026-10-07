@@ -21,7 +21,11 @@ if (!fs.existsSync(BACKUP_DIR)) {
 // Clé secrète de chiffrement AES-256 dérivée pour les sauvegardes WORM
 const CLE_CHIFFREMENT_SNAPSHOT = crypto
   .createHash("sha256")
-  .update(process.env.BACKUP_ENCRYPTION_KEY || process.env.JWT_SECRET || "legal_notary_backup_master_key_2026")
+  .update(
+    process.env.BACKUP_ENCRYPTION_KEY ||
+      process.env.JWT_SECRET ||
+      "legal_notary_backup_master_key_2026",
+  )
   .digest();
 
 /**
@@ -35,13 +39,24 @@ async function genererSnapshotWORM({
   const debut = Date.now();
 
   // 1. Extraction des données relationnelles de l'office
-  const [dossiersRes, minutesRes, mouvRes, auditRes, equipeRes] = await Promise.all([
-    pool.query("SELECT * FROM dossiers WHERE etude_id = $1", [etudeId]),
-    pool.query("SELECT * FROM minutes_archive WHERE etude_id = $1", [etudeId]),
-    pool.query("SELECT * FROM mouvements_dossiers_physiques WHERE etude_id = $1", [etudeId]),
-    pool.query("SELECT * FROM journal_audit ORDER BY created_at DESC LIMIT 1000"),
-    pool.query("SELECT id, nom_complet, email, role, actif, etude_id FROM utilisateurs WHERE etude_id = $1", [etudeId]),
-  ]);
+  const [dossiersRes, minutesRes, mouvRes, auditRes, equipeRes] =
+    await Promise.all([
+      pool.query("SELECT * FROM dossiers WHERE etude_id = $1", [etudeId]),
+      pool.query("SELECT * FROM minutes_archive WHERE etude_id = $1", [
+        etudeId,
+      ]),
+      pool.query(
+        "SELECT * FROM mouvements_dossiers_physiques WHERE etude_id = $1",
+        [etudeId],
+      ),
+      pool.query(
+        "SELECT * FROM journal_audit ORDER BY created_at DESC LIMIT 1000",
+      ),
+      pool.query(
+        "SELECT id, nom_complet, email, role, actif, etude_id FROM utilisateurs WHERE etude_id = $1",
+        [etudeId],
+      ),
+    ]);
 
   const payload = {
     versionFormat: "2.0.0-WORM-SECURE",
@@ -72,8 +87,15 @@ async function genererSnapshotWORM({
 
   // 3. Chiffrement AES-256-GCM
   const iv = crypto.randomBytes(12);
-  const cipher = crypto.createCipheriv("aes-256-gcm", CLE_CHIFFREMENT_SNAPSHOT, iv);
-  const payloadChiffre = Buffer.concat([cipher.update(brutJson), cipher.final()]);
+  const cipher = crypto.createCipheriv(
+    "aes-256-gcm",
+    CLE_CHIFFREMENT_SNAPSHOT,
+    iv,
+  );
+  const payloadChiffre = Buffer.concat([
+    cipher.update(brutJson),
+    cipher.final(),
+  ]);
   const authTag = cipher.getAuthTag();
 
   const fichierFinal = {
@@ -89,18 +111,30 @@ async function genererSnapshotWORM({
   const nomFichier = `${idSnapshot}.worm.json`;
   const cheminFichier = path.join(BACKUP_DIR, nomFichier);
 
-  fs.writeFileSync(cheminFichier, JSON.stringify(fichierFinal, null, 2), "utf8");
+  fs.writeFileSync(
+    cheminFichier,
+    JSON.stringify(fichierFinal, null, 2),
+    "utf8",
+  );
   const statsFichier = fs.statSync(cheminFichier);
   const dureeMs = Date.now() - debut;
 
   // Enregistrement télémétrique
-  telemetrieService.enregistrerErreur({
-    source: "moteur-sauvegarde-worm",
-    typeErreur: "SnapshotGenere",
-    message: `Snapshot immuable WORM généré avec succès : ${idSnapshot} (${(statsFichier.size / 1024).toFixed(1)} Ko)`,
-    niveau: "info",
-    meta: { idSnapshot, etudeId, tailleOctets: statsFichier.size, dureeMs, hashSha256 },
-  }).catch(() => {});
+  telemetrieService
+    .enregistrerErreur({
+      source: "moteur-sauvegarde-worm",
+      typeErreur: "SnapshotGenere",
+      message: `Snapshot immuable WORM généré avec succès : ${idSnapshot} (${(statsFichier.size / 1024).toFixed(1)} Ko)`,
+      niveau: "info",
+      meta: {
+        idSnapshot,
+        etudeId,
+        tailleOctets: statsFichier.size,
+        dureeMs,
+        hashSha256,
+      },
+    })
+    .catch(() => {});
 
   return {
     idSnapshot,
@@ -118,10 +152,14 @@ async function genererSnapshotWORM({
 /**
  * Lister tous les snapshots WORM disponibles
  */
-async function listerSnapshots({ etudeId = "a0000000-0000-0000-0000-000000000001" } = {}) {
+async function listerSnapshots({
+  etudeId = "a0000000-0000-0000-0000-000000000001",
+} = {}) {
   if (!fs.existsSync(BACKUP_DIR)) return [];
 
-  const fichiers = fs.readdirSync(BACKUP_DIR).filter((f) => f.endsWith(".worm.json"));
+  const fichiers = fs
+    .readdirSync(BACKUP_DIR)
+    .filter((f) => f.endsWith(".worm.json"));
   const snapshots = [];
 
   for (const f of fichiers) {
@@ -138,7 +176,9 @@ async function listerSnapshots({ etudeId = "a0000000-0000-0000-0000-000000000001
         dateCreation: stats.birthtime.toISOString(),
         algorithme: contenu.algorithme || "AES-256-GCM",
         hashSha256: contenu.hashSha256 || "—",
-        estValide: Boolean(contenu.authTag && contenu.iv && contenu.payloadChiffreHex),
+        estValide: Boolean(
+          contenu.authTag && contenu.iv && contenu.payloadChiffreHex,
+        ),
       });
     } catch {
       // Ignorer fichiers corrompus
@@ -146,7 +186,9 @@ async function listerSnapshots({ etudeId = "a0000000-0000-0000-0000-000000000001
   }
 
   // Tri par date décroissante
-  return snapshots.sort((a, b) => new Date(b.dateCreation) - new Date(a.dateCreation));
+  return snapshots.sort(
+    (a, b) => new Date(b.dateCreation) - new Date(a.dateCreation),
+  );
 }
 
 /**
@@ -155,12 +197,15 @@ async function listerSnapshots({ etudeId = "a0000000-0000-0000-0000-000000000001
 async function simulerPlanRepriseActivite({ snapshotId, etudeId }) {
   const debut = Date.now();
   let nomFichier = snapshotId;
-  if (!nomFichier.endsWith(".worm.json")) nomFichier = `${snapshotId}.worm.json`;
+  if (!nomFichier.endsWith(".worm.json"))
+    nomFichier = `${snapshotId}.worm.json`;
 
   const cheminFichier = path.join(BACKUP_DIR, nomFichier);
 
   if (!fs.existsSync(cheminFichier)) {
-    throw new Error(`Le fichier de snapshot ${nomFichier} est introuvable sur le stockage sécurisé.`);
+    throw new Error(
+      `Le fichier de snapshot ${nomFichier} est introuvable sur le stockage sécurisé.`,
+    );
   }
 
   const donneesFichier = JSON.parse(fs.readFileSync(cheminFichier, "utf8"));
@@ -170,20 +215,34 @@ async function simulerPlanRepriseActivite({ snapshotId, etudeId }) {
   const authTag = Buffer.from(donneesFichier.authTag, "hex");
   const payloadChiffre = Buffer.from(donneesFichier.payloadChiffreHex, "hex");
 
-  const decipher = crypto.createDecipheriv("aes-256-gcm", CLE_CHIFFREMENT_SNAPSHOT, iv);
+  const decipher = crypto.createDecipheriv(
+    "aes-256-gcm",
+    CLE_CHIFFREMENT_SNAPSHOT,
+    iv,
+  );
   decipher.setAuthTag(authTag);
 
   let payloadClairBuffer;
   try {
-    payloadClairBuffer = Buffer.concat([decipher.update(payloadChiffre), decipher.final()]);
+    payloadClairBuffer = Buffer.concat([
+      decipher.update(payloadChiffre),
+      decipher.final(),
+    ]);
   } catch (err) {
-    throw new Error("Échec d'authentification cryptographique AES-256-GCM : l'archive a été altérée ou la clé est invalide.");
+    throw new Error(
+      "Échec d'authentification cryptographique AES-256-GCM : l'archive a été altérée ou la clé est invalide.",
+    );
   }
 
   // 2. Vérification de l'intégrité SHA-256
-  const hashCalcule = crypto.createHash("sha256").update(payloadClairBuffer).digest("hex");
+  const hashCalcule = crypto
+    .createHash("sha256")
+    .update(payloadClairBuffer)
+    .digest("hex");
   if (hashCalcule !== donneesFichier.hashSha256) {
-    throw new Error("Discordance de l'empreinte SHA-256 : risque de corruption de l'archive WORM.");
+    throw new Error(
+      "Discordance de l'empreinte SHA-256 : risque de corruption de l'archive WORM.",
+    );
   }
 
   const payloadRestitue = JSON.parse(payloadClairBuffer.toString("utf8"));
@@ -208,7 +267,8 @@ async function simulerPlanRepriseActivite({ snapshotId, etudeId }) {
       totalCollaborateursRecouvrables: payloadRestitue.donnees.equipe.length,
       totalLogsAuditRecouvrables: payloadRestitue.donnees.audit.length,
     },
-    message: "Test de Plan de Reprise d'Activité (PRA) validé : Déchiffrement AES-256-GCM et signature SHA-256 100% intègres.",
+    message:
+      "Test de Plan de Reprise d'Activité (PRA) validé : Déchiffrement AES-256-GCM et signature SHA-256 100% intègres.",
     dureeExecutionMs: dureeRestaurationMs,
   };
 }
@@ -219,7 +279,10 @@ async function simulerPlanRepriseActivite({ snapshotId, etudeId }) {
 async function diagnostiquerEtNettoyerDisque({ nettoyer = false } = {}) {
   const dossiersSurveilles = [
     { nom: "Backups WORM", chemin: BACKUP_DIR },
-    { nom: "Documents & Minutes Scannées", chemin: path.join(__dirname, "..", "..", "uploads", "documents") },
+    {
+      nom: "Documents & Minutes Scannées",
+      chemin: path.join(__dirname, "..", "..", "uploads", "documents"),
+    },
   ];
 
   let espaceTotalUtiliseOctets = 0;
@@ -260,7 +323,10 @@ async function diagnostiquerEtNettoyerDisque({ nettoyer = false } = {}) {
     espaceTotalMo: (espaceTotalUtiliseOctets / (1024 * 1024)).toFixed(2),
     repartition: details,
     seuilAlerteSaturationMo: 10240, // 10 Go
-    statutDisque: espaceTotalUtiliseOctets < 5000 * 1024 * 1024 ? "OPTIMAL_VERT" : "ATTENTION_AMBRE",
+    statutDisque:
+      espaceTotalUtiliseOctets < 5000 * 1024 * 1024
+        ? "OPTIMAL_VERT"
+        : "ATTENTION_AMBRE",
     nettoyageEffectue: nettoyer,
   };
 }

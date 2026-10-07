@@ -8,7 +8,10 @@ const crypto = require("crypto");
 const authService = require("./auth.service");
 const emailDeploiementService = require("./email-deploiement.service");
 const packsService = require("./packs.service");
-const { lireFichierJson, ecrireFichierJson } = require("./stockage-persistant.service");
+const {
+  lireFichierJson,
+  ecrireFichierJson,
+} = require("./stockage-persistant.service");
 
 let ETUDES_MEMOIRE = [];
 
@@ -43,7 +46,7 @@ function synchroniserEtudesDepuisDisque() {
         versionDeployee: "v2.4.0",
         statutSante: "🟢 En ligne (Sync OK)",
         dateCreation: new Date("2026-01-10"),
-      }
+      },
     ];
     persisterEtudesSurDisque();
   }
@@ -104,18 +107,33 @@ const MEMBRES_EDITEUR_MEMOIRE = [
 
 async function obtenirStatistiquesGlobales() {
   try {
-    const { rows: etudes } = await pool.query("SELECT * FROM etudes ORDER BY created_at ASC");
+    const { rows: etudes } = await pool.query(
+      "SELECT * FROM etudes ORDER BY created_at ASC",
+    );
     if (etudes && etudes.length) {
-      const { rows: totalDossiers } = await pool.query("SELECT COUNT(*)::int AS n FROM dossiers");
-      const { rows: totalMinutes } = await pool.query("SELECT COUNT(*)::int AS n FROM minutes_archive");
-      const { rows: totalCartons } = await pool.query("SELECT COUNT(*)::int AS n FROM cartons_archive");
-      const { rows: totalUsers } = await pool.query("SELECT COUNT(*)::int AS n FROM utilisateurs WHERE role NOT IN ('superadmin', 'dev', 'commercial', 'support', 'assistante_editeur')");
-      const { rows: totalTickets } = await pool.query("SELECT COUNT(*)::int AS n FROM tickets_support WHERE statut = 'ouvert'");
+      const { rows: totalDossiers } = await pool.query(
+        "SELECT COUNT(*)::int AS n FROM dossiers",
+      );
+      const { rows: totalMinutes } = await pool.query(
+        "SELECT COUNT(*)::int AS n FROM minutes_archive",
+      );
+      const { rows: totalCartons } = await pool.query(
+        "SELECT COUNT(*)::int AS n FROM cartons_archive",
+      );
+      const { rows: totalUsers } = await pool.query(
+        "SELECT COUNT(*)::int AS n FROM utilisateurs WHERE role NOT IN ('superadmin', 'dev', 'commercial', 'support', 'assistante_editeur')",
+      );
+      const { rows: totalTickets } = await pool.query(
+        "SELECT COUNT(*)::int AS n FROM tickets_support WHERE statut = 'ouvert'",
+      );
 
       const repartitionModes = {
-        hybride: etudes.filter((e) => e.mode_infrastructure === "hybride").length,
+        hybride: etudes.filter((e) => e.mode_infrastructure === "hybride")
+          .length,
         cloud: etudes.filter((e) => e.mode_infrastructure === "cloud").length,
-        serveur_physique: etudes.filter((e) => e.mode_infrastructure === "serveur_physique").length,
+        serveur_physique: etudes.filter(
+          (e) => e.mode_infrastructure === "serveur_physique",
+        ).length,
       };
 
       return {
@@ -134,9 +152,20 @@ async function obtenirStatistiquesGlobales() {
   } catch (_) {}
 
   synchroniserEtudesDepuisDisque();
-  const totalDossiers = ETUDES_MEMOIRE.reduce((acc, e) => acc + (e.totalDossiers || 0), 0);
-  const totalMinutes = ETUDES_MEMOIRE.reduce((acc, e) => acc + (e.totalMinutes || 0), 0);
-  const totalUtilisateurs = ETUDES_MEMOIRE.reduce((acc, e) => acc + (e.totalUtilisateurs || (e.comptesCrees ? e.comptesCrees.length : 0)), 0);
+  const totalDossiers = ETUDES_MEMOIRE.reduce(
+    (acc, e) => acc + (e.totalDossiers || 0),
+    0,
+  );
+  const totalMinutes = ETUDES_MEMOIRE.reduce(
+    (acc, e) => acc + (e.totalMinutes || 0),
+    0,
+  );
+  const totalUtilisateurs = ETUDES_MEMOIRE.reduce(
+    (acc, e) =>
+      acc +
+      (e.totalUtilisateurs || (e.comptesCrees ? e.comptesCrees.length : 0)),
+    0,
+  );
 
   return {
     totalEtudes: ETUDES_MEMOIRE.length,
@@ -146,9 +175,13 @@ async function obtenirStatistiquesGlobales() {
     totalUtilisateurs,
     ticketsSupportOuverts: 0,
     repartitionModes: {
-      hybride: ETUDES_MEMOIRE.filter(e => e.modeInfrastructure === "hybride").length,
-      cloud: ETUDES_MEMOIRE.filter(e => e.modeInfrastructure === "cloud").length,
-      serveur_physique: ETUDES_MEMOIRE.filter(e => e.modeInfrastructure === "serveur_physique").length,
+      hybride: ETUDES_MEMOIRE.filter((e) => e.modeInfrastructure === "hybride")
+        .length,
+      cloud: ETUDES_MEMOIRE.filter((e) => e.modeInfrastructure === "cloud")
+        .length,
+      serveur_physique: ETUDES_MEMOIRE.filter(
+        (e) => e.modeInfrastructure === "serveur_physique",
+      ).length,
     },
     disponibiliteGlobale: "99.99%",
     statutSaaS: "🟢 100 % Opérationnel",
@@ -173,7 +206,11 @@ async function listerEtudes() {
         nomEtude: e.nom_etude,
         titreNotaire: e.titre_notaire,
         modeInfrastructure: e.mode_infrastructure,
-        domaine: e.domaine || (e.code_etude ? e.code_etude.toLowerCase() + ".notaires.ci" : "notaires.ci"),
+        domaine:
+          e.domaine ||
+          (e.code_etude
+            ? e.code_etude.toLowerCase() + ".notaires.ci"
+            : "notaires.ci"),
         quotaStockageGo: e.quota_stockage_go || 100,
         ville: e.ville || "Abidjan",
         actif: e.actif,
@@ -190,7 +227,7 @@ async function listerEtudes() {
   } catch (_) {}
 
   synchroniserEtudesDepuisDisque();
-  return ETUDES_MEMOIRE.map(e => ({ ...e, derniereSynchro: new Date() }));
+  return ETUDES_MEMOIRE.map((e) => ({ ...e, derniereSynchro: new Date() }));
 }
 
 function etudeVersCamel(e) {
@@ -230,7 +267,9 @@ async function creerEtude({
   collaborateurs = [],
   envoyerEmails = true,
 }) {
-  const code = codeEtude || `ETD-${(nomEtude || "OFF").slice(0, 3).toUpperCase()}-${Math.floor(Math.random() * 900) + 100}`;
+  const code =
+    codeEtude ||
+    `ETD-${(nomEtude || "OFF").slice(0, 3).toUpperCase()}-${Math.floor(Math.random() * 900) + 100}`;
   const dom = domaine || `${code.toLowerCase()}.notaires.ci`;
   const id = crypto.randomUUID();
 
@@ -240,7 +279,16 @@ async function creerEtude({
       `INSERT INTO etudes (id, nom_etude, code_etude, titre_notaire, mode_infrastructure, quota_stockage_go, ville, domaine, actif)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, true)
        ON CONFLICT (id) DO NOTHING`,
-      [id, nomEtude, code, titreNotaire || "Maître Notaire Titulaire", modeInfrastructure, quotaStockageGo, ville, dom]
+      [
+        id,
+        nomEtude,
+        code,
+        titreNotaire || "Maître Notaire Titulaire",
+        modeInfrastructure,
+        quotaStockageGo,
+        ville,
+        dom,
+      ],
     );
   } catch (e) {
     console.warn("[SuperAdmin] DB insert etude fallback:", e.message);
@@ -275,7 +323,7 @@ async function creerEtude({
         numeroCC || "",
         centreImpots || "",
         compteSequestreCDCI || "",
-      ]
+      ],
     );
   } catch (e) {
     console.warn("[SuperAdmin] DB sync parametres_etude fallback:", e.message);
@@ -286,7 +334,9 @@ async function creerEtude({
   const listeAcreer = Array.isArray(collaborateurs) ? [...collaborateurs] : [];
 
   // Si aucun notaire dans la liste des collaborateurs, on injecte le compte admin principal
-  const aNotaire = listeAcreer.some((c) => c.role === "notaire" || (emailAdmin && c.email === emailAdmin));
+  const aNotaire = listeAcreer.some(
+    (c) => c.role === "notaire" || (emailAdmin && c.email === emailAdmin),
+  );
   if (!aNotaire && emailAdmin) {
     listeAcreer.unshift({
       nomComplet: titreNotaire || nomEtude,
@@ -300,7 +350,10 @@ async function creerEtude({
 
   for (const c of listeAcreer) {
     if (!c.email) continue;
-    const mdp = c.motDePasse || c.mdp || ("Pass" + Math.floor(Math.random() * 9000 + 1000) + "!");
+    const mdp =
+      c.motDePasse ||
+      c.mdp ||
+      "Pass" + Math.floor(Math.random() * 9000 + 1000) + "!";
     try {
       const u = await authService.creerUtilisateur({
         nomComplet: c.nomComplet || c.nom || c.email.split("@")[0],
@@ -316,14 +369,15 @@ async function creerEtude({
 
       let infoEmail = { succes: true, mode: "desactive" };
       if (envoyerEmails !== false) {
-        infoEmail = await emailDeploiementService.envoyerEmailBienvenueCollaborateur({
-          destinataireEmail: u.email,
-          nomComplet: u.nomComplet,
-          role: u.role,
-          motDePasse: mdp,
-          nomEtude,
-          domaine: dom,
-        });
+        infoEmail =
+          await emailDeploiementService.envoyerEmailBienvenueCollaborateur({
+            destinataireEmail: u.email,
+            nomComplet: u.nomComplet,
+            role: u.role,
+            motDePasse: mdp,
+            nomEtude,
+            domaine: dom,
+          });
       }
 
       comptesCrees.push({
@@ -338,7 +392,10 @@ async function creerEtude({
         emailApercuTexte: infoEmail.apercuTexte,
       });
     } catch (errUser) {
-      console.warn("[SuperAdmin] Erreur création collaborateur :", errUser.message);
+      console.warn(
+        "[SuperAdmin] Erreur création collaborateur :",
+        errUser.message,
+      );
     }
   }
 
@@ -373,22 +430,74 @@ async function supprimerEtude(etudeId) {
 
   // 1. Purge complète de toutes les tables PostgreSQL
   try {
-    await pool.query("DELETE FROM file_synchronisation WHERE etude_id = $1", [etudeId]).catch(() => {});
-    await pool.query("DELETE FROM agenda_evenements WHERE etude_id = $1", [etudeId]).catch(() => {});
-    await pool.query("DELETE FROM agenda_taches WHERE etude_id = $1", [etudeId]).catch(() => {});
-    await pool.query("DELETE FROM mouvements_dossiers_physiques WHERE etude_id = $1", [etudeId]).catch(() => {});
-    await pool.query("DELETE FROM minutes_archive WHERE etude_id = $1", [etudeId]).catch(() => {});
-    await pool.query("DELETE FROM cartons_archive WHERE etude_id = $1", [etudeId]).catch(() => {});
-    await pool.query("DELETE FROM fiches_taxe WHERE dossier_id IN (SELECT id FROM dossiers WHERE etude_id = $1)", [etudeId]).catch(() => {});
-    await pool.query("DELETE FROM dossier_projets_acte WHERE dossier_id IN (SELECT id FROM dossiers WHERE etude_id = $1)", [etudeId]).catch(() => {});
-    await pool.query("DELETE FROM dossier_comparants WHERE dossier_id IN (SELECT id FROM dossiers WHERE etude_id = $1)", [etudeId]).catch(() => {});
-    await pool.query("DELETE FROM dossier_taches WHERE dossier_id IN (SELECT id FROM dossiers WHERE etude_id = $1)", [etudeId]).catch(() => {});
-    await pool.query("DELETE FROM dossier_mouvements WHERE dossier_id IN (SELECT id FROM dossiers WHERE etude_id = $1)", [etudeId]).catch(() => {});
-    await pool.query("DELETE FROM dossiers WHERE etude_id = $1", [etudeId]).catch(() => {});
-    await pool.query("DELETE FROM parametres_etude WHERE etude_id = $1", [etudeId]).catch(() => {});
-    await pool.query("DELETE FROM notifications WHERE utilisateur_id IN (SELECT id FROM utilisateurs WHERE etude_id = $1)", [etudeId]).catch(() => {});
-    await pool.query("DELETE FROM utilisateurs WHERE etude_id = $1", [etudeId]).catch(() => {});
-    await pool.query("DELETE FROM etudes WHERE id = $1", [etudeId]).catch(() => {});
+    await pool
+      .query("DELETE FROM file_synchronisation WHERE etude_id = $1", [etudeId])
+      .catch(() => {});
+    await pool
+      .query("DELETE FROM agenda_evenements WHERE etude_id = $1", [etudeId])
+      .catch(() => {});
+    await pool
+      .query("DELETE FROM agenda_taches WHERE etude_id = $1", [etudeId])
+      .catch(() => {});
+    await pool
+      .query("DELETE FROM mouvements_dossiers_physiques WHERE etude_id = $1", [
+        etudeId,
+      ])
+      .catch(() => {});
+    await pool
+      .query("DELETE FROM minutes_archive WHERE etude_id = $1", [etudeId])
+      .catch(() => {});
+    await pool
+      .query("DELETE FROM cartons_archive WHERE etude_id = $1", [etudeId])
+      .catch(() => {});
+    await pool
+      .query(
+        "DELETE FROM fiches_taxe WHERE dossier_id IN (SELECT id FROM dossiers WHERE etude_id = $1)",
+        [etudeId],
+      )
+      .catch(() => {});
+    await pool
+      .query(
+        "DELETE FROM dossier_projets_acte WHERE dossier_id IN (SELECT id FROM dossiers WHERE etude_id = $1)",
+        [etudeId],
+      )
+      .catch(() => {});
+    await pool
+      .query(
+        "DELETE FROM dossier_comparants WHERE dossier_id IN (SELECT id FROM dossiers WHERE etude_id = $1)",
+        [etudeId],
+      )
+      .catch(() => {});
+    await pool
+      .query(
+        "DELETE FROM dossier_taches WHERE dossier_id IN (SELECT id FROM dossiers WHERE etude_id = $1)",
+        [etudeId],
+      )
+      .catch(() => {});
+    await pool
+      .query(
+        "DELETE FROM dossier_mouvements WHERE dossier_id IN (SELECT id FROM dossiers WHERE etude_id = $1)",
+        [etudeId],
+      )
+      .catch(() => {});
+    await pool
+      .query("DELETE FROM dossiers WHERE etude_id = $1", [etudeId])
+      .catch(() => {});
+    await pool
+      .query("DELETE FROM parametres_etude WHERE etude_id = $1", [etudeId])
+      .catch(() => {});
+    await pool
+      .query(
+        "DELETE FROM notifications WHERE utilisateur_id IN (SELECT id FROM utilisateurs WHERE etude_id = $1)",
+        [etudeId],
+      )
+      .catch(() => {});
+    await pool
+      .query("DELETE FROM utilisateurs WHERE etude_id = $1", [etudeId])
+      .catch(() => {});
+    await pool
+      .query("DELETE FROM etudes WHERE id = $1", [etudeId])
+      .catch(() => {});
   } catch (e) {
     console.warn("[SuperAdmin] Erreur purge DB etude :", e.message);
   }
@@ -397,10 +506,15 @@ async function supprimerEtude(etudeId) {
   await authService.supprimerUtilisateursParEtude(etudeId);
 
   // 3. Purge mémoire & persistance sur disque
-  ETUDES_MEMOIRE = ETUDES_MEMOIRE.filter((x) => x.id !== etudeId && x.codeEtude !== etudeId);
+  ETUDES_MEMOIRE = ETUDES_MEMOIRE.filter(
+    (x) => x.id !== etudeId && x.codeEtude !== etudeId,
+  );
   persisterEtudesSurDisque();
 
-  return { success: true, message: "Office Notarial et données associées définitivement supprimés." };
+  return {
+    success: true,
+    message: "Office Notarial et données associées définitivement supprimés.",
+  };
 }
 
 async function supprimerPlusieursEtudes(ids = []) {
@@ -414,7 +528,11 @@ async function supprimerPlusieursEtudes(ids = []) {
       count++;
     }
   }
-  return { success: true, count, message: `${count} office(s) notarial(aux) supprimé(s) avec succès.` };
+  return {
+    success: true,
+    count,
+    message: `${count} office(s) notarial(aux) supprimé(s) avec succès.`,
+  };
 }
 
 async function listerUtilisateursEtude(etudeId) {
@@ -422,48 +540,61 @@ async function listerUtilisateursEtude(etudeId) {
 }
 
 async function ajouterCollaborateurEtude(etudeId, donnees) {
-  const mdp = donnees.motDePasse || ("Pass" + Math.floor(Math.random() * 9000 + 1000) + "!");
-  const u = await authService.creerUtilisateur({
-    ...donnees,
-    motDePasse: mdp,
-    etudeId,
-  }, { avecSalaire: true });
+  const mdp =
+    donnees.motDePasse ||
+    "Pass" + Math.floor(Math.random() * 9000 + 1000) + "!";
+  const u = await authService.creerUtilisateur(
+    {
+      ...donnees,
+      motDePasse: mdp,
+      etudeId,
+    },
+    { avecSalaire: true },
+  );
 
-  const etude = ETUDES_MEMOIRE.find(e => e.id === etudeId);
+  const etude = ETUDES_MEMOIRE.find((e) => e.id === etudeId);
   const nomEtude = etude ? etude.nomEtude : "Office Notarial";
   const dom = etude ? etude.domaine : "";
 
-  const infoEmail = await emailDeploiementService.envoyerEmailBienvenueCollaborateur({
-    destinataireEmail: u.email,
-    nomComplet: u.nomComplet,
-    role: u.role,
-    motDePasse: mdp,
-    nomEtude,
-    domaine: dom,
-  });
+  const infoEmail =
+    await emailDeploiementService.envoyerEmailBienvenueCollaborateur({
+      destinataireEmail: u.email,
+      nomComplet: u.nomComplet,
+      role: u.role,
+      motDePasse: mdp,
+      nomEtude,
+      domaine: dom,
+    });
 
-  return { ...u, motDePasseTemporaire: mdp, emailEnvoye: infoEmail.succes, emailApercuTexte: infoEmail.apercuTexte };
+  return {
+    ...u,
+    motDePasseTemporaire: mdp,
+    emailEnvoye: infoEmail.succes,
+    emailApercuTexte: infoEmail.apercuTexte,
+  };
 }
 
 async function reinitialiserMotDePasseEtude(etudeId, userId, motDePasse) {
-  const mdp = motDePasse || ("Pass" + Math.floor(Math.random() * 9000 + 1000) + "!");
+  const mdp =
+    motDePasse || "Pass" + Math.floor(Math.random() * 9000 + 1000) + "!";
   const u = await authService.reinitialiserMotDePasse(userId, mdp);
   if (!u) {
     throw new Error("Utilisateur introuvable.");
   }
 
-  const etude = ETUDES_MEMOIRE.find(e => e.id === etudeId);
+  const etude = ETUDES_MEMOIRE.find((e) => e.id === etudeId);
   const nomEtude = etude ? etude.nomEtude : "Office Notarial";
   const dom = etude ? etude.domaine : "";
 
-  const infoEmail = await emailDeploiementService.envoyerEmailBienvenueCollaborateur({
-    destinataireEmail: u.email,
-    nomComplet: u.nomComplet,
-    role: u.role,
-    motDePasse: mdp,
-    nomEtude,
-    domaine: dom,
-  });
+  const infoEmail =
+    await emailDeploiementService.envoyerEmailBienvenueCollaborateur({
+      destinataireEmail: u.email,
+      nomComplet: u.nomComplet,
+      role: u.role,
+      motDePasse: mdp,
+      nomEtude,
+      domaine: dom,
+    });
 
   return {
     success: true,
@@ -474,15 +605,18 @@ async function reinitialiserMotDePasseEtude(etudeId, userId, motDePasse) {
   };
 }
 
-async function mettreAJourEtude(etudeId, {
-  nomEtude,
-  titreNotaire,
-  modeInfrastructure,
-  quotaStockageGo,
-  ville,
-  domaine,
-  actif
-}) {
+async function mettreAJourEtude(
+  etudeId,
+  {
+    nomEtude,
+    titreNotaire,
+    modeInfrastructure,
+    quotaStockageGo,
+    ville,
+    domaine,
+    actif,
+  },
+) {
   try {
     const { rows } = await pool.query(
       `UPDATE etudes SET
@@ -495,12 +629,21 @@ async function mettreAJourEtude(etudeId, {
          actif = COALESCE($7, actif),
          updated_at = NOW()
        WHERE id = $8 RETURNING *`,
-      [nomEtude, titreNotaire, modeInfrastructure, quotaStockageGo, ville, domaine, actif, etudeId]
+      [
+        nomEtude,
+        titreNotaire,
+        modeInfrastructure,
+        quotaStockageGo,
+        ville,
+        domaine,
+        actif,
+        etudeId,
+      ],
     );
     if (rows && rows.length) return etudeVersCamel(rows[0]);
   } catch (_) {}
 
-  const e = ETUDES_MEMOIRE.find(x => x.id === etudeId);
+  const e = ETUDES_MEMOIRE.find((x) => x.id === etudeId);
   if (e) {
     if (nomEtude) e.nomEtude = nomEtude;
     if (titreNotaire) e.titreNotaire = titreNotaire;
@@ -530,7 +673,7 @@ async function obtenirEtatInfrastructure() {
         disquePct: 35,
         latenceMs: 0.8,
         statut: "🟢 En ligne (Opérationnel)",
-        mode: "Haute Disponibilité (Multi-AZ)"
+        mode: "Haute Disponibilité (Multi-AZ)",
       },
       {
         nom: "Cloud Vault S3/MinIO (Object Storage)",
@@ -541,7 +684,7 @@ async function obtenirEtatInfrastructure() {
         disquePct: 48,
         latenceMs: 1.2,
         statut: "🟢 En ligne (WORM Immuable)",
-        mode: "Chiffrement AES-256 + Géo-réplication"
+        mode: "Chiffrement AES-256 + Géo-réplication",
       },
       {
         nom: "Moteur de Synchronisation Hybride (Sync Engine)",
@@ -552,22 +695,22 @@ async function obtenirEtatInfrastructure() {
         disquePct: 22,
         latenceMs: 0.5,
         statut: "🟢 En ligne (Queue Active)",
-        mode: "Offline-First & Auto-Reconnection"
-      }
+        mode: "Offline-First & Auto-Reconnection",
+      },
     ],
     fileAttenteSync: {
       elementsEnAttente: 0,
       debitMoyenMoSec: 4.8,
       latenceMoyenneMs: 1.1,
       dernierPaquetReconnu: new Date().toISOString(),
-      statutFile: "🟢 Synchronisée à 100%"
+      statutFile: "🟢 Synchronisée à 100%",
     },
     certificatsSsl: {
       domainePrincipal: "*.notaires.ci",
       autorite: "Let's Encrypt / Sectigo EV",
       expiration: "2027-04-15",
-      etat: "🟢 Valide (Renouvellement auto)"
-    }
+      etat: "🟢 Valide (Renouvellement auto)",
+    },
   };
 }
 
@@ -579,11 +722,12 @@ async function listerSauvegardesEtSnapshots() {
       perimetre: "Intégralité du Parc SaaS (Toutes les Études)",
       date: "2026-08-27 04:00:00",
       tailleGo: 14.8,
-      checksumSha256: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      checksumSha256:
+        "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       chiffrement: "AES-256-GCM (Clé Maître HSM)",
       statutIntegrite: "🟢 100% Vérifié & Conforme",
       emplacement: "Cloud Vault Offsite (Frankfurt + Paris)",
-      retentionJours: 365
+      retentionJours: 365,
     },
     {
       id: "SNP-2026-08-26-0400",
@@ -591,23 +735,25 @@ async function listerSauvegardesEtSnapshots() {
       perimetre: "Intégralité du Parc SaaS",
       date: "2026-08-26 04:00:00",
       tailleGo: 14.6,
-      checksumSha256: "7d865e959b2466918c9863afca942d0fb89d7c9ac0c99bafc3749504ded97730",
+      checksumSha256:
+        "7d865e959b2466918c9863afca942d0fb89d7c9ac0c99bafc3749504ded97730",
       chiffrement: "AES-256-GCM (Clé Maître HSM)",
       statutIntegrite: "🟢 100% Vérifié & Conforme",
       emplacement: "Cloud Vault Offsite",
-      retentionJours: 365
-    }
+      retentionJours: 365,
+    },
   ];
 }
 
 async function declencherSnapshotUrgence() {
-  const nouvelId = "SNP-" + new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+  const nouvelId =
+    "SNP-" + new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
   return {
     id: nouvelId,
     message: "Snapshot d'urgence initié avec succès sur tous les nœuds.",
     date: new Date().toISOString(),
     statut: "🟢 En cours de scellement SHA-256",
-    chiffrement: "AES-256-GCM"
+    chiffrement: "AES-256-GCM",
   };
 }
 
@@ -617,7 +763,8 @@ async function testerPlanReprise() {
     dureeSimulationSec: 0.9,
     rtoConstate: "0.9 seconde (Objectif contrat: < 15 min)",
     rpoConstate: "0 seconde (Aucune perte de minute scellée)",
-    rapport: "Bascule simulée vers le nœud miroir Cloud Vault exécutée avec succès sans corruption d'index."
+    rapport:
+      "Bascule simulée vers le nœud miroir Cloud Vault exécutée avec succès sans corruption d'index.",
   };
 }
 
@@ -627,14 +774,15 @@ async function listerJournalSecurite() {
       date: new Date().toISOString(),
       evenement: "Vérification cryptographique des scellements SHA-256",
       ip: "10.0.1.14 (Master)",
-      statut: "🟢 100% Intact"
+      statut: "🟢 100% Intact",
     },
     {
       date: new Date(Date.now() - 3600000).toISOString(),
-      evenement: "Synchronisation Cloud Vault - Mode C Hybride (Office Plateau)",
+      evenement:
+        "Synchronisation Cloud Vault - Mode C Hybride (Office Plateau)",
       ip: "41.202.219.45 (IP Fixe Étude)",
-      statut: "🟢 28 minutes répliquées"
-    }
+      statut: "🟢 28 minutes répliquées",
+    },
   ];
 }
 
@@ -662,7 +810,13 @@ async function listerEquipeEditeur() {
   return MEMBRES_EDITEUR_MEMOIRE;
 }
 
-async function ajouterMembreEditeur({ nomComplet, email, role = "support", telephone = "", motDePasse = "saas123" }) {
+async function ajouterMembreEditeur({
+  nomComplet,
+  email,
+  role = "support",
+  telephone = "",
+  motDePasse = "saas123",
+}) {
   const hash = await bcrypt.hash(motDePasse, 12);
   const id = "usr-" + crypto.randomUUID().slice(0, 8);
   try {
@@ -670,17 +824,28 @@ async function ajouterMembreEditeur({ nomComplet, email, role = "support", telep
       `INSERT INTO utilisateurs (id, nom_complet, email, mot_de_passe_hash, role, telephone, actif)
        VALUES ($1, $2, $3, $4, $5, $6, true)
        RETURNING id, nom_complet, email, telephone, role, actif, created_at`,
-      [id, nomComplet, email, hash, role, telephone]
+      [id, nomComplet, email, hash, role, telephone],
     );
     if (rows && rows.length) return rows[0];
   } catch (_) {}
 
-  const m = { id, nomComplet, email, role, telephone, actif: true, dateCreation: new Date() };
+  const m = {
+    id,
+    nomComplet,
+    email,
+    role,
+    telephone,
+    actif: true,
+    dateCreation: new Date(),
+  };
   MEMBRES_EDITEUR_MEMOIRE.push(m);
   return m;
 }
 
-async function modifierMembreEditeur(id, { nomComplet, email, role, telephone, actif }) {
+async function modifierMembreEditeur(
+  id,
+  { nomComplet, email, role, telephone, actif },
+) {
   try {
     const { rows } = await pool.query(
       `UPDATE utilisateurs SET
@@ -692,12 +857,12 @@ async function modifierMembreEditeur(id, { nomComplet, email, role, telephone, a
          updated_at = NOW()
        WHERE id = $6
        RETURNING id, nom_complet, email, telephone, role, actif, updated_at`,
-      [nomComplet, email, role, telephone, actif, id]
+      [nomComplet, email, role, telephone, actif, id],
     );
     if (rows && rows.length) return rows[0];
   } catch (_) {}
 
-  const m = MEMBRES_EDITEUR_MEMOIRE.find(x => x.id === id);
+  const m = MEMBRES_EDITEUR_MEMOIRE.find((x) => x.id === id);
   if (m) {
     if (nomComplet) m.nomComplet = nomComplet;
     if (email) m.email = email;
@@ -711,9 +876,12 @@ async function modifierMembreEditeur(id, { nomComplet, email, role, telephone, a
 
 async function supprimerMembreEditeur(id) {
   try {
-    await pool.query("DELETE FROM utilisateurs WHERE id = $1 AND role != 'superadmin'", [id]);
+    await pool.query(
+      "DELETE FROM utilisateurs WHERE id = $1 AND role != 'superadmin'",
+      [id],
+    );
   } catch (_) {}
-  const idx = MEMBRES_EDITEUR_MEMOIRE.findIndex(x => x.id === id);
+  const idx = MEMBRES_EDITEUR_MEMOIRE.findIndex((x) => x.id === id);
   if (idx !== -1 && MEMBRES_EDITEUR_MEMOIRE[idx].role !== "superadmin") {
     MEMBRES_EDITEUR_MEMOIRE.splice(idx, 1);
   }
@@ -721,17 +889,26 @@ async function supprimerMembreEditeur(id) {
 }
 
 async function obtenirInfosDeploiementEtude(etudeId) {
-  let e = ETUDES_MEMOIRE.find(x => x.id === etudeId);
+  let e = ETUDES_MEMOIRE.find((x) => x.id === etudeId);
   if (!e) {
     try {
-      const { rows } = await pool.query("SELECT * FROM etudes WHERE id = $1", [etudeId]);
+      const { rows } = await pool.query("SELECT * FROM etudes WHERE id = $1", [
+        etudeId,
+      ]);
       if (rows && rows.length) e = rows[0];
     } catch (_) {}
   }
-  if (!e) e = ETUDES_MEMOIRE[0] || { id: etudeId, nom_etude: "Office Notarial", code_etude: "ETD-001" };
-  
+  if (!e)
+    e = ETUDES_MEMOIRE[0] || {
+      id: etudeId,
+      nom_etude: "Office Notarial",
+      code_etude: "ETD-001",
+    };
+
   const code = e.codeEtude || e.code_etude || "ETD-001";
-  const idStr = String(e.id || "").slice(0, 8).toUpperCase();
+  const idStr = String(e.id || "")
+    .slice(0, 8)
+    .toUpperCase();
   const pairToken = `PAIR-${code}-${idStr || "DEFAULT"}`;
   const dom = e.domaine || `${code.toLowerCase()}.notaires.ci`;
 
@@ -744,12 +921,12 @@ async function obtenirInfosDeploiementEtude(etudeId) {
       type: "CNAME",
       hote: dom ? dom.split(".")[0] : "app",
       cible: "legalnotary.app",
-      ipA: "72.62.39.225"
+      ipA: "72.62.39.225",
     },
     commandeInstallServeurPhysique: `curl -sSL https://legalnotary.app/get-agent.sh | sudo bash -s -- --token=${pairToken} --mode=${e.modeInfrastructure || e.mode_infrastructure || "hybride"}`,
     commandeDockerServeurPhysique: `docker run -d --name notaire-sync-agent --restart always -e PAIR_TOKEN="${pairToken}" -e SAAS_URL="https://legalnotary.app" notaire/sync-agent:latest`,
     statutDNS: "🟢 Enregistré & Prêt pour SSL",
-    certificatSSL: "Let's Encrypt TLS 1.3 Strict"
+    certificatSSL: "Let's Encrypt TLS 1.3 Strict",
   };
 }
 
@@ -837,16 +1014,57 @@ const MATRICE_PERMISSIONS_DEFAUT = {
     },
   },
   definitions: [
-    { code: "parc_etudes_vue", label: "Voir le parc des études", description: "Consulter la liste et les détails des offices" },
-    { code: "parc_etudes_deployer", label: "Déployer de nouvelles études", description: "Créer et provisionner une étude (dossiers/minutes/quotas)" },
-    { code: "parc_etudes_mise_en_ligne", label: "Mise en ligne & Clés d'appairage", description: "Accès aux tokens DNS, script serveur physique et cloud" },
-    { code: "infrastructure_clusters", label: "Infrastructure & Nœuds clusters", description: "Consulter CPU, RAM, disque, sync queue et certificats SSL" },
-    { code: "sauvegardes_snapshots", label: "Déclencher Snapshots d'urgence", description: "Créer un snapshot immuable WORM chiffré à chaud" },
-    { code: "sauvegardes_test_pra", label: "Tester le Plan de Reprise (PRA)", description: "Simuler la bascule miroir et mesurer RTO/RPO" },
-    { code: "support_tickets", label: "Traiter les tickets support L1-L4", description: "Consulter et répondre aux incidents des offices notariaux" },
-    { code: "support_acces_urgence", label: "Demander accès urgence audité", description: "Télé-assistance exceptionnelle soumise à validation notaire" },
-    { code: "telemetrie_logs", label: "Journal de sécurité cryptographique", description: "Consulter les audits SHA-256 et traçabilité globale" },
-    { code: "equipe_editeur_gerer", label: "Gérer l'équipe & les permissions", description: "Ajouter/modifier les collaborateurs SaaS et leurs rôles" },
+    {
+      code: "parc_etudes_vue",
+      label: "Voir le parc des études",
+      description: "Consulter la liste et les détails des offices",
+    },
+    {
+      code: "parc_etudes_deployer",
+      label: "Déployer de nouvelles études",
+      description: "Créer et provisionner une étude (dossiers/minutes/quotas)",
+    },
+    {
+      code: "parc_etudes_mise_en_ligne",
+      label: "Mise en ligne & Clés d'appairage",
+      description: "Accès aux tokens DNS, script serveur physique et cloud",
+    },
+    {
+      code: "infrastructure_clusters",
+      label: "Infrastructure & Nœuds clusters",
+      description: "Consulter CPU, RAM, disque, sync queue et certificats SSL",
+    },
+    {
+      code: "sauvegardes_snapshots",
+      label: "Déclencher Snapshots d'urgence",
+      description: "Créer un snapshot immuable WORM chiffré à chaud",
+    },
+    {
+      code: "sauvegardes_test_pra",
+      label: "Tester le Plan de Reprise (PRA)",
+      description: "Simuler la bascule miroir et mesurer RTO/RPO",
+    },
+    {
+      code: "support_tickets",
+      label: "Traiter les tickets support L1-L4",
+      description: "Consulter et répondre aux incidents des offices notariaux",
+    },
+    {
+      code: "support_acces_urgence",
+      label: "Demander accès urgence audité",
+      description:
+        "Télé-assistance exceptionnelle soumise à validation notaire",
+    },
+    {
+      code: "telemetrie_logs",
+      label: "Journal de sécurité cryptographique",
+      description: "Consulter les audits SHA-256 et traçabilité globale",
+    },
+    {
+      code: "equipe_editeur_gerer",
+      label: "Gérer l'équipe & les permissions",
+      description: "Ajouter/modifier les collaborateurs SaaS et leurs rôles",
+    },
   ],
 };
 
@@ -854,7 +1072,9 @@ let MATRICE_ACTIVE = JSON.parse(JSON.stringify(MATRICE_PERMISSIONS_DEFAUT));
 
 async function obtenirMatricePermissions() {
   try {
-    const { rows } = await pool.query("SELECT matrice FROM editeur_permissions_matrice WHERE id = 'defaut'");
+    const { rows } = await pool.query(
+      "SELECT matrice FROM editeur_permissions_matrice WHERE id = 'defaut'",
+    );
     if (rows.length && rows[0].matrice) {
       return rows[0].matrice;
     }
@@ -864,7 +1084,9 @@ async function obtenirMatricePermissions() {
 
 async function sauvegarderMatricePermissions(matrice) {
   if (matrice && matrice.roles && matrice.roles.superadmin) {
-    Object.keys(MATRICE_PERMISSIONS_DEFAUT.roles.superadmin.permissions).forEach(function (k) {
+    Object.keys(
+      MATRICE_PERMISSIONS_DEFAUT.roles.superadmin.permissions,
+    ).forEach(function (k) {
       matrice.roles.superadmin.permissions[k] = true;
     });
   }
@@ -874,7 +1096,7 @@ async function sauvegarderMatricePermissions(matrice) {
       `INSERT INTO editeur_permissions_matrice (id, matrice, updated_at)
        VALUES ('defaut', $1, NOW())
        ON CONFLICT (id) DO UPDATE SET matrice = $1, updated_at = NOW()`,
-      [JSON.stringify(matrice)]
+      [JSON.stringify(matrice)],
     );
   } catch (_) {}
 
@@ -911,5 +1133,6 @@ module.exports = {
   testerPlanReprise,
   listerJournalSecurite,
   listerEmailsEnvoyes: emailDeploiementService.listerEmailsEnvoyes,
-  envoyerEmailBienvenueCollaborateur: emailDeploiementService.envoyerEmailBienvenueCollaborateur,
+  envoyerEmailBienvenueCollaborateur:
+    emailDeploiementService.envoyerEmailBienvenueCollaborateur,
 };

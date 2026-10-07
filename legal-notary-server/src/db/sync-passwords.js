@@ -8,13 +8,13 @@ async function syncPasswords() {
   // Mettre à jour tous les comptes notariaux
   await pool.query(
     "UPDATE utilisateurs SET mot_de_passe_hash = $1 WHERE role NOT IN ('superadmin', 'dev', 'commercial', 'support', 'assistante_editeur')",
-    [hashNotaire]
+    [hashNotaire],
   );
 
   // Mettre à jour tous les comptes éditeur SaaS
   await pool.query(
     "UPDATE utilisateurs SET mot_de_passe_hash = $1 WHERE role IN ('superadmin', 'dev', 'commercial', 'support', 'assistante_editeur')",
-    [hashAdmin]
+    [hashAdmin],
   );
 
   console.log("✅ Tous les mots de passe des comptes sont synchronisés.");

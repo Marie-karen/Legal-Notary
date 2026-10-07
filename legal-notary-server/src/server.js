@@ -61,7 +61,9 @@ const internalRoutes = require("./api/internal.routes");
 const recusRoutes = require("./api/recus.routes");
 const telemetrieService = require("./services/telemetrie.service");
 const { notifyControlHub } = require("./services/webhook-dispatcher.service");
-const { appliquerEnTetesSecurite } = require("./middleware/securite.middleware");
+const {
+  appliquerEnTetesSecurite,
+} = require("./middleware/securite.middleware");
 
 const app = express();
 app.use(appliquerEnTetesSecurite);
@@ -73,9 +75,18 @@ app.use(express.json({ limit: "10mb" })); // Support des signatures base64 et do
 // (remplacer "*" par l'URL exacte) une fois celle-ci connue — voir
 // docs/DEPLOIEMENT.md.
 app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", process.env.ORIGINE_FRONTEND || "*");
-  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization, x-control-hub-secret");
-  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
+  res.header(
+    "Access-Control-Allow-Origin",
+    process.env.ORIGINE_FRONTEND || "*",
+  );
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization, x-control-hub-secret",
+  );
+  res.header(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, PATCH, DELETE, OPTIONS",
+  );
   if (req.method === "OPTIONS") return res.sendStatus(204);
   next();
 });
@@ -115,14 +126,16 @@ app.use("/api/recus", recusRoutes);
 /**
  * Sert aussi le frontend statique (legal-notary-web/) depuis ce même processus.
  */
-let FRONTEND_DIR = process.env.FRONTEND_DIR || path.join(__dirname, "..", "..", "legal-notary-web");
+let FRONTEND_DIR =
+  process.env.FRONTEND_DIR ||
+  path.join(__dirname, "..", "..", "legal-notary-web");
 if (!fs.existsSync(FRONTEND_DIR)) {
   const candidats = [
     path.join(__dirname, "..", "legal-notary-web"),
     path.join(__dirname, "..", "..", "legal-notary-web"),
     path.join(process.cwd(), "legal-notary-web"),
     path.join(process.cwd(), "..", "legal-notary-web"),
-    "/var/www/legal-notary/legal-notary-web"
+    "/var/www/legal-notary/legal-notary-web",
   ];
   for (const c of candidats) {
     if (fs.existsSync(c)) {
@@ -146,9 +159,16 @@ app.get(["/mentions-legales", "/mentions-legales.html"], (req, res) => {
   res.sendFile(path.join(FRONTEND_DIR, "mentions-legales.html"));
 });
 
-app.get(["/politique-confidentialite", "/confidentialite", "/politique-confidentialite.html"], (req, res) => {
-  res.sendFile(path.join(FRONTEND_DIR, "politique-confidentialite.html"));
-});
+app.get(
+  [
+    "/politique-confidentialite",
+    "/confidentialite",
+    "/politique-confidentialite.html",
+  ],
+  (req, res) => {
+    res.sendFile(path.join(FRONTEND_DIR, "politique-confidentialite.html"));
+  },
+);
 
 app.get(["/cgu", "/conditions-generales", "/cgu.html"], (req, res) => {
   res.sendFile(path.join(FRONTEND_DIR, "cgu.html"));
@@ -160,27 +180,35 @@ app.get(["/demo", "/demo.html", "/demonstration"], (req, res) => {
 });
 
 // 4. Espace Manuels & Formation interactifs (Style Glitter.io)
-app.get(["/docs", "/documentation", "/documentation.html", "/manuel"], (req, res) => {
-  res.sendFile(path.join(FRONTEND_DIR, "documentation.html"));
-});
+app.get(
+  ["/docs", "/documentation", "/documentation.html", "/manuel"],
+  (req, res) => {
+    res.sendFile(path.join(FRONTEND_DIR, "documentation.html"));
+  },
+);
 
 // 5. Routage principal intelligent multi-tenant
 app.get(/^(?!\/api).*/, (req, res) => {
-  const host = (req.hostname || req.headers.host || "").toLowerCase().replace(/:\d+$/, "");
+  const host = (req.hostname || req.headers.host || "")
+    .toLowerCase()
+    .replace(/:\d+$/, "");
 
   // Domaines publics de BT.Tech affichant la vitrine commerciale / landing page
-  const isPublicLandingHost = (
+  const isPublicLandingHost =
     host === "legalnotary.app" ||
     host === "www.legalnotary.app" ||
     host === "bt-tech.ci" ||
     host === "www.bt-tech.ci" ||
     host === "localhost" ||
-    host === "127.0.0.1"
-  );
+    host === "127.0.0.1";
 
   // Si l'utilisateur accède via un domaine dédié d'une étude (ex: etude-mka.ci, www.etude-mka.ci, notaire-*.ci, app.legalnotary.app)
   // => L'étude arrive DIRECTEMENT sur sa page de connexion et son espace notarial (app.html), jamais sur la landing page !
-  if (!isPublicLandingHost || host.startsWith("app.") || host.startsWith("demo.")) {
+  if (
+    !isPublicLandingHost ||
+    host.startsWith("app.") ||
+    host.startsWith("demo.")
+  ) {
     const appFile = path.join(FRONTEND_DIR, "app.html");
     if (fs.existsSync(appFile)) return res.sendFile(appFile);
   }
@@ -196,17 +224,20 @@ app.get(/^(?!\/api).*/, (req, res) => {
 app.use((erreur, req, res, next) => {
   console.error("[UnhandledError]", erreur);
   const status = erreur.status || 500;
-  telemetrieService.enregistrerErreur({
-    source: "express-api-global",
-    typeErreur: erreur.name || "InternalServerError",
-    message: erreur.message,
-    stackTrace: erreur.stack,
-    niveau: status < 500 ? "warning" : "error",
-    meta: { url: req.originalUrl, methode: req.method, ip: req.ip },
-  }).catch(() => {});
+  telemetrieService
+    .enregistrerErreur({
+      source: "express-api-global",
+      typeErreur: erreur.name || "InternalServerError",
+      message: erreur.message,
+      stackTrace: erreur.stack,
+      niveau: status < 500 ? "warning" : "error",
+      meta: { url: req.originalUrl, methode: req.method, ip: req.ip },
+    })
+    .catch(() => {});
 
   // Élimination absolue de tout message d'erreur technique DB/ENOTFOUND vers le client
-  let messageClient = erreur.message || "Opération traitée avec succès en mode résilient.";
+  let messageClient =
+    erreur.message || "Opération traitée avec succès en mode résilient.";
   if (
     messageClient.includes("ENOTFOUND") ||
     messageClient.includes("postgres") ||
@@ -216,18 +247,21 @@ app.use((erreur, req, res, next) => {
     messageClient.includes("DB_OFFLINE") ||
     messageClient.includes("getaddrinfo")
   ) {
-    messageClient = "Service temporairement en mode résilient local haute vitesse.";
+    messageClient =
+      "Service temporairement en mode résilient local haute vitesse.";
   }
 
-  res.status(status >= 500 ? 500 : status).json({ 
+  res.status(status >= 500 ? 500 : status).json({
     erreur: messageClient,
-    mode: "resilient_local"
+    mode: "resilient_local",
   });
 });
 
 const PORT = process.env.PORT || 4000;
 if (require.main === module) {
-  app.listen(PORT, () => console.log(`[legal-notary-server] à l'écoute sur le port ${PORT}`));
+  app.listen(PORT, () =>
+    console.log(`[legal-notary-server] à l'écoute sur le port ${PORT}`),
+  );
 }
 
 module.exports = app;

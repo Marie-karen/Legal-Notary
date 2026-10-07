@@ -30,7 +30,9 @@ async function initTelemetrie() {
       statut TEXT DEFAULT 'en_ligne'
     );
   `);
-  console.log("✅ Tables telemetrie_erreurs_parc et noeuds_heartbeat_parc initialisées avec succès.");
+  console.log(
+    "✅ Tables telemetrie_erreurs_parc et noeuds_heartbeat_parc initialisées avec succès.",
+  );
 }
 
 if (require.main === module) {

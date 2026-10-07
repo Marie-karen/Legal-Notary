@@ -35,31 +35,72 @@ function dossierVersCamel(l) {
     numeroDossier: l.numero_dossier || l.numeroDossier,
     typeActeId: l.type_acte_id || l.typeActeId,
     anneeOuverture: l.annee_ouverture || l.anneeOuverture || 2026,
-    dateOuverture: l.date_ouverture || l.dateOuverture || new Date().toISOString().split("T")[0],
-    montantAssiette: Number(l.montant_assiette !== undefined ? l.montant_assiette : l.montantAssiette) || 0,
+    dateOuverture:
+      l.date_ouverture ||
+      l.dateOuverture ||
+      new Date().toISOString().split("T")[0],
+    montantAssiette:
+      Number(
+        l.montant_assiette !== undefined
+          ? l.montant_assiette
+          : l.montantAssiette,
+      ) || 0,
     statut: l.statut || "actif",
-    etapeActuelle: Number(l.etape_actuelle !== undefined ? l.etape_actuelle : l.etapeActuelle) || 1,
-    dateEntreeEtape: l.date_entree_etape || l.dateEntreeEtape || new Date().toISOString().split("T")[0],
-    reportJours: Number(l.report_jours !== undefined ? l.report_jours : l.reportJours) || 0,
+    etapeActuelle:
+      Number(
+        l.etape_actuelle !== undefined ? l.etape_actuelle : l.etapeActuelle,
+      ) || 1,
+    dateEntreeEtape:
+      l.date_entree_etape ||
+      l.dateEntreeEtape ||
+      new Date().toISOString().split("T")[0],
+    reportJours:
+      Number(l.report_jours !== undefined ? l.report_jours : l.reportJours) ||
+      0,
     clercAssigneId: l.clerc_assigne_id || l.clercAssigneId || "demo-clerc1-id",
-    derniereActivite: l.derniere_activite || l.derniereActivite || new Date().toISOString(),
+    derniereActivite:
+      l.derniere_activite || l.derniereActivite || new Date().toISOString(),
     archivedAt: l.archived_at || l.archivedAt || null,
     createdAt: l.created_at || l.createdAt || new Date().toISOString(),
     comparantsNoms: l.comparants_noms || l.comparantsNoms || "",
-    estArchiveNumerique: Boolean(l.est_archive_numerique || l.estArchiveNumerique || l.statut === "cloture" || l.etape_actuelle === 6 || l.etapeActuelle === 6),
+    estArchiveNumerique: Boolean(
+      l.est_archive_numerique ||
+      l.estArchiveNumerique ||
+      l.statut === "cloture" ||
+      l.etape_actuelle === 6 ||
+      l.etapeActuelle === 6,
+    ),
     etudeId: l.etude_id || l.etudeId || null,
 
     // Nouveaux champs DNO & Règlements
     typeCreation: l.type_creation || l.typeCreation || "dossier_ouvert",
     numeroDno: l.numero_dno || l.numeroDno || null,
-    statutDno: l.statut_dno || l.statutDno || (l.numero_dno ? "en_attente_paiement" : "ouvert"),
+    statutDno:
+      l.statut_dno ||
+      l.statutDno ||
+      (l.numero_dno ? "en_attente_paiement" : "ouvert"),
     typePersonne: l.type_personne || l.typePersonne || "physique",
-    piecesJointesDno: Array.isArray(l.pieces_jointes_dno) ? l.pieces_jointes_dno : (Array.isArray(l.piecesJointesDno) ? l.piecesJointesDno : []),
-    fraisOuverture: Number(l.frais_ouverture !== undefined ? l.frais_ouverture : l.fraisOuverture) || 0,
-    provisionVersee: Number(l.provision_versee !== undefined ? l.provision_versee : l.provisionVersee) || 0,
-    modePaiementProvision: l.mode_paiement_provision || l.modePaiementProvision || null,
-    datePaiementProvision: l.date_paiement_provision || l.datePaiementProvision || null,
-    comptableValidateurId: l.comptable_validateur_id || l.comptableValidateurId || null,
+    piecesJointesDno: Array.isArray(l.pieces_jointes_dno)
+      ? l.pieces_jointes_dno
+      : Array.isArray(l.piecesJointesDno)
+        ? l.piecesJointesDno
+        : [],
+    fraisOuverture:
+      Number(
+        l.frais_ouverture !== undefined ? l.frais_ouverture : l.fraisOuverture,
+      ) || 0,
+    provisionVersee:
+      Number(
+        l.provision_versee !== undefined
+          ? l.provision_versee
+          : l.provisionVersee,
+      ) || 0,
+    modePaiementProvision:
+      l.mode_paiement_provision || l.modePaiementProvision || null,
+    datePaiementProvision:
+      l.date_paiement_provision || l.datePaiementProvision || null,
+    comptableValidateurId:
+      l.comptable_validateur_id || l.comptableValidateurId || null,
     emailClient: l.email_client || l.emailClient || "",
     telephoneClient: l.telephone_client || l.telephoneClient || "",
   };
@@ -275,7 +316,7 @@ const DOSSIERS_DEMO_COMPLETS = [
     estArchiveNumerique: false,
     typeCreation: "dossier_ouvert",
     statutDno: "regle_ouvert",
-  }
+  },
 ];
 
 const TACHES_MEMOIRE = new Map();
@@ -284,25 +325,33 @@ const ECRITURES_MEMOIRE = new Map();
 
 async function verifierPortee(client, dossierId, utilisateur) {
   try {
-    const { rows } = await client.query("SELECT * FROM dossiers WHERE id = $1 AND archived_at IS NULL", [dossierId]);
+    const { rows } = await client.query(
+      "SELECT * FROM dossiers WHERE id = $1 AND archived_at IS NULL",
+      [dossierId],
+    );
     if (rows && rows.length) {
       const dossier = rows[0];
       const portee = porteeDossiers(utilisateur.role);
       if (portee === "aucune") return null;
-      if (portee === "assignes" && dossier.clerc_assigne_id !== utilisateur.id) return null;
-      if (portee === "formalites" && ![5, 6].includes(dossier.etape_actuelle)) return null;
+      if (portee === "assignes" && dossier.clerc_assigne_id !== utilisateur.id)
+        return null;
+      if (portee === "formalites" && ![5, 6].includes(dossier.etape_actuelle))
+        return null;
       return dossier;
     }
   } catch (_) {}
-  const dMem = DOSSIERS_DEMO_COMPLETS.find(d => d.id === dossierId);
+  const dMem = DOSSIERS_DEMO_COMPLETS.find((d) => d.id === dossierId);
   return dMem || null;
 }
 
 async function toucherDerniereActivite(client, dossierId) {
   try {
-    await client.query("UPDATE dossiers SET derniere_activite = now() WHERE id = $1", [dossierId]);
+    await client.query(
+      "UPDATE dossiers SET derniere_activite = now() WHERE id = $1",
+      [dossierId],
+    );
   } catch (_) {}
-  const d = DOSSIERS_DEMO_COMPLETS.find(x => x.id === dossierId);
+  const d = DOSSIERS_DEMO_COMPLETS.find((x) => x.id === dossierId);
   if (d) d.derniereActivite = new Date().toISOString();
 }
 
@@ -311,17 +360,23 @@ async function ajouterMouvement(client, dossierId, utilisateurId, description) {
     if (client) {
       await client.query(
         "INSERT INTO dossier_mouvements (dossier_id, utilisateur_id, description) VALUES ($1, $2, $3)",
-        [dossierId, utilisateurId, description]
+        [dossierId, utilisateurId, description],
       );
     } else {
       await pool.query(
         "INSERT INTO dossier_mouvements (dossier_id, utilisateur_id, description) VALUES ($1, $2, $3)",
-        [dossierId, utilisateurId, description]
+        [dossierId, utilisateurId, description],
       );
     }
   } catch (_) {}
 
-  const m = { id: "mouv-" + crypto.randomUUID().slice(0, 8), dossier_id: dossierId, utilisateur_id: utilisateurId, description, created_at: new Date().toISOString() };
+  const m = {
+    id: "mouv-" + crypto.randomUUID().slice(0, 8),
+    dossier_id: dossierId,
+    utilisateur_id: utilisateurId,
+    description,
+    created_at: new Date().toISOString(),
+  };
   if (!MOUVEMENTS_MEMOIRE.has(dossierId)) MOUVEMENTS_MEMOIRE.set(dossierId, []);
   MOUVEMENTS_MEMOIRE.get(dossierId).unshift(m);
   if (client) await toucherDerniereActivite(client, dossierId);
@@ -332,7 +387,8 @@ async function ajouterMouvement(client, dossierId, utilisateurId, description) {
 // ---------------------------------------------------------------------
 async function prochainNumeroDNO(client, annee, etudeId) {
   try {
-    let query = "SELECT COUNT(*)::int AS n FROM dossiers WHERE (type_creation = 'dno' OR numero_dno IS NOT NULL) AND annee_ouverture = $1";
+    let query =
+      "SELECT COUNT(*)::int AS n FROM dossiers WHERE (type_creation = 'dno' OR numero_dno IS NOT NULL) AND annee_ouverture = $1";
     const params = [annee];
     if (etudeId) {
       params.push(etudeId);
@@ -346,12 +402,18 @@ async function prochainNumeroDNO(client, annee, etudeId) {
     }
   } catch (_) {}
 
-  const count = DOSSIERS_DEMO_COMPLETS.filter(d => (d.typeCreation === "dno" || d.numeroDno) && d.anneeOuverture === annee && (d.etudeId === etudeId || !etudeId)).length + 1;
+  const count =
+    DOSSIERS_DEMO_COMPLETS.filter(
+      (d) =>
+        (d.typeCreation === "dno" || d.numeroDno) &&
+        d.anneeOuverture === annee &&
+        (d.etudeId === etudeId || !etudeId),
+    ).length + 1;
   return `DNO-${annee}-${String(count).padStart(4, "0")}`;
 }
 
 function formaterNumeroDossier(format, annee, num, codeActe = "ACT") {
-  const padLength = (format && format.includes("{NUM}")) ? 4 : 3;
+  const padLength = format && format.includes("{NUM}") ? 4 : 3;
   return (format || "DOS-{AAAA}-{NUM}")
     .replace("{AAAA}", String(annee))
     .replace("{CODE}", String(codeActe))
@@ -368,11 +430,15 @@ async function prochainNumeroDossier(client, annee, etudeId, typeActeId) {
 
   if (mode === "par_nature_acte" && typeActeId) {
     const codeActe = CODES_NATURE_ACTE[typeActeId] || "ACT";
-    const baseNum = (paramsEtude.derniersNumerosParNature && Number(paramsEtude.derniersNumerosParNature[typeActeId])) || 0;
+    const baseNum =
+      (paramsEtude.derniersNumerosParNature &&
+        Number(paramsEtude.derniersNumerosParNature[typeActeId])) ||
+      0;
 
     let countExistant = 0;
     try {
-      let query = "SELECT COUNT(*)::int AS n FROM dossiers WHERE type_acte_id = $1 AND statut_dno = 'regle_ouvert'";
+      let query =
+        "SELECT COUNT(*)::int AS n FROM dossiers WHERE type_acte_id = $1 AND statut_dno = 'regle_ouvert'";
       const qParams = [typeActeId];
       if (etudeId) {
         qParams.push(etudeId);
@@ -381,13 +447,18 @@ async function prochainNumeroDossier(client, annee, etudeId, typeActeId) {
       const { rows } = await c.query(query, qParams);
       if (rows && rows.length) countExistant = rows[0].n;
     } catch (_) {
-      countExistant = DOSSIERS_DEMO_COMPLETS.filter(d => d.typeActeId === typeActeId && (d.etudeId === etudeId || !etudeId)).length;
+      countExistant = DOSSIERS_DEMO_COMPLETS.filter(
+        (d) =>
+          d.typeActeId === typeActeId && (d.etudeId === etudeId || !etudeId),
+      ).length;
     }
 
     const nFinal = baseNum + countExistant + 1;
-    const format = paramsEtude.formatNumerotation && paramsEtude.formatNumerotation.includes("{CODE}") 
-      ? paramsEtude.formatNumerotation 
-      : "{AAAA}-{CODE}-{NUM}";
+    const format =
+      paramsEtude.formatNumerotation &&
+      paramsEtude.formatNumerotation.includes("{CODE}")
+        ? paramsEtude.formatNumerotation
+        : "{AAAA}-{CODE}-{NUM}";
     return formaterNumeroDossier(format, annee, nFinal, codeActe);
   }
 
@@ -395,7 +466,8 @@ async function prochainNumeroDossier(client, annee, etudeId, typeActeId) {
   const baseGlobal = Number(paramsEtude.dernierNumeroGlobal || 0);
   let countExistant = 0;
   try {
-    let query = "SELECT COUNT(*)::int AS n FROM dossiers WHERE (type_creation = 'dossier_ouvert' OR statut_dno = 'regle_ouvert') AND annee_ouverture = $1";
+    let query =
+      "SELECT COUNT(*)::int AS n FROM dossiers WHERE (type_creation = 'dossier_ouvert' OR statut_dno = 'regle_ouvert') AND annee_ouverture = $1";
     const qParams = [annee];
     if (etudeId) {
       qParams.push(etudeId);
@@ -404,7 +476,9 @@ async function prochainNumeroDossier(client, annee, etudeId, typeActeId) {
     const { rows } = await c.query(query, qParams);
     if (rows && rows.length) countExistant = rows[0].n;
   } catch (_) {
-    countExistant = DOSSIERS_DEMO_COMPLETS.filter(d => d.anneeOuverture === annee && (d.etudeId === etudeId || !etudeId)).length;
+    countExistant = DOSSIERS_DEMO_COMPLETS.filter(
+      (d) => d.anneeOuverture === annee && (d.etudeId === etudeId || !etudeId),
+    ).length;
   }
 
   const nFinal = baseGlobal + countExistant + 1;
@@ -432,7 +506,9 @@ async function creerDossier({
   etudeId,
 }) {
   const annee = anneeOuverture || new Date().getFullYear();
-  const assigneFinal = clercAssigneId || (porteeDossiers(creeParRole) === "assignes" ? creeParId : null);
+  const assigneFinal =
+    clercAssigneId ||
+    (porteeDossiers(creeParRole) === "assignes" ? creeParId : null);
   const eid = etudeId || "a0000000-0000-0000-0000-000000000001";
   const estVraiDno = estDno || typeCreation === "dno";
 
@@ -474,17 +550,19 @@ async function creerDossier({
           JSON.stringify(piecesJointesDno || []),
           emailClient || null,
           telephoneClient || null,
-        ]
+        ],
       );
       if (dossierRows && dossierRows.length) {
         const dossier = dossierRows[0];
         for (const c of comparants || []) {
           await client.query(
             "INSERT INTO dossier_comparants (dossier_id, nom, qualite) VALUES ($1, $2, $3)",
-            [dossier.id, c.nom, c.qualite || "Comparant"]
+            [dossier.id, c.nom, c.qualite || "Comparant"],
           );
         }
-        const descAction = estVraiDno ? "Création du DNO (Dossier Non Ouvert — En attente règlement provision)" : "Ouverture directe du dossier";
+        const descAction = estVraiDno
+          ? "Création du DNO (Dossier Non Ouvert — En attente règlement provision)"
+          : "Ouverture directe du dossier";
         await ajouterMouvement(client, dossier.id, creeParId, descAction);
         return dossierVersCamel(dossier);
       }
@@ -496,7 +574,8 @@ async function creerDossier({
   if (!dossierResultat) {
     // Fallback mémoire instantané
     const nouvelId = "dos-" + crypto.randomUUID().slice(0, 8);
-    const compNoms = (comparants || []).map(c => c.nom).join(" & ") || "Comparant Principal";
+    const compNoms =
+      (comparants || []).map((c) => c.nom).join(" & ") || "Comparant Principal";
 
     const nouveauDossier = {
       id: nouvelId,
@@ -525,7 +604,14 @@ async function creerDossier({
     };
 
     DOSSIERS_DEMO_COMPLETS.unshift(nouveauDossier);
-    await ajouterMouvement(null, nouvelId, creeParId, estVraiDno ? "Création du DNO (Dossier Non Ouvert)" : "Ouverture directe du dossier");
+    await ajouterMouvement(
+      null,
+      nouvelId,
+      creeParId,
+      estVraiDno
+        ? "Création du DNO (Dossier Non Ouvert)"
+        : "Ouverture directe du dossier",
+    );
     dossierResultat = nouveauDossier;
   }
 
@@ -534,15 +620,23 @@ async function creerDossier({
     (async () => {
       try {
         const clerc = await authService.trouverUtilisateurParId(assigneFinal);
-        const initiateur = creeParId ? await authService.trouverUtilisateurParId(creeParId) : null;
+        const initiateur = creeParId
+          ? await authService.trouverUtilisateurParId(creeParId)
+          : null;
         const paramsEtude = await parametresService.obtenir(eid);
 
         if (clerc && clerc.email) {
-          const compNoms = (comparants || []).map(c => c.nom).join(" & ") || "Comparant Principal";
+          const compNoms =
+            (comparants || []).map((c) => c.nom).join(" & ") ||
+            "Comparant Principal";
           await emailDeploiementService.envoyerEmailAssignationClerc({
             destinataireEmail: clerc.email,
             nomClerc: clerc.nomComplet,
-            nomInitiateur: initiateur ? initiateur.nomComplet : (creeParRole === "notaire" ? "Le Notaire" : "Le Secrétariat"),
+            nomInitiateur: initiateur
+              ? initiateur.nomComplet
+              : creeParRole === "notaire"
+                ? "Le Notaire"
+                : "Le Secrétariat",
             roleInitiateur: creeParRole || "Direction",
             numeroDossier: dossierResultat.numeroDossier,
             typeActe: dossierResultat.typeActeId,
@@ -552,7 +646,10 @@ async function creerDossier({
           });
         }
       } catch (e) {
-        console.warn("[Dossiers] Erreur notification email assignation clerc :", e.message);
+        console.warn(
+          "[Dossiers] Erreur notification email assignation clerc :",
+          e.message,
+        );
       }
     })();
   }
@@ -563,45 +660,70 @@ async function creerDossier({
 // ---------------------------------------------------------------------
 // Règlement de la Provision & Passage de DNO à Dossier Ouvert (Comptable)
 // ---------------------------------------------------------------------
-async function reglerProvisionEtOuvrirDossier(dossierId, {
-  fraisOuverture = 0,
-  provisionVersee = 0,
-  montantAssiette = 0,
-  modePaiement = "Espèces",
-  datePaiement,
-  observations = "",
-}, utilisateur) {
-  const totalRegle = (Number(fraisOuverture) || 0) + (Number(provisionVersee) || 0);
+async function reglerProvisionEtOuvrirDossier(
+  dossierId,
+  {
+    fraisOuverture = 0,
+    provisionVersee = 0,
+    montantAssiette = 0,
+    modePaiement = "Espèces",
+    datePaiement,
+    observations = "",
+  },
+  utilisateur,
+) {
+  const totalRegle =
+    (Number(fraisOuverture) || 0) + (Number(provisionVersee) || 0);
   const datePaiementEffective = datePaiement || new Date().toISOString();
 
   let dossier = null;
   try {
-    const { rows } = await pool.query("SELECT * FROM dossiers WHERE id = $1", [dossierId]);
+    const { rows } = await pool.query("SELECT * FROM dossiers WHERE id = $1", [
+      dossierId,
+    ]);
     if (rows && rows.length) dossier = rows[0];
   } catch (_) {}
 
   if (!dossier) {
-    dossier = DOSSIERS_DEMO_COMPLETS.find(d => d.id === dossierId);
+    dossier = DOSSIERS_DEMO_COMPLETS.find((d) => d.id === dossierId);
   }
   if (!dossier) throw new Error("Dossier introuvable.");
 
-  const annee = dossier.annee_ouverture || dossier.anneeOuverture || new Date().getFullYear();
-  const eid = dossier.etude_id || dossier.etudeId || (utilisateur ? utilisateur.etudeId : null);
+  const annee =
+    dossier.annee_ouverture ||
+    dossier.anneeOuverture ||
+    new Date().getFullYear();
+  const eid =
+    dossier.etude_id ||
+    dossier.etudeId ||
+    (utilisateur ? utilisateur.etudeId : null);
   const typeActe = dossier.type_acte_id || dossier.typeActeId;
 
   // Si c'était un DNO, attribuer le numéro officiel de dossier ouvert maintenant !
   let nouveauNumeroDossier = dossier.numero_dossier || dossier.numeroDossier;
-  if (dossier.type_creation === "dno" || (dossier.numero_dossier && dossier.numero_dossier.startsWith("DNO-"))) {
-    nouveauNumeroDossier = await prochainNumeroDossier(null, annee, eid, typeActe);
+  if (
+    dossier.type_creation === "dno" ||
+    (dossier.numero_dossier && dossier.numero_dossier.startsWith("DNO-"))
+  ) {
+    nouveauNumeroDossier = await prochainNumeroDossier(
+      null,
+      annee,
+      eid,
+      typeActe,
+    );
   }
 
   // Récupérer le nom du client comparant
   let nomClient = dossier.email_client || dossier.emailClient || "Client";
   try {
-    const { rows: compRows } = await pool.query("SELECT nom FROM dossier_comparants WHERE dossier_id = $1 LIMIT 1", [dossierId]);
+    const { rows: compRows } = await pool.query(
+      "SELECT nom FROM dossier_comparants WHERE dossier_id = $1 LIMIT 1",
+      [dossierId],
+    );
     if (compRows && compRows.length) nomClient = compRows[0].nom;
   } catch (_) {
-    if (dossier.comparantsNoms) nomClient = dossier.comparantsNoms.split(/ & |, /)[0];
+    if (dossier.comparantsNoms)
+      nomClient = dossier.comparantsNoms.split(/ & |, /)[0];
   }
 
   // 1. Mettre à jour le dossier
@@ -627,12 +749,12 @@ async function reglerProvisionEtOuvrirDossier(dossierId, {
         datePaiementEffective,
         utilisateur.id,
         dossierId,
-      ]
+      ],
     );
   } catch (_) {}
 
   // Mise à jour mémoire locale
-  const dLocal = DOSSIERS_DEMO_COMPLETS.find(d => d.id === dossierId);
+  const dLocal = DOSSIERS_DEMO_COMPLETS.find((d) => d.id === dossierId);
   if (dLocal) {
     dLocal.numeroDossier = nouveauNumeroDossier;
     dLocal.montantAssiette = Number(montantAssiette) || 0;
@@ -648,15 +770,25 @@ async function reglerProvisionEtOuvrirDossier(dossierId, {
   if (Number(fraisOuverture) > 0) {
     await ajouterEcritureCompteClient(
       dossierId,
-      { sens: "provision", categorie: "honoraires", montant: Number(fraisOuverture), libelle: "Frais d'ouverture de dossier" },
-      utilisateur.id
+      {
+        sens: "provision",
+        categorie: "honoraires",
+        montant: Number(fraisOuverture),
+        libelle: "Frais d'ouverture de dossier",
+      },
+      utilisateur.id,
     );
   }
   if (Number(provisionVersee) > 0) {
     await ajouterEcritureCompteClient(
       dossierId,
-      { sens: "provision", categorie: "droits", montant: Number(provisionVersee), libelle: "Provision sur frais & débours" },
-      utilisateur.id
+      {
+        sens: "provision",
+        categorie: "droits",
+        montant: Number(provisionVersee),
+        libelle: "Provision sur frais & débours",
+      },
+      utilisateur.id,
     );
   }
 
@@ -682,7 +814,10 @@ async function reglerProvisionEtOuvrirDossier(dossierId, {
     await pool.query(
       `INSERT INTO dossier_taches (dossier_id, etape, ordre, libelle, bloquante, duree_jours, statut)
        VALUES ($1, 1, 0, $2, false, 1, 'non_demarree')`,
-      [dossierId, `Scanner le reçu de paiement émargé N° ${recu.numeroRecu} et le rattacher au dossier`]
+      [
+        dossierId,
+        `Scanner le reçu de paiement émargé N° ${recu.numeroRecu} et le rattacher au dossier`,
+      ],
     );
   } catch (_) {}
 
@@ -702,7 +837,7 @@ async function reglerProvisionEtOuvrirDossier(dossierId, {
     null,
     dossierId,
     utilisateur.id,
-    `Règlement provision (${totalRegle.toLocaleString("fr-FR")} FCFA) — Dossier ouvert officiellement sous le N° ${nouveauNumeroDossier} — Reçu ${recu.numeroRecu} soumis au Notaire — Tâche de scan transmise au secrétariat.`
+    `Règlement provision (${totalRegle.toLocaleString("fr-FR")} FCFA) — Dossier ouvert officiellement sous le N° ${nouveauNumeroDossier} — Reçu ${recu.numeroRecu} soumis au Notaire — Tâche de scan transmise au secrétariat.`,
   );
 
   return { dossier: dLocal || dossierVersCamel(dossier), recu };
@@ -713,7 +848,11 @@ async function listerDossiersPourUtilisateur(utilisateur, filtres = {}) {
   if (portee === "aucune") return [];
 
   const etudeId = utilisateur ? utilisateur.etudeId : null;
-  const estCompteDemo = !utilisateur || etudeId === "etude-abidjan-01" || etudeId === "a0000000-0000-0000-0000-000000000001" || (utilisateur.email && utilisateur.email.endsWith("@notaire.ci"));
+  const estCompteDemo =
+    !utilisateur ||
+    etudeId === "etude-abidjan-01" ||
+    etudeId === "a0000000-0000-0000-0000-000000000001" ||
+    (utilisateur.email && utilisateur.email.endsWith("@notaire.ci"));
 
   try {
     const conditions = ["archived_at IS NULL"];
@@ -724,7 +863,9 @@ async function listerDossiersPourUtilisateur(utilisateur, filtres = {}) {
       valeurs.push(etudeId);
       conditions.push(`etude_id = $${valeurs.length}`);
     } else if (estCompteDemo) {
-      conditions.push(`(etude_id = 'a0000000-0000-0000-0000-000000000001' OR etude_id IS NULL)`);
+      conditions.push(
+        `(etude_id = 'a0000000-0000-0000-0000-000000000001' OR etude_id IS NULL)`,
+      );
     }
 
     if (portee === "assignes" && utilisateur) {
@@ -764,27 +905,41 @@ async function listerDossiersPourUtilisateur(utilisateur, filtres = {}) {
        FROM dossiers d
        WHERE ${conditions.join(" AND ")}
        ORDER BY d.date_ouverture DESC`,
-      valeurs
+      valeurs,
     );
     if (Array.isArray(rows)) {
       const camelRows = rows.map(dossierVersCamel);
-      return await Promise.all(camelRows.map(d => masquerFinancesSiNonAutorise(d, utilisateur)));
+      return await Promise.all(
+        camelRows.map((d) => masquerFinancesSiNonAutorise(d, utilisateur)),
+      );
     }
   } catch (err) {
     // Repli instantané mémoire (< 0.1ms)
   }
 
-  const baseListe = !estCompteDemo ? DOSSIERS_DEMO_COMPLETS.filter(d => d.etudeId === etudeId) : DOSSIERS_DEMO_COMPLETS;
-  const filtresResult = baseListe.filter(d => {
-    if (portee === "formalites" && ![5, 6].includes(d.etapeActuelle)) return false;
-    if (portee === "assignes" && utilisateur && d.clercAssigneId && d.clercAssigneId !== utilisateur.id && (estCompteDemo ? d.clercAssigneId !== "demo-clerc1-id" : true)) return false;
+  const baseListe = !estCompteDemo
+    ? DOSSIERS_DEMO_COMPLETS.filter((d) => d.etudeId === etudeId)
+    : DOSSIERS_DEMO_COMPLETS;
+  const filtresResult = baseListe.filter((d) => {
+    if (portee === "formalites" && ![5, 6].includes(d.etapeActuelle))
+      return false;
+    if (
+      portee === "assignes" &&
+      utilisateur &&
+      d.clercAssigneId &&
+      d.clercAssigneId !== utilisateur.id &&
+      (estCompteDemo ? d.clercAssigneId !== "demo-clerc1-id" : true)
+    )
+      return false;
     if (filtres.statut && d.statut !== filtres.statut) return false;
     if (filtres.typeActeId && d.typeActeId !== filtres.typeActeId) return false;
     if (filtres.statutDno && d.statutDno !== filtres.statutDno) return false;
     return true;
   });
 
-  return await Promise.all(filtresResult.map(d => masquerFinancesSiNonAutorise(d, utilisateur)));
+  return await Promise.all(
+    filtresResult.map((d) => masquerFinancesSiNonAutorise(d, utilisateur)),
+  );
 }
 
 async function listerClientsPourUtilisateur(utilisateur) {
@@ -792,7 +947,11 @@ async function listerClientsPourUtilisateur(utilisateur) {
   if (portee === "aucune") return [];
 
   const etudeId = utilisateur ? utilisateur.etudeId : null;
-  const estCompteDemo = !utilisateur || etudeId === "etude-abidjan-01" || etudeId === "a0000000-0000-0000-0000-000000000001" || (utilisateur.email && utilisateur.email.endsWith("@notaire.ci"));
+  const estCompteDemo =
+    !utilisateur ||
+    etudeId === "etude-abidjan-01" ||
+    etudeId === "a0000000-0000-0000-0000-000000000001" ||
+    (utilisateur.email && utilisateur.email.endsWith("@notaire.ci"));
 
   try {
     const conditions = ["d.archived_at IS NULL"];
@@ -802,7 +961,9 @@ async function listerClientsPourUtilisateur(utilisateur) {
       valeurs.push(etudeId);
       conditions.push(`d.etude_id = $${valeurs.length}`);
     } else if (estCompteDemo) {
-      conditions.push(`(d.etude_id = 'a0000000-0000-0000-0000-000000000001' OR d.etude_id IS NULL)`);
+      conditions.push(
+        `(d.etude_id = 'a0000000-0000-0000-0000-000000000001' OR d.etude_id IS NULL)`,
+      );
     }
 
     if (portee === "assignes" && utilisateur) {
@@ -819,14 +980,15 @@ async function listerClientsPourUtilisateur(utilisateur) {
        LEFT JOIN utilisateurs u ON u.id = d.clerc_assigne_id
        WHERE ${conditions.join(" AND ")}
        ORDER BY c.nom`,
-      valeurs
+      valeurs,
     );
 
     if (Array.isArray(rows)) {
       const parClient = new Map();
       for (const r of rows) {
         const cle = r.nom.trim().toLowerCase();
-        if (!parClient.has(cle)) parClient.set(cle, { nom: r.nom.trim(), dossiers: [] });
+        if (!parClient.has(cle))
+          parClient.set(cle, { nom: r.nom.trim(), dossiers: [] });
         parClient.get(cle).dossiers.push({
           dossierId: r.dossier_id,
           numeroDossier: r.numero_dossier,
@@ -840,7 +1002,9 @@ async function listerClientsPourUtilisateur(utilisateur) {
           clercNom: r.clerc_nom || "Non assigné",
         });
       }
-      return Array.from(parClient.values()).sort((a, b) => a.nom.localeCompare(b.nom));
+      return Array.from(parClient.values()).sort((a, b) =>
+        a.nom.localeCompare(b.nom),
+      );
     }
   } catch (err) {
     // Repli instantané mémoire
@@ -851,14 +1015,15 @@ async function listerClientsPourUtilisateur(utilisateur) {
   }
 
   const clientsMap = new Map();
-  DOSSIERS_DEMO_COMPLETS.forEach(d => {
+  DOSSIERS_DEMO_COMPLETS.forEach((d) => {
     const nomBrut = d.comparantsNoms || "Client Démo";
     const parties = nomBrut.split(/ & |, | \/ /);
-    parties.forEach(nomClient => {
+    parties.forEach((nomClient) => {
       const clean = nomClient.trim();
       if (!clean) return;
       const cle = clean.toLowerCase();
-      if (!clientsMap.has(cle)) clientsMap.set(cle, { nom: clean, dossiers: [] });
+      if (!clientsMap.has(cle))
+        clientsMap.set(cle, { nom: clean, dossiers: [] });
       clientsMap.get(cle).dossiers.push({
         dossierId: d.id,
         numeroDossier: d.numeroDossier,
@@ -874,13 +1039,19 @@ async function listerClientsPourUtilisateur(utilisateur) {
     });
   });
 
-  return Array.from(clientsMap.values()).sort((a, b) => a.nom.localeCompare(b.nom));
+  return Array.from(clientsMap.values()).sort((a, b) =>
+    a.nom.localeCompare(b.nom),
+  );
 }
 
 async function masquerFinancesSiNonAutorise(dossier, utilisateur) {
   if (!dossier || !utilisateur) return dossier;
   const role = utilisateur.role;
-  if (role === "notaire" || role === "superadmin" || role === "comptable_taxateur") {
+  if (
+    role === "notaire" ||
+    role === "superadmin" ||
+    role === "comptable_taxateur"
+  ) {
     return dossier;
   }
   if (role === "premier_clerc") {
@@ -888,7 +1059,7 @@ async function masquerFinancesSiNonAutorise(dossier, utilisateur) {
     const params = await parametresService.obtenir(eid);
     if (params && params.premierClercVoirFinances) return dossier;
   }
-  
+
   // Masquage strict pour les autres clercs et assistantes
   return {
     ...dossier,
@@ -901,22 +1072,50 @@ async function masquerFinancesSiNonAutorise(dossier, utilisateur) {
 
 async function obtenirDossierPourUtilisateur(dossierId, utilisateur) {
   try {
-    const { rows } = await pool.query("SELECT * FROM dossiers WHERE id = $1 AND archived_at IS NULL", [dossierId]);
+    const { rows } = await pool.query(
+      "SELECT * FROM dossiers WHERE id = $1 AND archived_at IS NULL",
+      [dossierId],
+    );
     if (rows && rows.length) {
       const dossier = rows[0];
       const [comparants, taches, mouvements, ecritures] = await Promise.all([
-        pool.query("SELECT nom, qualite FROM dossier_comparants WHERE dossier_id = $1", [dossierId]).catch(() => ({ rows: [] })),
-        pool.query("SELECT * FROM dossier_taches WHERE dossier_id = $1 ORDER BY ordre", [dossierId]).catch(() => ({ rows: [] })),
-        pool.query("SELECT * FROM dossier_mouvements WHERE dossier_id = $1 ORDER BY created_at DESC LIMIT 50", [dossierId]).catch(() => ({ rows: [] })),
-        pool.query("SELECT * FROM compte_client_ecritures WHERE dossier_id = $1 ORDER BY date_ecriture", [dossierId]).catch(() => ({ rows: [] })),
+        pool
+          .query(
+            "SELECT nom, qualite FROM dossier_comparants WHERE dossier_id = $1",
+            [dossierId],
+          )
+          .catch(() => ({ rows: [] })),
+        pool
+          .query(
+            "SELECT * FROM dossier_taches WHERE dossier_id = $1 ORDER BY ordre",
+            [dossierId],
+          )
+          .catch(() => ({ rows: [] })),
+        pool
+          .query(
+            "SELECT * FROM dossier_mouvements WHERE dossier_id = $1 ORDER BY created_at DESC LIMIT 50",
+            [dossierId],
+          )
+          .catch(() => ({ rows: [] })),
+        pool
+          .query(
+            "SELECT * FROM compte_client_ecritures WHERE dossier_id = $1 ORDER BY date_ecriture",
+            [dossierId],
+          )
+          .catch(() => ({ rows: [] })),
       ]);
 
       const dossierComplet = {
         ...dossierVersCamel(dossier),
         comparants: comparants.rows,
         taches: taches.rows.map((t) => ({
-          id: t.id, etape: t.etape, ordre: t.ordre, libelle: t.libelle, bloquante: t.bloquante,
-          dureeJours: t.duree_jours, statut: t.statut,
+          id: t.id,
+          etape: t.etape,
+          ordre: t.ordre,
+          libelle: t.libelle,
+          bloquante: t.bloquante,
+          dureeJours: t.duree_jours,
+          statut: t.statut,
         })),
         mouvements: mouvements.rows,
         compteClient: ecritures.rows,
@@ -928,22 +1127,81 @@ async function obtenirDossierPourUtilisateur(dossierId, utilisateur) {
     // Repli instantané mémoire
   }
 
-  const dLocal = DOSSIERS_DEMO_COMPLETS.find(d => String(d.id) === String(dossierId) || String(d.numeroDossier) === String(dossierId)) || DOSSIERS_DEMO_COMPLETS[0];
+  const dLocal =
+    DOSSIERS_DEMO_COMPLETS.find(
+      (d) =>
+        String(d.id) === String(dossierId) ||
+        String(d.numeroDossier) === String(dossierId),
+    ) || DOSSIERS_DEMO_COMPLETS[0];
   const mouvs = MOUVEMENTS_MEMOIRE.get(dLocal.id) || [
-    { id: "m1", created_at: new Date().toISOString(), description: "Dossier instruit et suivi au tableau de bord" }
+    {
+      id: "m1",
+      created_at: new Date().toISOString(),
+      description: "Dossier instruit et suivi au tableau de bord",
+    },
   ];
   const ecritures = ECRITURES_MEMOIRE.get(dLocal.id) || [];
 
   const dossierLocalComplet = {
     ...dLocal,
-    comparants: [{ nom: dLocal.comparantsNoms, qualite: "Comparant Principal" }],
+    comparants: [
+      { nom: dLocal.comparantsNoms, qualite: "Comparant Principal" },
+    ],
     taches: TACHES_MEMOIRE.get(dLocal.id) || [
-      { id: "t1", etape: 1, ordre: 1, libelle: "Collecte des pièces", bloquante: true, dureeJours: 2, statut: "effectuee" },
-      { id: "t2", etape: 2, ordre: 2, libelle: "Réquisitions & états préalables", bloquante: true, dureeJours: 5, statut: "effectuee" },
-      { id: "t3", etape: 3, ordre: 3, libelle: "Rédaction de l'acte", bloquante: true, dureeJours: 3, statut: dLocal.etapeActuelle >= 3 ? "effectuee" : "en_cours" },
-      { id: "t4", etape: 4, ordre: 4, libelle: "Signature & rendez-vous notaire", bloquante: true, dureeJours: 1, statut: dLocal.etapeActuelle >= 4 ? "effectuee" : "non_demarree" },
-      { id: "t5", etape: 5, ordre: 5, libelle: "Enregistrement DGI & Formalités", bloquante: false, dureeJours: 14, statut: dLocal.etapeActuelle >= 5 ? "en_cours" : "non_demarree" },
-      { id: "t6", etape: 6, ordre: 6, libelle: "Délivrance expédition & minutier", bloquante: false, dureeJours: 5, statut: dLocal.etapeActuelle >= 6 ? "effectuee" : "non_demarree" },
+      {
+        id: "t1",
+        etape: 1,
+        ordre: 1,
+        libelle: "Collecte des pièces",
+        bloquante: true,
+        dureeJours: 2,
+        statut: "effectuee",
+      },
+      {
+        id: "t2",
+        etape: 2,
+        ordre: 2,
+        libelle: "Réquisitions & états préalables",
+        bloquante: true,
+        dureeJours: 5,
+        statut: "effectuee",
+      },
+      {
+        id: "t3",
+        etape: 3,
+        ordre: 3,
+        libelle: "Rédaction de l'acte",
+        bloquante: true,
+        dureeJours: 3,
+        statut: dLocal.etapeActuelle >= 3 ? "effectuee" : "en_cours",
+      },
+      {
+        id: "t4",
+        etape: 4,
+        ordre: 4,
+        libelle: "Signature & rendez-vous notaire",
+        bloquante: true,
+        dureeJours: 1,
+        statut: dLocal.etapeActuelle >= 4 ? "effectuee" : "non_demarree",
+      },
+      {
+        id: "t5",
+        etape: 5,
+        ordre: 5,
+        libelle: "Enregistrement DGI & Formalités",
+        bloquante: false,
+        dureeJours: 14,
+        statut: dLocal.etapeActuelle >= 5 ? "en_cours" : "non_demarree",
+      },
+      {
+        id: "t6",
+        etape: 6,
+        ordre: 6,
+        libelle: "Délivrance expédition & minutier",
+        bloquante: false,
+        dureeJours: 5,
+        statut: dLocal.etapeActuelle >= 6 ? "effectuee" : "non_demarree",
+      },
     ],
     mouvements: mouvs,
     compteClient: ecritures,
@@ -959,20 +1217,33 @@ async function changerEtape(dossierId, nouvelleEtape, utilisateur) {
       if (!dossier) return null;
       await client.query(
         "UPDATE dossiers SET etape_actuelle = $1, date_entree_etape = CURRENT_DATE WHERE id = $2",
-        [nouvelleEtape, dossierId]
+        [nouvelleEtape, dossierId],
       );
-      await ajouterMouvement(client, dossierId, utilisateur.id, `Passage à l'étape : Étape ${nouvelleEtape}`);
-      const { rows } = await client.query("SELECT * FROM dossiers WHERE id = $1", [dossierId]);
+      await ajouterMouvement(
+        client,
+        dossierId,
+        utilisateur.id,
+        `Passage à l'étape : Étape ${nouvelleEtape}`,
+      );
+      const { rows } = await client.query(
+        "SELECT * FROM dossiers WHERE id = $1",
+        [dossierId],
+      );
       if (rows && rows.length) return dossierVersCamel(rows[0]);
     });
   } catch (_) {}
 
-  const d = DOSSIERS_DEMO_COMPLETS.find(x => x.id === dossierId);
+  const d = DOSSIERS_DEMO_COMPLETS.find((x) => x.id === dossierId);
   if (d) {
     d.etapeActuelle = Number(nouvelleEtape);
     d.dateEntreeEtape = new Date().toISOString().split("T")[0];
     d.derniereActivite = new Date().toISOString();
-    await ajouterMouvement(null, dossierId, utilisateur ? utilisateur.id : "user", `Passage à l'étape : Étape ${nouvelleEtape}`);
+    await ajouterMouvement(
+      null,
+      dossierId,
+      utilisateur ? utilisateur.id : "user",
+      `Passage à l'étape : Étape ${nouvelleEtape}`,
+    );
     return d;
   }
   return null;
@@ -981,16 +1252,29 @@ async function changerEtape(dossierId, nouvelleEtape, utilisateur) {
 async function reporterEcheance(dossierId, jours, utilisateur) {
   try {
     return await avecTransaction(async (client) => {
-      await client.query("UPDATE dossiers SET report_jours = report_jours + $1 WHERE id = $2", [jours, dossierId]);
-      await ajouterMouvement(client, dossierId, utilisateur.id, `Échéance reportée de ${jours * 24}h`);
+      await client.query(
+        "UPDATE dossiers SET report_jours = report_jours + $1 WHERE id = $2",
+        [jours, dossierId],
+      );
+      await ajouterMouvement(
+        client,
+        dossierId,
+        utilisateur.id,
+        `Échéance reportée de ${jours * 24}h`,
+      );
       return true;
     });
   } catch (_) {}
 
-  const d = DOSSIERS_DEMO_COMPLETS.find(x => x.id === dossierId);
+  const d = DOSSIERS_DEMO_COMPLETS.find((x) => x.id === dossierId);
   if (d) {
     d.reportJours = (d.reportJours || 0) + Number(jours);
-    await ajouterMouvement(null, dossierId, utilisateur ? utilisateur.id : "user", `Échéance reportée de ${jours * 24}h`);
+    await ajouterMouvement(
+      null,
+      dossierId,
+      utilisateur ? utilisateur.id : "user",
+      `Échéance reportée de ${jours * 24}h`,
+    );
     return true;
   }
   return true;
@@ -999,12 +1283,22 @@ async function reporterEcheance(dossierId, jours, utilisateur) {
 async function relancerClerc(dossierId, utilisateur, nomClerc) {
   try {
     return await avecTransaction(async (client) => {
-      await ajouterMouvement(client, dossierId, utilisateur.id, `Relance interne envoyée à ${nomClerc || "clerc assigné"}`);
+      await ajouterMouvement(
+        client,
+        dossierId,
+        utilisateur.id,
+        `Relance interne envoyée à ${nomClerc || "clerc assigné"}`,
+      );
       return true;
     });
   } catch (_) {}
 
-  await ajouterMouvement(null, dossierId, utilisateur ? utilisateur.id : "user", `Relance interne envoyée à ${nomClerc || "clerc assigné"}`);
+  await ajouterMouvement(
+    null,
+    dossierId,
+    utilisateur ? utilisateur.id : "user",
+    `Relance interne envoyée à ${nomClerc || "clerc assigné"}`,
+  );
   return true;
 }
 
@@ -1013,28 +1307,46 @@ async function majStatutTache(dossierTacheId, nouveauStatut, utilisateur) {
     return await avecTransaction(async (client) => {
       const { rows } = await client.query(
         "UPDATE dossier_taches SET statut = $1, updated_at = now() WHERE id = $2 RETURNING dossier_id, libelle",
-        [nouveauStatut, dossierTacheId]
+        [nouveauStatut, dossierTacheId],
       );
       if (rows && rows.length) {
-        await ajouterMouvement(client, rows[0].dossier_id, utilisateur.id, `Tâche « ${rows[0].libelle} » → ${nouveauStatut}`);
+        await ajouterMouvement(
+          client,
+          rows[0].dossier_id,
+          utilisateur.id,
+          `Tâche « ${rows[0].libelle} » → ${nouveauStatut}`,
+        );
         return rows[0];
       }
     });
   } catch (_) {}
 
-  return { id: dossierTacheId, statut: nouveauStatut, libelle: "Tâche mise à jour" };
+  return {
+    id: dossierTacheId,
+    statut: nouveauStatut,
+    libelle: "Tâche mise à jour",
+  };
 }
 
-async function ajouterEcritureCompteClient(dossierId, { sens, categorie, montant, libelle }, utilisateurId) {
+async function ajouterEcritureCompteClient(
+  dossierId,
+  { sens, categorie, montant, libelle },
+  utilisateurId,
+) {
   try {
     await avecTransaction(async (client) => {
       await client.query(
         `INSERT INTO compte_client_ecritures (dossier_id, sens, categorie, montant, libelle, utilisateur_id)
          VALUES ($1, $2, $3, $4, $5, $6)`,
-        [dossierId, sens, categorie, montant, libelle, utilisateurId]
+        [dossierId, sens, categorie, montant, libelle, utilisateurId],
       );
       const verbe = sens === "provision" ? "Provision reçue" : "Décaissement";
-      await ajouterMouvement(client, dossierId, utilisateurId, `${verbe} (${categorie}) : ${montant} FCFA`);
+      await ajouterMouvement(
+        client,
+        dossierId,
+        utilisateurId,
+        `${verbe} (${categorie}) : ${montant} FCFA`,
+      );
     });
   } catch (_) {}
 
@@ -1051,7 +1363,12 @@ async function ajouterEcritureCompteClient(dossierId, { sens, categorie, montant
 
   if (!ECRITURES_MEMOIRE.has(dossierId)) ECRITURES_MEMOIRE.set(dossierId, []);
   ECRITURES_MEMOIRE.get(dossierId).push(ecriture);
-  await ajouterMouvement(null, dossierId, utilisateurId, `${sens === "provision" ? "Provision reçue" : "Décaissement"} (${categorie}) : ${montant} FCFA`);
+  await ajouterMouvement(
+    null,
+    dossierId,
+    utilisateurId,
+    `${sens === "provision" ? "Provision reçue" : "Décaissement"} (${categorie}) : ${montant} FCFA`,
+  );
 }
 
 async function assignerClerc(dossierId, nouveauClercId, utilisateur) {
@@ -1059,13 +1376,13 @@ async function assignerClerc(dossierId, nouveauClercId, utilisateur) {
   try {
     const { rows } = await pool.query(
       "UPDATE dossiers SET clerc_assigne_id = $1, derniere_activite = now() WHERE id = $2 RETURNING *",
-      [nouveauClercId, dossierId]
+      [nouveauClercId, dossierId],
     );
     if (rows && rows.length) dossier = dossierVersCamel(rows[0]);
   } catch (_) {}
 
   if (!dossier) {
-    const dLocal = DOSSIERS_DEMO_COMPLETS.find(d => d.id === dossierId);
+    const dLocal = DOSSIERS_DEMO_COMPLETS.find((d) => d.id === dossierId);
     if (dLocal) {
       dLocal.clercAssigneId = nouveauClercId;
       dLocal.derniereActivite = new Date().toISOString();
@@ -1079,27 +1396,45 @@ async function assignerClerc(dossierId, nouveauClercId, utilisateur) {
   const clerc = await authService.trouverUtilisateurParId(nouveauClercId);
   const nomClerc = clerc ? clerc.nomComplet : "Clerc assigné";
   const desc = `Dossier assigné à ${nomClerc} par ${utilisateur ? utilisateur.nomComplet : "la direction"}`;
-  await ajouterMouvement(null, dossierId, utilisateur ? utilisateur.id : null, desc);
+  await ajouterMouvement(
+    null,
+    dossierId,
+    utilisateur ? utilisateur.id : null,
+    desc,
+  );
 
   // Envoi email notification clerc
   if (clerc && clerc.email) {
     (async () => {
       try {
-        const eid = dossier.etudeId || (utilisateur ? utilisateur.etudeId : null);
+        const eid =
+          dossier.etudeId || (utilisateur ? utilisateur.etudeId : null);
         const paramsEtude = await parametresService.obtenir(eid);
         let compNoms = dossier.comparantsNoms || "";
         if (!compNoms) {
           try {
-            const { rows: compRows } = await pool.query("SELECT nom FROM dossier_comparants WHERE dossier_id = $1", [dossierId]);
-            if (compRows && compRows.length) compNoms = compRows.map(c => c.nom).join(", ");
+            const { rows: compRows } = await pool.query(
+              "SELECT nom FROM dossier_comparants WHERE dossier_id = $1",
+              [dossierId],
+            );
+            if (compRows && compRows.length)
+              compNoms = compRows.map((c) => c.nom).join(", ");
           } catch (_) {}
         }
 
         await emailDeploiementService.envoyerEmailAssignationClerc({
           destinataireEmail: clerc.email,
           nomClerc: clerc.nomComplet,
-          nomInitiateur: utilisateur ? utilisateur.nomComplet : "Le Notaire Titulaire",
-          roleInitiateur: utilisateur ? (utilisateur.role === "notaire" ? "Le Notaire Titulaire" : (utilisateur.role === "assistante" ? "Le Secrétariat" : "La Direction")) : "Direction",
+          nomInitiateur: utilisateur
+            ? utilisateur.nomComplet
+            : "Le Notaire Titulaire",
+          roleInitiateur: utilisateur
+            ? utilisateur.role === "notaire"
+              ? "Le Notaire Titulaire"
+              : utilisateur.role === "assistante"
+                ? "Le Secrétariat"
+                : "La Direction"
+            : "Direction",
           numeroDossier: dossier.numeroDossier,
           typeActe: dossier.typeActeId,
           comparantsNoms: compNoms || "Comparant Principal",
@@ -1107,7 +1442,10 @@ async function assignerClerc(dossierId, nouveauClercId, utilisateur) {
           nomEtude: paramsEtude.nomEtude,
         });
       } catch (e) {
-        console.warn("[Dossiers] Erreur email réassignation clerc :", e.message);
+        console.warn(
+          "[Dossiers] Erreur email réassignation clerc :",
+          e.message,
+        );
       }
     })();
   }
@@ -1133,4 +1471,3 @@ module.exports = {
   ajouterEcritureCompteClient,
   ajouterMouvement,
 };
-

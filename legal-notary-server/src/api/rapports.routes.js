@@ -10,7 +10,9 @@ const router = express.Router();
 
 function exigerDirectionSaaS(req, res, next) {
   if (!req.utilisateur || req.utilisateur.role !== "superadmin") {
-    return res.status(403).json({ erreur: "Accès réservé à la Direction Générale SaaS." });
+    return res
+      .status(403)
+      .json({ erreur: "Accès réservé à la Direction Générale SaaS." });
   }
   next();
 }
@@ -22,7 +24,9 @@ router.get("/synthese-direction", async (req, res, next) => {
   try {
     const synthese = await rapportsService.obtenirSyntheseDirection();
     res.json(synthese);
-  } catch (e) { next(e); }
+  } catch (e) {
+    next(e);
+  }
 });
 
 /**
@@ -32,24 +36,33 @@ router.get("/parametres-frequences", async (req, res, next) => {
   try {
     const params = await rapportsService.obtenirParametresFrequences();
     res.json(params);
-  } catch (e) { next(e); }
+  } catch (e) {
+    next(e);
+  }
 });
 
-router.put("/parametres-frequences/:roleCible", exigerDirectionSaaS, async (req, res, next) => {
-  try {
-    const { roleCible } = req.params;
-    const { frequence, jourLimite, heureLimite, actif, descriptionAttendus } = req.body;
-    const misAJour = await rapportsService.mettreAJourParametresFrequence({
-      roleCible,
-      frequence,
-      jourLimite,
-      heureLimite,
-      actif,
-      descriptionAttendus,
-    });
-    res.json(misAJour);
-  } catch (e) { next(e); }
-});
+router.put(
+  "/parametres-frequences/:roleCible",
+  exigerDirectionSaaS,
+  async (req, res, next) => {
+    try {
+      const { roleCible } = req.params;
+      const { frequence, jourLimite, heureLimite, actif, descriptionAttendus } =
+        req.body;
+      const misAJour = await rapportsService.mettreAJourParametresFrequence({
+        roleCible,
+        frequence,
+        jourLimite,
+        heureLimite,
+        actif,
+        descriptionAttendus,
+      });
+      res.json(misAJour);
+    } catch (e) {
+      next(e);
+    }
+  },
+);
 
 /**
  * 3. Rapports pour le collaborateur connecté selon son rôle
@@ -58,9 +71,14 @@ router.get("/mes-rapports", async (req, res, next) => {
   try {
     const role = req.utilisateur.role;
     const auteurId = req.utilisateur.id;
-    const liste = await rapportsService.listerRapportsParRole(role, role === "superadmin" ? null : auteurId);
+    const liste = await rapportsService.listerRapportsParRole(
+      role,
+      role === "superadmin" ? null : auteurId,
+    );
     res.json(liste);
-  } catch (e) { next(e); }
+  } catch (e) {
+    next(e);
+  }
 });
 
 /**
@@ -70,7 +88,9 @@ router.post("/soumettre", async (req, res, next) => {
   try {
     const { titre, periodeDebut, periodeFin, donnees } = req.body;
     if (!titre) {
-      return res.status(400).json({ erreur: "Le titre du rapport est requis." });
+      return res
+        .status(400)
+        .json({ erreur: "Le titre du rapport est requis." });
     }
 
     const rapport = await rapportsService.soumettreRapport({
@@ -83,7 +103,9 @@ router.post("/soumettre", async (req, res, next) => {
       donnees,
     });
     res.status(201).json(rapport);
-  } catch (e) { next(e); }
+  } catch (e) {
+    next(e);
+  }
 });
 
 /**
@@ -99,7 +121,9 @@ router.post("/:id/evaluer", exigerDirectionSaaS, async (req, res, next) => {
       commentaireDirection,
     });
     res.json(evalue);
-  } catch (e) { next(e); }
+  } catch (e) {
+    next(e);
+  }
 });
 
 module.exports = router;

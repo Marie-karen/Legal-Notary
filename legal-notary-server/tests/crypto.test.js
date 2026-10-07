@@ -4,7 +4,12 @@
 
 const { test } = require("node:test");
 const assert = require("node:assert");
-const { chiffrer, dechiffrer, chiffrerObjet, dechiffrerObjet } = require("../src/utils/crypto");
+const {
+  chiffrer,
+  dechiffrer,
+  chiffrerObjet,
+  dechiffrerObjet,
+} = require("../src/utils/crypto");
 
 test("crypto — chiffrement et déchiffrement d'une chaîne texte", () => {
   const secret = "MonSuperMotDePasseSMTP123!";
@@ -38,7 +43,11 @@ test("crypto — gestion des chaînes vides et nulles", () => {
 });
 
 test("crypto — chiffrement et déchiffrement d'un objet JSON", () => {
-  const identifiants = { apiKey: "AK_TEST_123456", senderId: "ETUDE_NOTARIALE", secretToken: "TOKEN_SECRET_987" };
+  const identifiants = {
+    apiKey: "AK_TEST_123456",
+    senderId: "ETUDE_NOTARIALE",
+    secretToken: "TOKEN_SECRET_987",
+  };
   const chiffre = chiffrerObjet(identifiants);
 
   assert.ok(chiffre._chiffre);

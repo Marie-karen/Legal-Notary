@@ -4,10 +4,15 @@
 
 const { pool } = require("../db/pool");
 const crypto = require("crypto");
-const { lireFichierJson, ecrireFichierJson } = require("./stockage-persistant.service");
+const {
+  lireFichierJson,
+  ecrireFichierJson,
+} = require("./stockage-persistant.service");
 const authService = require("./auth.service");
 const superadminService = require("./superadmin.service");
-const { envoyerEmailBienvenueCollaborateur } = require("./email-deploiement.service");
+const {
+  envoyerEmailBienvenueCollaborateur,
+} = require("./email-deploiement.service");
 
 // Table SQL auto-créée
 async function initialiserTableDemandesDemo() {
@@ -59,8 +64,13 @@ async function enregistrerDemandeDemo({
 
   // Mot de passe temporaire unique généré pour ce prospect
   const mdpDemo = "Demo" + Math.floor(1000 + Math.random() * 9000) + "!";
-  const nomEtudeFinal = etudeClean || ("Étude Démo Me " + nomClean);
-  const roleAttribue = (fonctionClean === "notaire" ? "notaire" : (fonctionClean === "premier_clerc" ? "premier_clerc" : "clerc_redacteur"));
+  const nomEtudeFinal = etudeClean || "Étude Démo Me " + nomClean;
+  const roleAttribue =
+    fonctionClean === "notaire"
+      ? "notaire"
+      : fonctionClean === "premier_clerc"
+        ? "premier_clerc"
+        : "clerc_redacteur";
 
   // 1. Création d'un espace démo sécurisé isolé et dédié à ce prospect
   let etudeDemoCreee = null;
@@ -77,12 +87,15 @@ async function enregistrerDemandeDemo({
           role: roleAttribue,
           motDePasse: mdpDemo,
           telephone: telClean,
-        }
+        },
       ],
       envoyerEmails: true, // Envoie le véritable email depuis infos@legalnotary.app via Hostinger
     });
   } catch (errEtude) {
-    console.warn("[DemandeDemo] Création espace démo fallback :", errEtude.message);
+    console.warn(
+      "[DemandeDemo] Création espace démo fallback :",
+      errEtude.message,
+    );
   }
 
   const nouvelleDemande = {
@@ -129,13 +142,15 @@ async function enregistrerDemandeDemo({
         true,
         ipClient || "",
         dateIso,
-      ]
+      ],
     );
   } catch (dbErr) {
     console.warn("[DemandeDemo] DB insert fallback :", dbErr.message);
   }
 
-  console.log(`[DemandeDemo] 🎯 NOUVELLE DÉMO PERSONNELLE CRÉÉE : ${nomClean} (${nomEtudeFinal}) — Email: ${emailClean} — Mdp: ${mdpDemo}`);
+  console.log(
+    `[DemandeDemo] 🎯 NOUVELLE DÉMO PERSONNELLE CRÉÉE : ${nomClean} (${nomEtudeFinal}) — Email: ${emailClean} — Mdp: ${mdpDemo}`,
+  );
 
   return {
     success: true,
