@@ -84,6 +84,15 @@ router.post("/:id/relancer", exigerPermission("taches:modifier"), async (req, re
   } catch (e) { next(e); }
 });
 
+router.post("/:id/assigner", async (req, res, next) => {
+  try {
+    const { clercId } = req.body;
+    if (!clercId) return res.status(400).json({ erreur: "Identifiant du clerc requis." });
+    const dossier = await dossiersService.assignerClerc(req.params.id, clercId, req.utilisateur);
+    res.json(dossier);
+  } catch (e) { next(e); }
+});
+
 router.post("/taches/:tacheId/statut", exigerPermission("taches:modifier"), async (req, res, next) => {
   try {
     const resultat = await dossiersService.majStatutTache(req.params.tacheId, req.body.statut, req.utilisateur);

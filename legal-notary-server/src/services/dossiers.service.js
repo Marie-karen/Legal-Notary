@@ -766,30 +766,25 @@ async function listerDossiersPourUtilisateur(utilisateur, filtres = {}) {
        ORDER BY d.date_ouverture DESC`,
       valeurs
     );
-    if (Array.isArray(rows)) return rows.map(dossierVersCamel);
+    if (Array.isArray(rows)) {
+      const camelRows = rows.map(dossierVersCamel);
+      return await Promise.all(camelRows.map(d => masquerFinancesSiNonAutorise(d, utilisateur)));
+    }
   } catch (err) {
     // Repli instantané mémoire (< 0.1ms)
   }
 
-  if (!estCompteDemo) {
-    return DOSSIERS_DEMO_COMPLETS.filter(d => d.etudeId === etudeId).filter(d => {
-      if (portee === "formalites" && ![5, 6].includes(d.etapeActuelle)) return false;
-      if (portee === "assignes" && utilisateur && d.clercAssigneId && d.clercAssigneId !== utilisateur.id) return false;
-      if (filtres.statut && d.statut !== filtres.statut) return false;
-      if (filtres.typeActeId && d.typeActeId !== filtres.typeActeId) return false;
-      if (filtres.statutDno && d.statutDno !== filtres.statutDno) return false;
-      return true;
-    });
-  }
-
-  return DOSSIERS_DEMO_COMPLETS.filter(d => {
+  const baseListe = !estCompteDemo ? DOSSIERS_DEMO_COMPLETS.filter(d => d.etudeId === etudeId) : DOSSIERS_DEMO_COMPLETS;
+  const filtresResult = baseListe.filter(d => {
     if (portee === "formalites" && ![5, 6].includes(d.etapeActuelle)) return false;
-    if (portee === "assignes" && utilisateur && d.clercAssigneId && d.clercAssigneId !== utilisateur.id && d.clercAssigneId !== "demo-clerc1-id") return false;
+    if (portee === "assignes" && utilisateur && d.clercAssigneId && d.clercAssigneId !== utilisateur.id && (estCompteDemo ? d.clercAssigneId !== "demo-clerc1-id" : true)) return false;
     if (filtres.statut && d.statut !== filtres.statut) return false;
     if (filtres.typeActeId && d.typeActeId !== filtres.typeActeId) return false;
     if (filtres.statutDno && d.statutDno !== filtres.statutDno) return false;
     return true;
   });
+
+  return await Promise.all(filtresResult.map(d => masquerFinancesSiNonAutorise(d, utilisateur)));
 }
 
 async function listerClientsPourUtilisateur(utilisateur) {
@@ -882,6 +877,28 @@ async function listerClientsPourUtilisateur(utilisateur) {
   return Array.from(clientsMap.values()).sort((a, b) => a.nom.localeCompare(b.nom));
 }
 
+async function masquerFinancesSiNonAutorise(dossier, utilisateur) {
+  if (!dossier || !utilisateur) return dossier;
+  const role = utilisateur.role;
+  if (role === "notaire" || role === "superadmin" || role === "comptable_taxateur") {
+    return dossier;
+  }
+  if (role === "premier_clerc") {
+    const eid = dossier.etudeId || dossier.etude_id || utilisateur.etudeId;
+    const params = await parametresService.obtenir(eid);
+    if (params && params.premierClercVoirFinances) return dossier;
+  }
+  
+  // Masquage strict pour les autres clercs et assistantes
+  return {
+    ...dossier,
+    montantAssiette: 0,
+    fraisOuverture: 0,
+    provisionVersee: 0,
+    compteClient: [],
+  };
+}
+
 async function obtenirDossierPourUtilisateur(dossierId, utilisateur) {
   try {
     const { rows } = await pool.query("SELECT * FROM dossiers WHERE id = $1 AND archived_at IS NULL", [dossierId]);
@@ -894,7 +911,7 @@ async function obtenirDossierPourUtilisateur(dossierId, utilisateur) {
         pool.query("SELECT * FROM compte_client_ecritures WHERE dossier_id = $1 ORDER BY date_ecriture", [dossierId]).catch(() => ({ rows: [] })),
       ]);
 
-      return {
+      const dossierComplet = {
         ...dossierVersCamel(dossier),
         comparants: comparants.rows,
         taches: taches.rows.map((t) => ({
@@ -904,6 +921,8 @@ async function obtenirDossierPourUtilisateur(dossierId, utilisateur) {
         mouvements: mouvements.rows,
         compteClient: ecritures.rows,
       };
+
+      return await masquerFinancesSiNonAutorise(dossierComplet, utilisateur);
     }
   } catch (err) {
     // Repli instantané mémoire
@@ -915,7 +934,7 @@ async function obtenirDossierPourUtilisateur(dossierId, utilisateur) {
   ];
   const ecritures = ECRITURES_MEMOIRE.get(dLocal.id) || [];
 
-  return {
+  const dossierLocalComplet = {
     ...dLocal,
     comparants: [{ nom: dLocal.comparantsNoms, qualite: "Comparant Principal" }],
     taches: TACHES_MEMOIRE.get(dLocal.id) || [
@@ -929,6 +948,8 @@ async function obtenirDossierPourUtilisateur(dossierId, utilisateur) {
     mouvements: mouvs,
     compteClient: ecritures,
   };
+
+  return await masquerFinancesSiNonAutorise(dossierLocalComplet, utilisateur);
 }
 
 async function changerEtape(dossierId, nouvelleEtape, utilisateur) {
@@ -1033,9 +1054,71 @@ async function ajouterEcritureCompteClient(dossierId, { sens, categorie, montant
   await ajouterMouvement(null, dossierId, utilisateurId, `${sens === "provision" ? "Provision reçue" : "Décaissement"} (${categorie}) : ${montant} FCFA`);
 }
 
+async function assignerClerc(dossierId, nouveauClercId, utilisateur) {
+  let dossier = null;
+  try {
+    const { rows } = await pool.query(
+      "UPDATE dossiers SET clerc_assigne_id = $1, derniere_activite = now() WHERE id = $2 RETURNING *",
+      [nouveauClercId, dossierId]
+    );
+    if (rows && rows.length) dossier = dossierVersCamel(rows[0]);
+  } catch (_) {}
+
+  if (!dossier) {
+    const dLocal = DOSSIERS_DEMO_COMPLETS.find(d => d.id === dossierId);
+    if (dLocal) {
+      dLocal.clercAssigneId = nouveauClercId;
+      dLocal.derniereActivite = new Date().toISOString();
+      dossier = dLocal;
+    }
+  }
+
+  if (!dossier) throw new Error("Dossier introuvable.");
+
+  // Récupérer le clerc assigné
+  const clerc = await authService.trouverUtilisateurParId(nouveauClercId);
+  const nomClerc = clerc ? clerc.nomComplet : "Clerc assigné";
+  const desc = `Dossier assigné à ${nomClerc} par ${utilisateur ? utilisateur.nomComplet : "la direction"}`;
+  await ajouterMouvement(null, dossierId, utilisateur ? utilisateur.id : null, desc);
+
+  // Envoi email notification clerc
+  if (clerc && clerc.email) {
+    (async () => {
+      try {
+        const eid = dossier.etudeId || (utilisateur ? utilisateur.etudeId : null);
+        const paramsEtude = await parametresService.obtenir(eid);
+        let compNoms = dossier.comparantsNoms || "";
+        if (!compNoms) {
+          try {
+            const { rows: compRows } = await pool.query("SELECT nom FROM dossier_comparants WHERE dossier_id = $1", [dossierId]);
+            if (compRows && compRows.length) compNoms = compRows.map(c => c.nom).join(", ");
+          } catch (_) {}
+        }
+
+        await emailDeploiementService.envoyerEmailAssignationClerc({
+          destinataireEmail: clerc.email,
+          nomClerc: clerc.nomComplet,
+          nomInitiateur: utilisateur ? utilisateur.nomComplet : "Le Notaire Titulaire",
+          roleInitiateur: utilisateur ? (utilisateur.role === "notaire" ? "Le Notaire Titulaire" : (utilisateur.role === "assistante" ? "Le Secrétariat" : "La Direction")) : "Direction",
+          numeroDossier: dossier.numeroDossier,
+          typeActe: dossier.typeActeId,
+          comparantsNoms: compNoms || "Comparant Principal",
+          urlConnexion: "https://legalnotary.app",
+          nomEtude: paramsEtude.nomEtude,
+        });
+      } catch (e) {
+        console.warn("[Dossiers] Erreur email réassignation clerc :", e.message);
+      }
+    })();
+  }
+
+  return dossier;
+}
+
 module.exports = {
   dossierVersCamel,
   creerDossier,
+  assignerClerc,
   reglerProvisionEtOuvrirDossier,
   prochainNumeroDNO,
   prochainNumeroDossier,
@@ -1050,3 +1133,4 @@ module.exports = {
   ajouterEcritureCompteClient,
   ajouterMouvement,
 };
+

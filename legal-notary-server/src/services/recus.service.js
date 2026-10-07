@@ -282,6 +282,20 @@ async function joindreScanRecu(recuId, { urlScan, nomFichier, utilisateurId }) {
        WHERE id = $3`,
       [urlScan, nomFichier || "Recu_Emarge.pdf", recuId]
     );
+
+    if (recu.dossierId) {
+      await pool.query(
+        `UPDATE dossier_taches
+         SET statut = 'effectuee', updated_at = now()
+         WHERE dossier_id = $1 AND libelle LIKE '%Scanner le reçu de paiement%'`,
+        [recu.dossierId]
+      );
+      await pool.query(
+        `INSERT INTO dossier_mouvements (dossier_id, utilisateur_id, description)
+         VALUES ($1, $2, $3)`,
+        [recu.dossierId, utilisateurId || null, `Scan du reçu émargé N° ${recu.numeroRecu} rattaché au dossier.`]
+      );
+    }
   } catch (_) {}
 
   recu.recuScanneUrl = urlScan;

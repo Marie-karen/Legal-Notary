@@ -134,10 +134,25 @@ async function autoMigrerSchema() {
           updated_at timestamptz NOT NULL DEFAULT now()
         );
 
+        ALTER TABLE etudes ADD COLUMN IF NOT EXISTS pays text DEFAULT 'ci';
+        ALTER TABLE etudes ADD COLUMN IF NOT EXISTS langue text DEFAULT 'fr';
+        ALTER TABLE etudes ADD COLUMN IF NOT EXISTS pack_regional text DEFAULT 'ohada-uemoa';
+        ALTER TABLE etudes ADD COLUMN IF NOT EXISTS fuseau_horaire text DEFAULT 'Africa/Abidjan';
+        ALTER TABLE etudes ADD COLUMN IF NOT EXISTS indicatif_tel text DEFAULT '+225';
+        ALTER TABLE etudes ADD COLUMN IF NOT EXISTS devise_code text DEFAULT 'XOF';
+        ALTER TABLE etudes ADD COLUMN IF NOT EXISTS devise_symbole text DEFAULT 'FCFA';
+
         ALTER TABLE parametres_etude ADD COLUMN IF NOT EXISTS etude_id uuid;
         ALTER TABLE parametres_etude ADD COLUMN IF NOT EXISTS nom_notaire text;
         ALTER TABLE parametres_etude ADD COLUMN IF NOT EXISTS telephone_fixe text;
         ALTER TABLE parametres_etude ADD COLUMN IF NOT EXISTS telephone_portable text;
+        ALTER TABLE parametres_etude ADD COLUMN IF NOT EXISTS pays text DEFAULT 'ci';
+        ALTER TABLE parametres_etude ADD COLUMN IF NOT EXISTS langue text DEFAULT 'fr';
+        ALTER TABLE parametres_etude ADD COLUMN IF NOT EXISTS devise_code text DEFAULT 'XOF';
+        ALTER TABLE parametres_etude ADD COLUMN IF NOT EXISTS devise_symbole text DEFAULT 'FCFA';
+
+        ALTER TABLE dossiers ADD COLUMN IF NOT EXISTS devise_code text DEFAULT 'XOF';
+        ALTER TABLE dossiers ADD COLUMN IF NOT EXISTS bareme_version_id text;
         ALTER TABLE parametres_etude ADD COLUMN IF NOT EXISTS presence_archiviste boolean DEFAULT false;
         ALTER TABLE parametres_etude ADD COLUMN IF NOT EXISTS presence_comptable boolean DEFAULT true;
         ALTER TABLE parametres_etude ADD COLUMN IF NOT EXISTS mode_numerotation VARCHAR(30) DEFAULT 'global';

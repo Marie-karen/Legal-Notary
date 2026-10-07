@@ -25,6 +25,43 @@ router.get("/:id", async (req, res, next) => {
   } catch (e) { next(e); }
 });
 
+// Créer un reçu de paiement (Comptable Taxateur, Notaire)
+router.post("/", async (req, res, next) => {
+  try {
+    const {
+      dossierId,
+      numeroDossier,
+      typeActeId,
+      clientNom,
+      clientEmail,
+      clientTelephone,
+      fraisOuverture,
+      provision,
+      montantProvision,
+      montantAssiette,
+      modePaiement,
+      observations,
+    } = req.body || {};
+
+    const recu = await recusService.creerRecuPaiement({
+      etudeId: req.utilisateur ? req.utilisateur.etudeId : null,
+      dossierId,
+      numeroDossier,
+      typeActeId,
+      clientNom,
+      clientEmail,
+      clientTelephone,
+      fraisOuverture,
+      provision: provision !== undefined ? provision : montantProvision,
+      montantAssiette,
+      modePaiement,
+      observations,
+      creeParId: req.utilisateur ? req.utilisateur.id : null,
+    });
+    res.status(201).json(recu);
+  } catch (e) { next(e); }
+});
+
 // Valider le reçu et déclencher l'envoi par email au client (Action Notaire)
 router.post("/:id/valider-et-envoyer", async (req, res, next) => {
   try {

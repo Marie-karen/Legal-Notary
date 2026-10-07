@@ -7,6 +7,7 @@ const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 const authService = require("./auth.service");
 const emailDeploiementService = require("./email-deploiement.service");
+const packsService = require("./packs.service");
 const { lireFichierJson, ecrireFichierJson } = require("./stockage-persistant.service");
 
 let ETUDES_MEMOIRE = [];
@@ -27,6 +28,13 @@ function synchroniserEtudesDepuisDisque() {
         quotaStockageGo: 150,
         ville: "Abidjan (Plateau)",
         domaine: "demo.legalnotary.app",
+        pays: "ci",
+        langue: "fr",
+        packRegional: "ohada-uemoa",
+        fuseauHoraire: "Africa/Abidjan",
+        indicatifTel: "+225",
+        deviseCode: "XOF",
+        deviseSymbole: "FCFA",
         actif: true,
         totalDossiers: 0,
         totalMinutes: 0,

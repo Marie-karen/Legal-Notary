@@ -1,0 +1,79 @@
+{
+  "code": "test_pays",
+  "nom": "Pays Test Fictif (Recette)",
+  "packRegional": "ohada-uemoa",
+  "monnaie": {
+    "code": "TST",
+    "symbole": "TST",
+    "libelle": "Devise Test",
+    "libellePluriel": "Devises Test",
+    "centimesLibelle": "cent",
+    "centimesLibellePluriel": "cents",
+    "decimales": 0
+  },
+  "fuseauHoraire": "UTC",
+  "indicatifTelephonique": "+999",
+  "formatTelephone": "^\\+999[0-9]{8,12}$",
+  "langueDefaut": "fr",
+  "fiscalite": {
+    "tauxTva": 0.10,
+    "timbreFiscalPage": 100,
+    "emolumentRolePage": 100,
+    "taxePubliciteFonciere": {
+      "taux": 0.005,
+      "montantFixe": 1000
+    },
+    "droitsEnregistrementDefaut": {
+      "vente": 0.02,
+      "bail": 0.01,
+      "societe": 0.005,
+      "hypotheque": 0.005
+    }
+  },
+  "administrations": {
+    "dgi": {
+      "code": "taxes_test",
+      "nom": "Direction Fédérale des Taxes (Administration Test)",
+      "sigle": "DFT",
+      "direction": "Centre Fédéral",
+      "lieu": "Capitale Test"
+    },
+    "foncier": {
+      "code": "cadastre_test",
+      "nom": "Service Fédéral de Publicité Foncière (Test Land Registry)",
+      "sigle": "Cadastre Test",
+      "direction": "Bureau Foncier",
+      "lieu": "Capitale Test"
+    },
+    "greffe": {
+      "code": "greffe_test",
+      "nom": "Greffe Central du Tribunal de Test",
+      "sigle": "Greffe Test",
+      "lieu": "Capitale Test"
+    },
+    "guichetEntreprise": {
+      "code": "guichet_test",
+      "nom": "Guichet Unique de Formalités d'Entreprises Test (GUFE-Test)",
+      "sigle": "GUFE-Test",
+      "lieu": "Capitale Test"
+    },
+    "journalAnnonces": {
+      "code": "journal_test",
+      "nom": "Gazette Officielle de Recette & Annonces",
+      "sigle": "Gazette Test"
+    }
+  },
+  "joursFeries": [
+    { "mois": 1, "jour": 1, "libelle": "Jour Test 1" },
+    { "mois": 6, "jour": 15, "libelle": "Fête Fictive d'Été" },
+    { "mois": 10, "jour": 10, "libelle": "Journée de Recette Fictive" }
+  ],
+  "textesReference": [
+    {
+      "type": "tarif_notarial",
+      "titre": "Loi Fictive sur la Tarification Notariale Test 2026",
+      "reference": "Loi Test 2026",
+      "dateEffet": "2026-01-01"
+    }
+  ]
+}

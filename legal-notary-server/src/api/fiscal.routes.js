@@ -17,6 +17,7 @@ const referentielService = require("../services/referentiel.service");
 const parametresService = require("../services/parametres.service");
 const excelService = require("../services/excel.service");
 const excelRendererService = require("../services/excel-renderer.service");
+const recusService = require("../services/recus.service");
 
 const router = express.Router();
 
@@ -654,12 +655,18 @@ router.get("/validations/parapheur-global", async (req, res, next) => {
       ];
     }
 
+    let recusPaiement = [];
+    try {
+      recusPaiement = await recusService.listerRecusPourUtilisateur(req.utilisateur, { statut: "en_attente_validation" });
+    } catch (_) {}
+
     const totalEnAttente = fichesTaxe.length +
                            notesFrais.length +
                            factures.length +
                            projetsActe.length +
                            salairesEtCharges.length +
-                           deboursCharges.length;
+                           deboursCharges.length +
+                           recusPaiement.length;
 
     res.json({
       totalEnAttente,
@@ -668,7 +675,8 @@ router.get("/validations/parapheur-global", async (req, res, next) => {
       factures,
       projetsActe,
       salairesCharges: salairesEtCharges,
-      deboursCharges: deboursCharges
+      deboursCharges: deboursCharges,
+      recusPaiement: recusPaiement,
     });
   } catch (e) { next(e); }
 });

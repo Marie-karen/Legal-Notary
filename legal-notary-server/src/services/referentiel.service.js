@@ -16,7 +16,7 @@ const BAREMES_DEFAUT = [
   {
     id: "bareme_vente",
     code: "vente",
-    libelle: "Barème Vente Immobilière (Décret 2013-279)",
+    libelle: "Barème Vente Immobilière (Tarif Réglementaire Dégressif)",
     tranches: [
       { id: "v1", ordre: 1, jusqua: 10000000, taux: 0.04 },
       { id: "v2", ordre: 2, jusqua: 30000000, taux: 0.025 },
@@ -27,7 +27,7 @@ const BAREMES_DEFAUT = [
   {
     id: "bareme_societe",
     code: "societe",
-    libelle: "Barème Sociétés Commerciales OHADA (Décret 2013-279)",
+    libelle: "Barème Sociétés Commerciales OHADA (Tarif Réglementaire Dégressif)",
     tranches: [
       { id: "s1", ordre: 1, jusqua: 10000000, taux: 0.03 },
       { id: "s2", ordre: 2, jusqua: 30000000, taux: 0.015 },
@@ -38,7 +38,7 @@ const BAREMES_DEFAUT = [
   {
     id: "bareme_pret",
     code: "pret",
-    libelle: "Barème Prêt & Hypothèque (Décret 2013-279)",
+    libelle: "Barème Prêt & Hypothèque (Tarif Réglementaire Dégressif)",
     tranches: [
       { id: "p1", ordre: 1, jusqua: 10000000, taux: 0.02 },
       { id: "p2", ordre: 2, jusqua: 30000000, taux: 0.01 },
@@ -49,7 +49,7 @@ const BAREMES_DEFAUT = [
   {
     id: "bareme_succession",
     code: "succession",
-    libelle: "Barème Succession & Partage (Décret 2013-279)",
+    libelle: "Barème Succession & Partage (Tarif Réglementaire Dégressif)",
     tranches: [
       { id: "suc1", ordre: 1, jusqua: 10000000, taux: 0.03 },
       { id: "suc2", ordre: 2, jusqua: 30000000, taux: 0.015 },
@@ -88,7 +88,7 @@ const BAREMES_DEFAUT = [
   {
     id: "bareme_bail",
     code: "bail",
-    libelle: "Barème Bail Commercial (Décret 2013-279)",
+    libelle: "Barème Bail Commercial (Tarif Réglementaire Dégressif)",
     tranches: [
       { id: "b1", ordre: 1, jusqua: 10000000, taux: 0.02 },
       { id: "b2", ordre: 2, jusqua: 30000000, taux: 0.01 },
@@ -101,7 +101,7 @@ const TYPES_ACTES_DEFAUT = [
   {
     id: "vente_immobiliere",
     classificationId: "classif_immo",
-    libelle: "Vente Immobilière (Décret 2013-279 Dégressif)",
+    libelle: "Vente Immobilière (Barème Notarial Dégressif)",
     delaiStandardJours: 40,
     baremeEmolumentsId: "bareme_vente",
     droitEnregistrementMode: "pourcentage",
@@ -354,6 +354,8 @@ async function obtenirTypeActe(id) {
   return trouveLocal || TYPES_ACTES_DEFAUT[0];
 }
 
+const MEMOIRE_TACHES_MAP = new Map();
+
 async function listerTachesStandard(typeActeId) {
   try {
     const { rows } = await pool.query(
@@ -364,6 +366,10 @@ async function listerTachesStandard(typeActeId) {
       return rows.map(tacheStandardVersCamel);
     }
   } catch (_) {}
+
+  if (MEMOIRE_TACHES_MAP.has(typeActeId)) {
+    return MEMOIRE_TACHES_MAP.get(typeActeId);
+  }
 
   return [
     { id: "t1", typeActeId, etape: 1, ordre: 1, libelle: "Collecte des informations & pièces d'identité", dureeJours: 2, bloquante: true },
@@ -432,6 +438,20 @@ async function modifierDureeTache(tacheId, dureeJours) {
       return tacheStandardVersCamel(rows[0]);
     }
   } catch (_) {}
+
+  // Mise à jour mémoire
+  for (const [typeActeId, listeTaches] of MEMOIRE_TACHES_MAP.entries()) {
+    const t = listeTaches.find(x => x.id === tacheId);
+    if (t) {
+      t.dureeJours = Number(dureeJours) || 1;
+      const typeActe = MEMOIRE_TYPES_ACTES.get(typeActeId);
+      if (typeActe) {
+        typeActe.delaiStandardJours = listeTaches.reduce((s, x) => s + (Number(x.dureeJours) || 0), 0);
+      }
+      break;
+    }
+  }
+
   return { id: tacheId, dureeJours };
 }
 
@@ -439,13 +459,19 @@ async function creerTypeActe(donnees) {
   const {
     classificationId,
     libelle,
-    delaiStandardJours = 15,
     baremeEmolumentsId,
     droitEnregistrementMode = "pourcentage",
     droitEnregistrementValeur = 0,
     taxeFonciereApplicable = false,
     taches,
   } = donnees;
+
+  // Calcul dynamique du délai standard comme somme des durées de tâches
+  let delaiStandardJours = Number(donnees.delaiStandardJours) || 0;
+  if (Array.isArray(taches) && taches.length > 0) {
+    delaiStandardJours = taches.reduce((sum, t) => sum + (Number(t.dureeJours) || 0), 0);
+  }
+  if (!delaiStandardJours) delaiStandardJours = 15;
 
   const id = "acte_" + (libelle.toLowerCase().replace(/[^a-z0-9]/g, "_").slice(0, 30) || crypto.randomUUID().slice(0, 8));
 
@@ -456,7 +482,20 @@ async function creerTypeActe(donnees) {
        RETURNING *`,
       [id, classificationId || "classif_immo", libelle, delaiStandardJours, baremeEmolumentsId || null, droitEnregistrementMode, droitEnregistrementValeur, Boolean(taxeFonciereApplicable)]
     );
-    if (rows && rows.length) return typeActeVersCamel(rows[0]);
+    if (rows && rows.length) {
+      if (Array.isArray(taches) && taches.length > 0) {
+        for (let i = 0; i < taches.length; i++) {
+          const t = taches[i];
+          const tId = "tache_" + crypto.randomUUID().slice(0, 8);
+          await pool.query(
+            `INSERT INTO taches_standard (id, type_acte_id, etape, ordre, libelle, duree_jours, bloquante)
+             VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+            [tId, id, t.etape || (i + 1), t.ordre || (i + 1), t.libelle, t.dureeJours || 2, t.bloquante !== false]
+          ).catch(() => {});
+        }
+      }
+      return typeActeVersCamel(rows[0]);
+    }
   } catch (_) {}
 
   const nouvelActe = {
@@ -471,6 +510,20 @@ async function creerTypeActe(donnees) {
     actif: true,
   };
   MEMOIRE_TYPES_ACTES.set(id, nouvelActe);
+
+  if (Array.isArray(taches) && taches.length > 0) {
+    const tachesFormatees = taches.map((t, idx) => ({
+      id: "tache_" + crypto.randomUUID().slice(0, 8),
+      typeActeId: id,
+      etape: t.etape || (idx + 1),
+      ordre: t.ordre || (idx + 1),
+      libelle: t.libelle,
+      dureeJours: Number(t.dureeJours) || 2,
+      bloquante: t.bloquante !== false,
+    }));
+    MEMOIRE_TACHES_MAP.set(id, tachesFormatees);
+  }
+
   return nouvelActe;
 }
 
@@ -488,7 +541,11 @@ async function ajouterTacheStandard(typeActeId, donnees) {
     if (rows && rows.length) return tacheStandardVersCamel(rows[0]);
   } catch (_) {}
 
-  return { id, typeActeId, etape, ordre, libelle, dureeJours, bloquante };
+  const tObj = { id, typeActeId, etape, ordre, libelle, dureeJours, bloquante };
+  const existantes = MEMOIRE_TACHES_MAP.get(typeActeId) || [];
+  existantes.push(tObj);
+  MEMOIRE_TACHES_MAP.set(typeActeId, existantes);
+  return tObj;
 }
 
 async function listerBaremes() {

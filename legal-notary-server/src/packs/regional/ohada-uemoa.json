@@ -1,0 +1,103 @@
+{
+  "code": "ohada-uemoa",
+  "nom": "Région OHADA - Zone UEMOA",
+  "zoneMonetaire": "UEMOA",
+  "droitAffaires": "OHADA",
+  "monnaie": {
+    "code": "XOF",
+    "symbole": "FCFA",
+    "libelle": "Franc CFA",
+    "libellePluriel": "Francs CFA",
+    "centimesLibelle": "centime",
+    "centimesLibellePluriel": "centimes",
+    "decimales": 0
+  },
+  "langueDefaut": "fr",
+  "languesDisponibles": ["fr", "en"],
+  "fiscalite": {
+    "tauxTva": 0.18,
+    "timbreFiscalPage": 500,
+    "emolumentRolePage": 500,
+    "taxePubliciteFonciere": {
+      "taux": 0.012,
+      "montantFixe": 3000
+    },
+    "droitsEnregistrementDefaut": {
+      "vente": 0.04,
+      "bail": 0.02,
+      "societe": 0.01,
+      "hypotheque": 0.01
+    }
+  },
+  "piecesKyc": {
+    "personnePhysique": [
+      { "code": "piece_identite", "libelle": "Pièce nationale d'identité / Passeport / Titre de séjour valide", "obligatoire": true },
+      { "code": "justificatif_domicile", "libelle": "Certificat de résidence ou facture CIE / SODECI / Eau / Électricité de moins de 3 mois", "obligatoire": true },
+      { "code": "justificatif_revenus", "libelle": "Justificatif de revenus / Bulletins de paie ou attestation d'activité", "obligatoire": false },
+      { "code": "attestation_compte_contribuable", "libelle": "Numéro de Compte Contribuable (NCC / NIF)", "obligatoire": false }
+    ],
+    "personneMorale": [
+      { "code": "statuts", "libelle": "Statuts notariés certifiés conformes", "obligatoire": true },
+      { "code": "rccm", "libelle": "Extrait du Registre du Commerce et du Crédit Mobilier (RCCM) datant de moins de 3 mois", "obligatoire": true },
+      { "code": "declaration_fiscale", "libelle": "Déclaration Fiscale d'Existence (DFE) et attestation de régularité fiscale", "obligatoire": true },
+      { "code": "identite_dirigeant", "libelle": "Pièce d'identité et pouvoir du représentant légal / Gérant / PCA", "obligatoire": true },
+      { "code": "liste_beneficiaires", "libelle": "Registre des Bénéficiaires Effectifs (RBE)", "obligatoire": true }
+    ]
+  },
+  "baremes": [
+    {
+      "code": "vente",
+      "libelle": "Barème Vente Immobilière (Tarif Réglementaire Dégressif)",
+      "dateEffet": "2013-04-24",
+      "tranches": [
+        { "ordre": 1, "jusqua": 10000000, "taux": 0.04 },
+        { "ordre": 2, "jusqua": 30000000, "taux": 0.025 },
+        { "ordre": 3, "jusqua": 90000000, "taux": 0.015 },
+        { "ordre": 4, "jusqua": null, "taux": 0.0075 }
+      ]
+    },
+    {
+      "code": "societe",
+      "libelle": "Barème Sociétés Commerciales OHADA (Tarif Réglementaire Dégressif)",
+      "dateEffet": "2013-04-24",
+      "tranches": [
+        { "ordre": 1, "jusqua": 10000000, "taux": 0.03 },
+        { "ordre": 2, "jusqua": 30000000, "taux": 0.015 },
+        { "ordre": 3, "jusqua": 90000000, "taux": 0.0075 },
+        { "ordre": 4, "jusqua": null, "taux": 0.0035 }
+      ]
+    },
+    {
+      "code": "pret",
+      "libelle": "Barème Prêt & Hypothèque (Tarif Réglementaire Dégressif)",
+      "dateEffet": "2013-04-24",
+      "tranches": [
+        { "ordre": 1, "jusqua": 10000000, "taux": 0.02 },
+        { "ordre": 2, "jusqua": 30000000, "taux": 0.01 },
+        { "ordre": 3, "jusqua": 90000000, "taux": 0.005 },
+        { "ordre": 4, "jusqua": null, "taux": 0.0025 }
+      ]
+    },
+    {
+      "code": "succession",
+      "libelle": "Barème Succession & Partage (Tarif Réglementaire Dégressif)",
+      "dateEffet": "2013-04-24",
+      "tranches": [
+        { "ordre": 1, "jusqua": 10000000, "taux": 0.03 },
+        { "ordre": 2, "jusqua": 30000000, "taux": 0.015 },
+        { "ordre": 3, "jusqua": 90000000, "taux": 0.0075 },
+        { "ordre": 4, "jusqua": null, "taux": 0.0035 }
+      ]
+    },
+    {
+      "code": "bail",
+      "libelle": "Barème Bail Commercial (Tarif Réglementaire Dégressif)",
+      "dateEffet": "2013-04-24",
+      "tranches": [
+        { "ordre": 1, "jusqua": 10000000, "taux": 0.02 },
+        { "ordre": 2, "jusqua": 30000000, "taux": 0.01 },
+        { "ordre": 3, "jusqua": null, "taux": 0.005 }
+      ]
+    }
+  ]
+}

@@ -62,9 +62,18 @@
     assistante_editeur: "Assistante Éditeur SaaS",
   };
 
+  var ETAPES_PIPELINE_DEFAUT = [
+    { id: 1, code: "COLLECTE_KYC", libelle: "Collecte & KYC", description: "Vérification CNI/passeport, extrait < 3 mois, livret de famille / KYC.", roleResponsable: "assistante", niveauAlerteParDefaut: "normal" },
+    { id: 2, code: "REQUISITIONS", libelle: "Réquisitions & états préalables", description: "Conservation Foncière, TCA, certificat d'urbanisme, RCCM.", roleResponsable: "clerc_redacteur", niveauAlerteParDefaut: "normal" },
+    { id: 3, code: "REDACTION", libelle: "Rédaction du projet d'acte", description: "Rédaction de la minute, insertion des clauses et contrôle notarial.", roleResponsable: "clerc_redacteur", niveauAlerteParDefaut: "eleve" },
+    { id: 4, code: "SIGNATURE", libelle: "Rendez-vous de signature", description: "Lecture de l'acte et recueil des signatures des parties et du notaire.", roleResponsable: "notaire", niveauAlerteParDefaut: "eleve" },
+    { id: 5, code: "FORMALITES", libelle: "Formalités DGI & Conservation Foncière", description: "Enregistrement fiscal, formalité fusionnée et inscription foncière.", roleResponsable: "clerc_formaliste", niveauAlerteParDefaut: "critique" },
+    { id: 6, code: "EXPEDITIONS", libelle: "Expéditions & archivage", description: "Délivrance des grosses et expéditions, répertoire et archivage minutier.", roleResponsable: "archiviste", niveauAlerteParDefaut: "normal" },
+  ];
+
   var cache = {
     utilisateur: null, permissions: null,
-    typesActesParId: {}, typesActesListe: [], etapesPipeline: [],
+    typesActesParId: {}, typesActesListe: [], etapesPipeline: ETAPES_PIPELINE_DEFAUT.slice(),
     dossiers: [], alertesParDossierId: {}, alertes: [],
     equipeParId: {}, equipeListe: [],
     clients: [], classificationsListe: [],
@@ -342,7 +351,7 @@
       cache.typesActesParId = {};
       (r[0] || []).forEach(function (t) { cache.typesActesParId[t.id] = t; });
       cache.typesActesListe = r[0] || [];
-      cache.etapesPipeline = r[1] || [];
+      cache.etapesPipeline = (r[1] && r[1].length > 0) ? r[1] : (window.ETAPES_PIPELINE_DEFAUT || []);
       cache.parametres = r[2] || {};
       majNomEtudeAffiche();
     }).catch(function (e) {
@@ -929,6 +938,7 @@
       { nav: "actes", label: "📜 Actes & Référentiel" },
       { nav: "emoluments", label: "⚖️ Barèmes d'Émoluments" },
       { nav: "comptabilite", label: "💳 Facturation & Fiches de Taxe" },
+      { nav: "recus", label: "🧾 Reçus & Quittances" },
       { nav: "archives", label: "🏛️ Minutier & Archives" },
       { nav: "equipe", label: "👔 Équipe & Salaires" },
       { nav: "evolution", label: "📈 Performance globale" },
@@ -967,6 +977,7 @@
       { nav: "agenda", label: "📅 Échéances & Rendez-vous" },
       { nav: "validations", label: "📂 Transmis au Notaire" },
       { nav: "comptabilite", label: "💳 Facturation & Fiches de Taxe" },
+      { nav: "recus", label: "🧾 Reçus & Quittances" },
       { nav: "emoluments", label: "⚖️ Barèmes d'Émoluments" },
       { nav: "dossiers", label: "📁 Dossiers (Suivi Financier)" },
       { nav: "evolution", label: "📈 Mon évolution" },
@@ -976,6 +987,7 @@
       { nav: "agenda", label: "📅 Agenda Notaire & Salles" },
       { nav: "nouveau-dossier", label: "✨ + Nouveau dossier" },
       { nav: "clients", label: "👥 Fichier Clients & KYC" },
+      { nav: "recus", label: "🧾 Reçus & Scans signés" },
       { nav: "dossiers", label: "📁 Dossiers assignés" },
       { nav: "evolution", label: "📈 Mon évolution" },
     ],
@@ -1532,22 +1544,61 @@
     var enFormalites = cache.dossiers.filter(function (d) { return d.etapeActuelle === 5; }).length;
     var dateDuJour = new Date().toLocaleDateString("fr-CI", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
 
+    var dnosEnAttente = cache.dossiers.filter(function (d) { return d.statutDno === "en_attente_paiement" || (d.typeCreation === "dno" && d.statutDno !== "regle_ouvert"); });
+
     var kpis = [
+      { label: "DNO en attente provision", valeur: String(dnosEnAttente.length), indice: dnosEnAttente.length ? "warning" : "accent", icon: "", sub: "Frais & provision à encaisser", cible: "dossiers" },
       { label: "Dossiers actifs (cabinet)", valeur: String(cache.dossiers.length), indice: "", icon: "", sub: "Assiette globale de l'étude", cible: "dossiers" },
       { label: "En formalités fiscales", valeur: String(enFormalites), indice: "", icon: "", sub: "Droits DGI & taxe foncière", cible: "comptabilite" },
       { label: "Alertes financières / délais", valeur: String(cache.alertes.length), indice: cache.alertes.length ? "warning" : "accent", icon: "", sub: "Décomptes et provisions", cible: "comptabilite" },
-      { label: "Catalogue d'actes tarifés", valeur: String(cache.typesActesListe.length), indice: "", icon: "", sub: "Barème Décret 2013-279", cible: "emoluments" },
     ];
 
     var html = '<div style="position:sticky;top:calc(-1 * var(--space-6));background:var(--color-bg);z-index:2;padding-top:var(--space-1);margin-bottom:var(--space-4)">';
-    html += '<div style="display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);padding-bottom:var(--space-2);border-bottom:1px solid var(--color-border)">';
+    html += '<div style="display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);padding-bottom:var(--space-2);border-bottom:1px solid var(--color-border);flex-wrap:wrap">';
     html += '<div><h1 style="margin:0">Tableau de bord — Comptable Taxateur</h1>';
-    html += '<p style="opacity:.65;font-size:14px;margin:2px 0 0">Bonjour ' + cache.utilisateur.nomComplet + ' — calcul des émoluments, droits DGI et fiches de taxe.</p></div>';
-    html += '<div style="display:flex;align-items:center;gap:var(--space-3);margin-left:auto">';
-    html += '<div style="text-align:right"><div style="font-size:13px;font-weight:700;color:var(--color-text)">' + dateDuJour + '</div><div style="font-size:11px;color:var(--color-text-dim)">Exercice fiscal ' + anneeCourante + '</div></div></div></div></div>';
+    html += '<p style="opacity:.65;font-size:14px;margin:2px 0 0">Bonjour ' + cache.utilisateur.nomComplet + ' — calcul des émoluments, encaissement provisions et quittances.</p></div>';
+    html += '<div style="display:flex;align-items:center;gap:var(--space-2);flex-wrap:wrap">';
+    html += '<button type="button" class="btn btn-secondary" id="btn-compta-quittances-top" style="font-size:12.5px;padding:7px 13px;font-weight:700">🧾 Quittances & Reçus</button>';
+    html += '<div style="text-align:right;margin-left:8px"><div style="font-size:13px;font-weight:700;color:var(--color-text)">' + dateDuJour + '</div><div style="font-size:11px;color:var(--color-text-dim)">Exercice fiscal ' + anneeCourante + '</div></div></div></div></div>';
 
     html += renderKpisGrid(kpis);
 
+    // SECTION 1 : DNO EN ATTENTE DE RÈGLEMENT PROVISION (PRIORITÉ COMPTABLE)
+    html += '<div class="dashboard-panel" style="border:1.5px solid rgba(217,119,6,0.4);border-radius:var(--radius);overflow:hidden;margin-bottom:var(--space-4)">';
+    html += '<div class="panel-header" style="background:rgba(217,119,6,0.08);padding:12px 16px;display:flex;justify-content:space-between;align-items:center">';
+    html += '<div style="display:flex;align-items:center;gap:8px">';
+    html += '<span style="font-size:18px">📋</span>';
+    html += '<div style="font-weight:800;font-size:14px;color:#d97706">Circuit DNO — En attente d\'encaissement de provision & ouverture</div>';
+    html += '</div>';
+    html += '<span class="tag" style="background:#d97706;color:#fff;font-weight:800;font-size:11px">' + dnosEnAttente.length + ' DNO à régulariser</span>';
+    html += '</div>';
+    html += '<div class="panel-body" style="padding:0">';
+    if (!dnosEnAttente.length) {
+      html += '<div style="padding:20px;text-align:center;color:#059669;font-weight:600;font-size:13px">✓ Tous les DNO ont été régularisés. Aucun paiement en attente.</div>';
+    } else {
+      html += '<div class="table-wrap"><table class="table" style="font-size:12.5px;margin:0"><thead><tr>';
+      html += '<th>N° DNO</th><th>Client / Comparant</th><th>Acte Notarié</th><th>Pièces KYC Jointes</th><th>Clerc Assigné</th><th style="text-align:right">Action Comptable</th>';
+      html += '</tr></thead><tbody>';
+      dnosEnAttente.forEach(function (d) {
+        var numAffiche = d.numeroDno || d.numeroDossier || "DNO-2026";
+        var clientAff = d.comparantsNoms || d.clientNom || "Client";
+        var nbPj = (d.piecesJointesDno && d.piecesJointesDno.length) ? d.piecesJointesDno.length : 0;
+        html += '<tr>';
+        html += '<td><strong style="color:#d97706">' + escapeHtml(numAffiche) + '</strong></td>';
+        html += '<td><strong>' + escapeHtml(clientAff) + '</strong></td>';
+        html += '<td>' + labelActe(d.typeActeId) + '</td>';
+        html += '<td><span class="tag tag-neutral" style="font-size:11px">📁 ' + nbPj + ' pièce(s)</span></td>';
+        html += '<td>' + nomClerc(d.clercAssigneId) + '</td>';
+        html += '<td style="text-align:right">';
+        html += '<button type="button" class="btn btn-primary btn-sm btn-action-regler-dno-dash" data-id="' + d.id + '" style="background:#d97706;border-color:#d97706;font-weight:700;font-size:11.5px;padding:5px 12px">💳 Saisir Paiement & Ouvrir →</button>';
+        html += '</td>';
+        html += '</tr>';
+      });
+      html += '</tbody></table></div>';
+    }
+    html += '</div></div>';
+
+    // SECTION 2 : DOSSIERS RÉCENTS À TAXER
     html += '<div class="dashboard-panel">';
     html += '<div class="panel-header"><div class="panel-title">Dossiers récents à taxer ou régulariser</div><span class="tag tag-outline">Dossiers actifs</span></div>';
     html += '<div class="table-wrap"><table class="table"><thead><tr><th>N° Dossier</th><th>Type d\'acte</th><th>Étape</th><th>Montant d\'assiette</th><th>Clerc assigné</th><th>Action</th></tr></thead><tbody>';
@@ -1559,6 +1610,21 @@
     html += renderCentreAlertes();
     c.innerHTML = html;
     attacherEvenementsDashboard(c);
+
+    var btnQuittances = document.getElementById("btn-compta-quittances-top");
+    if (btnQuittances) {
+      btnQuittances.addEventListener("click", function () {
+        modalListeRecus();
+      });
+    }
+
+    c.querySelectorAll(".btn-action-regler-dno-dash").forEach(function (btn) {
+      btn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        var dId = btn.dataset.id;
+        modalReglementDno(dId);
+      });
+    });
   }
 
   // --- 6. TABLEAU DE BORD DE L'ASSISTANTE / ACCUEIL ---
@@ -8800,6 +8866,654 @@
   // -----------------------------------------------------------------
   function imprimerDecompteOfficiel(dossier, f, formatChoisi) {
     modalApercuDocument(dossier, f, formatChoisi);
+  }
+
+  // -----------------------------------------------------------------
+  // Conversion de nombres en lettres FCFA (Déontologique & Quittances)
+  // -----------------------------------------------------------------
+  function nombreEnLettresFCFA(n) {
+    n = Math.round(Number(n) || 0);
+    if (n === 0) return "zéro Franc CFA";
+
+    var unites = ["", "un", "deux", "trois", "quatre", "cinq", "six", "sept", "huit", "neuf", "dix", "onze", "douze", "treize", "quatorze", "quinze", "seize", "dix-sept", "dix-huit", "dix-neuf"];
+    var dizaines = ["", "", "vingt", "trente", "quarante", "cinquante", "soixante", "soixante-dix", "quatre-vingts", "quatre-vingt-dix"];
+
+    function convCentaines(num) {
+      var res = "";
+      if (num >= 100) {
+        var c = Math.floor(num / 100);
+        num %= 100;
+        if (c === 1) res += "cent ";
+        else res += unites[c] + " cents ";
+      }
+      if (num < 20) {
+        if (num > 0) res += unites[num] + " ";
+      } else {
+        var d = Math.floor(num / 10);
+        var u = num % 10;
+        if (d === 7) { res += "soixante-" + unites[10 + u] + " "; }
+        else if (d === 9) { res += "quatre-vingt-" + unites[10 + u] + " "; }
+        else {
+          if (u === 1 && d !== 8) res += dizaines[d] + " et un ";
+          else if (u > 0) res += dizaines[d] + "-" + unites[u] + " ";
+          else res += (d === 8 && u === 0 ? "quatre-vingts " : dizaines[d] + " ");
+        }
+      }
+      return res.trim();
+    }
+
+    var milliards = Math.floor(n / 1000000000);
+    n %= 1000000000;
+    var millions = Math.floor(n / 1000000);
+    n %= 1000000;
+    var milliers = Math.floor(n / 1000);
+    var reste = n % 1000;
+
+    var str = "";
+    if (milliards > 0) {
+      str += (milliards === 1 ? "un milliard " : convCentaines(milliards) + " milliards ");
+    }
+    if (millions > 0) {
+      str += (millions === 1 ? "un million " : convCentaines(millions) + " millions ");
+    }
+    if (milliers > 0) {
+      str += (milliers === 1 ? "mille " : convCentaines(milliers) + " mille ");
+    }
+    if (reste > 0) {
+      str += convCentaines(reste) + " ";
+    }
+
+    str = str.trim();
+    return (str.charAt(0).toUpperCase() + str.slice(1)) + " Francs CFA";
+  }
+
+  // -----------------------------------------------------------------
+  // MODAL : RÈGLEMENT PROVISION & OUVERTURE OFFICIELLE D'UN DNO (COMPTABLE)
+  // -----------------------------------------------------------------
+  function modalReglementDno(dossierId) {
+    var d = (cache.dossierDetail && cache.dossierDetail.id === dossierId) 
+      ? cache.dossierDetail 
+      : (cache.dossiers || []).find(function (x) { return x.id === dossierId; });
+
+    var chargerDos = d ? Promise.resolve(d) : API.get("/api/dossiers/" + dossierId).catch(function () { return null; });
+    var chargerParams = (cache.parametres && cache.parametres.nomEtude) ? Promise.resolve(cache.parametres) : API.get("/api/parametres").catch(function () { return {}; });
+
+    Promise.all([chargerDos, chargerParams]).then(function (res) {
+      var dos = res[0];
+      var params = res[1] || cache.parametres || {};
+      if (!dos) {
+        toast("Dossier introuvable.");
+        return;
+      }
+
+      var numDno = dos.numeroDno || dos.numeroDossier || ("DNO-" + new Date().getFullYear() + "-001");
+      var clientNom = (dos.comparants && dos.comparants.length) ? dos.comparants.map(function (c) { return c.nom; }).join(", ") : (dos.comparantsNoms || dos.clientNom || "Client");
+      var emailClient = dos.emailClient || dos.email_client || "";
+      var telClient = dos.telephoneClient || dos.telephone_client || "";
+      var piecesJointes = dos.piecesJointesDno || dos.pieces_jointes_dno || [];
+      var assietteParDefaut = Number(dos.montantAssiette || dos.montant_assiette) || (dos.typeActeId === "vente_immobiliere" ? 50000000 : (dos.typeActeId === "constitution_societe" ? 1000000 : 25000000));
+      var fraisOuvertureDefaut = Number(dos.fraisOuverture || dos.frais_ouverture) || 25000;
+      var provisionDefaut = Number(dos.provisionVersee || dos.provision_versee) || (dos.typeActeId === "vente_immobiliere" ? 500000 : (dos.typeActeId === "constitution_societe" ? 300000 : 400000));
+
+      var modal = document.getElementById("modal-racine");
+      modal.style.display = "block";
+
+      var h = '<div style="position:fixed;inset:0;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;z-index:999999;padding:16px">';
+      h += '<div class="card elev-lg" style="width:760px;max-width:100%;max-height:92vh;overflow-y:auto;padding:24px;position:relative;background:var(--color-surface);border-radius:var(--radius-lg);box-shadow:0 20px 40px rgba(0,0,0,0.5)">';
+
+      // Bouton Fermer
+      h += '<button type="button" class="btn btn-ghost btn-fermer-modal-reglement" style="position:absolute;top:16px;right:16px;font-size:18px;line-height:1;padding:4px 8px">✕</button>';
+
+      // En-tête
+      h += '<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">';
+      h += '<div style="width:44px;height:44px;border-radius:10px;background:rgba(217,119,6,0.15);color:#d97706;display:flex;align-items:center;justify-content:center;font-size:24px">💳</div>';
+      h += '<div>';
+      h += '<h3 style="margin:0;font-size:18px;color:var(--color-text)">Paiement de la Provision & Ouverture de Dossier</h3>';
+      h += '<p style="font-size:12.5px;color:var(--color-text-dim);margin:2px 0 0">Transition DNO ➔ Dossier Ouvert avec émission de quittance officielle de l\'étude.</p>';
+      h += '</div></div>';
+
+      // Fiche Récapitulatif DNO
+      h += '<div style="background:var(--color-surface-2);border:1px solid var(--color-border);border-radius:var(--radius);padding:12px 16px;margin-bottom:18px;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;font-size:12.5px">';
+      h += '<div><span class="text-muted">N° DNO :</span> <strong style="color:#d97706">' + escapeHtml(numDno) + '</strong></div>';
+      h += '<div><span class="text-muted">Nature de l\'acte :</span> <strong>' + labelActe(dos.typeActeId) + '</strong></div>';
+      h += '<div><span class="text-muted">Client / Comparants :</span> <strong>' + escapeHtml(clientNom) + '</strong></div>';
+      h += '<div><span class="text-muted">Email / Tél :</span> <span>' + escapeHtml(emailClient || "Non renseigné") + ' ' + (telClient ? '· ' + escapeHtml(telClient) : '') + '</span></div>';
+      h += '</div>';
+
+      // Pièces KYC jointes par le secrétariat
+      if (piecesJointes.length > 0) {
+        h += '<div style="margin-bottom:18px;background:rgba(59,130,246,0.04);border:1px solid rgba(59,130,246,0.2);border-radius:var(--radius);padding:10px 14px">';
+        h += '<div style="font-size:12px;font-weight:700;color:var(--color-accent);margin-bottom:6px">📁 Pièces scannées rattachées par le secrétariat (' + piecesJointes.length + ') :</div>';
+        h += '<div style="display:flex;gap:6px;flex-wrap:wrap">';
+        piecesJointes.forEach(function (pj) {
+          h += '<span class="tag tag-neutral" style="font-size:11px">📄 ' + escapeHtml(pj.nomPiece || pj.nomFichier) + '</span>';
+        });
+        h += '</div></div>';
+      }
+
+      // FORMULAIRE DE RÈGLEMENT COMPTABLE
+      h += '<div style="font-weight:800;font-size:14px;color:var(--color-text);margin-bottom:10px">Saisie des Montants & Mode d\'Encaissement</div>';
+      h += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:14px">';
+
+      // 1. Frais d'ouverture
+      h += '<div class="field"><label style="font-size:12px;font-weight:700">1. Frais d\'ouverture de dossier (FCFA) <span class="tag tag-neutral" style="font-size:10px">Fixe</span></label>';
+      h += '<input type="number" id="reg-frais-ouverture" class="input" min="0" step="5000" value="' + fraisOuvertureDefaut + '" style="font-weight:700">';
+      h += '</div>';
+
+      // 2. Provision versée
+      h += '<div class="field"><label style="font-size:12px;font-weight:700">2. Montant de la provision versée (FCFA)</label>';
+      h += '<input type="number" id="reg-provision-versee" class="input" min="0" step="10000" value="' + provisionDefaut + '" style="font-weight:700;color:#059669">';
+      h += '</div>';
+
+      // 3. Montant de l'assiette (Base de calcul de l'acte renseignée par la compta)
+      h += '<div class="field"><label style="font-size:12px;font-weight:700">3. Montant de l\'assiette / Base de l\'acte (FCFA) <span class="tag tag-accent" style="font-size:10px">Calcul Taxe</span></label>';
+      h += '<input type="number" id="reg-montant-assiette" class="input" min="0" step="100000" value="' + assietteParDefaut + '" style="font-weight:700">';
+      h += '</div>';
+
+      h += '</div>';
+
+      // TOTAL ENCAISSÉ CALCULÉ EN DIRECT
+      var totalInit = fraisOuvertureDefaut + provisionDefaut;
+      h += '<div style="background:linear-gradient(135deg, rgba(16,185,129,0.12) 0%, rgba(5,150,105,0.06) 100%);border:1.5px solid rgba(16,185,129,0.4);border-radius:var(--radius);padding:12px 16px;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">';
+      h += '<div>';
+      h += '<div style="font-size:12px;font-weight:700;color:#059669;text-transform:uppercase;letter-spacing:0.5px">TOTAL ENCAISSÉ AU COMPTE CLIENT (Reçu officiel) :</div>';
+      h += '<div id="lbl-total-en-lettres-reg" style="font-size:11.5px;color:var(--color-text-dim);margin-top:2px">' + nombreEnLettresFCFA(totalInit) + '</div>';
+      h += '</div>';
+      h += '<div id="lbl-total-chiffres-reg" style="font-size:22px;font-weight:900;color:#059669">' + fmtFCFA(totalInit) + '</div>';
+      h += '</div>';
+
+      // MODE DE PAIEMENT & OBSERVATIONS
+      h += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:16px">';
+
+      h += '<div class="field"><label style="font-size:12px;font-weight:700">Mode de règlement</label>';
+      h += '<select id="reg-mode-paiement" class="input" style="font-weight:600">';
+      h += '<option value="Espèces">💵 Espèces (Caisse de l\'étude)</option>';
+      h += '<option value="Virement Bancaire CDCI" selected>🏛️ Virement bancaire / Séquestre CDCI</option>';
+      h += '<option value="Chèque certifié">📑 Chèque certifié de banque</option>';
+      h += '<option value="Orange Money">📱 Orange Money</option>';
+      h += '<option value="Wave">📱 Wave</option>';
+      h += '<option value="Moov Money">📱 Moov Money</option>';
+      h += '<option value="MTN Money">📱 MTN Money</option>';
+      h += '</select></div>';
+
+      h += '<div class="field"><label style="font-size:12px;font-weight:700">Date du règlement</label>';
+      h += '<input type="date" id="reg-date-paiement" class="input" value="' + new Date().toISOString().split("T")[0] + '">';
+      h += '</div>';
+
+      h += '</div>';
+
+      h += '<div class="field" style="margin-bottom:20px"><label style="font-size:12px">Observations / Référence de transaction</label>';
+      h += '<input type="text" id="reg-observations" class="input" placeholder="ex: Virement reçu Réf. CDCI-2026-9812 / Remis par le client">';
+      h += '</div>';
+
+      // BOUTONS D'ACTION
+      h += '<div style="display:flex;justify-content:flex-end;gap:10px;align-items:center">';
+      h += '<button type="button" class="btn btn-secondary btn-fermer-modal-reglement">Annuler</button>';
+      h += '<button type="button" class="btn btn-primary" id="btn-valider-reglement-dno" style="background:#d97706;border-color:#d97706;font-size:13.5px;font-weight:800;padding:10px 22px">💳 Valider le Paiement & Ouvrir le Dossier</button>';
+      h += '</div>';
+
+      h += '</div></div>';
+
+      modal.innerHTML = h;
+
+      // Fermeture modal
+      modal.querySelectorAll(".btn-fermer-modal-reglement").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          modal.style.display = "none";
+          modal.innerHTML = "";
+        });
+      });
+
+      // Calcul dynamique du total en direct
+      function recalculerTotalDirect() {
+        var fo = parseFloat(document.getElementById("reg-frais-ouverture").value) || 0;
+        var pv = parseFloat(document.getElementById("reg-provision-versee").value) || 0;
+        var tot = fo + pv;
+        var chEl = document.getElementById("lbl-total-chiffres-reg");
+        var letEl = document.getElementById("lbl-total-en-lettres-reg");
+        if (chEl) chEl.textContent = fmtFCFA(tot);
+        if (letEl) letEl.textContent = nombreEnLettresFCFA(tot);
+      }
+
+      var inFo = document.getElementById("reg-frais-ouverture");
+      var inPv = document.getElementById("reg-provision-versee");
+      if (inFo) inFo.addEventListener("input", recalculerTotalDirect);
+      if (inPv) inPv.addEventListener("input", recalculerTotalDirect);
+
+      // Soumission du règlement
+      var btnValider = document.getElementById("btn-valider-reglement-dno");
+      if (btnValider) {
+        btnValider.addEventListener("click", function () {
+          var fraisOuverture = parseFloat(document.getElementById("reg-frais-ouverture").value) || 0;
+          var provisionVersee = parseFloat(document.getElementById("reg-provision-versee").value) || 0;
+          var montantAssiette = parseFloat(document.getElementById("reg-montant-assiette").value) || 0;
+          var modePaiement = document.getElementById("reg-mode-paiement").value;
+          var datePaiement = document.getElementById("reg-date-paiement").value;
+          var observations = (document.getElementById("reg-observations").value || "").trim();
+
+          btnValider.setAttribute("disabled", "disabled");
+          btnValider.textContent = "Traitement en cours…";
+
+          API.post("/api/dossiers/" + dossierId + "/regler-provision-ouvrir", {
+            fraisOuverture: fraisOuverture,
+            provisionVersee: provisionVersee,
+            montantAssiette: montantAssiette,
+            modePaiement: modePaiement,
+            datePaiement: datePaiement,
+            observations: observations,
+          }).then(function (res) {
+            modal.style.display = "none";
+            modal.innerHTML = "";
+            var numNouveau = (res.dossier && res.dossier.numeroDossier) || "Nouveau Dossier";
+            var numRecu = (res.recu && res.recu.numeroRecu) || "RECU-OFFICIEL";
+
+            toast("✅ Règlement validé ! Dossier ouvert sous le N° " + numNouveau + " — Reçu N° " + numRecu + " généré avec succès !");
+
+            return refreshApresAction().then(function () {
+              if (res.recu) {
+                modalApercuRecuPaiement(res.recu);
+              } else {
+                ouvrirDossier(dossierId, etat.vuePrecedente);
+              }
+            });
+          }).catch(function (err) {
+            btnValider.removeAttribute("disabled");
+            btnValider.textContent = "💳 Valider le Paiement & Ouvrir le Dossier";
+            toast("Erreur lors de l'enregistrement : " + err.message);
+          });
+        });
+      }
+    });
+  }
+
+  // -----------------------------------------------------------------
+  // MODAL : APERÇU, IMPRESSION ET VISA DU REÇU DE PAIEMENT NOTARIAL
+  // -----------------------------------------------------------------
+  function modalApercuRecuPaiement(recuOrDossier) {
+    var recuPromise = null;
+    if (typeof recuOrDossier === "string") {
+      recuPromise = API.get("/api/recus/" + recuOrDossier).catch(function () {
+        return API.get("/api/recus?dossierId=" + recuOrDossier).then(function (liste) {
+          return (Array.isArray(liste) && liste.length > 0) ? liste[0] : null;
+        });
+      });
+    } else if (recuOrDossier && recuOrDossier.numeroRecu) {
+      recuPromise = Promise.resolve(recuOrDossier);
+    } else if (recuOrDossier && recuOrDossier.id) {
+      recuPromise = API.get("/api/recus?dossierId=" + recuOrDossier.id).then(function (liste) {
+        if (Array.isArray(liste) && liste.length > 0) return liste[0];
+        return {
+          id: "recu-dos-" + recuOrDossier.id,
+          numeroRecu: "RECU-" + new Date().getFullYear() + "-0001",
+          dossierId: recuOrDossier.id,
+          numeroDossier: recuOrDossier.numeroDossier,
+          typeActeId: recuOrDossier.typeActeId,
+          clientNom: recuOrDossier.comparantsNoms || recuOrDossier.clientNom || "Client",
+          clientEmail: recuOrDossier.emailClient,
+          clientTelephone: recuOrDossier.telephoneClient,
+          fraisOuverture: recuOrDossier.fraisOuverture || 25000,
+          provision: recuOrDossier.provisionVersee || 500000,
+          montantTotal: (recuOrDossier.fraisOuverture || 25000) + (recuOrDossier.provisionVersee || 500000),
+          montantAssiette: recuOrDossier.montantAssiette || 50000000,
+          modePaiement: recuOrDossier.modePaiementProvision || "Virement Bancaire CDCI",
+          statut: recuOrDossier.recuValideParNotaire ? "valide" : "en_attente_validation",
+          createdAt: recuOrDossier.datePaiementProvision || new Date().toISOString()
+        };
+      });
+    }
+
+    var paramsPromise = (cache.parametres && cache.parametres.nomEtude) ? Promise.resolve(cache.parametres) : API.get("/api/parametres").catch(function () { return {}; });
+
+    Promise.all([recuPromise, paramsPromise]).then(function (res) {
+      var recu = res[0];
+      var params = res[1] || cache.parametres || {};
+      if (!recu) {
+        toast("Reçu de paiement introuvable pour ce dossier.");
+        return;
+      }
+
+      var estNotaire = cache.utilisateur && (cache.utilisateur.role === "notaire" || cache.utilisateur.role === "premier_clerc" || cache.utilisateur.role === "superadmin");
+      var estValide = recu.statut === "valide";
+      var dateEmission = new Date(recu.createdAt || Date.now()).toLocaleDateString("fr-CI", { day: "numeric", month: "long", year: "numeric" });
+      var montantTotal = Number(recu.montantTotal || (Number(recu.fraisOuverture || 0) + Number(recu.provision || 0)));
+
+      var modal = document.getElementById("modal-racine");
+      modal.style.display = "block";
+
+      var h = '<div style="position:fixed;inset:0;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:999999;padding:16px">';
+      h += '<div class="card elev-lg" style="width:820px;max-width:100%;max-height:94vh;overflow-y:auto;padding:24px;position:relative;background:var(--color-surface);border-radius:var(--radius-lg);box-shadow:0 25px 50px rgba(0,0,0,0.6)">';
+
+      // Barre d'actions du haut
+      h += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;border-bottom:1px solid var(--color-border);padding-bottom:12px">';
+      h += '<div style="display:flex;align-items:center;gap:10px">';
+      h += '<span style="font-size:20px">🧾</span>';
+      h += '<div style="font-weight:800;font-size:15px;color:var(--color-text)">Quittance & Reçu Officiel N° ' + escapeHtml(recu.numeroRecu) + '</div>';
+      if (estValide) {
+        h += '<span class="tag" style="background:#d1fae5;color:#065f46;font-weight:800">✓ Certifié & Transmis au client</span>';
+      } else {
+        h += '<span class="tag" style="background:#fef3c7;color:#92400e;font-weight:800">⏳ Soumis au Notaire pour visa</span>';
+      }
+      h += '</div>';
+      h += '<div style="display:flex;gap:6px;align-items:center">';
+      h += '<button type="button" class="btn btn-secondary btn-sm" id="btn-imprimer-recu-natif" style="font-weight:700">🖨️ Imprimer le Reçu (A4)</button>';
+      if (!estValide && estNotaire) {
+        h += '<button type="button" class="btn btn-primary btn-sm" id="btn-viser-envoyer-recu" style="background:#059669;border-color:#059669;font-weight:800">⚖️ Viser & Envoyer par Email au Client</button>';
+      }
+      h += '<button type="button" class="btn btn-ghost btn-fermer-modal-recu" style="font-size:18px;line-height:1;padding:4px 8px">✕</button>';
+      h += '</div></div>';
+
+      // ZONE DE LA FEUILLE OFFICIELLE DU REÇU (FORMAT A4 / DÉONTOLOGIQUE)
+      h += '<div id="zone-imprimable-recu" style="background:#ffffff;color:#1e293b;padding:32px 36px;border-radius:8px;border:1px solid #cbd5e1;box-shadow:0 4px 12px rgba(0,0,0,0.08);font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',Roboto,sans-serif;margin-bottom:18px">';
+
+      // EN-TÊTE DU CABINET
+      h += '<table width="100%" border="0" cellspacing="0" cellpadding="0" style="border-bottom:2px solid #0f172a;padding-bottom:14px;margin-bottom:18px">';
+      h += '<tr>';
+      h += '<td width="60%" valign="top">';
+      h += '<div style="font-size:11px;font-weight:800;color:#d97706;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px">RÉPUBLIQUE DE CÔTE D\'IVOIRE</div>';
+      h += '<div style="font-size:18px;font-weight:900;color:#0f172a;line-height:1.2">' + escapeHtml(params.nomEtude || "OFFICE NOTARIAL") + '</div>';
+      h += '<div style="font-size:13px;font-weight:700;color:#0284c7;margin-top:2px">' + escapeHtml(params.titreNotaire || "Maître") + ' ' + escapeHtml(params.nomNotaire || "Notaire Titulaire") + '</div>';
+      h += '<div style="font-size:11.5px;color:#64748b;margin-top:4px">' + escapeHtml(params.adresse || "Plateau, Abidjan") + ' · N° Ordre : ' + escapeHtml(params.numeroOrdre || "NOT-ABJ-042") + '</div>';
+      h += '<div style="font-size:11px;color:#64748b">Tél : ' + escapeHtml(params.telephoneFixe || params.telephone || "+225 27 20 00 00 00") + ' · Email : ' + escapeHtml(params.email || "contact@notaires.ci") + '</div>';
+      h += '<div style="font-size:11px;color:#64748b">N° CC : ' + escapeHtml(params.numeroCC || "9801234 A") + ' · Compte Séquestre CDCI : ' + escapeHtml(params.compteSequestreCDCI || "CI092 01001 12345678901 22") + '</div>';
+      h += '</td>';
+      h += '<td width="40%" valign="top" align="right">';
+      h += '<div style="border:1.5px solid #0f172a;padding:8px 12px;border-radius:6px;display:inline-block;text-align:left;background:#f8fafc">';
+      h += '<div style="font-size:12px;font-weight:800;color:#0f172a;text-transform:uppercase">QUITTANCE & REÇU DE PAIEMENT</div>';
+      h += '<div style="font-size:13px;font-weight:800;color:#d97706;margin-top:3px">N° ' + escapeHtml(recu.numeroRecu) + '</div>';
+      h += '<div style="font-size:11px;color:#64748b;margin-top:2px">Date d\'émission : ' + dateEmission + '</div>';
+      h += '<div style="font-size:11px;color:#64748b">Dossier N° : <strong style="color:#0284c7">' + escapeHtml(recu.numeroDossier || "DOS-2026-001") + '</strong></div>';
+      h += '</div>';
+      h += '</td>';
+      h += '</tr></table>';
+
+      // BLOC CLIENT / COMPARANT
+      h += '<table width="100%" border="0" cellspacing="0" cellpadding="8" style="background:#f1f5f9;border-radius:6px;border:1px solid #cbd5e1;margin-bottom:18px;font-size:12.5px">';
+      h += '<tr>';
+      h += '<td width="30%" style="color:#475569;font-weight:700">Reçu de (Client / Payeur) :</td>';
+      h += '<td style="color:#0f172a;font-weight:800;font-size:13.5px">' + escapeHtml(recu.clientNom || "Client") + '</td>';
+      h += '</tr>';
+      h += '<tr>';
+      h += '<td style="color:#475569;font-weight:700">Nature de l\'opération / Acte :</td>';
+      h += '<td style="color:#0f172a;font-weight:600">' + labelActe(recu.typeActeId) + '</td>';
+      h += '</tr>';
+      h += '<tr>';
+      h += '<td style="color:#475569;font-weight:700">Mode d\'encaissement :</td>';
+      h += '<td style="color:#059669;font-weight:700">' + escapeHtml(recu.modePaiement || "Espèces") + '</td>';
+      h += '</tr>';
+      if (recu.observations) {
+        h += '<tr>';
+        h += '<td style="color:#475569;font-weight:700">Référence / Observations :</td>';
+        h += '<td style="color:#334155;font-style:italic">' + escapeHtml(recu.observations) + '</td>';
+        h += '</tr>';
+      }
+      h += '</table>';
+
+      // TABLEAU DE DÉCOMPOSITION FINANCIÈRE
+      h += '<table width="100%" border="0" cellspacing="0" cellpadding="10" style="border-collapse:collapse;margin-bottom:18px;font-size:13px">';
+      h += '<thead>';
+      h += '<tr style="background:#0f172a;color:#ffffff">';
+      h += '<th align="left" style="padding:8px 12px;font-size:11.5px;text-transform:uppercase;letter-spacing:0.5px">Désignation des Versements</th>';
+      h += '<th align="right" style="padding:8px 12px;font-size:11.5px;text-transform:uppercase;letter-spacing:0.5px">Montant (FCFA)</th>';
+      h += '</tr></thead><tbody>';
+
+      h += '<tr style="border-bottom:1px solid #e2e8f0">';
+      h += '<td style="padding:10px 12px;color:#1e293b"><strong>1. Frais d\'ouverture de dossier & formalités initiales</strong><br><span style="font-size:11px;color:#64748b">Enregistrement, constitution KYC et ouverture de minute</span></td>';
+      h += '<td align="right" style="padding:10px 12px;font-weight:700;color:#0f172a">' + fmtFCFA(recu.fraisOuverture || 0) + '</td>';
+      h += '</tr>';
+
+      h += '<tr style="border-bottom:1px solid #e2e8f0">';
+      h += '<td style="padding:10px 12px;color:#1e293b"><strong>2. Provision sur frais d\'acte, droits d\'enregistrement & débours</strong><br><span style="font-size:11px;color:#64748b">Acompte consigné sous séquestre CDCI pour instruction de l\'acte</span></td>';
+      h += '<td align="right" style="padding:10px 12px;font-weight:700;color:#0f172a">' + fmtFCFA(recu.provision || 0) + '</td>';
+      h += '</tr>';
+
+      h += '<tr style="background:#f8fafc;border-top:2px solid #0f172a">';
+      h += '<td style="padding:12px;font-size:14px;font-weight:900;color:#0f172a">TOTAL GÉNÉRAL ENCAISSÉ</td>';
+      h += '<td align="right" style="padding:12px;font-size:16px;font-weight:900;color:#0f172a">' + fmtFCFA(montantTotal) + '</td>';
+      h += '</tr>';
+      h += '</tbody></table>';
+
+      // MONTANT EN TOUTES LETTRES
+      h += '<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:10px 14px;margin-bottom:18px;font-size:12px;color:#92400e">';
+      h += '<strong>Arrêté la présente quittance à la somme de :</strong><br>';
+      h += '<span style="font-size:13px;font-weight:800;color:#78350f">' + nombreEnLettresFCFA(montantTotal) + '</span>';
+      h += '</div>';
+
+      // MENTIONS LÉGALES & SIGNATURES
+      h += '<table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-top:14px;font-size:11.5px">';
+      h += '<tr>';
+      h += '<td width="50%" valign="top" style="padding-right:16px">';
+      h += '<div style="font-weight:700;color:#0f172a;margin-bottom:4px">Pour la Comptabilité Taxatrice :</div>';
+      h += '<div style="color:#64748b;font-size:10.5px">Reçu encaissé et passé au compte client.<br>Émargement & Cachet Comptable</div>';
+      h += '<div style="margin-top:24px;font-weight:700;color:#0284c7">Le Comptable Taxateur</div>';
+      h += '</td>';
+      h += '<td width="50%" valign="top" style="padding-left:16px;text-align:right">';
+      h += '<div style="font-weight:700;color:#0f172a;margin-bottom:4px">Visa & Sceau du Notaire :</div>';
+      if (estValide) {
+        h += '<div style="display:inline-block;padding:4px 10px;background:#d1fae5;color:#065f46;border-radius:4px;font-weight:800;font-size:11px">✓ VU ET APPROUVÉ PAR ME ' + escapeHtml((params.nomNotaire || "NOTAIRE").toUpperCase()) + '</div>';
+      } else {
+        h += '<div style="color:#64748b;font-size:10.5px">En attente de visa formel de Maître</div>';
+      }
+      h += '<div style="margin-top:24px;font-weight:800;color:#0f172a">' + escapeHtml(params.titreNotaire || "Maître") + ' ' + escapeHtml(params.nomNotaire || "Notaire Titulaire") + '</div>';
+      h += '</td>';
+      h += '</tr></table>';
+
+      h += '</div>'; // Fin zone imprimable
+
+      // ZONE DE RATTACHEMENT DU SCAN ÉMARGÉ (POUR LE SECRÉTARIAT)
+      h += '<div class="card" style="padding:14px;background:var(--color-surface-2);border:1px solid var(--color-border);margin-bottom:12px">';
+      h += '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">';
+      h += '<div>';
+      h += '<div style="font-weight:700;font-size:12.5px;color:var(--color-text)">📎 Scan du Reçu Émargé / Signé par les parties</div>';
+      if (recu.recuScanneUrl) {
+        h += '<div style="font-size:11.5px;color:#059669;margin-top:2px">✓ Fichier joint : <strong>' + escapeHtml(recu.recuScanneNom || "Recu_Emarge.pdf") + '</strong></div>';
+      } else {
+        h += '<div style="font-size:11.5px;color:var(--color-text-dim);margin-top:2px">Tâche secrétariat : faire signer le reçu papier au client, le scanner et le joindre ici.</div>';
+      }
+      h += '</div>';
+      h += '<div style="display:flex;gap:6px">';
+      if (recu.recuScanneUrl) {
+        h += '<a href="' + recu.recuScanneUrl + '" download="' + escapeHtml(recu.recuScanneNom || "Recu_Emarge.pdf") + '" class="btn btn-secondary btn-sm" style="font-size:11.5px">Télécharger le scan ↓</a>';
+      }
+      h += '<input type="file" id="input-upload-scan-recu" accept=".pdf,.png,.jpg,.jpeg" style="display:none">';
+      h += '<button type="button" class="btn btn-primary btn-sm" id="btn-trigger-upload-scan-recu" style="font-size:11.5px">📤 Rattacher le scan signé</button>';
+      h += '</div></div></div>';
+
+      h += '</div></div>';
+
+      modal.innerHTML = h;
+
+      // Écouteurs de fermeture
+      modal.querySelectorAll(".btn-fermer-modal-recu").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          modal.style.display = "none";
+          modal.innerHTML = "";
+        });
+      });
+
+      // Impression du Reçu (Fenêtre d'impression isolée)
+      var btnImprimer = document.getElementById("btn-imprimer-recu-natif");
+      if (btnImprimer) {
+        btnImprimer.addEventListener("click", function () {
+          var contenu = document.getElementById("zone-imprimable-recu").innerHTML;
+          var fenetre = window.open("", "_blank", "width=850,height=900");
+          fenetre.document.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>Reçu ' + escapeHtml(recu.numeroRecu) + '</title>');
+          fenetre.document.write('<style>@page { size: A4 portrait; margin: 15mm; } body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 10px; color: #000; background: #fff; } table { border-collapse: collapse; } @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }</style>');
+          fenetre.document.write('</head><body>');
+          fenetre.document.write(contenu);
+          fenetre.document.write('</body></html>');
+          fenetre.document.close();
+          fenetre.focus();
+          setTimeout(function () {
+            fenetre.print();
+          }, 300);
+        });
+      }
+
+      // Validation par le Notaire & Envoi email
+      var btnViser = document.getElementById("btn-viser-envoyer-recu");
+      if (btnViser) {
+        btnViser.addEventListener("click", function () {
+          btnViser.setAttribute("disabled", "disabled");
+          btnViser.textContent = "Visa & Envoi en cours…";
+
+          API.post("/api/recus/" + recu.id + "/valider-et-envoyer", {})
+            .then(function (res) {
+              toast("✅ Reçu validé par Maître et quittance transmise par email au client !");
+              modal.style.display = "none";
+              modal.innerHTML = "";
+              return refreshApresAction().then(function () {
+                if (cache.dossierDetail && cache.dossierDetail.id === recu.dossierId) {
+                  ouvrirDossier(recu.dossierId, etat.vuePrecedente);
+                }
+              });
+            })
+            .catch(function (err) {
+              btnViser.removeAttribute("disabled");
+              btnViser.textContent = "⚖️ Viser & Envoyer par Email au Client";
+              toast("Erreur visa reçu : " + err.message);
+            });
+      });
+    }
+
+      // Upload du scan du reçu émargé (Secrétariat / Assistante)
+      var btnUploadScan = document.getElementById("btn-trigger-upload-scan-recu");
+      var inputScan = document.getElementById("input-upload-scan-recu");
+      if (btnUploadScan && inputScan) {
+        btnUploadScan.addEventListener("click", function () {
+          inputScan.click();
+        });
+
+        inputScan.addEventListener("change", function (e) {
+          var file = e.target.files && e.target.files[0];
+          if (!file) return;
+
+          var reader = new FileReader();
+          reader.onload = function (evt) {
+            var dataUrl = evt.target.result;
+            API.post("/api/recus/" + recu.id + "/joindre-scan", {
+              urlScan: dataUrl,
+              nomFichier: file.name,
+            }).then(function (recuMaj) {
+              toast("✅ Scan du reçu émargé rattaché avec succès au dossier !");
+              modalApercuRecuPaiement(recuMaj);
+            }).catch(function (err) {
+              toast("Erreur rattachement scan : " + err.message);
+            });
+          };
+          reader.readAsDataURL(file);
+        });
+      }
+    });
+  }
+
+  // -----------------------------------------------------------------
+  // MODAL : REGISTRE DE TOUS LES REÇUS DE L'ÉTUDE
+  // -----------------------------------------------------------------
+  function modalListeRecus() {
+    var modal = document.getElementById("modal-racine");
+    modal.style.display = "block";
+    modal.innerHTML = '<div style="position:fixed;inset:0;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;z-index:999999;padding:16px"><div class="card elev-lg" style="width:900px;max-width:100%;max-height:92vh;overflow-y:auto;padding:24px;position:relative"><div class="spinner"></div><p style="text-align:center;margin-top:12px">Chargement du registre des reçus…</p></div></div>';
+
+    API.get("/api/recus").then(function (liste) {
+      var recus = Array.isArray(liste) ? liste : [];
+      var estNotaire = cache.utilisateur && (cache.utilisateur.role === "notaire" || cache.utilisateur.role === "superadmin" || cache.utilisateur.role === "premier_clerc");
+
+      var h = '<div style="position:fixed;inset:0;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:999999;padding:16px">';
+      h += '<div class="card elev-lg" style="width:920px;max-width:100%;max-height:94vh;overflow-y:auto;padding:24px;position:relative;background:var(--color-surface);border-radius:var(--radius-lg);box-shadow:0 25px 50px rgba(0,0,0,0.6)">';
+
+      // Header
+      h += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;border-bottom:1px solid var(--color-border);padding-bottom:12px">';
+      h += '<div>';
+      h += '<h3 style="margin:0;font-size:18px;display:flex;align-items:center;gap:8px">🧾 Registre des Reçus de Paiement & Quittances Officielles</h3>';
+      h += '<p style="font-size:12.5px;color:var(--color-text-dim);margin:2px 0 0">Historique des encaissements de provisions, frais d\'ouverture et quittances clients.</p>';
+      h += '</div>';
+      h += '<button type="button" class="btn btn-ghost btn-fermer-modal-liste-recus" style="font-size:18px;line-height:1;padding:4px 8px">✕</button>';
+      h += '</div>';
+
+      // Tableau
+      if (!recus.length) {
+        h += '<div style="padding:30px;text-align:center;color:var(--color-text-dim)">Aucun reçu de paiement n\'a encore été émis dans l\'étude.</div>';
+      } else {
+        h += '<div class="table-wrap"><table class="table" style="font-size:12.5px"><thead><tr>';
+        h += '<th>N° Reçu</th>';
+        h += '<th>Dossier</th>';
+        h += '<th>Client</th>';
+        h += '<th>Acte</th>';
+        h += '<th style="text-align:right">Frais Ouv.</th>';
+        h += '<th style="text-align:right">Provision</th>';
+        h += '<th style="text-align:right">Total Reçu</th>';
+        h += '<th>Mode</th>';
+        h += '<th>Statut</th>';
+        h += '<th style="text-align:center">Actions</th>';
+        h += '</tr></thead><tbody>';
+
+        recus.forEach(function (r) {
+          var estValide = r.statut === "valide";
+          h += '<tr>';
+          h += '<td><strong style="color:#d97706">' + escapeHtml(r.numeroRecu) + '</strong></td>';
+          h += '<td><strong>' + escapeHtml(r.numeroDossier || "—") + '</strong></td>';
+          h += '<td>' + escapeHtml(r.clientNom || "Client") + '</td>';
+          h += '<td><span class="tag tag-outline">' + labelActe(r.typeActeId) + '</span></td>';
+          h += '<td style="text-align:right">' + fmtFCFA(r.fraisOuverture || 0) + '</td>';
+          h += '<td style="text-align:right;color:#059669;font-weight:700">' + fmtFCFA(r.provision || 0) + '</td>';
+          h += '<td style="text-align:right;font-weight:800">' + fmtFCFA(r.montantTotal || 0) + '</td>';
+          h += '<td><span class="tag tag-neutral" style="font-size:10.5px">' + escapeHtml(r.modePaiement || "Espèces") + '</span></td>';
+          h += '<td>';
+          if (estValide) {
+            h += '<span class="tag" style="background:#d1fae5;color:#065f46;font-size:10.5px;font-weight:700">✓ Validé</span>';
+          } else {
+            h += '<span class="tag" style="background:#fef3c7;color:#92400e;font-size:10.5px;font-weight:700">⏳ À viser</span>';
+          }
+          h += '</td>';
+          h += '<td style="text-align:center">';
+          h += '<div style="display:flex;gap:4px;justify-content:center">';
+          h += '<button type="button" class="btn btn-secondary btn-sm btn-ouvrir-recu-item" data-id="' + r.id + '" style="font-size:11px;padding:3px 6px">👁️ Aperçu</button>';
+          if (!estValide && estNotaire) {
+            h += '<button type="button" class="btn btn-primary btn-sm btn-viser-recu-item" data-id="' + r.id + '" style="font-size:11px;padding:3px 6px;background:#059669;border-color:#059669;font-weight:700">⚖️ Viser</button>';
+          }
+          h += '</div></td>';
+          h += '</tr>';
+        });
+
+        h += '</tbody></table></div>';
+      }
+
+      h += '</div></div>';
+      modal.innerHTML = h;
+
+      modal.querySelectorAll(".btn-fermer-modal-liste-recus").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          modal.style.display = "none";
+          modal.innerHTML = "";
+        });
+      });
+
+      modal.querySelectorAll(".btn-ouvrir-recu-item").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          var recuId = btn.dataset.id;
+          modalApercuRecuPaiement(recuId);
+        });
+      });
+
+      modal.querySelectorAll(".btn-viser-recu-item").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          var recuId = btn.dataset.id;
+          btn.setAttribute("disabled", "disabled");
+          API.post("/api/recus/" + recuId + "/valider-et-envoyer", {})
+            .then(function () {
+              toast("✅ Reçu validé et quittance transmise par email au client !");
+              modalListeRecus();
+            })
+            .catch(function (e) {
+              toast("Erreur : " + e.message);
+              btn.removeAttribute("disabled");
+            });
+        });
+      });
+    }).catch(function (e) {
+      toast("Erreur chargement reçus : " + e.message);
+      modal.style.display = "none";
+    });
   }
 
   // -----------------------------------------------------------------

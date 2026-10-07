@@ -1,0 +1,86 @@
+{
+  "code": "ci",
+  "nom": "Côte d'Ivoire",
+  "packRegional": "ohada-uemoa",
+  "fuseauHoraire": "Africa/Abidjan",
+  "indicatifTelephonique": "+225",
+  "formatTelephone": "^\\+225[0-9]{10}$",
+  "langueDefaut": "fr",
+  "fiscalite": {
+    "tauxTva": 0.18,
+    "timbreFiscalPage": 500,
+    "emolumentRolePage": 500,
+    "taxePubliciteFonciere": {
+      "taux": 0.012,
+      "montantFixe": 3000
+    },
+    "droitsEnregistrementDefaut": {
+      "vente": 0.04,
+      "bail": 0.02,
+      "societe": 0.01,
+      "hypotheque": 0.01
+    }
+  },
+  "administrations": {
+    "dgi": {
+      "code": "dgi",
+      "nom": "Direction Générale des Impôts (DGI)",
+      "sigle": "DGI",
+      "direction": "Centre des Impôts",
+      "lieu": "Abidjan"
+    },
+    "foncier": {
+      "code": "conservation_fonciere",
+      "nom": "Conservation de la Propriété Foncière et des Hypothèques",
+      "sigle": "Conservation Foncière",
+      "direction": "Livre Foncier",
+      "lieu": "Abidjan"
+    },
+    "greffe": {
+      "code": "greffe_commerce",
+      "nom": "Greffe du Tribunal de Commerce",
+      "sigle": "Greffe TC",
+      "lieu": "Abidjan"
+    },
+    "guichetEntreprise": {
+      "code": "cepici",
+      "nom": "Centre de Promotion des Investissements en Côte d'Ivoire (CEPICI - Guichet Unique)",
+      "sigle": "CEPICI",
+      "lieu": "Abidjan"
+    },
+    "journalAnnonces": {
+      "code": "journal_annonces",
+      "nom": "Fraternité Matin / Journal Officiel de Côte d'Ivoire",
+      "sigle": "Fraternité Matin"
+    }
+  },
+  "joursFeries": [
+    { "mois": 1, "jour": 1, "libelle": "Jour de l'An" },
+    { "mois": 5, "jour": 1, "libelle": "Fête du Travail" },
+    { "mois": 8, "jour": 7, "libelle": "Fête Nationale (Indépendance)" },
+    { "mois": 8, "jour": 15, "libelle": "Assomption" },
+    { "mois": 11, "jour": 1, "libelle": "Toussaint" },
+    { "mois": 11, "jour": 15, "libelle": "Journée Nationale de la Paix" },
+    { "mois": 12, "jour": 25, "libelle": "Noël" }
+  ],
+  "textesReference": [
+    {
+      "type": "tarif_notarial",
+      "titre": "Décret N° 2013-279 du 24 avril 2013 portant tarification des actes notariés en Côte d'Ivoire",
+      "reference": "Décret 2013-279",
+      "dateEffet": "2013-04-24"
+    },
+    {
+      "type": "impots",
+      "titre": "Code Général des Impôts de Côte d'Ivoire (CGI CI)",
+      "reference": "CGI CI",
+      "dateEffet": "2024-01-01"
+    },
+    {
+      "type": "protection_donnees",
+      "titre": "Loi N° 2013-450 relative à la protection des données à caractère personnel (ARTCI)",
+      "reference": "Loi 2013-450",
+      "dateEffet": "2013-06-19"
+    }
+  ]
+}

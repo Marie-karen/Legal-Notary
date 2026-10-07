@@ -1,0 +1,68 @@
+{
+  "code": "ohada-cemac",
+  "nom": "Région OHADA - Zone CEMAC",
+  "zoneMonetaire": "CEMAC",
+  "droitAffaires": "OHADA",
+  "monnaie": {
+    "code": "XAF",
+    "symbole": "FCFA",
+    "libelle": "Franc CFA (BEAC)",
+    "libellePluriel": "Francs CFA",
+    "centimesLibelle": "centime",
+    "centimesLibellePluriel": "centimes",
+    "decimales": 0
+  },
+  "langueDefaut": "fr",
+  "languesDisponibles": ["fr", "en"],
+  "fiscalite": {
+    "tauxTva": 0.1925,
+    "timbreFiscalPage": 1000,
+    "emolumentRolePage": 1000,
+    "taxePubliciteFonciere": {
+      "taux": 0.01,
+      "montantFixe": 5000
+    },
+    "droitsEnregistrementDefaut": {
+      "vente": 0.05,
+      "bail": 0.02,
+      "societe": 0.015,
+      "hypotheque": 0.01
+    }
+  },
+  "piecesKyc": {
+    "personnePhysique": [
+      { "code": "piece_identite", "libelle": "Carte Nationale d'Identité / Passeport biométrique / Carte de résident", "obligatoire": true },
+      { "code": "justificatif_domicile", "libelle": "Facture ENEO / CDE ou plan de localisation signé", "obligatoire": true },
+      { "code": "attestation_compte_contribuable", "libelle": "Numéro d'Identifiant Unique (NIU)", "obligatoire": true }
+    ],
+    "personneMorale": [
+      { "code": "statuts", "libelle": "Statuts notariés certifiés conformes", "obligatoire": true },
+      { "code": "rccm", "libelle": "Attestation d'immatriculation au RCCM", "obligatoire": true },
+      { "code": "attestation_fiscale", "libelle": "Attestation de Non-Redevance (ANR) / Attestation d'Immatriculation Fiscale", "obligatoire": true },
+      { "code": "identite_dirigeant", "libelle": "Pièce d'identité et pouvoir du représentant légal", "obligatoire": true }
+    ]
+  },
+  "baremes": [
+    {
+      "code": "vente",
+      "libelle": "Barème Vente Immobilière CEMAC",
+      "dateEffet": "2020-01-01",
+      "tranches": [
+        { "ordre": 1, "jusqua": 10000000, "taux": 0.04 },
+        { "ordre": 2, "jusqua": 30000000, "taux": 0.025 },
+        { "ordre": 3, "jusqua": 100000000, "taux": 0.015 },
+        { "ordre": 4, "jusqua": null, "taux": 0.0075 }
+      ]
+    },
+    {
+      "code": "societe",
+      "libelle": "Barème Sociétés Commerciales CEMAC",
+      "dateEffet": "2020-01-01",
+      "tranches": [
+        { "ordre": 1, "jusqua": 10000000, "taux": 0.03 },
+        { "ordre": 2, "jusqua": 30000000, "taux": 0.015 },
+        { "ordre": 3, "jusqua": null, "taux": 0.005 }
+      ]
+    }
+  ]
+}

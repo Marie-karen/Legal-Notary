@@ -45,6 +45,9 @@ function versCamel(ligne) {
     
     // Confidentialité financière pour le Premier Clerc
     premierClercVoirFinances: Boolean(ligne.premier_clerc_voir_finances || ligne.premierClercVoirFinances),
+
+    // Référence légale / Tarif réglementaire paramétrable
+    nomTarifReglementaire: ligne.nom_tarif_reglementaire || ligne.nomTarifReglementaire || "Tarif Réglementaire & Barème Notarial",
   };
 }
 
@@ -79,6 +82,7 @@ let PARAMETRES_ACTUELS = {
   dernierNumeroGlobal: 0,
   derniersNumerosParNature: {},
   premierClercVoirFinances: false,
+  nomTarifReglementaire: "Tarif Réglementaire & Barème Notarial",
 };
 
 async function obtenir(etudeIdOuDomaine) {

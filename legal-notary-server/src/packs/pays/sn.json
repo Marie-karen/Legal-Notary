@@ -1,0 +1,79 @@
+{
+  "code": "sn",
+  "nom": "Sénégal",
+  "packRegional": "ohada-uemoa",
+  "fuseauHoraire": "Africa/Dakar",
+  "indicatifTelephonique": "+221",
+  "formatTelephone": "^\\+221[0-9]{9}$",
+  "langueDefaut": "fr",
+  "fiscalite": {
+    "tauxTva": 0.18,
+    "timbreFiscalPage": 2000,
+    "emolumentRolePage": 1000,
+    "taxePubliciteFonciere": {
+      "taux": 0.01,
+      "montantFixe": 5000
+    },
+    "droitsEnregistrementDefaut": {
+      "vente": 0.05,
+      "bail": 0.02,
+      "societe": 0.01,
+      "hypotheque": 0.01
+    }
+  },
+  "administrations": {
+    "dgi": {
+      "code": "dgid",
+      "nom": "Direction Générale des Impôts et des Domaines (DGID)",
+      "sigle": "DGID",
+      "direction": "Centre des Services Fiscaux",
+      "lieu": "Dakar"
+    },
+    "foncier": {
+      "code": "conservation_fonciere_sn",
+      "nom": "Bureau de la Conservation Foncière et du Cadastre",
+      "sigle": "Conservation Foncière",
+      "direction": "Domaines & Conservation",
+      "lieu": "Dakar"
+    },
+    "greffe": {
+      "code": "greffe_tribunal_sn",
+      "nom": "Greffe du Tribunal de Commerce Hors Classe de Dakar",
+      "sigle": "Greffe TC Dakar",
+      "lieu": "Dakar"
+    },
+    "guichetEntreprise": {
+      "code": "apix",
+      "nom": "Agence Nationale chargée de la Promotion de l'Investissement et des Grands Travaux (APIX - BCE)",
+      "sigle": "APIX",
+      "lieu": "Dakar"
+    },
+    "journalAnnonces": {
+      "code": "journal_annonces",
+      "nom": "Le Soleil / Journal Officiel du Sénégal",
+      "sigle": "Le Soleil"
+    }
+  },
+  "joursFeries": [
+    { "mois": 1, "jour": 1, "libelle": "Jour de l'An" },
+    { "mois": 4, "jour": 4, "libelle": "Fête Nationale (Indépendance)" },
+    { "mois": 5, "jour": 1, "libelle": "Fête du Travail" },
+    { "mois": 8, "jour": 15, "libelle": "Assomption" },
+    { "mois": 11, "jour": 1, "libelle": "Toussaint" },
+    { "mois": 12, "jour": 25, "libelle": "Noël" }
+  ],
+  "textesReference": [
+    {
+      "type": "tarif_notarial",
+      "titre": "Décret N° 2002-1032 portant statut des notaires et tarification au Sénégal",
+      "reference": "Décret 2002-1032",
+      "dateEffet": "2002-11-15"
+    },
+    {
+      "type": "impots",
+      "titre": "Code Général des Impôts du Sénégal (CGI SN)",
+      "reference": "CGI SN",
+      "dateEffet": "2024-01-01"
+    }
+  ]
+}
