@@ -286,12 +286,32 @@ async function executerActionUtilisateur(userId, action, payload = {}) {
 }
 
 async function genererTokenImpersonation({ userId, email }) {
-  const user = {
-    id: userId || "demo-notaire-id",
-    role: "notaire",
-    email: email || "notaire@notaire.ci",
-    nom_complet: "Me Jean-Luc Kouamé",
-  };
+  let user = null;
+  if (userId) {
+    try {
+      const { rows } = await pool.query("SELECT id, role, email, nom_complet FROM utilisateurs WHERE id = $1", [userId]);
+      if (rows && rows.length) {
+        user = rows[0];
+      }
+    } catch (_) {}
+  }
+  if (!user && email) {
+    try {
+      const { rows } = await pool.query("SELECT id, role, email, nom_complet FROM utilisateurs WHERE email = $1", [email]);
+      if (rows && rows.length) {
+        user = rows[0];
+      }
+    } catch (_) {}
+  }
+
+  if (!user) {
+    user = {
+      id: userId || "demo-notaire-id",
+      role: "notaire",
+      email: email || "notaire@notaire.ci",
+      nom_complet: "Me Jean-Luc Kouamé",
+    };
+  }
 
   const impersonatePayload = {
     id: user.id,

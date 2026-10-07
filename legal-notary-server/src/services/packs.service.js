@@ -104,15 +104,21 @@ function obtenirPackPays(codePays = "ci") {
 }
 
 /**
- * Liste tous les packs pays disponibles pour le déploiement
+ * Liste tous les packs pays disponibles pour le déploiement (exclut les brouillons par défaut)
  */
-function listerPacksPays() {
+function listerPacksPays(options = {}) {
+  const { inclureBrouillons = false } = options;
   const liste = [];
   for (const code of CACHE_PACKS_PAYS_BRUTS.keys()) {
     const p = obtenirPackPays(code);
+    if (!inclureBrouillons && p.proposeAuDeploiement === false) {
+      continue;
+    }
     liste.push({
       code: p.code,
       nom: p.nom,
+      statut: p.statut || "valide",
+      proposeAuDeploiement: p.proposeAuDeploiement !== false,
       monnaie: p.monnaie,
       fuseauHoraire: p.fuseauHoraire,
       indicatifTelephonique: p.indicatifTelephonique,

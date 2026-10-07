@@ -1,6 +1,9 @@
 {
   "code": "sn",
-  "nom": "Sénégal",
+  "nom": "Sénégal (Brouillon non vérifié)",
+  "statut": "brouillon_non_verifie",
+  "proposeAuDeploiement": false,
+  "avertissement": "Brouillon non vérifié : chiffres, barèmes et taxes indicatifs nécessitant confirmation par un notaire en exercice au Sénégal.",
   "packRegional": "ohada-uemoa",
   "fuseauHoraire": "Africa/Dakar",
   "indicatifTelephonique": "+221",

@@ -10,20 +10,36 @@ const fs = require("fs");
 const path = require("path");
 const dotenv = require("dotenv");
 
-// Recherche multi-chemins robuste du fichier .env
-const cheminsPossibles = [
-  path.join(process.cwd(), ".env"),
-  path.join(__dirname, "..", "..", ".env"),
-  path.join(__dirname, "..", ".env"),
-  path.join(process.cwd(), "legal-notary-server", ".env"),
-  "/var/www/legal-notary/legal-notary-server/.env",
-  "/var/www/legal-notary/.env",
-];
+const isTestEnv = process.env.NODE_ENV === "test";
 
-for (const chemin of cheminsPossibles) {
-  if (fs.existsSync(chemin)) {
-    dotenv.config({ path: chemin });
-    break;
+// Recherche multi-chemins robuste des fichiers d'environnement
+if (isTestEnv) {
+  const cheminsTest = [
+    path.join(process.cwd(), ".env.test"),
+    path.join(__dirname, "..", "..", ".env.test"),
+    path.join(__dirname, "..", ".env.test"),
+    path.join(process.cwd(), "legal-notary-server", ".env.test"),
+  ];
+  for (const chemin of cheminsTest) {
+    if (fs.existsSync(chemin)) {
+      dotenv.config({ path: chemin });
+      break;
+    }
+  }
+} else {
+  const cheminsPossibles = [
+    path.join(process.cwd(), ".env"),
+    path.join(__dirname, "..", "..", ".env"),
+    path.join(__dirname, "..", ".env"),
+    path.join(process.cwd(), "legal-notary-server", ".env"),
+    "/var/www/legal-notary/legal-notary-server/.env",
+    "/var/www/legal-notary/.env",
+  ];
+  for (const chemin of cheminsPossibles) {
+    if (fs.existsSync(chemin)) {
+      dotenv.config({ path: chemin });
+      break;
+    }
   }
 }
 dotenv.config(); // Fallback
@@ -41,9 +57,28 @@ const poolConfig = {
   max: 10,
 };
 
-if (process.env.DATABASE_URL) {
+// Résolution de la chaîne de connexion
+let connectionStringCible = "";
+if (isTestEnv) {
+  connectionStringCible = process.env.TEST_DATABASE_URL || "postgresql://localhost:5432/legal_notary_test";
+
+  // SÉCURITÉ STRICTE (Règle 2) : les tests refusent catégoriquement de s'exécuter
+  // si l'adresse de la base ne contient pas "localhost" ou "127.0.0.1".
+  const urlLower = connectionStringCible.toLowerCase();
+  if (!urlLower.includes("localhost") && !urlLower.includes("127.0.0.1")) {
+    const messageErreurSecurite =
+      `[SÉCURITÉ STRICTE - TESTS REFUSÉS]\n` +
+      `Les tests automatisés doivent UNIQUEMENT cibler une base locale isolée.\n` +
+      `URL fournie : "${connectionStringCible}"\n` +
+      `Cette adresse ne contient ni "localhost" ni "127.0.0.1".\n` +
+      `L'exécution sur Supabase ou une base distante de production est FORMELLEMENT INTERDITE.`;
+    console.error(messageErreurSecurite);
+    throw new Error(messageErreurSecurite);
+  }
+  poolConfig.connectionString = connectionStringCible;
+  poolConfig.password = String(process.env.PGPASSWORD || process.env.DB_PASSWORD || "");
+} else if (process.env.DATABASE_URL) {
   poolConfig.connectionString = process.env.DATABASE_URL;
-  // Prévention du crash SASL SCRAM si le mot de passe est omis dans l'URL
   poolConfig.password = String(process.env.PGPASSWORD || process.env.DB_PASSWORD || "");
 } else {
   poolConfig.host = process.env.PGHOST || process.env.DB_HOST || "localhost";
@@ -212,6 +247,8 @@ async function autoMigrerSchema() {
 
 // Test rapide de la connexion au démarrage sans bloquer le serveur
 async function verifierConnexionRapide() {
+  const allowInMemory = process.env.ALLOW_IN_MEMORY === "true" && process.env.NODE_ENV !== "production";
+
   try {
     const client = await pool.connect();
     await client.query("SELECT 1");
@@ -219,11 +256,50 @@ async function verifierConnexionRapide() {
     isDbConnected = true;
     derniereTentativeEchouee = 0;
     console.log("[PostgreSQL] Connecté avec succès à la base de données.");
-    autoMigrerSchema().catch(() => {});
+    if (!isTestEnv) {
+      autoMigrerSchema().catch(() => {});
+    }
   } catch (err) {
     isDbConnected = false;
     derniereTentativeEchouee = Date.now();
-    console.warn("[PostgreSQL] Base distante injoignable (" + err.message + ") -> Moteur résilient In-Memory activé (< 1ms).");
+
+    // Journalisation structurée de l'erreur
+    console.error(JSON.stringify({
+      timestamp: new Date().toISOString(),
+      niveau: "CRITICAL",
+      composant: "database-pool",
+      message: "PostgreSQL est inaccessible au démarrage",
+      erreur: err.message,
+      code: err.code || "DB_CONNECTION_FAILED",
+      allowInMemory,
+      environnement: process.env.NODE_ENV || "development",
+    }));
+
+    // Envoi d'une alerte via telemetrieService
+    try {
+      const telemetrieService = require("../services/telemetrie.service");
+      telemetrieService.enregistrerErreur({
+        source: "database-startup",
+        typeErreur: "PostgresConnectionFailed",
+        message: `Échec de connexion PostgreSQL critique : ${err.message}`,
+        niveau: "critical",
+      }).catch(() => {});
+    } catch (_) {}
+
+    // Règle 3 : Le mode In-Memory ne doit exister qu'en développement et en test,
+    // activé explicitement par ALLOW_IN_MEMORY=true.
+    // En production, si PostgreSQL est injoignable, le serveur refuse de démarrer.
+    if (!allowInMemory) {
+      console.error(
+        "[PostgreSQL ARRÊT DU SERVEUR] En production ou sans ALLOW_IN_MEMORY=true, " +
+        "le serveur refuse de démarrer sans base de données PostgreSQL joignable."
+      );
+      if (process.env.NODE_ENV === "production") {
+        process.exit(1);
+      }
+    } else {
+      console.warn("[PostgreSQL Mode Résilient] Base injoignable -> ALLOW_IN_MEMORY activé en dev/test.");
+    }
   }
 }
 
@@ -233,8 +309,13 @@ verifierConnexionRapide().catch(() => {});
 // Interception de pool.query pour un repli ultra-rapide (< 0.1ms) si DB hors-ligne confirmée
 const originalQuery = pool.query.bind(pool);
 pool.query = async function (text, params) {
+  const allowInMemory = process.env.ALLOW_IN_MEMORY === "true" && process.env.NODE_ENV !== "production";
+
   // Si une tentative précédente a échoué il y a moins de 30 secondes, basculer sans attendre
   if (!isDbConnected && derniereTentativeEchouee > 0 && (Date.now() - derniereTentativeEchouee < DELAI_REVERIFICATION_MS)) {
+    if (!allowInMemory) {
+      throw new Error("DB_OFFLINE: Base de données PostgreSQL inaccessible (mode In-Memory désactivé).");
+    }
     throw new Error("DB_OFFLINE: Base de données distante temporairement inaccessible");
   }
 
@@ -262,11 +343,15 @@ pool.query = async function (text, params) {
 
 /**
  * Exécute `travail(client)` à l'intérieur d'une transaction SQL.
- * Si la base est hors-ligne, fournit un client fictif mémoire sans bloquer.
+ * Si la base est hors-ligne, fournit un client fictif mémoire uniquement si ALLOW_IN_MEMORY est activé.
  */
 async function avecTransaction(travail) {
-  if (!isDbConnected && (Date.now() - derniereVerification < DELAI_REVERIFICATION_MS)) {
-    // Mode transaction mémoire résiliente
+  const allowInMemory = process.env.ALLOW_IN_MEMORY === "true" && process.env.NODE_ENV !== "production";
+
+  if (!isDbConnected && (Date.now() - derniereTentativeEchouee < DELAI_REVERIFICATION_MS)) {
+    if (!allowInMemory) {
+      throw new Error("DB_OFFLINE: Base de données inaccessible pour transaction.");
+    }
     const mockClient = {
       query: async (sql, params) => {
         return { rows: [], rowCount: 0 };
@@ -280,7 +365,10 @@ async function avecTransaction(travail) {
     client = await pool.connect();
   } catch (errConnect) {
     isDbConnected = false;
-    derniereVerification = Date.now();
+    derniereTentativeEchouee = Date.now();
+    if (!allowInMemory) {
+      throw errConnect;
+    }
     const mockClient = {
       query: async () => ({ rows: [], rowCount: 0 }),
     };
