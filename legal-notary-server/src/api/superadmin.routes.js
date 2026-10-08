@@ -7,6 +7,40 @@ const router = express.Router();
 const superadminService = require("../services/superadmin.service");
 const monitoringSupportService = require("../services/monitoring-support.service");
 
+/**
+ * Journalise un refus 403 de façon structurée (S02 / Section 15 bis).
+ * Aucun secret, jeton ni corps de requête n'est inscrit dans le journal.
+ */
+function journaliserRefus403(req) {
+  const logStruct = {
+    evenement: "ACCES_REFUSE_ROLE",
+    statut: 403,
+    utilisateurId: (req.utilisateur && req.utilisateur.id) || null,
+    role: (req.utilisateur && req.utilisateur.role) || null,
+    route: req.originalUrl || req.baseUrl + (req.path || ""),
+    methode: req.method,
+    dateHeure: new Date().toISOString(),
+  };
+  console.warn(JSON.stringify(logStruct));
+}
+
+/**
+ * Middleware strict de contrôle d'accès : refuse (403) tout rôle autre que 'superadmin'.
+ * Conforme à l'audit approfondi de sécurité S02 (section 3) et cahier des charges (section 3 bis, exigence 2).
+ */
+function exigerSuperadmin(req, res, next) {
+  if (!req.utilisateur) {
+    return res.status(401).json({ erreur: "Authentification requise." });
+  }
+  if (req.utilisateur.role !== "superadmin") {
+    journaliserRefus403(req);
+    return res.status(403).json({ erreur: "Accès réservé au rôle superadmin." });
+  }
+  next();
+}
+
+router.use(exigerSuperadmin);
+
 // 1. Statistiques globales SaaS
 router.get("/statistiques-globales", async (req, res, next) => {
   try {

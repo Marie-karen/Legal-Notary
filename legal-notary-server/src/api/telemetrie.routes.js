@@ -8,9 +8,31 @@ const router = express.Router();
 const telemetrieService = require("../services/telemetrie.service");
 const { authentifier } = require("../middleware/authentifier");
 
+const ROLES_SAAS = ["superadmin", "dev", "commercial", "support", "assistante_editeur"];
+
+/**
+ * Journalise un refus 403 de façon structurée (S02 / Section 15 bis).
+ * Aucun secret, jeton ni corps de requête n'est inscrit dans le journal.
+ */
+function journaliserRefus403(req) {
+  const logStruct = {
+    evenement: "ACCES_REFUSE_ROLE",
+    statut: 403,
+    utilisateurId: (req.utilisateur && req.utilisateur.id) || null,
+    role: (req.utilisateur && req.utilisateur.role) || null,
+    route: req.originalUrl || req.baseUrl + (req.path || ""),
+    methode: req.method,
+    dateHeure: new Date().toISOString(),
+  };
+  console.warn(JSON.stringify(logStruct));
+}
+
 function exigerSaaS(req, res, next) {
-  const rolesSaaS = ["superadmin", "dev", "commercial", "support", "assistante_editeur"];
-  if (!req.utilisateur || !rolesSaaS.includes(req.utilisateur.role)) {
+  if (!req.utilisateur) {
+    return res.status(401).json({ erreur: "Authentification requise." });
+  }
+  if (!ROLES_SAAS.includes(req.utilisateur.role)) {
+    journaliserRefus403(req);
     return res.status(403).json({ erreur: "Accès réservé à l'équipe éditeur SaaS." });
   }
   next();

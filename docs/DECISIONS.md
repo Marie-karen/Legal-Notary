@@ -93,5 +93,19 @@ Décisions arrêtées :
 4. **Comptes démo hors ligne** : Les mots de passe en clair ont été retirés de `COMPTES_DEMO_OFFLINE`. La connexion hors ligne sans base est désactivée en attendant le module de démonstration isolé (S07).
 5. **Couverture de tests automatisés** : Création de `tests/securite_s01_mots_de_passe.test.js` couvrant l'authentification avec mot de passe réel, le rejet 401 des backdoors, la résilience face aux hash corrompus, le rejet 400 des créations sans mot de passe, et la confirmation automatisée de l'absence de `"notaire123"` et `"admin123"` dans `src/`.
 
+## Décision S02 — Contrôle strict des rôles SuperAdmin et Éditeur SaaS (8 octobre 2026)
+
+**Date** : 8 octobre 2026 · **Branche** : `securite-1` · **Réf. audit** : Section 3 (S02) & Cahier des charges (Section 3 bis, Exigence 2)
+
+### Contexte et Décision
+L'audit de sécurité approfondi a révélé que la console Super-Administrateur (`src/api/superadmin.routes.js`, 26 routes) et les rapports d'activité SaaS (`src/api/rapports.routes.js`, 6 routes) étaient accessibles à tout collaborateur authentifié d'un office (notaire, clerc, assistante, etc.), permettant la suppression d'études ou la réinitialisation de mots de passe sans restriction de privilèges.
+Décisions arrêtées :
+1. **Refus par défaut sur la Console SuperAdmin** : Ajout du middleware `exigerSuperadmin` en tête de `src/api/superadmin.routes.js` via `router.use(exigerSuperadmin)`. Seul le rôle `"superadmin"` est autorisé. Tout autre rôle (notamment les 7 rôles d'étude) est rejeté avec un code HTTP 403.
+2. **Cloisonnement des Rapports d'Activité SaaS** : Ajout du middleware `exigerEditeur` en tête de `src/api/rapports.routes.js` via `router.use(exigerEditeur)`. L'accès est restreint aux 5 rôles de l'équipe éditeur (`"superadmin"`, `"dev"`, `"commercial"`, `"support"`, `"assistante_editeur"`). Les 7 rôles d'étude sont systématiquement rejetés avec un code HTTP 403.
+3. **Renforcement des routes de Télémétrie** : Les routes de lecture (`GET /erreurs`, `GET /noeuds`) et d'administration de `src/api/telemetrie.routes.js` exigent le middleware `exigerSaaS` et rejettent systématiquement les rôles d'étude avec un code HTTP 403.
+4. **Journalisation structurée des refus (403)** : Chaque rejet pour rôle non autorisé émet un log JSON structuré (`ACCES_REFUSE_ROLE`) consignant l'identifiant utilisateur, son rôle, la méthode, la route et l'horodatage, à l'exclusion stricte de tout secret, jeton ou corps de requête.
+5. **Couverture de tests automatisés** : Création de `tests/securite_s02_superadmin_role.test.js` (7 tests) validant par découverte dynamique le rejet 403 des 7 rôles d'étude sur l'intégralité des routes concernées, le rejet 401 en l'absence de jeton, la réponse 200 pour le rôle `superadmin`, et la conformité des journaux de sécurité.
+
+
 
 

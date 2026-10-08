@@ -3,17 +3,56 @@
  */
 
 const express = require("express");
-const { exigerPermission } = require("../middleware/exigerPermission");
 const rapportsService = require("../services/rapports.service");
 
 const router = express.Router();
 
+const ROLES_EDITEUR = ["superadmin", "dev", "commercial", "support", "assistante_editeur"];
+
+/**
+ * Journalise un refus 403 de façon structurée (S02 / Section 15 bis).
+ * Aucun secret, jeton ni corps de requête n'est inscrit dans le journal.
+ */
+function journaliserRefus403(req) {
+  const logStruct = {
+    evenement: "ACCES_REFUSE_ROLE",
+    statut: 403,
+    utilisateurId: (req.utilisateur && req.utilisateur.id) || null,
+    role: (req.utilisateur && req.utilisateur.role) || null,
+    route: req.originalUrl || req.baseUrl + (req.path || ""),
+    methode: req.method,
+    dateHeure: new Date().toISOString(),
+  };
+  console.warn(JSON.stringify(logStruct));
+}
+
+/**
+ * Middleware strict de contrôle d'accès : refuse (403) tout rôle autre que les rôles éditeur SaaS.
+ * Conforme à l'audit de sécurité S02 (section 3) et cahier des charges (section 3 bis, exigence 2).
+ */
+function exigerEditeur(req, res, next) {
+  if (!req.utilisateur) {
+    return res.status(401).json({ erreur: "Authentification requise." });
+  }
+  if (!ROLES_EDITEUR.includes(req.utilisateur.role)) {
+    journaliserRefus403(req);
+    return res.status(403).json({ erreur: "Accès réservé à l'équipe éditeur SaaS." });
+  }
+  next();
+}
+
 function exigerDirectionSaaS(req, res, next) {
-  if (!req.utilisateur || req.utilisateur.role !== "superadmin") {
+  if (!req.utilisateur) {
+    return res.status(401).json({ erreur: "Authentification requise." });
+  }
+  if (req.utilisateur.role !== "superadmin") {
+    journaliserRefus403(req);
     return res.status(403).json({ erreur: "Accès réservé à la Direction Générale SaaS." });
   }
   next();
 }
+
+router.use(exigerEditeur);
 
 /**
  * 1. Synthèse globale et KPIs pour la Direction
