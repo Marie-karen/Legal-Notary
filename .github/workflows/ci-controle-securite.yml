@@ -58,7 +58,7 @@ jobs:
       - name: Contrôle ESLint (nouvelles erreurs par rapport à la baseline)
         run: npm run lint:pr
 
-  # 3. Analyse SAST locale avec Semgrep (OWASP Top 10 & JS) sans compte ni envoi externe
+  # 3. Analyse SAST locale avec Semgrep (OWASP Top 10 & JS) avec contrôle différentiel contre baseline
   sast-semgrep:
     name: 🔍 Analyse SAST Semgrep local (OWASP)
     runs-on: ubuntu-latest
@@ -68,23 +68,27 @@ jobs:
       - name: Récupérer le code source
         uses: actions/checkout@v4
 
-      - name: Exécuter Semgrep en local (aucune télémétrie ni jeton externe)
+      - name: Exécuter Semgrep et bloquer sur toute NOUVELLE alerte de gravité élevée
         run: |
           semgrep scan \
             --config p/owasp-top-ten \
             --config p/javascript \
             --metrics=off \
+            --json \
+            --output semgrep-actuel.json \
             --exclude "node_modules" \
             --exclude "uploads" \
             --exclude "data" \
             --exclude "legal-notary-suite" \
             --exclude "*.xlsx" \
             --exclude "*.pdf"
+
+          python3 scripts/securite/verifier-semgrep.py semgrep-actuel.json semgrep-baseline.json
         env:
           SEMGREP_SEND_METRICS: "off"
           SEMGREP_ENABLE_VERSION_CHECK: "0"
 
-  # 4. Détection de secrets dans le code et l'historique Git avec Gitleaks
+  # 4. Détection de secrets dans le code et tout l'historique Git avec Gitleaks (ROUGE jusqu'à S04)
   secrets-gitleaks:
     name: 🔑 Détection de secrets (Gitleaks)
     runs-on: ubuntu-latest
@@ -94,10 +98,15 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Scanner avec Gitleaks
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Installer et exécuter Gitleaks sur l'ensemble complet de l'historique
+        run: |
+          GITLEAKS_VERSION="8.18.4"
+          curl -sSL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" | tar -xz gitleaks
+          chmod +x gitleaks
+          sudo mv gitleaks /usr/local/bin/
+
+          echo "🔍 Exécution de Gitleaks sur tout l'historique Git avec .gitleaks.toml..."
+          gitleaks detect --log-opts="--all" --config=".gitleaks.toml" --verbose --redact
 
   # 5. Contrôle des dépendances vulnérables (bloquant pour faille élevée ou critique)
   audit-dependances:

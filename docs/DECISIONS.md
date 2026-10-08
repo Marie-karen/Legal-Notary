@@ -65,3 +65,19 @@ Pour permettre la détection immédiate de toute régression sans bloquer les d�
 1. **`src/api/fiscal.routes.js`** (3 erreurs `no-undef` résolues) : variables `fs` et `path` désormais importées au sommet du fichier. Couvert par le test `tests/lint_fixes_c0.test.js` (téléchargement modèle standard et gestion 404 sans ReferenceError).
 2. **`src/services/campagnes-numerisation.service.js`** (3 erreurs `no-undef` résolues) : import destructuré de `{ pool }` ajouté depuis `../db/pool`. Couvert par le test `tests/lint_fixes_c0.test.js` (`listerCampagnes`, `creerCampagne`, `enregistrerAvancementLot` testés sans ReferenceError).
 
+### Décision C0-bis — Détection Gitleaks intégrale & Clé de secours `auth.service.js`
+- **Gitleaks sur tout l'historique** : Configuration `.gitleaks.toml` à la racine avec règle explicite `cle-secours-jwt-auth-service` ciblant le secret JWT écrit en dur dans `src/services/auth.service.js` (lignes 383, 413, 427).
+- **Statut CI** : Le job Gitleaks est configuré pour scanner l'intégralité de l'historique Git (`gitleaks detect --log-opts="--all"`). Il restera **strictement ROUGE** jusqu'à l'étape S04 (suppression définitive du fallback et rotation/purge de l'historique).
+
+### Décision C0-ter — Baseline différentielle Semgrep SAST
+- **Baseline de référence Semgrep** : Création de `semgrep-baseline.json` recensant les 17 alertes préexistantes du dépôt (2 High sur AES-256-GCM, 3 Medium Nginx, 1 Low HTML, 11 Info CI).
+- **Contrôle différentiel** : Exécution via `scripts/securite/verifier-semgrep.py`. Le job échoue obligatoirement (code de sortie 1) dès qu'une **nouvelle alerte de gravité élevée (ERROR / HIGH)** non répertoriée dans la baseline est introduite.
+
+### Signalement Modification Fichier Sensible : `src/db/pool.js` (Section 15 bis D)
+- **Fichier** : `legal-notary-server/src/db/pool.js`
+- **Modification apportée** :
+  - Conditionnement de l'affectation `poolConfig.password` : assigné uniquement si `process.env.PGPASSWORD` ou `process.env.DB_PASSWORD` est non vide, évitant d'écraser le mot de passe déjà présent dans `TEST_DATABASE_URL` ou `DATABASE_URL`.
+  - Prise en compte de `process.env.DATABASE_URL` en repli dans le bloc de test.
+- **Justification** : Dans les runners CI (service container `postgres:18-alpine`), l'écrasement inconditionnel de `password` par `""` provoquait une erreur d'authentification SCRAM SASL (`client password must be a string`), empêchant l'exécution des migrations de base de test. La sécurité stricte refusant les URL sans `localhost` ou `127.0.0.1` demeure inchangée et active.
+
+

@@ -1,0 +1,51 @@
+{
+  "version": "1.0",
+  "etape": "C0",
+  "date": "2026-10-08",
+  "description": "Baseline de référence des alertes Semgrep historiques (OWASP Top 10 + JS). Les alertes préexistantes sont suivies jusqu'à leur résolution dans les étapes dédiées (S01 à S25). Toute NOUVELLE alerte de gravité élevée est strictement bloquante.",
+  "total_baseline_findings": 17,
+  "known_rules": [
+    {
+      "check_id": "javascript.node-crypto.security.gcm-no-tag-length.gcm-no-tag-length",
+      "path": "legal-notary-server/src/services/sauvegarde-immuable.service.js",
+      "severity": "WARNING",
+      "etape_cible": "S08 / S16"
+    },
+    {
+      "check_id": "javascript.node-crypto.security.gcm-no-tag-length.gcm-no-tag-length",
+      "path": "legal-notary-server/src/utils/crypto.js",
+      "severity": "WARNING",
+      "etape_cible": "S08 / S16"
+    },
+    {
+      "check_id": "generic.nginx.security.possible-h2c-smuggling.possible-nginx-h2c-smuggling",
+      "path": "legal-notary-server/deploiement/nginx-multi-etudes.conf",
+      "severity": "WARNING",
+      "etape_cible": "S13"
+    },
+    {
+      "check_id": "generic.nginx.security.request-host-used.request-host-used",
+      "path": "legal-notary-server/deploiement/nginx-legalnotary.conf",
+      "severity": "WARNING",
+      "etape_cible": "S13"
+    },
+    {
+      "check_id": "generic.nginx.security.request-host-used.request-host-used",
+      "path": "legal-notary-server/deploiement/nginx-multi-etudes.conf",
+      "severity": "WARNING",
+      "etape_cible": "S13"
+    },
+    {
+      "check_id": "html.security.plaintext-http-link.plaintext-http-link",
+      "path": "legal-notary-web/app.html",
+      "severity": "INFO",
+      "etape_cible": "Refactoring Web"
+    },
+    {
+      "check_id": "yaml.github-actions.security.github-actions-mutable-action-tag.github-actions-mutable-action-tag",
+      "path": ".github/workflows/ci-controle-securite.yml",
+      "severity": "INFO",
+      "etape_cible": "C0 / Durcissement CI"
+    }
+  ]
+}
