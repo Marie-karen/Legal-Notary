@@ -80,4 +80,18 @@ Pour permettre la détection immédiate de toute régression sans bloquer les d�
   - Conditionnement de l'affectation `poolConfig.password` : assigné uniquement si `process.env.PGPASSWORD` ou `process.env.DB_PASSWORD` est non vide, évitant d'écraser le mot de passe extrait de `TEST_DATABASE_URL`.
 - **Justification** : Prévention stricte de toute collision avec une base de production ou de staging, et résolution de l'erreur d'authentification SCRAM SASL dans les conteneurs de test. La sécurité stricte refusant les URL sans `localhost` ou `127.0.0.1` demeure inchangée et active.
 
+## Décision S01 — Suppression des mots de passe universels (8 octobre 2026)
+
+**Date** : 8 octobre 2026 · **Branche** : `securite-1` · **Réf. audit** : Section 3 (S01)
+
+### Contexte et Décision
+L'audit de sécurité approfondi a révélé la présence de portes dérobées permettant de se connecter à n'importe quel compte en saisissant `"notaire123"` ou `"admin123"`, ainsi que des comparaisons permissives avec des mots de passe en clair dans `src/services/auth.service.js`.
+Décisions arrêtées :
+1. **Suppression de tout mot de passe universel et secours en clair** : Dans `auth.service.js` (fonction `connecter`), seule la vérification cryptographique `bcrypt.compare` contre `mot_de_passe_hash` est autorisée. Tout mot de passe de secours ou comparaison en clair (`utilisateur.mdp`, `compteSecours.mdp`, `"notaire123"`, `"admin123"`) est supprimé, aussi bien dans le chemin PostgreSQL que dans le repli mémoire.
+2. **Obligation stricte du mot de passe (Erreur 400)** : Partout où un mot de passe par défaut a été retiré (`creerUtilisateur`, `equipe.routes.js`, `email-deploiement.service.js`, `superadmin.service.js`), si aucun mot de passe n'est fourni, l'opération est formellement refusée avec une erreur 400 ("Mot de passe obligatoire."). Aucun mot de passe vide ou valeur par défaut n'est toléré.
+3. **Désactivation de `sync-passwords.js`** : Le script a été neutralisé pour refuser toute exécution jusqu'à son déplacement et sécurisation sous `scripts/demo/` lors de S07.
+4. **Comptes démo hors ligne** : Les mots de passe en clair ont été retirés de `COMPTES_DEMO_OFFLINE`. La connexion hors ligne sans base est désactivée en attendant le module de démonstration isolé (S07).
+5. **Couverture de tests automatisés** : Création de `tests/securite_s01_mots_de_passe.test.js` couvrant l'authentification avec mot de passe réel, le rejet 401 des backdoors, la résilience face aux hash corrompus, le rejet 400 des créations sans mot de passe, et la confirmation automatisée de l'absence de `"notaire123"` et `"admin123"` dans `src/`.
+
+
 

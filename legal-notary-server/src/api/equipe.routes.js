@@ -31,6 +31,10 @@ router.post("/", exigerPermission("equipe:gerer"), async (req, res, next) => {
   try {
     const avecSalaires = aPermission(req.utilisateur.role, "equipe:voir_salaires");
     const etudeId = req.utilisateur ? req.utilisateur.etudeId : null;
+    const { motDePasse } = req.body || {};
+    if (!motDePasse || typeof motDePasse !== "string" || !motDePasse.trim()) {
+      return res.status(400).json({ erreur: "Mot de passe obligatoire." });
+    }
     const utilisateur = await authService.creerUtilisateur({ ...req.body, etudeId }, { avecSalaire: avecSalaires });
     await auditService.consigner("utilisateurs", utilisateur.id, "creation", req.utilisateur.id, {
       role: utilisateur.role,

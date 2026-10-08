@@ -229,7 +229,7 @@ async function creerEtude({
   numeroCC,
   centreImpots,
   compteSequestreCDCI,
-  motDePasseAdmin = "notaire123",
+  motDePasseAdmin,
   modeInfrastructure = "hybride",
   quotaStockageGo = 100,
   ville = "Abidjan",
@@ -296,10 +296,15 @@ async function creerEtude({
   // Si aucun notaire dans la liste des collaborateurs, on injecte le compte admin principal
   const aNotaire = listeAcreer.some((c) => c.role === "notaire" || (emailAdmin && c.email === emailAdmin));
   if (!aNotaire && emailAdmin) {
+    if (!motDePasseAdmin || typeof motDePasseAdmin !== "string" || !motDePasseAdmin.trim()) {
+      const err = new Error("Mot de passe obligatoire.");
+      err.status = 400;
+      throw err;
+    }
     listeAcreer.unshift({
       nomComplet: titreNotaire || nomEtude,
       email: emailAdmin,
-      motDePasse: motDePasseAdmin || "notaire123",
+      motDePasse: motDePasseAdmin.trim(),
       role: "notaire",
       telephone: telephone || "",
       typeContrat: "Associé",
@@ -308,12 +313,17 @@ async function creerEtude({
 
   for (const c of listeAcreer) {
     if (!c.email) continue;
-    const mdp = c.motDePasse || c.mdp || "Pass" + Math.floor(Math.random() * 9000 + 1000) + "!";
+    const mdp = c.motDePasse || c.mdp;
+    if (!mdp || typeof mdp !== "string" || !mdp.trim()) {
+      const err = new Error("Mot de passe obligatoire.");
+      err.status = 400;
+      throw err;
+    }
     try {
       const u = await authService.creerUtilisateur({
         nomComplet: c.nomComplet || c.nom || c.email.split("@")[0],
         email: c.email,
-        motDePasse: mdp,
+        motDePasse: mdp.trim(),
         role: c.role || "clerc_redacteur",
         telephone: c.telephone || "",
         dateEmbauche: c.dateEmbauche || new Date().toISOString().split("T")[0],
@@ -457,11 +467,16 @@ async function listerUtilisateursEtude(etudeId) {
 }
 
 async function ajouterCollaborateurEtude(etudeId, donnees) {
-  const mdp = donnees.motDePasse || "Pass" + Math.floor(Math.random() * 9000 + 1000) + "!";
+  const mdp = donnees.motDePasse || donnees.mdp;
+  if (!mdp || typeof mdp !== "string" || !mdp.trim()) {
+    const err = new Error("Mot de passe obligatoire.");
+    err.status = 400;
+    throw err;
+  }
   const u = await authService.creerUtilisateur(
     {
       ...donnees,
-      motDePasse: mdp,
+      motDePasse: mdp.trim(),
       etudeId,
     },
     { avecSalaire: true }

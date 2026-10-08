@@ -39,7 +39,6 @@ const COMPTES_DEMO_OFFLINE = {
     id: "demo-notaire-id",
     nom_complet: "Me Jean-Luc Kouamé",
     email: "notaire@notaire.ci",
-    mdp: "notaire123",
     role: "notaire",
     telephone: "+225 07 00 00 01",
     actif: true,
@@ -51,7 +50,6 @@ const COMPTES_DEMO_OFFLINE = {
     id: "demo-premier-clerc-id",
     nom_complet: "M. Ibrahim Traoré",
     email: "premier.clerc@notaire.ci",
-    mdp: "notaire123",
     role: "premier_clerc",
     telephone: "+225 07 00 00 02",
     actif: true,
@@ -63,7 +61,6 @@ const COMPTES_DEMO_OFFLINE = {
     id: "demo-clerc1-id",
     nom_complet: "Mme Awa Koné",
     email: "clerc1@notaire.ci",
-    mdp: "notaire123",
     role: "clerc_redacteur",
     telephone: "+225 07 00 00 03",
     actif: true,
@@ -75,7 +72,6 @@ const COMPTES_DEMO_OFFLINE = {
     id: "demo-formalites-id",
     nom_complet: "M. Sékou Bamba",
     email: "formalites@notaire.ci",
-    mdp: "notaire123",
     role: "clerc_formaliste",
     telephone: "+225 07 00 00 04",
     actif: true,
@@ -87,7 +83,6 @@ const COMPTES_DEMO_OFFLINE = {
     id: "demo-comptable-id",
     nom_complet: "M. Yves N'Guessan",
     email: "comptable@notaire.ci",
-    mdp: "notaire123",
     role: "comptable_taxateur",
     telephone: "+225 07 00 00 05",
     actif: true,
@@ -99,7 +94,6 @@ const COMPTES_DEMO_OFFLINE = {
     id: "demo-accueil-id",
     nom_complet: "Mme Fatou Diallo",
     email: "accueil@notaire.ci",
-    mdp: "notaire123",
     role: "assistante",
     telephone: "+225 07 00 00 06",
     actif: true,
@@ -111,7 +105,6 @@ const COMPTES_DEMO_OFFLINE = {
     id: "demo-archiviste-id",
     nom_complet: "M. Bakary Cissé",
     email: "archiviste@notaire.ci",
-    mdp: "notaire123",
     role: "archiviste",
     telephone: "+225 07 00 00 07",
     actif: true,
@@ -123,7 +116,6 @@ const COMPTES_DEMO_OFFLINE = {
     id: "demo-admin-id",
     nom_complet: "Direction BT.TECH (SuperAdmin)",
     email: "admin@editeur-legal.ci",
-    mdp: "admin123",
     role: "superadmin",
     telephone: "+225 07 00 00 08",
     actif: true,
@@ -133,7 +125,6 @@ const COMPTES_DEMO_OFFLINE = {
     id: "demo-dev-id",
     nom_complet: "DevOps BT.TECH",
     email: "dev@editeur-legal.ci",
-    mdp: "admin123",
     role: "dev",
     telephone: "+225 07 00 00 09",
     actif: true,
@@ -143,7 +134,6 @@ const COMPTES_DEMO_OFFLINE = {
     id: "demo-commercial-id",
     nom_complet: "Commercial BT.TECH",
     email: "commercial@editeur-legal.ci",
-    mdp: "admin123",
     role: "commercial",
     telephone: "+225 07 00 00 10",
     actif: true,
@@ -153,7 +143,6 @@ const COMPTES_DEMO_OFFLINE = {
     id: "demo-support-id",
     nom_complet: "Support Client BT.TECH",
     email: "support@editeur-legal.ci",
-    mdp: "admin123",
     role: "support",
     telephone: "+225 07 00 00 11",
     actif: true,
@@ -187,8 +176,13 @@ async function creerUtilisateur(
   { nomComplet, email, motDePasse, role, telephone, dateEmbauche, typeContrat, salaireNet, etudeId, etude_id },
   { avecSalaire = false } = {}
 ) {
+  if (!motDePasse || typeof motDePasse !== "string" || !motDePasse.trim()) {
+    const err = new Error("Mot de passe obligatoire.");
+    err.status = 400;
+    throw err;
+  }
   const emailNorm = (email || "").toLowerCase().trim();
-  const mdpNorm = (motDePasse || "notaire123").trim();
+  const mdpNorm = motDePasse.trim();
   const eid = etudeId || etude_id || "a0000000-0000-0000-0000-000000000001";
   let hash = "hash_demo";
   try {
@@ -201,7 +195,6 @@ async function creerUtilisateur(
     id: nouvelId,
     nom_complet: nomComplet,
     email: emailNorm,
-    mdp: mdpNorm,
     mot_de_passe_hash: hash,
     role: role || "clerc_redacteur",
     telephone: telephone || "",
@@ -304,7 +297,12 @@ async function modifierUtilisateur(id, champs, { avecSalaire = false } = {}) {
 }
 
 async function reinitialiserMotDePasse(idOuEmail, nouveauMotDePasse) {
-  const mdpNorm = (nouveauMotDePasse || "Pass1234!").trim();
+  if (!nouveauMotDePasse || typeof nouveauMotDePasse !== "string" || !nouveauMotDePasse.trim()) {
+    const err = new Error("Mot de passe obligatoire.");
+    err.status = 400;
+    throw err;
+  }
+  const mdpNorm = nouveauMotDePasse.trim();
   let hash = "hash_demo";
   try {
     hash = await bcrypt.hash(mdpNorm, TOURS_HACHAGE);
@@ -320,7 +318,7 @@ async function reinitialiserMotDePasse(idOuEmail, nouveauMotDePasse) {
     if (rows && rows.length) {
       const u = rows[0];
       if (COMPTES_DEMO_OFFLINE[u.email]) {
-        COMPTES_DEMO_OFFLINE[u.email].mdp = mdpNorm;
+        COMPTES_DEMO_OFFLINE[u.email].mot_de_passe_hash = hash;
       }
       persisterUtilisateursSurDisque();
       return utilisateurVersCamel(u);
@@ -332,10 +330,9 @@ async function reinitialiserMotDePasse(idOuEmail, nouveauMotDePasse) {
   // Fallback mémoire
   for (const [k, v] of UTILISATEURS_MEMOIRE.entries()) {
     if (v.id === idOuEmail || (v.email || "").toLowerCase().trim() === idOuEmail.toLowerCase().trim()) {
-      v.mdp = mdpNorm;
       v.mot_de_passe_hash = hash;
       if (COMPTES_DEMO_OFFLINE[v.email]) {
-        COMPTES_DEMO_OFFLINE[v.email].mdp = mdpNorm;
+        COMPTES_DEMO_OFFLINE[v.email].mot_de_passe_hash = hash;
       }
       persisterUtilisateursSurDisque();
       return utilisateurVersCamel(v);
@@ -361,16 +358,8 @@ async function connecter(email, motDePasse) {
       if (utilisateur.mot_de_passe_hash) {
         try {
           motDePasseValide = await bcrypt.compare(mdpNorm, utilisateur.mot_de_passe_hash);
-        } catch (_) {}
-      }
-      if (!motDePasseValide) {
-        if (
-          utilisateur.mot_de_passe_hash === mdpNorm ||
-          utilisateur.mdp === mdpNorm ||
-          mdpNorm === "notaire123" ||
-          mdpNorm === "admin123"
-        ) {
-          motDePasseValide = true;
+        } catch (_) {
+          motDePasseValide = false;
         }
       }
       if (motDePasseValide) {
@@ -396,12 +385,12 @@ async function connecter(email, motDePasse) {
     Array.from(UTILISATEURS_MEMOIRE.values()).find((u) => (u.email || "").toLowerCase().trim() === emailNorm);
   if (compteSecours) {
     let motDePasseValide = false;
-    if (compteSecours.mdp === mdpNorm || mdpNorm === "notaire123" || mdpNorm === "admin123") {
-      motDePasseValide = true;
-    } else if (compteSecours.mot_de_passe_hash) {
+    if (compteSecours.mot_de_passe_hash) {
       try {
         motDePasseValide = await bcrypt.compare(mdpNorm, compteSecours.mot_de_passe_hash);
-      } catch (_) {}
+      } catch (_) {
+        motDePasseValide = false;
+      }
     }
     if (motDePasseValide) {
       const jeton = jwt.sign(

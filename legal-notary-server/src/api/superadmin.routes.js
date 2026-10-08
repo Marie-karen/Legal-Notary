@@ -252,11 +252,14 @@ router.get("/emails-envoyes", async (req, res, next) => {
 router.post("/renvoyer-email", async (req, res, next) => {
   try {
     const { email, nomComplet, role, motDePasse, nomEtude, domaine } = req.body || {};
+    if (!motDePasse || typeof motDePasse !== "string" || !motDePasse.trim()) {
+      return res.status(400).json({ erreur: "Mot de passe obligatoire." });
+    }
     const resultat = await superadminService.envoyerEmailBienvenueCollaborateur({
       destinataireEmail: email,
       nomComplet,
       role,
-      motDePasse,
+      motDePasse: motDePasse.trim(),
       nomEtude,
       domaine,
     });

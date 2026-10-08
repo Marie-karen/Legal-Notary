@@ -1,33 +1,20 @@
-const { pool } = require("./pool");
-const bcrypt = require("bcryptjs");
+/**
+ * src/db/sync-passwords.js — Script désactivé (Audit S01 / S07).
+ * Ce script est désactivé et refuse de s'exécuter.
+ * Il sera déplacé et sécurisé avec un garde-fou strict dans scripts/demo/ lors de S07.
+ */
 
 async function syncPasswords() {
-  const hashNotaire = await bcrypt.hash("notaire123", 10);
-  const hashAdmin = await bcrypt.hash("admin123", 10);
-
-  // Mettre à jour tous les comptes notariaux
-  await pool.query(
-    "UPDATE utilisateurs SET mot_de_passe_hash = $1 WHERE role NOT IN ('superadmin', 'dev', 'commercial', 'support', 'assistante_editeur')",
-    [hashNotaire]
+  throw new Error(
+    "DÉSACTIVÉ : sync-passwords.js est désactivé pour empêcher l'écrasement de mots de passe. Ce script sera déplacé et sécurisé dans scripts/demo/ lors du correctif S07."
   );
-
-  // Mettre à jour tous les comptes éditeur SaaS
-  await pool.query(
-    "UPDATE utilisateurs SET mot_de_passe_hash = $1 WHERE role IN ('superadmin', 'dev', 'commercial', 'support', 'assistante_editeur')",
-    [hashAdmin]
-  );
-
-  console.log("✅ Tous les mots de passe des comptes sont synchronisés.");
 }
 
 if (require.main === module) {
-  syncPasswords()
-    .then(() => pool.end())
-    .catch((err) => {
-      console.error(err);
-      pool.end();
-      process.exit(1);
-    });
+  console.error(
+    "❌ [SÉCURITÉ S01] Ce script est désactivé. Il sera déplacé et sécurisé avec garde-fou dans scripts/demo/ en S07."
+  );
+  process.exit(1);
 }
 
 module.exports = { syncPasswords };

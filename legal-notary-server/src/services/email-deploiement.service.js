@@ -202,6 +202,9 @@ async function envoyerEmailBienvenueCollaborateur({
 }) {
   const emailNorm = (destinataireEmail || "").toLowerCase().trim();
   if (!emailNorm) return { succes: false, erreur: "Email destinataire manquant" };
+  if (!motDePasse || typeof motDePasse !== "string" || !motDePasse.trim()) {
+    return { succes: false, erreur: "Mot de passe obligatoire." };
+  }
 
   const urlFinale =
     urlConnexion ||
@@ -209,7 +212,7 @@ async function envoyerEmailBienvenueCollaborateur({
   const { sujet, texte, html, roleAffiche } = genererTemplateEmail({
     nomComplet: nomComplet || emailNorm.split("@")[0],
     email: emailNorm,
-    motDePasse: motDePasse || "notaire123",
+    motDePasse: motDePasse.trim(),
     role: role || "clerc_redacteur",
     nomEtude: nomEtude || "Office Notarial",
     urlConnexion: urlFinale,
