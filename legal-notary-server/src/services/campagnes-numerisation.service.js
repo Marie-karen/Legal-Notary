@@ -7,6 +7,8 @@
  *   - Statut d'avancement et détection des dossiers incomplets
  */
 
+const { pool } = require("../db/pool");
+
 const CAMPAGNES_MEMOIRE = [
   {
     id: "camp-001",

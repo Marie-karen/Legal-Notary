@@ -17,7 +17,7 @@ Pour permettre la détection immédiate de toute régression sans bloquer les d�
 | :--- | :---: | :---: | :--- |
 | `scripts/importer-referentiel.js` | **0** | 5 | Lots métier / Refactoring |
 | `src/api/auth.routes.js` | **0** | 1 | S01 / S03 / S05 |
-| `src/api/fiscal.routes.js` | **3** | 8 | Lot 0 (Multi-pays) & S11 |
+| `src/api/fiscal.routes.js` | **0** | 10 | Résolu (imports fs, path) |
 | `src/api/rapports.routes.js` | **0** | 1 | Lots métier / Refactoring |
 | `src/api/recus.routes.js` | **0** | 1 | Lots métier / Refactoring |
 | `src/db/migrate.js` | **0** | 1 | S08 / S23 |
@@ -26,7 +26,7 @@ Pour permettre la détection immédiate de toute régression sans bloquer les d�
 | `src/server.js` | **0** | 8 | Lots métier / Refactoring |
 | `src/services/archives.service.js` | **0** | 11 | Lots métier / Refactoring |
 | `src/services/auth.service.js` | **0** | 16 | S01 / S03 / S05 |
-| `src/services/campagnes-numerisation.service.js` | **3** | 3 | Lot 5 (Archives) |
+| `src/services/campagnes-numerisation.service.js` | **0** | 3 | Résolu (import pool) |
 | `src/services/demande-demo.service.js` | **0** | 3 | Lots métier / Refactoring |
 | `src/services/dossiers.service.js` | **0** | 22 | Lots métier / Refactoring |
 | `src/services/email-deploiement.service.js` | **0** | 4 | Lots métier / Refactoring |
@@ -59,9 +59,9 @@ Pour permettre la détection immédiate de toute régression sans bloquer les d�
 | `tests/excel.service.test.js` | **0** | 2 | Lots métier / Refactoring |
 | `tests/internal-control.test.js` | **0** | 1 | S14 |
 | `tests/kyc.service.test.js` | **0** | 1 | Lots métier / Refactoring |
-| **TOTAL (44 fichiers)** | **6** | **274** | *À résorber progressivement* |
+| **TOTAL (44 fichiers)** | **0** | **276** | *0 erreur restante (seuls des avertissements non-bloquants subsistent)* |
 
-### Détail des 6 erreurs de référence
-1. **`src/api/fiscal.routes.js`** (3 erreurs `no-undef`) : variables `fs` et `path` non déclarées dans une route d'export Excel (résolu lors du Lot 0 et S10/S25).
-2. **`src/services/campagnes-numerisation.service.js`** (3 erreurs `no-undef`) : référence à `pool` sans import préalable (résolu lors du Lot 5).
+### Résolution des 6 erreurs de référence (Étape C0 clôture)
+1. **`src/api/fiscal.routes.js`** (3 erreurs `no-undef` résolues) : variables `fs` et `path` désormais importées au sommet du fichier. Couvert par le test `tests/lint_fixes_c0.test.js` (téléchargement modèle standard et gestion 404 sans ReferenceError).
+2. **`src/services/campagnes-numerisation.service.js`** (3 erreurs `no-undef` résolues) : import destructuré de `{ pool }` ajouté depuis `../db/pool`. Couvert par le test `tests/lint_fixes_c0.test.js` (`listerCampagnes`, `creerCampagne`, `enregistrerAvancementLot` testés sans ReferenceError).
 

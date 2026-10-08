@@ -8,7 +8,8 @@
  *      - Corriger directement et valider (statut: 'valide_corrige')
  *      - Renvoyer avec observations au comptable (statut: 'a_corriger')
  */
-
+const fs = require("fs");
+const path = require("path");
 const express = require("express");
 const { exigerPermission } = require("../middleware/exigerPermission");
 const { pool } = require("../db/pool");
