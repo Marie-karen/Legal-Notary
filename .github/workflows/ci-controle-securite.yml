@@ -1,0 +1,172 @@
+name: Chaîne de Contrôle Automatique & Tests (C0)
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["main"]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # 1. Contrôle des fichiers interdits dans le dépôt (.xlsx, .pdf, .env SAUF .env.example, uploads/)
+  fichiers-interdits:
+    name: 🛡️ Fichiers interdits (xlsx, pdf, env, uploads)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupérer le code source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Installer Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Vérifier l'absence de fichiers interdits
+        run: node scripts/securite/verifier-fichiers-interdits.js
+
+  # 2. Formatage Prettier & Analyse ESLint (différentiel contre baseline)
+  qualite-et-lint:
+    name: 🎨 Formatage Prettier & Qualité ESLint
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: legal-notary-server
+    steps:
+      - name: Récupérer le code source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Installer Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: legal-notary-server/package-lock.json
+
+      - name: Installer les dépendances
+        run: npm ci
+
+      - name: Contrôle de formatage Prettier
+        run: npm run format:check
+
+      - name: Contrôle ESLint (nouvelles erreurs par rapport à la baseline)
+        run: npm run lint:pr
+
+  # 3. Analyse SAST locale avec Semgrep (OWASP Top 10 & JS) sans compte ni envoi externe
+  sast-semgrep:
+    name: 🔍 Analyse SAST Semgrep local (OWASP)
+    runs-on: ubuntu-latest
+    container:
+      image: returntocorp/semgrep:latest
+    steps:
+      - name: Récupérer le code source
+        uses: actions/checkout@v4
+
+      - name: Exécuter Semgrep en local (aucune télémétrie ni jeton externe)
+        run: |
+          semgrep scan \
+            --config p/owasp-top-ten \
+            --config p/javascript \
+            --error \
+            --disable-metrics \
+            --exclude "node_modules" \
+            --exclude "uploads" \
+            --exclude "data" \
+            --exclude "legal-notary-suite" \
+            --exclude "*.xlsx" \
+            --exclude "*.pdf"
+        env:
+          SEMGREP_SEND_METRICS: "off"
+          SEMGREP_ENABLE_VERSION_CHECK: "0"
+
+  # 4. Détection de secrets dans le code et l'historique Git avec Gitleaks
+  secrets-gitleaks:
+    name: 🔑 Détection de secrets (Gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupérer le code et tout l'historique Git
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Scanner avec Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # 5. Contrôle des dépendances vulnérables (bloquant pour faille élevée ou critique)
+  audit-dependances:
+    name: 📦 Audit des dépendances vulnérables
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: legal-notary-server
+    steps:
+      - name: Récupérer le code source
+        uses: actions/checkout@v4
+
+      - name: Installer Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Vérifier les dépendances (bloque si faille high ou critical)
+        run: npm run securite:audit
+
+  # 6. Tests unitaires et d'intégration avec conteneur PostgreSQL 18
+  tests-base-locale:
+    name: 🧪 Tests automatisés node:test (PostgreSQL 18)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: legal-notary-server
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgrespassword
+          POSTGRES_DB: legal_notary_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Récupérer le code source
+        uses: actions/checkout@v4
+
+      - name: Installer Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: legal-notary-server/package-lock.json
+
+      - name: Installer les dépendances
+        run: npm ci
+
+      - name: Appliquer les migrations de base de données
+        run: npm run migrate
+        env:
+          DATABASE_URL: postgresql://postgres:postgrespassword@localhost:5432/legal_notary_test
+          NODE_ENV: test
+
+      - name: Exécuter la suite complète de 50 tests automatisés
+        run: npm test
+        env:
+          TEST_DATABASE_URL: postgresql://postgres:postgrespassword@localhost:5432/legal_notary_test
+          NODE_ENV: test
+          ALLOW_IN_MEMORY: "false"
+          PORT: "4001"
+          JWT_SECRET: "test_jwt_secret_legal_notary_1234567890_strictly_local"
+          CLE_CHIFFREMENT_NOTIFS: "4f8b9e1a2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f"
+          CONTROL_HUB_SECRET_KEY: "cle_secrete_ultra_securisee"

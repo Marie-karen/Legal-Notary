@@ -1,0 +1,1946 @@
+{
+  "scripts/importer-referentiel.js": {
+    "errors": 0,
+    "warnings": 5,
+    "messages": [
+      {
+        "ruleId": "security/detect-object-injection",
+        "severity": 1,
+        "message": "Generic Object Injection Sink",
+        "line": 245
+      },
+      {
+        "ruleId": "security/detect-object-injection",
+        "severity": 1,
+        "message": "Generic Object Injection Sink",
+        "line": 250
+      },
+      {
+        "ruleId": "security/detect-non-literal-fs-filename",
+        "severity": 1,
+        "message": "Found readFileSync from package \"fs\" with non literal argument at index 0",
+        "line": 259
+      },
+      {
+        "ruleId": "security/detect-object-injection",
+        "severity": 1,
+        "message": "Generic Object Injection Sink",
+        "line": 274
+      },
+      {
+        "ruleId": "security/detect-object-injection",
+        "severity": 1,
+        "message": "Generic Object Injection Sink",
+        "line": 279
+      }
+    ]
+  },
+  "src/api/auth.routes.js": {
+    "errors": 0,
+    "warnings": 1,
+    "messages": [
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'err' is defined but never used.",
+        "line": 53
+      }
+    ]
+  },
+  "src/api/fiscal.routes.js": {
+    "errors": 3,
+    "warnings": 8,
+    "messages": [
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'e' is defined but never used.",
+        "line": 148
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'err' is defined but never used.",
+        "line": 200
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'dbErr' is defined but never used.",
+        "line": 819
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 866
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'next' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 953
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'e' is defined but never used.",
+        "line": 965
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'next' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 977
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'e' is defined but never used.",
+        "line": 996
+      },
+      {
+        "ruleId": "no-undef",
+        "severity": 2,
+        "message": "'fs' is not defined.",
+        "line": 1058
+      },
+      {
+        "ruleId": "no-undef",
+        "severity": 2,
+        "message": "'path' is not defined.",
+        "line": 1061
+      },
+      {
+        "ruleId": "no-undef",
+        "severity": 2,
+        "message": "'fs' is not defined.",
+        "line": 1064
+      }
+    ]
+  },
+  "src/api/rapports.routes.js": {
+    "errors": 0,
+    "warnings": 1,
+    "messages": [
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'exigerPermission' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 6
+      }
+    ]
+  },
+  "src/api/recus.routes.js": {
+    "errors": 0,
+    "warnings": 1,
+    "messages": [
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'exigerPermission' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 6
+      }
+    ]
+  },
+  "src/db/migrate.js": {
+    "errors": 0,
+    "warnings": 1,
+    "messages": [
+      {
+        "ruleId": "security/detect-non-literal-fs-filename",
+        "severity": 1,
+        "message": "Found readFileSync from package \"fs\" with non literal argument at index 0",
+        "line": 58
+      }
+    ]
+  },
+  "src/db/pool.js": {
+    "errors": 0,
+    "warnings": 6,
+    "messages": [
+      {
+        "ruleId": "security/detect-non-literal-fs-filename",
+        "severity": 1,
+        "message": "Found existsSync from package \"fs\" with non literal argument at index 0",
+        "line": 24
+      },
+      {
+        "ruleId": "security/detect-non-literal-fs-filename",
+        "severity": 1,
+        "message": "Found existsSync from package \"fs\" with non literal argument at index 0",
+        "line": 39
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 291
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'sql' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 364
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'params' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 364
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 395
+      }
+    ]
+  },
+  "src/middleware/controlHubAuth.middleware.js": {
+    "errors": 0,
+    "warnings": 1,
+    "messages": [
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'err' is defined but never used.",
+        "line": 49
+      }
+    ]
+  },
+  "src/server.js": {
+    "errors": 0,
+    "warnings": 8,
+    "messages": [
+      {
+        "ruleId": "security/detect-non-literal-fs-filename",
+        "severity": 1,
+        "message": "Found existsSync from package \"fs\" with non literal argument at index 0",
+        "line": 29
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'notifyControlHub' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 63
+      },
+      {
+        "ruleId": "security/detect-non-literal-fs-filename",
+        "severity": 1,
+        "message": "Found existsSync from package \"fs\" with non literal argument at index 0",
+        "line": 119
+      },
+      {
+        "ruleId": "security/detect-non-literal-fs-filename",
+        "severity": 1,
+        "message": "Found existsSync from package \"fs\" with non literal argument at index 0",
+        "line": 128
+      },
+      {
+        "ruleId": "security/detect-non-literal-fs-filename",
+        "severity": 1,
+        "message": "Found existsSync from package \"fs\" with non literal argument at index 0",
+        "line": 140
+      },
+      {
+        "ruleId": "security/detect-non-literal-fs-filename",
+        "severity": 1,
+        "message": "Found existsSync from package \"fs\" with non literal argument at index 0",
+        "line": 184
+      },
+      {
+        "ruleId": "security/detect-non-literal-fs-filename",
+        "severity": 1,
+        "message": "Found existsSync from package \"fs\" with non literal argument at index 0",
+        "line": 189
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'next' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 195
+      }
+    ]
+  },
+  "src/services/archives.service.js": {
+    "errors": 0,
+    "warnings": 11,
+    "messages": [
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 79
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 103
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 149
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 210
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 298
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 349
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 369
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 395
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 424
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 517
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 577
+      }
+    ]
+  },
+  "src/services/auth.service.js": {
+    "errors": 0,
+    "warnings": 16,
+    "messages": [
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'k' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 164
+      },
+      {
+        "ruleId": "security/detect-object-injection",
+        "severity": 1,
+        "message": "Generic Object Injection Sink",
+        "line": 174
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 196
+      },
+      {
+        "ruleId": "security/detect-object-injection",
+        "severity": 1,
+        "message": "Generic Object Injection Sink",
+        "line": 215
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 311
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'k' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 333
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 364
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'errDb' is defined but never used.",
+        "line": 389
+      },
+      {
+        "ruleId": "security/detect-object-injection",
+        "severity": 1,
+        "message": "Generic Object Injection Sink",
+        "line": 395
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 404
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'erreur' is defined but never used.",
+        "line": 429
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'errDb' is defined but never used.",
+        "line": 447
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 466
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 476
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 485
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 500
+      }
+    ]
+  },
+  "src/services/campagnes-numerisation.service.js": {
+    "errors": 3,
+    "warnings": 3,
+    "messages": [
+      {
+        "ruleId": "no-undef",
+        "severity": 2,
+        "message": "'pool' is not defined.",
+        "line": 66
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'errDb' is defined but never used.",
+        "line": 93
+      },
+      {
+        "ruleId": "no-undef",
+        "severity": 2,
+        "message": "'pool' is not defined.",
+        "line": 111
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'errDb' is defined but never used.",
+        "line": 129
+      },
+      {
+        "ruleId": "no-undef",
+        "severity": 2,
+        "message": "'pool' is not defined.",
+        "line": 156
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'errDb' is defined but never used.",
+        "line": 166
+      }
+    ]
+  },
+  "src/services/demande-demo.service.js": {
+    "errors": 0,
+    "warnings": 3,
+    "messages": [
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'authService' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 8
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'envoyerEmailBienvenueCollaborateur' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 10
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'etudeDemoCreee' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 69
+      }
+    ]
+  },
+  "src/services/dossiers.service.js": {
+    "errors": 0,
+    "warnings": 22,
+    "messages": [
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 306
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 314
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 333
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 365
+      },
+      {
+        "ruleId": "security/detect-object-injection",
+        "severity": 1,
+        "message": "Generic Object Injection Sink",
+        "line": 392
+      },
+      {
+        "ruleId": "security/detect-object-injection",
+        "severity": 1,
+        "message": "Function Call Object Injection Sink",
+        "line": 394
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 406
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 433
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 626
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 650
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 679
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 744
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'err' is defined but never used.",
+        "line": 834
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'err' is defined but never used.",
+        "line": 919
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'err' is defined but never used.",
+        "line": 1016
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 1112
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 1137
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 1164
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 1192
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 1212
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 1243
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 1275
+      }
+    ]
+  },
+  "src/services/email-deploiement.service.js": {
+    "errors": 0,
+    "warnings": 4,
+    "messages": [
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 65
+      },
+      {
+        "ruleId": "security/detect-object-injection",
+        "severity": 1,
+        "message": "Generic Object Injection Sink",
+        "line": 71
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 591
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 677
+      }
+    ]
+  },
+  "src/services/excel-renderer.service.js": {
+    "errors": 0,
+    "warnings": 16,
+    "messages": [
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'fmtFCFA' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 24
+      },
+      {
+        "ruleId": "security/detect-non-literal-fs-filename",
+        "severity": 1,
+        "message": "Found existsSync from package \"fs\" with non literal argument at index 0",
+        "line": 33
+      },
+      {
+        "ruleId": "security/detect-object-injection",
+        "severity": 1,
+        "message": "Variable Assigned to Object Injection Sink",
+        "line": 46
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'dateJour' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 57
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'emo' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 63
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'totaux' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 64
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'roles' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 67
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'nbExp' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 70
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'pagesExp' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 71
+      },
+      {
+        "ruleId": "security/detect-object-injection",
+        "severity": 1,
+        "message": "Variable Assigned to Object Injection Sink",
+        "line": 82
+      },
+      {
+        "ruleId": "security/detect-object-injection",
+        "severity": 1,
+        "message": "Variable Assigned to Object Injection Sink",
+        "line": 143
+      },
+      {
+        "ruleId": "security/detect-object-injection",
+        "severity": 1,
+        "message": "Generic Object Injection Sink",
+        "line": 156
+      },
+      {
+        "ruleId": "security/detect-object-injection",
+        "severity": 1,
+        "message": "Generic Object Injection Sink",
+        "line": 156
+      },
+      {
+        "ruleId": "security/detect-object-injection",
+        "severity": 1,
+        "message": "Generic Object Injection Sink",
+        "line": 156
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'rowHasContent' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 157
+      },
+      {
+        "ruleId": "security/detect-object-injection",
+        "severity": 1,
+        "message": "Variable Assigned to Object Injection Sink",
+        "line": 173
+      }
+    ]
+  },
+  "src/services/excel.service.js": {
+    "errors": 0,
+    "warnings": 9,
+    "messages": [
+      {
+        "ruleId": "security/detect-non-literal-fs-filename",
+        "severity": 1,
+        "message": "Found existsSync from package \"fs\" with non literal argument at index 0",
+        "line": 78
+      },
+      {
+        "ruleId": "security/detect-non-literal-fs-filename",
+        "severity": 1,
+        "message": "Found statSync from package \"fs\" with non literal argument at index 0",
+        "line": 85
+      },
+      {
+        "ruleId": "security/detect-non-literal-fs-filename",
+        "severity": 1,
+        "message": "Found statSync from package \"fs\" with non literal argument at index 0",
+        "line": 102
+      },
+      {
+        "ruleId": "security/detect-non-literal-fs-filename",
+        "severity": 1,
+        "message": "Found existsSync from package \"fs\" with non literal argument at index 0",
+        "line": 121
+      },
+      {
+        "ruleId": "security/detect-non-literal-fs-filename",
+        "severity": 1,
+        "message": "Found existsSync from package \"fs\" with non literal argument at index 0",
+        "line": 125
+      },
+      {
+        "ruleId": "security/detect-non-literal-fs-filename",
+        "severity": 1,
+        "message": "Found existsSync from package \"fs\" with non literal argument at index 0",
+        "line": 144
+      },
+      {
+        "ruleId": "security/detect-non-literal-fs-filename",
+        "severity": 1,
+        "message": "Found writeFileSync from package \"fs\" with non literal argument at index 0",
+        "line": 263
+      },
+      {
+        "ruleId": "security/detect-non-literal-fs-filename",
+        "severity": 1,
+        "message": "Found existsSync from package \"fs\" with non literal argument at index 0",
+        "line": 280
+      },
+      {
+        "ruleId": "security/detect-non-literal-fs-filename",
+        "severity": 1,
+        "message": "Found unlinkSync from package \"fs\" with non literal argument at index 0",
+        "line": 281
+      }
+    ]
+  },
+  "src/services/fiscal.service.js": {
+    "errors": 0,
+    "warnings": 11,
+    "messages": [
+      {
+        "ruleId": "security/detect-object-injection",
+        "severity": 1,
+        "message": "Generic Object Injection Sink",
+        "line": 62
+      },
+      {
+        "ruleId": "security/detect-object-injection",
+        "severity": 1,
+        "message": "Generic Object Injection Sink",
+        "line": 68
+      },
+      {
+        "ruleId": "security/detect-object-injection",
+        "severity": 1,
+        "message": "Generic Object Injection Sink",
+        "line": 74
+      },
+      {
+        "ruleId": "security/detect-object-injection",
+        "severity": 1,
+        "message": "Generic Object Injection Sink",
+        "line": 75
+      },
+      {
+        "ruleId": "security/detect-object-injection",
+        "severity": 1,
+        "message": "Generic Object Injection Sink",
+        "line": 75
+      },
+      {
+        "ruleId": "security/detect-object-injection",
+        "severity": 1,
+        "message": "Generic Object Injection Sink",
+        "line": 76
+      },
+      {
+        "ruleId": "security/detect-object-injection",
+        "severity": 1,
+        "message": "Generic Object Injection Sink",
+        "line": 80
+      },
+      {
+        "ruleId": "security/detect-object-injection",
+        "severity": 1,
+        "message": "Generic Object Injection Sink",
+        "line": 84
+      },
+      {
+        "ruleId": "security/detect-object-injection",
+        "severity": 1,
+        "message": "Generic Object Injection Sink",
+        "line": 87
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'totalGeneralEnLettres' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 642
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'catalogueStandard' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 645
+      }
+    ]
+  },
+  "src/services/internal-control.service.js": {
+    "errors": 0,
+    "warnings": 5,
+    "messages": [
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'err' is defined but never used.",
+        "line": 96
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'err' is defined but never used.",
+        "line": 194
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 341
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 360
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 370
+      }
+    ]
+  },
+  "src/services/kyc.service.js": {
+    "errors": 0,
+    "warnings": 1,
+    "messages": [
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'errDb' is defined but never used.",
+        "line": 87
+      }
+    ]
+  },
+  "src/services/manuel-procedure.service.js": {
+    "errors": 0,
+    "warnings": 5,
+    "messages": [
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 97
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 104
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 115
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 125
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 144
+      }
+    ]
+  },
+  "src/services/monitoring-support.service.js": {
+    "errors": 0,
+    "warnings": 5,
+    "messages": [
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 78
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 138
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 167
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'utilisateurId' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 176
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 192
+      }
+    ]
+  },
+  "src/services/mouvements-physiques.service.js": {
+    "errors": 0,
+    "warnings": 8,
+    "messages": [
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'parametresService' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 6
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 81
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 116
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'etudeId' is assigned a value but never used. Allowed unused args must match /^_/u.",
+        "line": 128
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'notes' is assigned a value but never used. Allowed unused args must match /^_/u.",
+        "line": 131
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 147
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 182
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 208
+      }
+    ]
+  },
+  "src/services/notifications.service.js": {
+    "errors": 0,
+    "warnings": 4,
+    "messages": [
+      {
+        "ruleId": "security/detect-object-injection",
+        "severity": 1,
+        "message": "Function Call Object Injection Sink",
+        "line": 36
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'err' is defined but never used.",
+        "line": 291
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'err' is defined but never used.",
+        "line": 302
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'err' is defined but never used.",
+        "line": 313
+      }
+    ]
+  },
+  "src/services/numerisation-ocr.service.js": {
+    "errors": 0,
+    "warnings": 4,
+    "messages": [
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 39
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'metadata' is assigned a value but never used. Allowed unused args must match /^_/u.",
+        "line": 68
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 94
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 149
+      }
+    ]
+  },
+  "src/services/packs.service.js": {
+    "errors": 0,
+    "warnings": 6,
+    "messages": [
+      {
+        "ruleId": "security/detect-non-literal-fs-filename",
+        "severity": 1,
+        "message": "Found readFileSync from package \"fs\" with non literal argument at index 0",
+        "line": 26
+      },
+      {
+        "ruleId": "security/detect-non-literal-fs-filename",
+        "severity": 1,
+        "message": "Found readFileSync from package \"fs\" with non literal argument at index 0",
+        "line": 36
+      },
+      {
+        "ruleId": "security/detect-object-injection",
+        "severity": 1,
+        "message": "Generic Object Injection Sink",
+        "line": 57
+      },
+      {
+        "ruleId": "security/detect-object-injection",
+        "severity": 1,
+        "message": "Generic Object Injection Sink",
+        "line": 57
+      },
+      {
+        "ruleId": "security/detect-object-injection",
+        "severity": 1,
+        "message": "Generic Object Injection Sink",
+        "line": 59
+      },
+      {
+        "ruleId": "security/detect-unsafe-regex",
+        "severity": 1,
+        "message": "Unsafe Regular Expression",
+        "line": 171
+      }
+    ]
+  },
+  "src/services/parametres-notifications.service.js": {
+    "errors": 0,
+    "warnings": 4,
+    "messages": [
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 81
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 173
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 195
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 208
+      }
+    ]
+  },
+  "src/services/parametres.service.js": {
+    "errors": 0,
+    "warnings": 6,
+    "messages": [
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 149
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 182
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 189
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 255
+      },
+      {
+        "ruleId": "security/detect-object-injection",
+        "severity": 1,
+        "message": "Generic Object Injection Sink",
+        "line": 261
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 266
+      }
+    ]
+  },
+  "src/services/projets-acte.service.js": {
+    "errors": 0,
+    "warnings": 6,
+    "messages": [
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'errDb' is defined but never used.",
+        "line": 86
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'errDb' is defined but never used.",
+        "line": 100
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'errDb' is defined but never used.",
+        "line": 132
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'errDb' is defined but never used.",
+        "line": 185
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'errDb' is defined but never used.",
+        "line": 232
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'errDb' is defined but never used.",
+        "line": 279
+      }
+    ]
+  },
+  "src/services/rapports.service.js": {
+    "errors": 0,
+    "warnings": 1,
+    "messages": [
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'param' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 204
+      }
+    ]
+  },
+  "src/services/recherche-unifiee.service.js": {
+    "errors": 0,
+    "warnings": 1,
+    "messages": [
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 62
+      }
+    ]
+  },
+  "src/services/recus.service.js": {
+    "errors": 0,
+    "warnings": 9,
+    "messages": [
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'avecTransaction' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 5
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'nombreEnLettresFCFA' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 10
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 53
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 59
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 76
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 209
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 235
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 254
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 315
+      }
+    ]
+  },
+  "src/services/referentiel.service.js": {
+    "errors": 0,
+    "warnings": 17,
+    "messages": [
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 342
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 354
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 374
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 390
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 486
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 513
+      },
+      {
+        "ruleId": "security/detect-object-injection",
+        "severity": 1,
+        "message": "Variable Assigned to Object Injection Sink",
+        "line": 575
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 588
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 631
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 669
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 706
+      },
+      {
+        "ruleId": "security/detect-object-injection",
+        "severity": 1,
+        "message": "Variable Assigned to Object Injection Sink",
+        "line": 731
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 739
+      },
+      {
+        "ruleId": "security/detect-object-injection",
+        "severity": 1,
+        "message": "Variable Assigned to Object Injection Sink",
+        "line": 768
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 776
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 792
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 804
+      }
+    ]
+  },
+  "src/services/sauvegarde-immuable.service.js": {
+    "errors": 0,
+    "warnings": 12,
+    "messages": [
+      {
+        "ruleId": "security/detect-non-literal-fs-filename",
+        "severity": 1,
+        "message": "Found writeFileSync from package \"fs\" with non literal argument at index 0",
+        "line": 92
+      },
+      {
+        "ruleId": "security/detect-non-literal-fs-filename",
+        "severity": 1,
+        "message": "Found statSync from package \"fs\" with non literal argument at index 0",
+        "line": 93
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'etudeId' is assigned a value but never used. Allowed unused args must match /^_/u.",
+        "line": 129
+      },
+      {
+        "ruleId": "security/detect-non-literal-fs-filename",
+        "severity": 1,
+        "message": "Found statSync from package \"fs\" with non literal argument at index 0",
+        "line": 138
+      },
+      {
+        "ruleId": "security/detect-non-literal-fs-filename",
+        "severity": 1,
+        "message": "Found readFileSync from package \"fs\" with non literal argument at index 0",
+        "line": 139
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'etudeId' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 163
+      },
+      {
+        "ruleId": "security/detect-non-literal-fs-filename",
+        "severity": 1,
+        "message": "Found existsSync from package \"fs\" with non literal argument at index 0",
+        "line": 170
+      },
+      {
+        "ruleId": "security/detect-non-literal-fs-filename",
+        "severity": 1,
+        "message": "Found readFileSync from package \"fs\" with non literal argument at index 0",
+        "line": 174
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'err' is defined but never used.",
+        "line": 187
+      },
+      {
+        "ruleId": "security/detect-non-literal-fs-filename",
+        "severity": 1,
+        "message": "Found existsSync from package \"fs\" with non literal argument at index 0",
+        "line": 246
+      },
+      {
+        "ruleId": "security/detect-non-literal-fs-filename",
+        "severity": 1,
+        "message": "Found readdirSync from package \"fs\" with non literal argument at index 0",
+        "line": 248
+      },
+      {
+        "ruleId": "security/detect-non-literal-fs-filename",
+        "severity": 1,
+        "message": "Found statSync from package \"fs\" with non literal argument at index 0",
+        "line": 254
+      }
+    ]
+  },
+  "src/services/stockage-persistant.service.js": {
+    "errors": 0,
+    "warnings": 4,
+    "messages": [
+      {
+        "ruleId": "security/detect-non-literal-fs-filename",
+        "severity": 1,
+        "message": "Found existsSync from package \"fs\" with non literal argument at index 0",
+        "line": 28
+      },
+      {
+        "ruleId": "security/detect-non-literal-fs-filename",
+        "severity": 1,
+        "message": "Found readFileSync from package \"fs\" with non literal argument at index 0",
+        "line": 29
+      },
+      {
+        "ruleId": "security/detect-non-literal-fs-filename",
+        "severity": 1,
+        "message": "Found writeFileSync from package \"fs\" with non literal argument at index 0",
+        "line": 43
+      },
+      {
+        "ruleId": "security/detect-non-literal-fs-filename",
+        "severity": 1,
+        "message": "Found renameSync from package \"fs\" with non literal argument at index 0,1",
+        "line": 44
+      }
+    ]
+  },
+  "src/services/storage/storage.service.js": {
+    "errors": 0,
+    "warnings": 23,
+    "messages": [
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'etudeId' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 11
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'dossierId' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 11
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'nomFichier' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 11
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'buffer' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 11
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'mimeType' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 11
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'cheminStockage' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 14
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'cheminStockage' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 17
+      },
+      {
+        "ruleId": "security/detect-non-literal-fs-filename",
+        "severity": 1,
+        "message": "Found existsSync from package \"fs\" with non literal argument at index 0",
+        "line": 27
+      },
+      {
+        "ruleId": "security/detect-non-literal-fs-filename",
+        "severity": 1,
+        "message": "Found mkdirSync from package \"fs\" with non literal argument at index 0",
+        "line": 28
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 30
+      },
+      {
+        "ruleId": "security/detect-non-literal-fs-filename",
+        "severity": 1,
+        "message": "Found existsSync from package \"fs\" with non literal argument at index 0",
+        "line": 38
+      },
+      {
+        "ruleId": "security/detect-non-literal-fs-filename",
+        "severity": 1,
+        "message": "Found mkdirSync from package \"fs\" with non literal argument at index 0",
+        "line": 39
+      },
+      {
+        "ruleId": "security/detect-non-literal-fs-filename",
+        "severity": 1,
+        "message": "Found writeFileSync from package \"fs\" with non literal argument at index 0",
+        "line": 42
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 43
+      },
+      {
+        "ruleId": "security/detect-non-literal-fs-filename",
+        "severity": 1,
+        "message": "Found existsSync from package \"fs\" with non literal argument at index 0",
+        "line": 57
+      },
+      {
+        "ruleId": "security/detect-non-literal-fs-filename",
+        "severity": 1,
+        "message": "Found readFileSync from package \"fs\" with non literal argument at index 0",
+        "line": 58
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 59
+      },
+      {
+        "ruleId": "security/detect-non-literal-fs-filename",
+        "severity": 1,
+        "message": "Found existsSync from package \"fs\" with non literal argument at index 0",
+        "line": 68
+      },
+      {
+        "ruleId": "security/detect-non-literal-fs-filename",
+        "severity": 1,
+        "message": "Found unlinkSync from package \"fs\" with non literal argument at index 0",
+        "line": 68
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 69
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'cheminStockage' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 90
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 176
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 211
+      }
+    ]
+  },
+  "src/services/superadmin.service.js": {
+    "errors": 0,
+    "warnings": 13,
+    "messages": [
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'packsService' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 10
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 138
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 197
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 539
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 698
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 714
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 744
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 761
+      },
+      {
+        "ruleId": "security/detect-object-injection",
+        "severity": 1,
+        "message": "Generic Object Injection Sink",
+        "line": 763
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 775
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 954
+      },
+      {
+        "ruleId": "security/detect-object-injection",
+        "severity": 1,
+        "message": "Generic Object Injection Sink",
+        "line": 961
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 972
+      }
+    ]
+  },
+  "src/services/sync-engine.service.js": {
+    "errors": 0,
+    "warnings": 4,
+    "messages": [
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 36
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'err' is defined but never used.",
+        "line": 72
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 81
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'_' is defined but never used.",
+        "line": 101
+      }
+    ]
+  },
+  "src/services/tableau-bord.service.js": {
+    "errors": 0,
+    "warnings": 1,
+    "messages": [
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'errDb' is defined but never used.",
+        "line": 42
+      }
+    ]
+  },
+  "src/services/telemetrie.service.js": {
+    "errors": 0,
+    "warnings": 3,
+    "messages": [
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'e' is defined but never used.",
+        "line": 26
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'e' is defined but never used.",
+        "line": 125
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'query' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 155
+      }
+    ]
+  },
+  "tests/dno-numerotation-recus.test.js": {
+    "errors": 0,
+    "warnings": 1,
+    "messages": [
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'parametresService' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 4
+      }
+    ]
+  },
+  "tests/excel.service.test.js": {
+    "errors": 0,
+    "warnings": 2,
+    "messages": [
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'path' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 7
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'fs' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 8
+      }
+    ]
+  },
+  "tests/internal-control.test.js": {
+    "errors": 0,
+    "warnings": 1,
+    "messages": [
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'t' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 16
+      }
+    ]
+  },
+  "tests/kyc.service.test.js": {
+    "errors": 0,
+    "warnings": 1,
+    "messages": [
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 1,
+        "message": "'t' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 6
+      }
+    ]
+  }
+}
