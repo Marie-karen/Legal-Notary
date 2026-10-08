@@ -60,9 +60,7 @@ const poolConfig = {
 // Résolution de la chaîne de connexion
 let connectionStringCible = "";
 if (isTestEnv) {
-  connectionStringCible =
-    process.env.TEST_DATABASE_URL ||
-    "postgresql://localhost:5432/legal_notary_test";
+  connectionStringCible = process.env.TEST_DATABASE_URL || "postgresql://localhost:5432/legal_notary_test";
 
   // SÉCURITÉ STRICTE (Règle 2) : les tests refusent catégoriquement de s'exécuter
   // si l'adresse de la base ne contient pas "localhost" ou "127.0.0.1".
@@ -78,23 +76,16 @@ if (isTestEnv) {
     throw new Error(messageErreurSecurite);
   }
   poolConfig.connectionString = connectionStringCible;
-  poolConfig.password = String(
-    process.env.PGPASSWORD || process.env.DB_PASSWORD || "",
-  );
+  poolConfig.password = String(process.env.PGPASSWORD || process.env.DB_PASSWORD || "");
 } else if (process.env.DATABASE_URL) {
   poolConfig.connectionString = process.env.DATABASE_URL;
-  poolConfig.password = String(
-    process.env.PGPASSWORD || process.env.DB_PASSWORD || "",
-  );
+  poolConfig.password = String(process.env.PGPASSWORD || process.env.DB_PASSWORD || "");
 } else {
   poolConfig.host = process.env.PGHOST || process.env.DB_HOST || "localhost";
   poolConfig.port = Number(process.env.PGPORT || process.env.DB_PORT) || 5432;
   poolConfig.user = process.env.PGUSER || process.env.DB_USER || "postgres";
-  poolConfig.password = String(
-    process.env.PGPASSWORD || process.env.DB_PASSWORD || "",
-  );
-  poolConfig.database =
-    process.env.PGDATABASE || process.env.DB_NAME || "legalnotary";
+  poolConfig.password = String(process.env.PGPASSWORD || process.env.DB_PASSWORD || "");
+  poolConfig.database = process.env.PGDATABASE || process.env.DB_NAME || "legalnotary";
 }
 
 const pool = new Pool(poolConfig);
@@ -102,10 +93,7 @@ const pool = new Pool(poolConfig);
 pool.on("error", (err) => {
   isDbConnected = false;
   derniereTentativeEchouee = Date.now();
-  console.warn(
-    "[PostgreSQL Pool Notice] Connexion DB perdue, mode résilient actif :",
-    err.message,
-  );
+  console.warn("[PostgreSQL Pool Notice] Connexion DB perdue, mode résilient actif :", err.message);
 });
 
 // Auto-migration résiliente du schéma PostgreSQL pour synchroniser automatiquement les colonnes manquantes
@@ -248,9 +236,7 @@ async function autoMigrerSchema() {
           created_at TIMESTAMPTZ NOT NULL DEFAULT now()
         );
       `);
-      console.log(
-        "[PostgreSQL] Schéma auto-migré et colonnes synchronisées avec succès.",
-      );
+      console.log("[PostgreSQL] Schéma auto-migré et colonnes synchronisées avec succès.");
     } finally {
       client.release();
     }
@@ -261,9 +247,7 @@ async function autoMigrerSchema() {
 
 // Test rapide de la connexion au démarrage sans bloquer le serveur
 async function verifierConnexionRapide() {
-  const allowInMemory =
-    process.env.ALLOW_IN_MEMORY === "true" &&
-    process.env.NODE_ENV !== "production";
+  const allowInMemory = process.env.ALLOW_IN_MEMORY === "true" && process.env.NODE_ENV !== "production";
 
   try {
     const client = await pool.connect();
@@ -290,7 +274,7 @@ async function verifierConnexionRapide() {
         code: err.code || "DB_CONNECTION_FAILED",
         allowInMemory,
         environnement: process.env.NODE_ENV || "development",
-      }),
+      })
     );
 
     // Envoi d'une alerte via telemetrieService
@@ -312,15 +296,13 @@ async function verifierConnexionRapide() {
     if (!allowInMemory) {
       console.error(
         "[PostgreSQL ARRÊT DU SERVEUR] En production ou sans ALLOW_IN_MEMORY=true, " +
-          "le serveur refuse de démarrer sans base de données PostgreSQL joignable.",
+          "le serveur refuse de démarrer sans base de données PostgreSQL joignable."
       );
       if (process.env.NODE_ENV === "production") {
         process.exit(1);
       }
     } else {
-      console.warn(
-        "[PostgreSQL Mode Résilient] Base injoignable -> ALLOW_IN_MEMORY activé en dev/test.",
-      );
+      console.warn("[PostgreSQL Mode Résilient] Base injoignable -> ALLOW_IN_MEMORY activé en dev/test.");
     }
   }
 }
@@ -331,9 +313,7 @@ verifierConnexionRapide().catch(() => {});
 // Interception de pool.query pour un repli ultra-rapide (< 0.1ms) si DB hors-ligne confirmée
 const originalQuery = pool.query.bind(pool);
 pool.query = async function (text, params) {
-  const allowInMemory =
-    process.env.ALLOW_IN_MEMORY === "true" &&
-    process.env.NODE_ENV !== "production";
+  const allowInMemory = process.env.ALLOW_IN_MEMORY === "true" && process.env.NODE_ENV !== "production";
 
   // Si une tentative précédente a échoué il y a moins de 30 secondes, basculer sans attendre
   if (
@@ -342,13 +322,9 @@ pool.query = async function (text, params) {
     Date.now() - derniereTentativeEchouee < DELAI_REVERIFICATION_MS
   ) {
     if (!allowInMemory) {
-      throw new Error(
-        "DB_OFFLINE: Base de données PostgreSQL inaccessible (mode In-Memory désactivé).",
-      );
+      throw new Error("DB_OFFLINE: Base de données PostgreSQL inaccessible (mode In-Memory désactivé).");
     }
-    throw new Error(
-      "DB_OFFLINE: Base de données distante temporairement inaccessible",
-    );
+    throw new Error("DB_OFFLINE: Base de données distante temporairement inaccessible");
   }
 
   try {
@@ -378,18 +354,11 @@ pool.query = async function (text, params) {
  * Si la base est hors-ligne, fournit un client fictif mémoire uniquement si ALLOW_IN_MEMORY est activé.
  */
 async function avecTransaction(travail) {
-  const allowInMemory =
-    process.env.ALLOW_IN_MEMORY === "true" &&
-    process.env.NODE_ENV !== "production";
+  const allowInMemory = process.env.ALLOW_IN_MEMORY === "true" && process.env.NODE_ENV !== "production";
 
-  if (
-    !isDbConnected &&
-    Date.now() - derniereTentativeEchouee < DELAI_REVERIFICATION_MS
-  ) {
+  if (!isDbConnected && Date.now() - derniereTentativeEchouee < DELAI_REVERIFICATION_MS) {
     if (!allowInMemory) {
-      throw new Error(
-        "DB_OFFLINE: Base de données inaccessible pour transaction.",
-      );
+      throw new Error("DB_OFFLINE: Base de données inaccessible pour transaction.");
     }
     const mockClient = {
       query: async (sql, params) => {

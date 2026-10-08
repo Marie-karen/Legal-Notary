@@ -7,10 +7,7 @@ const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const { pool } = require("../db/pool");
 const { notifyControlHub } = require("./webhook-dispatcher.service");
-const {
-  lireFichierJson,
-  ecrireFichierJson,
-} = require("./stockage-persistant.service");
+const { lireFichierJson, ecrireFichierJson } = require("./stockage-persistant.service");
 
 const TOURS_HACHAGE = 12;
 
@@ -164,9 +161,7 @@ const COMPTES_DEMO_OFFLINE = {
   },
 };
 
-const UTILISATEURS_MEMOIRE = new Map(
-  Object.entries(COMPTES_DEMO_OFFLINE).map(([k, v]) => [v.id, { ...v }]),
-);
+const UTILISATEURS_MEMOIRE = new Map(Object.entries(COMPTES_DEMO_OFFLINE).map(([k, v]) => [v.id, { ...v }]));
 
 // Chargement initial depuis le stockage persistant sur disque JSON
 function synchroniserDepuisDisque() {
@@ -189,19 +184,8 @@ function persisterUtilisateursSurDisque() {
 }
 
 async function creerUtilisateur(
-  {
-    nomComplet,
-    email,
-    motDePasse,
-    role,
-    telephone,
-    dateEmbauche,
-    typeContrat,
-    salaireNet,
-    etudeId,
-    etude_id,
-  },
-  { avecSalaire = false } = {},
+  { nomComplet, email, motDePasse, role, telephone, dateEmbauche, typeContrat, salaireNet, etudeId, etude_id },
+  { avecSalaire = false } = {}
 ) {
   const emailNorm = (email || "").toLowerCase().trim();
   const mdpNorm = (motDePasse || "notaire123").trim();
@@ -255,7 +239,7 @@ async function creerUtilisateur(
         typeContrat || null,
         salaireNet || null,
         eid,
-      ],
+      ]
     );
     if (rows && rows.length) {
       const u = rows[0];
@@ -272,10 +256,7 @@ async function creerUtilisateur(
       return utilisateurVersCamel(u, { avecSalaire });
     }
   } catch (errDb) {
-    console.warn(
-      "[AuthService] Repli mémoire création utilisateur :",
-      errDb.message,
-    );
+    console.warn("[AuthService] Repli mémoire création utilisateur :", errDb.message);
   }
 
   return utilisateurVersCamel(userLocal, { avecSalaire });
@@ -283,10 +264,7 @@ async function creerUtilisateur(
 
 async function modifierUtilisateur(id, champs, { avecSalaire = false } = {}) {
   try {
-    const { rows: actuels } = await pool.query(
-      "SELECT * FROM utilisateurs WHERE id = $1",
-      [id],
-    );
+    const { rows: actuels } = await pool.query("SELECT * FROM utilisateurs WHERE id = $1", [id]);
     if (actuels && actuels.length) {
       const a = actuels[0];
       const { rows } = await pool.query(
@@ -300,7 +278,7 @@ async function modifierUtilisateur(id, champs, { avecSalaire = false } = {}) {
           champs.typeContrat ?? a.type_contrat,
           champs.salaireNet ?? a.salaire_net,
           id,
-        ],
+        ]
       );
       if (rows && rows.length) {
         persisterUtilisateursSurDisque();
@@ -308,10 +286,7 @@ async function modifierUtilisateur(id, champs, { avecSalaire = false } = {}) {
       }
     }
   } catch (errDb) {
-    console.warn(
-      "[AuthService] Repli mémoire modification utilisateur :",
-      errDb.message,
-    );
+    console.warn("[AuthService] Repli mémoire modification utilisateur :", errDb.message);
   }
 
   // Mutation mémoire
@@ -321,8 +296,7 @@ async function modifierUtilisateur(id, champs, { avecSalaire = false } = {}) {
     if (champs.telephone !== undefined) existant.telephone = champs.telephone;
     if (champs.dateEmbauche) existant.date_embauche = champs.dateEmbauche;
     if (champs.typeContrat) existant.type_contrat = champs.typeContrat;
-    if (champs.salaireNet !== undefined)
-      existant.salaire_net = champs.salaireNet;
+    if (champs.salaireNet !== undefined) existant.salaire_net = champs.salaireNet;
     persisterUtilisateursSurDisque();
     return utilisateurVersCamel(existant, { avecSalaire });
   }
@@ -341,7 +315,7 @@ async function reinitialiserMotDePasse(idOuEmail, nouveauMotDePasse) {
       `UPDATE utilisateurs SET mot_de_passe_hash = $1, updated_at = now()
        WHERE (id::text = $2 OR LOWER(TRIM(email)) = LOWER(TRIM($2)))
        RETURNING *`,
-      [hash, idOuEmail],
+      [hash, idOuEmail]
     );
     if (rows && rows.length) {
       const u = rows[0];
@@ -352,18 +326,12 @@ async function reinitialiserMotDePasse(idOuEmail, nouveauMotDePasse) {
       return utilisateurVersCamel(u);
     }
   } catch (errDb) {
-    console.warn(
-      "[AuthService] Repli mémoire réinitialisation mot de passe :",
-      errDb.message,
-    );
+    console.warn("[AuthService] Repli mémoire réinitialisation mot de passe :", errDb.message);
   }
 
   // Fallback mémoire
   for (const [k, v] of UTILISATEURS_MEMOIRE.entries()) {
-    if (
-      v.id === idOuEmail ||
-      (v.email || "").toLowerCase().trim() === idOuEmail.toLowerCase().trim()
-    ) {
+    if (v.id === idOuEmail || (v.email || "").toLowerCase().trim() === idOuEmail.toLowerCase().trim()) {
       v.mdp = mdpNorm;
       v.mot_de_passe_hash = hash;
       if (COMPTES_DEMO_OFFLINE[v.email]) {
@@ -385,17 +353,14 @@ async function connecter(email, motDePasse) {
   try {
     const { rows } = await pool.query(
       "SELECT * FROM utilisateurs WHERE LOWER(TRIM(email)) = $1 AND actif = true AND archived_at IS NULL",
-      [emailNorm],
+      [emailNorm]
     );
     if (rows && rows.length > 0) {
       const utilisateur = rows[0];
       let motDePasseValide = false;
       if (utilisateur.mot_de_passe_hash) {
         try {
-          motDePasseValide = await bcrypt.compare(
-            mdpNorm,
-            utilisateur.mot_de_passe_hash,
-          );
+          motDePasseValide = await bcrypt.compare(mdpNorm, utilisateur.mot_de_passe_hash);
         } catch (_) {}
       }
       if (!motDePasseValide) {
@@ -415,9 +380,8 @@ async function connecter(email, motDePasse) {
             role: utilisateur.role,
             etudeId: utilisateur.etude_id,
           },
-          process.env.JWT_SECRET ||
-            "16cbed43fe9ca83aa64e0d0dcc9adcba7a69eaabfe07f68acece208de51d3782",
-          { expiresIn: process.env.JWT_EXPIRATION || "12h" },
+          process.env.JWT_SECRET || "16cbed43fe9ca83aa64e0d0dcc9adcba7a69eaabfe07f68acece208de51d3782",
+          { expiresIn: process.env.JWT_EXPIRATION || "12h" }
         );
         return { jeton, utilisateur: utilisateurVersCamel(utilisateur) };
       }
@@ -429,23 +393,14 @@ async function connecter(email, motDePasse) {
   // Fallback résilient pour les comptes démo et créations mémoire (< 0.1ms)
   const compteSecours =
     COMPTES_DEMO_OFFLINE[emailNorm] ||
-    Array.from(UTILISATEURS_MEMOIRE.values()).find(
-      (u) => (u.email || "").toLowerCase().trim() === emailNorm,
-    );
+    Array.from(UTILISATEURS_MEMOIRE.values()).find((u) => (u.email || "").toLowerCase().trim() === emailNorm);
   if (compteSecours) {
     let motDePasseValide = false;
-    if (
-      compteSecours.mdp === mdpNorm ||
-      mdpNorm === "notaire123" ||
-      mdpNorm === "admin123"
-    ) {
+    if (compteSecours.mdp === mdpNorm || mdpNorm === "notaire123" || mdpNorm === "admin123") {
       motDePasseValide = true;
     } else if (compteSecours.mot_de_passe_hash) {
       try {
-        motDePasseValide = await bcrypt.compare(
-          mdpNorm,
-          compteSecours.mot_de_passe_hash,
-        );
+        motDePasseValide = await bcrypt.compare(mdpNorm, compteSecours.mot_de_passe_hash);
       } catch (_) {}
     }
     if (motDePasseValide) {
@@ -455,9 +410,8 @@ async function connecter(email, motDePasse) {
           role: compteSecours.role,
           etudeId: compteSecours.etude_id || compteSecours.etudeId,
         },
-        process.env.JWT_SECRET ||
-          "16cbed43fe9ca83aa64e0d0dcc9adcba7a69eaabfe07f68acece208de51d3782",
-        { expiresIn: process.env.JWT_EXPIRATION || "12h" },
+        process.env.JWT_SECRET || "16cbed43fe9ca83aa64e0d0dcc9adcba7a69eaabfe07f68acece208de51d3782",
+        { expiresIn: process.env.JWT_EXPIRATION || "12h" }
       );
       return { jeton, utilisateur: utilisateurVersCamel(compteSecours) };
     }
@@ -470,8 +424,7 @@ function verifierJeton(jeton) {
   try {
     return jwt.verify(
       jeton,
-      process.env.JWT_SECRET ||
-        "16cbed43fe9ca83aa64e0d0dcc9adcba7a69eaabfe07f68acece208de51d3782",
+      process.env.JWT_SECRET || "16cbed43fe9ca83aa64e0d0dcc9adcba7a69eaabfe07f68acece208de51d3782"
     );
   } catch (erreur) {
     return null;
@@ -489,29 +442,23 @@ async function listerUtilisateurs({ avecSalaires = false, etudeId } = {}) {
     query += " ORDER BY nom_complet";
     const { rows } = await pool.query(query, params);
     if (rows && rows.length) {
-      return rows.map((l) =>
-        utilisateurVersCamel(l, { avecSalaire: avecSalaires }),
-      );
+      return rows.map((l) => utilisateurVersCamel(l, { avecSalaire: avecSalaires }));
     }
   } catch (errDb) {
     // Repli instantané mémoire
   }
-  let list = Array.from(UTILISATEURS_MEMOIRE.values()).filter(
-    (u) => u.actif !== false,
-  );
+  let list = Array.from(UTILISATEURS_MEMOIRE.values()).filter((u) => u.actif !== false);
   if (etudeId) {
     list = list.filter((u) => u.etude_id === etudeId || u.etudeId === etudeId);
   }
-  return list.map((l) =>
-    utilisateurVersCamel(l, { avecSalaire: avecSalaires }),
-  );
+  return list.map((l) => utilisateurVersCamel(l, { avecSalaire: avecSalaires }));
 }
 
 async function listerUtilisateursParEtude(etudeId) {
   try {
     const { rows } = await pool.query(
       "SELECT * FROM utilisateurs WHERE etude_id = $1 AND archived_at IS NULL ORDER BY nom_complet",
-      [etudeId],
+      [etudeId]
     );
     if (rows && rows.length) {
       return rows.map((l) => utilisateurVersCamel(l, { avecSalaire: true }));
@@ -519,19 +466,13 @@ async function listerUtilisateursParEtude(etudeId) {
   } catch (_) {}
 
   return Array.from(UTILISATEURS_MEMOIRE.values())
-    .filter(
-      (u) =>
-        (u.etude_id === etudeId || u.etudeId === etudeId) && u.actif !== false,
-    )
+    .filter((u) => (u.etude_id === etudeId || u.etudeId === etudeId) && u.actif !== false)
     .map((l) => utilisateurVersCamel(l, { avecSalaire: true }));
 }
 
 async function desactiverUtilisateur(id) {
   try {
-    await pool.query(
-      "UPDATE utilisateurs SET actif = false, archived_at = now() WHERE id = $1",
-      [id],
-    );
+    await pool.query("UPDATE utilisateurs SET actif = false, archived_at = now() WHERE id = $1", [id]);
   } catch (_) {}
   const u = UTILISATEURS_MEMOIRE.get(id);
   if (u) u.actif = false;
@@ -554,16 +495,11 @@ async function supprimerUtilisateursParEtude(etudeId) {
 async function trouverUtilisateurParId(id) {
   if (!id) return null;
   try {
-    const { rows } = await pool.query(
-      "SELECT * FROM utilisateurs WHERE id = $1 AND archived_at IS NULL",
-      [id],
-    );
+    const { rows } = await pool.query("SELECT * FROM utilisateurs WHERE id = $1 AND archived_at IS NULL", [id]);
     if (rows && rows.length) return utilisateurVersCamel(rows[0]);
   } catch (_) {}
 
-  const u =
-    UTILISATEURS_MEMOIRE.get(id) ||
-    Array.from(UTILISATEURS_MEMOIRE.values()).find((x) => x.id === id);
+  const u = UTILISATEURS_MEMOIRE.get(id) || Array.from(UTILISATEURS_MEMOIRE.values()).find((x) => x.id === id);
   return u ? utilisateurVersCamel(u) : null;
 }
 

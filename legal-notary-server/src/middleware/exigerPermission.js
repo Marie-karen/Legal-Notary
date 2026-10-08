@@ -19,9 +19,7 @@ function exigerPermission(permission) {
       return res.status(401).json({ erreur: "Authentification requise." });
     }
     if (!aPermission(req.utilisateur.role, permission)) {
-      return res
-        .status(403)
-        .json({ erreur: "Action non autorisée pour ce rôle." });
+      return res.status(403).json({ erreur: "Action non autorisée pour ce rôle." });
     }
     next();
   };

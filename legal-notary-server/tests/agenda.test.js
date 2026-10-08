@@ -19,17 +19,14 @@ test("agendaService — création et liste d'un rendez-vous", async () => {
       dateDebut: new Date(Date.now() + 3600000).toISOString(),
       dateFin: new Date(Date.now() + 7200000).toISOString(),
     },
-    utilisateur,
+    utilisateur
   );
 
   assert.ok(rdv.id);
   assert.equal(rdv.titre, "Signature Vente Test");
   assert.equal(rdv.typeRdv, "signature_acte");
 
-  const liste = await agendaService.listerEvenements(
-    { etudeId: "etude-test-01" },
-    utilisateur,
-  );
+  const liste = await agendaService.listerEvenements({ etudeId: "etude-test-01" }, utilisateur);
   assert.ok(liste.length >= 1);
   const trouve = liste.find((e) => e.id === rdv.id);
   assert.ok(trouve);
@@ -49,7 +46,7 @@ test("agendaService — mise à jour et suppression d'un événement", async () 
       typeRdv: "consultation_client",
       salle: "Bureau Assistante",
     },
-    utilisateur,
+    utilisateur
   );
 
   const maj = await agendaService.mettreAJourEvenement(
@@ -58,7 +55,7 @@ test("agendaService — mise à jour et suppression d'un événement", async () 
       titre: "Conseil initial (Reporté)",
       salle: "Bureau du Notaire",
     },
-    utilisateur,
+    utilisateur
   );
 
   assert.equal(maj.titre, "Conseil initial (Reporté)");
@@ -81,7 +78,7 @@ test("agendaService — cycle de vie des tâches To-Do list", async () => {
       numeroDossier: "2024-HYP-0099",
       priorite: "haute",
     },
-    utilisateur,
+    utilisateur
   );
 
   assert.ok(tache.id);

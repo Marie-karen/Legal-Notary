@@ -29,13 +29,8 @@ async function migrer() {
   try {
     client = await pool.connect();
   } catch (errConnect) {
-    console.warn(
-      "[migrate] Connexion directe PostgreSQL non disponible :",
-      errConnect.message,
-    );
-    console.log(
-      "[migrate] Le serveur synchronisera automatiquement le schéma au démarrage via autoMigrerSchema.",
-    );
+    console.warn("[migrate] Connexion directe PostgreSQL non disponible :", errConnect.message);
+    console.log("[migrate] Le serveur synchronisera automatiquement le schéma au démarrage via autoMigrerSchema.");
     return;
   }
 
@@ -47,9 +42,7 @@ async function migrer() {
       );
     `);
 
-    const { rows } = await client.query(
-      "SELECT nom FROM migrations_appliquees",
-    );
+    const { rows } = await client.query("SELECT nom FROM migrations_appliquees");
     const dejaAppliquees = new Set(rows.map((r) => r.nom));
 
     const fichiers = fs
@@ -62,17 +55,11 @@ async function migrer() {
         console.log(`[migrate] déjà appliquée : ${fichier}`);
         continue;
       }
-      const sql = fs.readFileSync(
-        path.join(DOSSIER_MIGRATIONS, fichier),
-        "utf-8",
-      );
+      const sql = fs.readFileSync(path.join(DOSSIER_MIGRATIONS, fichier), "utf-8");
       try {
         await client.query("BEGIN");
         await client.query(sql);
-        await client.query(
-          "INSERT INTO migrations_appliquees (nom) VALUES ($1)",
-          [fichier],
-        );
+        await client.query("INSERT INTO migrations_appliquees (nom) VALUES ($1)", [fichier]);
         await client.query("COMMIT");
         console.log(`[migrate] appliquée : ${fichier}`);
       } catch (erreur) {

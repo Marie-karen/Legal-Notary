@@ -6,10 +6,7 @@ const { pool } = require("../db/pool");
 const dossiersService = require("./dossiers.service");
 const mouvementsService = require("./mouvements-physiques.service");
 
-async function rechercher({
-  etudeId = "a0000000-0000-0000-0000-000000000001",
-  query = "",
-}) {
+async function rechercher({ etudeId = "a0000000-0000-0000-0000-000000000001", query = "" }) {
   const qStr = (query || "").trim().toLowerCase();
   const q = `%${qStr}%`;
 
@@ -36,14 +33,13 @@ async function rechercher({
            OR EXISTS (SELECT 1 FROM documents_numeriques doc WHERE doc.dossier_id = d.id AND (LOWER(doc.nom_fichier) LIKE $2 OR LOWER(doc.texte_ocr) LIKE $2))
          )
        ORDER BY d.created_at DESC LIMIT 30`,
-      [etudeId, q],
+      [etudeId, q]
     );
 
     if (rows && rows.length) {
       const resultats = [];
       for (const r of rows) {
-        const statutPhysique =
-          await mouvementsService.obtenirStatutPhysiqueDossier(r.dossier_id);
+        const statutPhysique = await mouvementsService.obtenirStatutPhysiqueDossier(r.dossier_id);
         resultats.push({
           dossierId: r.dossier_id,
           numeroDossier: r.numero_dossier,
@@ -52,15 +48,11 @@ async function rechercher({
           dateOuverture: r.date_ouverture,
           montantAssiette: Number(r.montant_assiette) || 0,
           statutDossier: r.statut,
-          statutNumerisation:
-            r.statut_numerisation || (r.scan_url ? "NUMERISE" : "NON_NUMERISE"),
+          statutNumerisation: r.statut_numerisation || (r.scan_url ? "NUMERISE" : "NON_NUMERISE"),
           numeroMinute: r.numero_minute,
           scanUrl: r.scan_url,
-          fichiersNumeriques:
-            r.fichiers_numeriques ||
-            (r.scan_url ? r.scan_url : "Aucun fichier"),
-          nombreDocsNumeriques:
-            r.nombre_docs_numeriques || (r.scan_url ? 1 : 0),
+          fichiersNumeriques: r.fichiers_numeriques || (r.scan_url ? r.scan_url : "Aucun fichier"),
+          nombreDocsNumeriques: r.nombre_docs_numeriques || (r.scan_url ? 1 : 0),
           nombreDocsPhysiques: r.nombre_docs_physiques || 1,
           statutPhysique: statutPhysique,
         });

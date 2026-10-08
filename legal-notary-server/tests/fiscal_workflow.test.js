@@ -44,13 +44,7 @@ test("Workflow Fiche de Taxe — Calcul et cohérence des statuts déontologique
   };
 
   // 1. Calcul initial par le comptable
-  const calcul1 = fiscalService.calculerFicheDeTaxe(
-    typeActe,
-    35000000,
-    {},
-    tranches,
-    saisiesComptable,
-  );
+  const calcul1 = fiscalService.calculerFicheDeTaxe(typeActe, 35000000, {}, tranches, saisiesComptable);
   assert.ok(calcul1.totaux.general > 0);
   assert.equal(calcul1.totaux.emolumentsHT, 902000);
   assert.ok(calcul1.totaux.tresor > 0);
@@ -71,24 +65,12 @@ test("Workflow Fiche de Taxe — Calcul et cohérence des statuts déontologique
     ],
   };
 
-  const calcul2 = fiscalService.calculerFicheDeTaxe(
-    typeActe,
-    35000000,
-    {},
-    tranches,
-    saisiesNotaire,
-  );
+  const calcul2 = fiscalService.calculerFicheDeTaxe(typeActe, 35000000, {}, tranches, saisiesNotaire);
   assert.equal(calcul2.totaux.emolumentsHT, 902000 + 150000);
   assert.equal(calcul2.totaux.debours, 100000);
   assert.ok(calcul2.totaux.general > calcul1.totaux.general);
 
   // 3. Statuts légaux valides du workflow
-  const statutsLegaux = [
-    "brouillon",
-    "soumis",
-    "valide",
-    "valide_corrige",
-    "a_corriger",
-  ];
+  const statutsLegaux = ["brouillon", "soumis", "valide", "valide_corrige", "a_corriger"];
   statutsLegaux.forEach((st) => assert.ok(typeof st === "string"));
 });

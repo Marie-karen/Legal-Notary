@@ -109,7 +109,7 @@ test("timbres/rôles — 500 FCFA par page, exemple réel du cabinet (minute 4 p
       nombreExpeditions: 2,
       pagesTroisiemeDocument: 1,
     },
-    500,
+    500
   );
   assert.equal(r.minute, 2000); // 4 × 500
   assert.equal(r.expedition, 5000); // 5 × 2 × 500
@@ -129,43 +129,32 @@ test("fiche de taxe complète — cohérence des totaux (aucun flottant, total =
     droitEnregistrementValeur: 0.04,
     taxeFonciereApplicable: true,
   };
-  const fiche = fiscal.calculerFicheDeTaxe(
-    typeActe,
-    50000000,
-    PARAMETRES_DEFAUT,
-    BAREME_VENTE,
-    {
-      timbres: {
-        pagesMinute: 4,
-        pagesExpedition: 5,
-        nombreExpeditions: 2,
-        pagesBordereau: 1,
-      },
-      roles: {
-        pagesMinute: 4,
-        pagesExpedition: 5,
-        nombreExpeditions: 2,
-        pagesCopie: 1,
-      },
-      vacations: 0,
-      fraisFormalites: {
-        depotBanque: 15000,
-        depotEnregistrement: 15000,
-        inscriptionLivreFoncier: 75000,
-        requisitionEtat: 6000,
-      },
+  const fiche = fiscal.calculerFicheDeTaxe(typeActe, 50000000, PARAMETRES_DEFAUT, BAREME_VENTE, {
+    timbres: {
+      pagesMinute: 4,
+      pagesExpedition: 5,
+      nombreExpeditions: 2,
+      pagesBordereau: 1,
     },
-  );
+    roles: {
+      pagesMinute: 4,
+      pagesExpedition: 5,
+      nombreExpeditions: 2,
+      pagesCopie: 1,
+    },
+    vacations: 0,
+    fraisFormalites: {
+      depotBanque: 15000,
+      depotEnregistrement: 15000,
+      inscriptionLivreFoncier: 75000,
+      requisitionEtat: 6000,
+    },
+  });
 
-  assert.ok(
-    Number.isInteger(fiche.totaux.general),
-    "le total général doit être un entier (francs CFA)",
-  );
+  assert.ok(Number.isInteger(fiche.totaux.general), "le total général doit être un entier (francs CFA)");
   assert.equal(
     fiche.totaux.general,
-    fiche.totaux.droitsEtat +
-      fiche.totaux.honoraires +
-      fiche.totaux.formalitesEtDivers,
+    fiche.totaux.droitsEtat + fiche.totaux.honoraires + fiche.totaux.formalitesEtDivers
   );
 });
 
@@ -177,13 +166,7 @@ test("fiche de taxe — acte lié au crédit utilise le barème prêt du Décret
     droitEnregistrementValeur: 0.015,
     taxeFonciereApplicable: true,
   };
-  const fiche = fiscal.calculerFicheDeTaxe(
-    typeActe,
-    10000000,
-    PARAMETRES_DEFAUT,
-    BAREME_PRET,
-    {},
-  );
+  const fiche = fiscal.calculerFicheDeTaxe(typeActe, 10000000, PARAMETRES_DEFAUT, BAREME_PRET, {});
   assert.equal(fiche.emoluments.montantHT, 200000); // 10 000 000 × 2 % (1ère tranche prêt)
   assert.equal(fiche.droitEnregistrement.montant, 150000); // 10 000 000 × 1,5 %
 });

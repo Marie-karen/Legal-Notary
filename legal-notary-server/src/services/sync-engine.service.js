@@ -5,25 +5,23 @@
 const { pool } = require("../db/pool");
 const crypto = require("crypto");
 
-async function obtenirStatutSynchronisation(
-  etudeId = "a0000000-0000-0000-0000-000000000001",
-) {
+async function obtenirStatutSynchronisation(etudeId = "a0000000-0000-0000-0000-000000000001") {
   try {
     const { rows: attente } = await pool.query(
       "SELECT COUNT(*)::int AS count FROM file_synchronisation WHERE etude_id = $1 AND statut = 'en_attente'",
-      [etudeId],
+      [etudeId]
     );
     const { rows: echecs } = await pool.query(
       "SELECT COUNT(*)::int AS count FROM file_synchronisation WHERE etude_id = $1 AND statut = 'echec'",
-      [etudeId],
+      [etudeId]
     );
     const { rows: synchro } = await pool.query(
       "SELECT COUNT(*)::int AS count FROM file_synchronisation WHERE etude_id = $1 AND statut = 'synchronise'",
-      [etudeId],
+      [etudeId]
     );
     const { rows: dernier } = await pool.query(
       "SELECT synced_at FROM file_synchronisation WHERE etude_id = $1 AND statut = 'synchronise' ORDER BY synced_at DESC LIMIT 1",
-      [etudeId],
+      [etudeId]
     );
 
     return {
@@ -31,10 +29,7 @@ async function obtenirStatutSynchronisation(
       enAttente: (attente[0] && attente[0].count) || 0,
       synchronises: (synchro[0] && synchro[0].count) || 128,
       echecs: (echecs[0] && echecs[0].count) || 0,
-      derniereSynchro:
-        dernier.length && dernier[0].synced_at
-          ? dernier[0].synced_at
-          : new Date(),
+      derniereSynchro: dernier.length && dernier[0].synced_at ? dernier[0].synced_at : new Date(),
       connectiviteInternet: true,
       etatReplication: "🟢 Synchronisé à 100%",
     };
@@ -51,16 +46,13 @@ async function obtenirStatutSynchronisation(
   };
 }
 
-async function traiterFileSynchronisation(
-  etudeId = "a0000000-0000-0000-0000-000000000001",
-  limite = 50,
-) {
+async function traiterFileSynchronisation(etudeId = "a0000000-0000-0000-0000-000000000001", limite = 50) {
   try {
     const { rows: elements } = await pool.query(
       `SELECT * FROM file_synchronisation
        WHERE etude_id = $1 AND statut IN ('en_attente', 'echec')
        ORDER BY created_at ASC LIMIT $2`,
-      [etudeId, limite],
+      [etudeId, limite]
     );
 
     const resultats = [];
@@ -70,7 +62,7 @@ async function traiterFileSynchronisation(
           `UPDATE file_synchronisation
            SET statut = 'synchronise', synced_at = now(), tentatives = tentatives + 1, derniere_erreur = NULL
            WHERE id = $1`,
-          [el.id],
+          [el.id]
         );
         resultats.push({
           id: el.id,
@@ -91,14 +83,7 @@ async function traiterFileSynchronisation(
   return { traites: 0, details: [] };
 }
 
-async function ajouterAFileSynchronisation(
-  etudeId,
-  entiteType,
-  entiteId,
-  action,
-  chargeUtile,
-  hashIntegrite,
-) {
+async function ajouterAFileSynchronisation(etudeId, entiteType, entiteId, action, chargeUtile, hashIntegrite) {
   try {
     const { rows } = await pool.query(
       `INSERT INTO file_synchronisation (etude_id, entite_type, entite_id, action, charge_utile, hash_integrite)
@@ -109,9 +94,8 @@ async function ajouterAFileSynchronisation(
         entiteId,
         action,
         JSON.stringify(chargeUtile),
-        hashIntegrite ||
-          "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      ],
+        hashIntegrite || "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ]
     );
     if (rows && rows.length) return rows[0];
   } catch (_) {}

@@ -17,21 +17,14 @@ const archivesService = require("../services/archives.service");
 
 const router = express.Router();
 
-router.get(
-  "/",
-  exigerPermission("dossiers:voir_tous"),
-  async (req, res, next) => {
-    try {
-      const dossiers = await dossiersService.listerDossiersPourUtilisateur(
-        req.utilisateur,
-        req.query,
-      );
-      res.json(dossiers);
-    } catch (e) {
-      next(e);
-    }
-  },
-);
+router.get("/", exigerPermission("dossiers:voir_tous"), async (req, res, next) => {
+  try {
+    const dossiers = await dossiersService.listerDossiersPourUtilisateur(req.utilisateur, req.query);
+    res.json(dossiers);
+  } catch (e) {
+    next(e);
+  }
+});
 
 // Variante pour les rôles qui n'ont que "voir_assignes" ou "voir_formalites"
 // (le service applique de toute façon la bonne portée selon le rôle
@@ -39,10 +32,7 @@ router.get(
 // clerc/assistante/formaliste qui n'a pas la permission "voir_tous").
 router.get("/mes-dossiers", async (req, res, next) => {
   try {
-    const dossiers = await dossiersService.listerDossiersPourUtilisateur(
-      req.utilisateur,
-      req.query,
-    );
+    const dossiers = await dossiersService.listerDossiersPourUtilisateur(req.utilisateur, req.query);
     res.json(dossiers);
   } catch (e) {
     next(e);
@@ -65,12 +55,8 @@ router.post("/", exigerPermission("dossiers:creer"), async (req, res, next) => {
 
 router.get("/:id", async (req, res, next) => {
   try {
-    const dossier = await dossiersService.obtenirDossierPourUtilisateur(
-      req.params.id,
-      req.utilisateur,
-    );
-    if (!dossier)
-      return res.status(404).json({ erreur: "Dossier introuvable." });
+    const dossier = await dossiersService.obtenirDossierPourUtilisateur(req.params.id, req.utilisateur);
+    if (!dossier) return res.status(404).json({ erreur: "Dossier introuvable." });
     res.json(dossier);
   } catch (e) {
     next(e);
@@ -82,156 +68,91 @@ router.get("/:id", async (req, res, next) => {
 // dans la portée RBAC de l'appelant (vérifié dans le service — voir
 // dossiers.service.js#verifierPortee, sans quoi un clerc rédacteur
 // pourrait modifier un dossier qui n'est pas le sien en devinant son id).
-router.post(
-  "/:id/etape",
-  exigerPermission("taches:modifier"),
-  async (req, res, next) => {
-    try {
-      const dossier = await dossiersService.changerEtape(
-        req.params.id,
-        req.body.etape,
-        req.utilisateur,
-      );
-      if (!dossier)
-        return res.status(404).json({ erreur: "Dossier introuvable." });
-      res.json(dossier);
-    } catch (e) {
-      next(e);
-    }
-  },
-);
-
-router.post(
-  "/:id/reporter",
-  exigerPermission("taches:modifier"),
-  async (req, res, next) => {
-    try {
-      const resultat = await dossiersService.reporterEcheance(
-        req.params.id,
-        req.body.jours || 1,
-        req.utilisateur,
-      );
-      if (!resultat)
-        return res.status(404).json({ erreur: "Dossier introuvable." });
-      res.status(204).end();
-    } catch (e) {
-      next(e);
-    }
-  },
-);
-
-router.post(
-  "/:id/relancer",
-  exigerPermission("taches:modifier"),
-  async (req, res, next) => {
-    try {
-      const resultat = await dossiersService.relancerClerc(
-        req.params.id,
-        req.utilisateur,
-        req.body.nomClerc,
-      );
-      if (!resultat)
-        return res.status(404).json({ erreur: "Dossier introuvable." });
-      res.status(204).end();
-    } catch (e) {
-      next(e);
-    }
-  },
-);
-
-router.post("/:id/assigner", async (req, res, next) => {
+router.post("/:id/etape", exigerPermission("taches:modifier"), async (req, res, next) => {
   try {
-    const { clercId } = req.body;
-    if (!clercId)
-      return res.status(400).json({ erreur: "Identifiant du clerc requis." });
-    const dossier = await dossiersService.assignerClerc(
-      req.params.id,
-      clercId,
-      req.utilisateur,
-    );
+    const dossier = await dossiersService.changerEtape(req.params.id, req.body.etape, req.utilisateur);
+    if (!dossier) return res.status(404).json({ erreur: "Dossier introuvable." });
     res.json(dossier);
   } catch (e) {
     next(e);
   }
 });
 
-router.post(
-  "/taches/:tacheId/statut",
-  exigerPermission("taches:modifier"),
-  async (req, res, next) => {
-    try {
-      const resultat = await dossiersService.majStatutTache(
-        req.params.tacheId,
-        req.body.statut,
-        req.utilisateur,
-      );
-      if (!resultat)
-        return res.status(404).json({ erreur: "Tâche introuvable." });
-      res.status(204).end();
-    } catch (e) {
-      next(e);
-    }
-  },
-);
+router.post("/:id/reporter", exigerPermission("taches:modifier"), async (req, res, next) => {
+  try {
+    const resultat = await dossiersService.reporterEcheance(req.params.id, req.body.jours || 1, req.utilisateur);
+    if (!resultat) return res.status(404).json({ erreur: "Dossier introuvable." });
+    res.status(204).end();
+  } catch (e) {
+    next(e);
+  }
+});
 
-router.post(
-  "/:id/compte-client",
-  exigerPermission("finances:modifier_compte_client"),
-  async (req, res, next) => {
-    try {
-      await dossiersService.ajouterEcritureCompteClient(
-        req.params.id,
-        req.body,
-        req.utilisateur.id,
-      );
-      res.status(204).end();
-    } catch (e) {
-      next(e);
-    }
-  },
-);
+router.post("/:id/relancer", exigerPermission("taches:modifier"), async (req, res, next) => {
+  try {
+    const resultat = await dossiersService.relancerClerc(req.params.id, req.utilisateur, req.body.nomClerc);
+    if (!resultat) return res.status(404).json({ erreur: "Dossier introuvable." });
+    res.status(204).end();
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.post("/:id/assigner", async (req, res, next) => {
+  try {
+    const { clercId } = req.body;
+    if (!clercId) return res.status(400).json({ erreur: "Identifiant du clerc requis." });
+    const dossier = await dossiersService.assignerClerc(req.params.id, clercId, req.utilisateur);
+    res.json(dossier);
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.post("/taches/:tacheId/statut", exigerPermission("taches:modifier"), async (req, res, next) => {
+  try {
+    const resultat = await dossiersService.majStatutTache(req.params.tacheId, req.body.statut, req.utilisateur);
+    if (!resultat) return res.status(404).json({ erreur: "Tâche introuvable." });
+    res.status(204).end();
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.post("/:id/compte-client", exigerPermission("finances:modifier_compte_client"), async (req, res, next) => {
+  try {
+    await dossiersService.ajouterEcritureCompteClient(req.params.id, req.body, req.utilisateur.id);
+    res.status(204).end();
+  } catch (e) {
+    next(e);
+  }
+});
 
 // Règlement de la provision, enregistrement assiette et ouverture officielle du dossier (Comptable / Notaire)
 router.post("/:id/regler-provision-ouvrir", async (req, res, next) => {
   try {
     const role = req.utilisateur ? req.utilisateur.role : "";
-    const peutRegler =
-      role === "comptable_taxateur" ||
-      role === "notaire" ||
-      role === "superadmin";
+    const peutRegler = role === "comptable_taxateur" || role === "notaire" || role === "superadmin";
     if (!peutRegler) {
-      return res
-        .status(403)
-        .json({
-          erreur:
-            "Seul le Comptable Taxateur ou le Notaire est habilité à enregistrer le règlement de la provision et ouvrir officiellement le dossier.",
-        });
+      return res.status(403).json({
+        erreur:
+          "Seul le Comptable Taxateur ou le Notaire est habilité à enregistrer le règlement de la provision et ouvrir officiellement le dossier.",
+      });
     }
-    const resultat = await dossiersService.reglerProvisionEtOuvrirDossier(
-      req.params.id,
-      req.body,
-      req.utilisateur,
-    );
+    const resultat = await dossiersService.reglerProvisionEtOuvrirDossier(req.params.id, req.body, req.utilisateur);
     res.json(resultat);
   } catch (e) {
     next(e);
   }
 });
 
-router.post(
-  "/:id/cloturer",
-  exigerPermission("dossiers:cloturer"),
-  async (req, res, next) => {
-    try {
-      const minute = await archivesService.cloturerDossier(
-        req.params.id,
-        req.utilisateur.id,
-      );
-      res.status(201).json(minute);
-    } catch (e) {
-      next(e);
-    }
-  },
-);
+router.post("/:id/cloturer", exigerPermission("dossiers:cloturer"), async (req, res, next) => {
+  try {
+    const minute = await archivesService.cloturerDossier(req.params.id, req.utilisateur.id);
+    res.status(201).json(minute);
+  } catch (e) {
+    next(e);
+  }
+});
 
 module.exports = router;

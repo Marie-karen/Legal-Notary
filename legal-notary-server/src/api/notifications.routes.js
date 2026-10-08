@@ -15,12 +15,7 @@ const router = express.Router();
 router.get("/", async (req, res, next) => {
   try {
     const nonLuesSeulement = req.query.nonLues === "true";
-    res.json(
-      await notificationsService.listerNotificationsUtilisateur(
-        req.utilisateur.id,
-        { nonLuesSeulement },
-      ),
-    );
+    res.json(await notificationsService.listerNotificationsUtilisateur(req.utilisateur.id, { nonLuesSeulement }));
   } catch (e) {
     next(e);
   }
@@ -41,10 +36,7 @@ router.post("/:id/lue", async (req, res, next) => {
 // notifications système de n'importe quelle app web).
 router.post("/push/abonnement", async (req, res, next) => {
   try {
-    await notificationsService.enregistrerAbonnementPush(
-      req.utilisateur.id,
-      req.body,
-    );
+    await notificationsService.enregistrerAbonnementPush(req.utilisateur.id, req.body);
     res.status(204).end();
   } catch (e) {
     next(e);

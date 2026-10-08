@@ -19,9 +19,7 @@ const router = express.Router();
 
 router.get("/etude-info", async (req, res) => {
   try {
-    const rawHost = (req.query.host || req.hostname || req.headers.host || "")
-      .toLowerCase()
-      .replace(/:\d+$/, "");
+    const rawHost = (req.query.host || req.hostname || req.headers.host || "").toLowerCase().replace(/:\d+$/, "");
     const etudes = lireFichierJson("etudes_persistantes.json", []);
 
     // Recherche par correspondance de domaine (ex: etude-mka.ci, notaire-kouassi.ci, etc.)
@@ -32,11 +30,7 @@ router.get("/etude-info", async (req, res) => {
         .trim()
         .replace(/^https?:\/\//, "")
         .replace(/\/$/, "");
-      return (
-        rawHost === domClean ||
-        rawHost.includes(domClean) ||
-        (domClean.length > 3 && rawHost.includes(domClean))
-      );
+      return rawHost === domClean || rawHost.includes(domClean) || (domClean.length > 3 && rawHost.includes(domClean));
     });
 
     if (trouvee) {
@@ -61,32 +55,24 @@ router.get("/etude-info", async (req, res) => {
   }
 });
 
-router.post(
-  "/connexion",
-  limiterTentativesConnexion,
-  async (req, res, next) => {
-    try {
-      const { email, motDePasse } = req.body || {};
-      if (!email || !motDePasse) {
-        return res
-          .status(400)
-          .json({ erreur: "Email et mot de passe requis." });
-      }
-
-      const resultat = await authService.connecter(email, motDePasse);
-      if (!resultat) {
-        enregistrerEchecConnexion(req);
-        return res
-          .status(401)
-          .json({ erreur: "Email ou mot de passe incorrect." });
-      }
-
-      reinitialiserTentativesConnexion(req);
-      res.json(resultat);
-    } catch (err) {
-      next(err);
+router.post("/connexion", limiterTentativesConnexion, async (req, res, next) => {
+  try {
+    const { email, motDePasse } = req.body || {};
+    if (!email || !motDePasse) {
+      return res.status(400).json({ erreur: "Email et mot de passe requis." });
     }
-  },
-);
+
+    const resultat = await authService.connecter(email, motDePasse);
+    if (!resultat) {
+      enregistrerEchecConnexion(req);
+      return res.status(401).json({ erreur: "Email ou mot de passe incorrect." });
+    }
+
+    reinitialiserTentativesConnexion(req);
+    res.json(resultat);
+  } catch (err) {
+    next(err);
+  }
+});
 
 module.exports = router;

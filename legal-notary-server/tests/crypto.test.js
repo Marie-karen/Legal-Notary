@@ -4,12 +4,7 @@
 
 const { test } = require("node:test");
 const assert = require("node:assert");
-const {
-  chiffrer,
-  dechiffrer,
-  chiffrerObjet,
-  dechiffrerObjet,
-} = require("../src/utils/crypto");
+const { chiffrer, dechiffrer, chiffrerObjet, dechiffrerObjet } = require("../src/utils/crypto");
 
 test("crypto — chiffrement et déchiffrement d'une chaîne texte", () => {
   const secret = "MonSuperMotDePasseSMTP123!";

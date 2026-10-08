@@ -10,16 +10,11 @@ const assert = require("node:assert/strict");
 const jwt = require("jsonwebtoken");
 const { pool } = require("../src/db/pool");
 const internalControlService = require("../src/services/internal-control.service");
-const {
-  notifyControlHub,
-} = require("../src/services/webhook-dispatcher.service");
-const {
-  exigerCleControlHub,
-} = require("../src/middleware/controlHubAuth.middleware");
+const { notifyControlHub } = require("../src/services/webhook-dispatcher.service");
+const { exigerCleControlHub } = require("../src/middleware/controlHubAuth.middleware");
 
 test("Control Hub — 1. Middleware de sécurité et rejet 401", async (t) => {
-  const secretCorrect =
-    process.env.CONTROL_HUB_SECRET_KEY || "cle_secrete_ultra_securisee";
+  const secretCorrect = process.env.CONTROL_HUB_SECRET_KEY || "cle_secrete_ultra_securisee";
 
   // Cas 1 : Aucune clé fournie -> 401
   let statutReponse = null;
@@ -115,42 +110,29 @@ test("Control Hub — 4. Endpoint Recherche Utilisateurs (rechercherUtilisateurs
 });
 
 test("Control Hub — 5. Actions à distance (suspend, activate, reset_password)", async () => {
-  const { rows } = await pool.query(
-    "SELECT id, email FROM utilisateurs LIMIT 1",
-  );
+  const { rows } = await pool.query("SELECT id, email FROM utilisateurs LIMIT 1");
   assert.ok(rows.length > 0);
   const user = rows[0];
 
   // Action: suspend
-  const resSuspend = await internalControlService.executerActionUtilisateur(
-    user.id,
-    "suspend",
-  );
+  const resSuspend = await internalControlService.executerActionUtilisateur(user.id, "suspend");
   assert.equal(resSuspend.succes, true);
   assert.equal(resSuspend.status, "suspendu");
 
   // Action: activate
-  const resActivate = await internalControlService.executerActionUtilisateur(
-    user.id,
-    "activate",
-  );
+  const resActivate = await internalControlService.executerActionUtilisateur(user.id, "activate");
   assert.equal(resActivate.succes, true);
   assert.equal(resActivate.status, "actif");
 
   // Action: reset_password
-  const resReset = await internalControlService.executerActionUtilisateur(
-    user.id,
-    "reset_password",
-  );
+  const resReset = await internalControlService.executerActionUtilisateur(user.id, "reset_password");
   assert.equal(resReset.succes, true);
   assert.ok(resReset.temporaryPassword);
   assert.ok(resReset.temporaryPassword.length >= 8);
 });
 
 test("Control Hub — 6. Impersonation & Magic Token 60s (genererTokenImpersonation)", async () => {
-  const { rows } = await pool.query(
-    "SELECT id, email, role, nom_complet FROM utilisateurs LIMIT 1",
-  );
+  const { rows } = await pool.query("SELECT id, email, role, nom_complet FROM utilisateurs LIMIT 1");
   const user = rows[0];
 
   const impersonation = await internalControlService.genererTokenImpersonation({

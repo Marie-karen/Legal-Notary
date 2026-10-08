@@ -26,18 +26,7 @@ function nombreEnLettresFCFA(montant) {
   const n = Math.floor(Math.abs(Number(montant) || 0));
   if (n === 0) return "ZÉRO FRANC CFA";
 
-  const unites = [
-    "",
-    "UN",
-    "DEUX",
-    "TROIS",
-    "QUATRE",
-    "CINQ",
-    "SIX",
-    "SEPT",
-    "HUIT",
-    "NEUF",
-  ];
+  const unites = ["", "UN", "DEUX", "TROIS", "QUATRE", "CINQ", "SIX", "SEPT", "HUIT", "NEUF"];
   const dix_dixneuf = [
     "DIX",
     "ONZE",
@@ -204,8 +193,7 @@ function calculEmoluments(montant, tranches, minimumLegalMinute = 50000) {
   let total = 0;
   const detail = [];
   for (const tranche of tranches) {
-    const borneSup =
-      tranche.jusqua === null ? montant : Math.min(tranche.jusqua, montant);
+    const borneSup = tranche.jusqua === null ? montant : Math.min(tranche.jusqua, montant);
     const largeur = borneSup - borneInf;
     if (largeur > 0) {
       const partiel = largeur * tranche.taux;
@@ -222,8 +210,7 @@ function calculEmoluments(montant, tranches, minimumLegalMinute = 50000) {
   }
   total = arrondi(total);
   let minimumApplique = false;
-  let libelleRegle =
-    baremeNom || "Barème proportionnel dégressif (Décret N° 2013-279)";
+  let libelleRegle = baremeNom || "Barème proportionnel dégressif (Décret N° 2013-279)";
 
   if (minimumLegalMinute && total < minimumLegalMinute) {
     total = minimumLegalMinute;
@@ -285,9 +272,7 @@ function calculTaxeFonciere(montant, parametresEtude = {}) {
       ? Number(parametresEtude.taxeFonciereTauxProportionnel)
       : 0.012;
   const fixe =
-    parametresEtude.taxeFonciereDroitFixe !== undefined
-      ? Number(parametresEtude.taxeFonciereDroitFixe)
-      : 3000;
+    parametresEtude.taxeFonciereDroitFixe !== undefined ? Number(parametresEtude.taxeFonciereDroitFixe) : 3000;
   const proportionnel = arrondi((Number(montant) || 0) * taux);
   return { proportionnel, fixe, total: proportionnel + fixe };
 }
@@ -306,9 +291,7 @@ function calculDocumentsPage(quantites = {}, tarifParPage = 500) {
   const pagesTroisiemeDocument = Number(quantites.pagesTroisiemeDocument) || 0;
 
   const minute = arrondi(pagesMinute * tarifParPage);
-  const expedition = arrondi(
-    pagesExpedition * nombreExpeditions * tarifParPage,
-  );
+  const expedition = arrondi(pagesExpedition * nombreExpeditions * tarifParPage);
   const troisiemeDocument = arrondi(pagesTroisiemeDocument * tarifParPage);
   return {
     minute,
@@ -327,14 +310,8 @@ function calculTVA(montantHT, tauxTVA = 0.18) {
  * S'adapte intelligemment à la nature de l'acte (Immobilier, Société, Prêt, Famille)
  */
 function obtenirCatalogueLignesStandard(typeActe = {}, montant = 0) {
-  const code = (
-    (typeActe && (typeActe.id || typeActe.code || "")) ||
-    ""
-  ).toLowerCase();
-  const libelle = (
-    (typeActe && (typeActe.libelle || typeActe.nom || "")) ||
-    ""
-  ).toLowerCase();
+  const code = ((typeActe && (typeActe.id || typeActe.code || "")) || "").toLowerCase();
+  const libelle = ((typeActe && (typeActe.libelle || typeActe.nom || "")) || "").toLowerCase();
 
   const estSociete =
     code.includes("societe") ||
@@ -576,13 +553,7 @@ function obtenirCatalogueLignesStandard(typeActe = {}, montant = 0) {
 /**
  * Moteur de calcul complet de la Fiche de Taxe, de la Note de Frais et de la Facture Normalisée.
  */
-function calculerFicheDeTaxe(
-  typeActe,
-  montant,
-  parametresEtude = {},
-  tranchesBareme = [],
-  saisies = {},
-) {
+function calculerFicheDeTaxe(typeActe, montant, parametresEtude = {}, tranchesBareme = [], saisies = {}) {
   montant = Number(montant) || 0;
   saisies = saisies || {};
   parametresEtude = {
@@ -597,19 +568,12 @@ function calculerFicheDeTaxe(
   };
 
   // 1. Émolument proportionnel d'acte
-  const emolumentsProportionnels = calculEmoluments(
-    montant,
-    tranchesBareme,
-    parametresEtude.minimumLegalMinute,
-  );
+  const emolumentsProportionnels = calculEmoluments(montant, tranchesBareme, parametresEtude.minimumLegalMinute);
 
   // 2. Droits d'Enregistrement DGI
   const droitEnregistrement = calculDroitEnregistrement(montant, {
     mode: typeActe.droitEnregistrementMode || "pourcentage",
-    valeur:
-      typeActe.droitEnregistrementValeur !== undefined
-        ? typeActe.droitEnregistrementValeur
-        : 0.04,
+    valeur: typeActe.droitEnregistrementValeur !== undefined ? typeActe.droitEnregistrementValeur : 0.04,
   });
 
   // 3. Taxe Foncière (Livre Foncier)
@@ -631,7 +595,7 @@ function calculerFicheDeTaxe(
             ? qteTimbres.pagesTroisiemeDocument
             : 0,
     },
-    parametresEtude.tarifPageTimbre,
+    parametresEtude.tarifPageTimbre
   );
 
   // 5. Émoluments de Rôles (Invariables : 500 F / page)
@@ -648,7 +612,7 @@ function calculerFicheDeTaxe(
             ? qteRoles.pagesTroisiemeDocument
             : 0,
     },
-    parametresEtude.tarifPageRole,
+    parametresEtude.tarifPageRole
   );
 
   // 6. Vacations et Frais de formalités
@@ -666,18 +630,15 @@ function calculerFicheDeTaxe(
     fraisFormalites.inscriptionLivreFoncier +
     fraisFormalites.requisitionEtat;
 
-  const divers =
-    parametresEtude.forfaitDivers + arrondi(saisies.diversSupplementaire || 0);
+  const divers = parametresEtude.forfaitDivers + arrondi(saisies.diversSupplementaire || 0);
 
   const honorairesHT = emolumentsProportionnels.montantHT + vacations;
   const tva = calculTVA(honorairesHT, parametresEtude.tauxTVA);
 
-  const totalDroitsEtat =
-    droitEnregistrement.montant + taxeFonciere.total + timbres.total;
+  const totalDroitsEtat = droitEnregistrement.montant + taxeFonciere.total + timbres.total;
   const totalHonoraires = honorairesHT + tva + roles.total;
   const totalFormalitesEtDivers = totalFraisFormalites + divers;
-  const totalGeneral =
-    totalDroitsEtat + totalHonoraires + totalFormalitesEtDivers;
+  const totalGeneral = totalDroitsEtat + totalHonoraires + totalFormalitesEtDivers;
   const totalGeneralEnLettres = nombreEnLettresFCFA(totalGeneral);
 
   // 7. Lignes détaillées d'émoluments (Chiffre d'Affaires de l'Étude)
@@ -848,12 +809,7 @@ function calculerFicheDeTaxe(
     emoluments: {
       ...emolumentsProportionnels,
       lignesDetaillees: lignesEmolumentsDetaillees,
-      totalEmolumentsHT:
-        emolumentsProportionnels.montantHT +
-        vacations +
-        totalFraisFormalites +
-        roles.total +
-        divers,
+      totalEmolumentsHT: emolumentsProportionnels.montantHT + vacations + totalFraisFormalites + roles.total + divers,
     },
     droitEnregistrement,
     taxeFonciere,
@@ -874,20 +830,11 @@ function calculerFicheDeTaxe(
       formalitesEtDivers: totalFormalitesEtDivers,
       general: totalGeneral + totalDeboursCalc,
       generalEnLettres: nombreEnLettresFCFA(totalGeneral + totalDeboursCalc),
-      emolumentsHT:
-        emolumentsProportionnels.montantHT +
-        vacations +
-        totalFraisFormalites +
-        roles.total +
-        divers,
+      emolumentsHT: emolumentsProportionnels.montantHT + vacations + totalFraisFormalites + roles.total + divers,
       factureNormaliseeTTC:
         totalDroitsEtat +
         totalDeboursCalc +
-        (emolumentsProportionnels.montantHT +
-          vacations +
-          totalFraisFormalites +
-          roles.total +
-          divers) +
+        (emolumentsProportionnels.montantHT + vacations + totalFraisFormalites + roles.total + divers) +
         tva,
     },
   };

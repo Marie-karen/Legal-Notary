@@ -10,10 +10,7 @@ const path = require("path");
 const XLSX = require("xlsx");
 
 const DOSSIER_MODELES_DEFAUT = path.resolve(__dirname, "../../../");
-const DOSSIER_MODELES_PERSO = path.resolve(
-  __dirname,
-  "../../data/modeles_excel",
-);
+const DOSSIER_MODELES_PERSO = path.resolve(__dirname, "../../data/modeles_excel");
 
 // S'assurer que le dossier des modèles personnalisés existe
 if (!fs.existsSync(DOSSIER_MODELES_PERSO)) {
@@ -115,35 +112,22 @@ function listerModelesExcel() {
  * Résout le chemin absolu d'un modèle Excel donné
  */
 function obtenirCheminModele(modeleIdOuFichier) {
-  if (
-    !modeleIdOuFichier ||
-    modeleIdOuFichier === "TEST" ||
-    modeleIdOuFichier === "default"
-  ) {
+  if (!modeleIdOuFichier || modeleIdOuFichier === "TEST" || modeleIdOuFichier === "default") {
     return path.join(DOSSIER_MODELES_DEFAUT, "TEST.xlsx");
   }
 
   // Vérifier dans les modèles personnalisés
-  const cheminPerso = path.join(
-    DOSSIER_MODELES_PERSO,
-    String(modeleIdOuFichier).replace(/^perso_/, ""),
-  );
+  const cheminPerso = path.join(DOSSIER_MODELES_PERSO, String(modeleIdOuFichier).replace(/^perso_/, ""));
   if (fs.existsSync(cheminPerso)) return cheminPerso;
 
   // Vérifier dans les modèles de base
-  const cheminRacine = path.join(
-    DOSSIER_MODELES_DEFAUT,
-    String(modeleIdOuFichier),
-  );
+  const cheminRacine = path.join(DOSSIER_MODELES_DEFAUT, String(modeleIdOuFichier));
   if (fs.existsSync(cheminRacine)) return cheminRacine;
 
   const liste = listerModelesExcel();
-  const trouve = liste.find(
-    (m) => m.id === modeleIdOuFichier || m.fichier === modeleIdOuFichier,
-  );
+  const trouve = liste.find((m) => m.id === modeleIdOuFichier || m.fichier === modeleIdOuFichier);
   if (trouve) {
-    if (trouve.type === "personnalise")
-      return path.join(DOSSIER_MODELES_PERSO, trouve.fichier);
+    if (trouve.type === "personnalise") return path.join(DOSSIER_MODELES_PERSO, trouve.fichier);
     return path.join(DOSSIER_MODELES_DEFAUT, trouve.fichier);
   }
 
@@ -158,9 +142,7 @@ function genererFichierExcelLiquidation(dossier, fiche, parametres, modeleId) {
   const cheminModele = obtenirCheminModele(modeleId);
 
   if (!fs.existsSync(cheminModele)) {
-    throw new Error(
-      `Modèle Excel introuvable à l'emplacement : ${cheminModele}`,
-    );
+    throw new Error(`Modèle Excel introuvable à l'emplacement : ${cheminModele}`);
   }
 
   const wb = XLSX.readFile(cheminModele, {
@@ -171,15 +153,9 @@ function genererFichierExcelLiquidation(dossier, fiche, parametres, modeleId) {
   });
 
   const baseSheet = wb.Sheets["BASE"];
-  const montantAssiette =
-    Number(dossier.montantAssiette || dossier.montant_assiette) || 0;
-  const clientNom =
-    dossier.comparantsNoms ||
-    dossier.clientNom ||
-    dossier.client_nom ||
-    "CLIENT DU DOSSIER";
-  const numDossier =
-    dossier.numeroDossier || dossier.numero_dossier || "DOSSIER";
+  const montantAssiette = Number(dossier.montantAssiette || dossier.montant_assiette) || 0;
+  const clientNom = dossier.comparantsNoms || dossier.clientNom || dossier.client_nom || "CLIENT DU DOSSIER";
+  const numDossier = dossier.numeroDossier || dossier.numero_dossier || "DOSSIER";
   const dateJour = new Date().toLocaleDateString("fr-CI");
 
   const emo = fiche.emoluments || {};
@@ -207,34 +183,25 @@ function genererFichierExcelLiquidation(dossier, fiche, parametres, modeleId) {
     // Nature de l'acte
     baseSheet["F10"] = {
       t: "s",
-      v: (
-        dossier.typeActeLibelle ||
-        dossier.type_acte_libelle ||
-        "ACTE NOTARIÉ"
-      ).toUpperCase(),
+      v: (dossier.typeActeLibelle || dossier.type_acte_libelle || "ACTE NOTARIÉ").toUpperCase(),
     };
     // Date
     baseSheet["F11"] = { t: "s", v: dateJour };
 
     // Droits fixes Enregistrement
-    const ligneDGI = (fiche.lignesTresor || []).find(
-      (t) => t.code === "dgi_fixe" || t.code === "enregistrement_dgi",
-    );
+    const ligneDGI = (fiche.lignesTresor || []).find((t) => t.code === "dgi_fixe" || t.code === "enregistrement_dgi");
     if (ligneDGI && baseSheet["C13"]) {
       baseSheet["C13"] = { t: "n", v: ligneDGI.montant };
     }
 
     // Droits fixes taxe foncière
-    const ligneFoncierFixe = (fiche.lignesTresor || []).find(
-      (t) => t.code === "taxe_fonciere_fixe",
-    );
+    const ligneFoncierFixe = (fiche.lignesTresor || []).find((t) => t.code === "taxe_fonciere_fixe");
     if (ligneFoncierFixe && baseSheet["C14"]) {
       baseSheet["C14"] = { t: "n", v: ligneFoncierFixe.montant };
     }
 
     // Émoluments proportionnels
-    const montantEmolHT =
-      totaux.emolumentsHT || emo.montantHT || emo.totalEmolumentsHT || 0;
+    const montantEmolHT = totaux.emolumentsHT || emo.montantHT || emo.totalEmolumentsHT || 0;
     if (baseSheet["C20"]) {
       baseSheet["C20"] = { t: "n", v: montantEmolHT };
     }
@@ -262,10 +229,8 @@ function genererFichierExcelLiquidation(dossier, fiche, parametres, modeleId) {
     if (parametres && parametres.nomEtude && noteSheet["A1"]) {
       noteSheet["A1"] = { t: "s", v: parametres.nomEtude };
     }
-    if (noteSheet["A12"])
-      noteSheet["A12"] = { t: "s", v: `Identité du client : ${clientNom}` };
-    if (noteSheet["A15"])
-      noteSheet["A15"] = { t: "s", v: `Numéro de dossier : ${numDossier}` };
+    if (noteSheet["A12"]) noteSheet["A12"] = { t: "s", v: `Identité du client : ${clientNom}` };
+    if (noteSheet["A15"]) noteSheet["A15"] = { t: "s", v: `Numéro de dossier : ${numDossier}` };
     if (noteSheet["A17"])
       noteSheet["A17"] = {
         t: "s",

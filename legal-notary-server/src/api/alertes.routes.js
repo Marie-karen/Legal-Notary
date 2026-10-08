@@ -13,9 +13,7 @@ const router = express.Router();
 
 router.get("/", async (req, res, next) => {
   try {
-    res.json(
-      await alertesService.calculerAlertesPourUtilisateur(req.utilisateur),
-    );
+    res.json(await alertesService.calculerAlertesPourUtilisateur(req.utilisateur));
   } catch (e) {
     next(e);
   }

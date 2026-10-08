@@ -43,8 +43,7 @@ const BAREMES_DEFAUT = [
   {
     id: "bareme_societe",
     code: "societe",
-    libelle:
-      "Barème Sociétés Commerciales OHADA (Tarif Réglementaire Dégressif)",
+    libelle: "Barème Sociétés Commerciales OHADA (Tarif Réglementaire Dégressif)",
     tranches: [
       { id: "s1", ordre: 1, jusqua: 10000000, taux: 0.03 },
       { id: "s2", ordre: 2, jusqua: 30000000, taux: 0.015 },
@@ -293,9 +292,7 @@ const TYPES_ACTES_DEFAUT = [
   },
 ];
 
-const MEMOIRE_TYPES_ACTES = new Map(
-  TYPES_ACTES_DEFAUT.map((t) => [t.id, { ...t }]),
-);
+const MEMOIRE_TYPES_ACTES = new Map(TYPES_ACTES_DEFAUT.map((t) => [t.id, { ...t }]));
 const MEMOIRE_BAREMES = new Map(BAREMES_DEFAUT.map((b) => [b.id, { ...b }]));
 
 function typeActeVersCamel(l) {
@@ -306,17 +303,12 @@ function typeActeVersCamel(l) {
     libelle: l.libelle,
     delaiStandardJours: l.delai_standard_jours || l.delaiStandardJours || 15,
     baremeEmolumentsId: l.bareme_emoluments_id || l.baremeEmolumentsId,
-    droitEnregistrementMode:
-      l.droit_enregistrement_mode || l.droitEnregistrementMode || "pourcentage",
+    droitEnregistrementMode: l.droit_enregistrement_mode || l.droitEnregistrementMode || "pourcentage",
     droitEnregistrementValeur: Number(
-      l.droit_enregistrement_valeur !== undefined
-        ? l.droit_enregistrement_valeur
-        : l.droitEnregistrementValeur || 0,
+      l.droit_enregistrement_valeur !== undefined ? l.droit_enregistrement_valeur : l.droitEnregistrementValeur || 0
     ),
     taxeFonciereApplicable: Boolean(
-      l.taxe_fonciere_applicable !== undefined
-        ? l.taxe_fonciere_applicable
-        : l.taxeFonciereApplicable,
+      l.taxe_fonciere_applicable !== undefined ? l.taxe_fonciere_applicable : l.taxeFonciereApplicable
     ),
     actif: l.actif !== false,
   };
@@ -338,7 +330,7 @@ function tacheStandardVersCamel(l) {
 async function listerClassifications() {
   try {
     const { rows } = await pool.query(
-      "SELECT * FROM classifications_actes WHERE archived_at IS NULL ORDER BY ordre, libelle",
+      "SELECT * FROM classifications_actes WHERE archived_at IS NULL ORDER BY ordre, libelle"
     );
     if (rows && rows.length) {
       return rows.map((r) => ({
@@ -354,7 +346,7 @@ async function listerClassifications() {
 async function listerTypesActes() {
   try {
     const { rows } = await pool.query(
-      "SELECT * FROM types_actes WHERE actif = true AND archived_at IS NULL ORDER BY libelle",
+      "SELECT * FROM types_actes WHERE actif = true AND archived_at IS NULL ORDER BY libelle"
     );
     if (rows && rows.length) {
       return rows.map(typeActeVersCamel);
@@ -368,17 +360,11 @@ async function obtenirTypeActe(id) {
   const idStr = String(id).toLowerCase().trim();
 
   const trouveLocal = Array.from(MEMOIRE_TYPES_ACTES.values()).find(
-    (t) =>
-      t.id.toLowerCase() === idStr ||
-      t.libelle.toLowerCase().includes(idStr) ||
-      idStr.includes(t.id.toLowerCase()),
+    (t) => t.id.toLowerCase() === idStr || t.libelle.toLowerCase().includes(idStr) || idStr.includes(t.id.toLowerCase())
   );
 
   try {
-    const isUuid =
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-        idStr,
-      );
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(idStr);
     let q = isUuid
       ? "SELECT * FROM types_actes WHERE id = $1"
       : "SELECT * FROM types_actes WHERE libelle ILIKE $1 OR id::text ILIKE $1 LIMIT 1";
@@ -396,7 +382,7 @@ async function listerTachesStandard(typeActeId) {
   try {
     const { rows } = await pool.query(
       "SELECT * FROM taches_standard WHERE type_acte_id = $1 AND archived_at IS NULL ORDER BY ordre",
-      [typeActeId],
+      [typeActeId]
     );
     if (rows && rows.length) {
       return rows.map(tacheStandardVersCamel);
@@ -468,13 +454,13 @@ async function listerTachesStandard(typeActeId) {
 async function obtenirTranchesBareme(baremeEmolumentsId) {
   if (!baremeEmolumentsId) return [];
   const baremeLocal = Array.from(MEMOIRE_BAREMES.values()).find(
-    (b) => b.id === baremeEmolumentsId || b.code === baremeEmolumentsId,
+    (b) => b.id === baremeEmolumentsId || b.code === baremeEmolumentsId
   );
 
   try {
     const { rows: bRows } = await pool.query(
       "SELECT libelle, code FROM baremes_emoluments WHERE id = $1 OR code = $1",
-      [baremeEmolumentsId],
+      [baremeEmolumentsId]
     );
     const { rows } = await pool.query(
       `SELECT t.id, t.ordre, t.jusqua, t.taux
@@ -482,7 +468,7 @@ async function obtenirTranchesBareme(baremeEmolumentsId) {
        JOIN baremes_emoluments b ON b.id = t.bareme_id
        WHERE b.id = $1 OR b.code = $1
        ORDER BY t.ordre`,
-      [baremeEmolumentsId],
+      [baremeEmolumentsId]
     );
     if (rows && rows.length) {
       const res = rows.map((r) => ({
@@ -512,7 +498,7 @@ async function modifierDureeTache(tacheId, dureeJours) {
   try {
     const { rows } = await pool.query(
       "UPDATE taches_standard SET duree_jours = $1, updated_at = now() WHERE id = $2 RETURNING *",
-      [dureeJours, tacheId],
+      [dureeJours, tacheId]
     );
     if (rows && rows.length) {
       await pool.query(
@@ -520,7 +506,7 @@ async function modifierDureeTache(tacheId, dureeJours) {
            SELECT COALESCE(SUM(duree_jours), 0) FROM taches_standard
            WHERE type_acte_id = $1 AND archived_at IS NULL
          ) WHERE id = $1`,
-        [rows[0].type_acte_id],
+        [rows[0].type_acte_id]
       );
       return tacheStandardVersCamel(rows[0]);
     }
@@ -533,10 +519,7 @@ async function modifierDureeTache(tacheId, dureeJours) {
       t.dureeJours = Number(dureeJours) || 1;
       const typeActe = MEMOIRE_TYPES_ACTES.get(typeActeId);
       if (typeActe) {
-        typeActe.delaiStandardJours = listeTaches.reduce(
-          (s, x) => s + (Number(x.dureeJours) || 0),
-          0,
-        );
+        typeActe.delaiStandardJours = listeTaches.reduce((s, x) => s + (Number(x.dureeJours) || 0), 0);
       }
       break;
     }
@@ -559,10 +542,7 @@ async function creerTypeActe(donnees) {
   // Calcul dynamique du délai standard comme somme des durées de tâches
   let delaiStandardJours = Number(donnees.delaiStandardJours) || 0;
   if (Array.isArray(taches) && taches.length > 0) {
-    delaiStandardJours = taches.reduce(
-      (sum, t) => sum + (Number(t.dureeJours) || 0),
-      0,
-    );
+    delaiStandardJours = taches.reduce((sum, t) => sum + (Number(t.dureeJours) || 0), 0);
   }
   if (!delaiStandardJours) delaiStandardJours = 15;
 
@@ -587,7 +567,7 @@ async function creerTypeActe(donnees) {
         droitEnregistrementMode,
         droitEnregistrementValeur,
         Boolean(taxeFonciereApplicable),
-      ],
+      ]
     );
     if (rows && rows.length) {
       if (Array.isArray(taches) && taches.length > 0) {
@@ -598,15 +578,7 @@ async function creerTypeActe(donnees) {
             .query(
               `INSERT INTO taches_standard (id, type_acte_id, etape, ordre, libelle, duree_jours, bloquante)
              VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-              [
-                tId,
-                id,
-                t.etape || i + 1,
-                t.ordre || i + 1,
-                t.libelle,
-                t.dureeJours || 2,
-                t.bloquante !== false,
-              ],
+              [tId, id, t.etape || i + 1, t.ordre || i + 1, t.libelle, t.dureeJours || 2, t.bloquante !== false]
             )
             .catch(() => {});
         }
@@ -645,13 +617,7 @@ async function creerTypeActe(donnees) {
 }
 
 async function ajouterTacheStandard(typeActeId, donnees) {
-  const {
-    etape = 1,
-    ordre = 1,
-    libelle,
-    dureeJours = 2,
-    bloquante = true,
-  } = donnees;
+  const { etape = 1, ordre = 1, libelle, dureeJours = 2, bloquante = true } = donnees;
   const id = "tache_" + crypto.randomUUID().slice(0, 8);
 
   try {
@@ -659,7 +625,7 @@ async function ajouterTacheStandard(typeActeId, donnees) {
       `INSERT INTO taches_standard (id, type_acte_id, etape, ordre, libelle, duree_jours, bloquante)
        VALUES ($1, $2, $3, $4, $5, $6, $7)
        RETURNING *`,
-      [id, typeActeId, etape, ordre, libelle, dureeJours, bloquante],
+      [id, typeActeId, etape, ordre, libelle, dureeJours, bloquante]
     );
     if (rows && rows.length) return tacheStandardVersCamel(rows[0]);
   } catch (_) {}
@@ -684,7 +650,7 @@ async function listerBaremes() {
        LEFT JOIN baremes_emoluments_tranches t ON t.bareme_id = b.id
        WHERE b.archived_at IS NULL
        GROUP BY b.id, b.code, b.libelle, b.archived_at
-       ORDER BY b.libelle`,
+       ORDER BY b.libelle`
     );
     if (baremes && baremes.length) {
       return baremes.map((b) => ({
@@ -704,27 +670,24 @@ async function listerBaremes() {
 
   return Array.from(MEMOIRE_BAREMES.values()).map((b) => ({
     ...b,
-    nbActesAssocies: Array.from(MEMOIRE_TYPES_ACTES.values()).filter(
-      (t) => t.baremeEmolumentsId === b.id,
-    ).length,
+    nbActesAssocies: Array.from(MEMOIRE_TYPES_ACTES.values()).filter((t) => t.baremeEmolumentsId === b.id).length,
   }));
 }
 
 async function obtenirBareme(id) {
   try {
-    const { rows: bRows } = await pool.query(
-      "SELECT * FROM baremes_emoluments WHERE id = $1 AND archived_at IS NULL",
-      [id],
-    );
+    const { rows: bRows } = await pool.query("SELECT * FROM baremes_emoluments WHERE id = $1 AND archived_at IS NULL", [
+      id,
+    ]);
     if (bRows && bRows.length) {
       const b = bRows[0];
       const { rows: tranches } = await pool.query(
         "SELECT id, ordre, jusqua, taux FROM baremes_emoluments_tranches WHERE bareme_id = $1 ORDER BY ordre",
-        [id],
+        [id]
       );
       const { rows: actes } = await pool.query(
         "SELECT id, libelle FROM types_actes WHERE bareme_emoluments_id = $1 AND archived_at IS NULL ORDER BY libelle",
-        [id],
+        [id]
       );
       return {
         id: b.id,
@@ -744,9 +707,7 @@ async function obtenirBareme(id) {
 
   const b = MEMOIRE_BAREMES.get(id);
   if (b) {
-    const actes = Array.from(MEMOIRE_TYPES_ACTES.values()).filter(
-      (t) => t.baremeEmolumentsId === b.id,
-    );
+    const actes = Array.from(MEMOIRE_TYPES_ACTES.values()).filter((t) => t.baremeEmolumentsId === b.id);
     return {
       ...b,
       actes: actes.map((a) => ({ id: a.id, libelle: a.libelle })),
@@ -758,26 +719,19 @@ async function obtenirBareme(id) {
 
 async function creerBareme(donnees) {
   const { code, libelle, tranches = [] } = donnees;
-  const id =
-    "bareme_" +
-    (code || libelle.toLowerCase().replace(/[^a-z0-9]/g, "_")).slice(0, 30);
+  const id = "bareme_" + (code || libelle.toLowerCase().replace(/[^a-z0-9]/g, "_")).slice(0, 30);
 
   try {
     const { rows: bRows } = await pool.query(
       "INSERT INTO baremes_emoluments (id, code, libelle) VALUES ($1, $2, $3) RETURNING *",
-      [id, code || id, libelle],
+      [id, code || id, libelle]
     );
     if (bRows && bRows.length) {
       for (let i = 0; i < tranches.length; i++) {
         const tr = tranches[i];
         await pool.query(
           "INSERT INTO baremes_emoluments_tranches (bareme_id, ordre, jusqua, taux) VALUES ($1, $2, $3, $4)",
-          [
-            id,
-            tr.ordre || i + 1,
-            tr.jusqua === null || tr.jusqua === "" ? null : Number(tr.jusqua),
-            Number(tr.taux),
-          ],
+          [id, tr.ordre || i + 1, tr.jusqua === null || tr.jusqua === "" ? null : Number(tr.jusqua), Number(tr.taux)]
         );
       }
       return obtenirBareme(id);
@@ -805,24 +759,16 @@ async function modifierBareme(id, donnees) {
     if (code || libelle) {
       await pool.query(
         "UPDATE baremes_emoluments SET code = COALESCE($1, code), libelle = COALESCE($2, libelle) WHERE id = $3",
-        [code, libelle, id],
+        [code, libelle, id]
       );
     }
     if (Array.isArray(tranches)) {
-      await pool.query(
-        "DELETE FROM baremes_emoluments_tranches WHERE bareme_id = $1",
-        [id],
-      );
+      await pool.query("DELETE FROM baremes_emoluments_tranches WHERE bareme_id = $1", [id]);
       for (let i = 0; i < tranches.length; i++) {
         const tr = tranches[i];
         await pool.query(
           "INSERT INTO baremes_emoluments_tranches (bareme_id, ordre, jusqua, taux) VALUES ($1, $2, $3, $4)",
-          [
-            id,
-            tr.ordre || i + 1,
-            tr.jusqua === null || tr.jusqua === "" ? null : Number(tr.jusqua),
-            Number(tr.taux),
-          ],
+          [id, tr.ordre || i + 1, tr.jusqua === null || tr.jusqua === "" ? null : Number(tr.jusqua), Number(tr.taux)]
         );
       }
     }
@@ -841,14 +787,8 @@ async function modifierBareme(id, donnees) {
 
 async function supprimerBareme(id) {
   try {
-    await pool.query(
-      "UPDATE types_actes SET bareme_emoluments_id = NULL WHERE bareme_emoluments_id = $1",
-      [id],
-    );
-    await pool.query(
-      "UPDATE baremes_emoluments SET archived_at = NOW() WHERE id = $1",
-      [id],
-    );
+    await pool.query("UPDATE types_actes SET bareme_emoluments_id = NULL WHERE bareme_emoluments_id = $1", [id]);
+    await pool.query("UPDATE baremes_emoluments SET archived_at = NOW() WHERE id = $1", [id]);
   } catch (_) {}
   MEMOIRE_BAREMES.delete(id);
   return { id, supprime: true };
@@ -856,10 +796,10 @@ async function supprimerBareme(id) {
 
 async function associerBaremeTypeActe(typeActeId, baremeId) {
   try {
-    const { rows } = await pool.query(
-      "UPDATE types_actes SET bareme_emoluments_id = $1 WHERE id = $2 RETURNING *",
-      [baremeId || null, typeActeId],
-    );
+    const { rows } = await pool.query("UPDATE types_actes SET bareme_emoluments_id = $1 WHERE id = $2 RETURNING *", [
+      baremeId || null,
+      typeActeId,
+    ]);
     if (rows && rows.length) return typeActeVersCamel(rows[0]);
   } catch (_) {}
 

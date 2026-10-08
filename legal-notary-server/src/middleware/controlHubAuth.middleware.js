@@ -13,11 +13,10 @@ function exigerCleControlHub(req, res, next) {
 
   if (!secretAttendu || !secretAttendu.trim()) {
     console.error(
-      "[ControlHubAuth] Erreur de configuration : CONTROL_HUB_SECRET_KEY n'est pas définie sur ce serveur.",
+      "[ControlHubAuth] Erreur de configuration : CONTROL_HUB_SECRET_KEY n'est pas définie sur ce serveur."
     );
     return res.status(500).json({
-      erreur:
-        "Erreur de configuration serveur : Clé de contrôle interne non configurée.",
+      erreur: "Erreur de configuration serveur : Clé de contrôle interne non configurée.",
     });
   }
 
@@ -33,8 +32,7 @@ function exigerCleControlHub(req, res, next) {
 
   if (!secretFourni || typeof secretFourni !== "string") {
     return res.status(401).json({
-      erreur:
-        "Accès refusé : En-tête 'x-control-hub-secret' ou 'Authorization: Bearer' requis pour l'API interne.",
+      erreur: "Accès refusé : En-tête 'x-control-hub-secret' ou 'Authorization: Bearer' requis pour l'API interne.",
     });
   }
 
@@ -43,10 +41,7 @@ function exigerCleControlHub(req, res, next) {
     const bufAttendu = Buffer.from(secretAttendu, "utf8");
     const bufFourni = Buffer.from(secretFourni, "utf8");
 
-    if (
-      bufAttendu.length !== bufFourni.length ||
-      !crypto.timingSafeEqual(bufAttendu, bufFourni)
-    ) {
+    if (bufAttendu.length !== bufFourni.length || !crypto.timingSafeEqual(bufAttendu, bufFourni)) {
       return res.status(401).json({
         erreur: "Accès refusé : Clé secrète de contrôle interne invalide.",
       });

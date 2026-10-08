@@ -10,8 +10,7 @@ const TICKETS_MEMOIRE = [
     id: "tick-001",
     numero_ticket: "TICK-2026-1042",
     titre: "Vérification de la passerelle SMS Orange/MTN",
-    description:
-      "Demande de confirmation d'acheminement des notifications d'actes.",
+    description: "Demande de confirmation d'acheminement des notifications d'actes.",
     niveau: "L1",
     statut: "resolu",
     priorite: "normale",
@@ -19,14 +18,9 @@ const TICKETS_MEMOIRE = [
   },
 ];
 
-async function obtenirMonitoringInstance(
-  etudeId = "a0000000-0000-0000-0000-000000000001",
-) {
+async function obtenirMonitoringInstance(etudeId = "a0000000-0000-0000-0000-000000000001") {
   try {
-    const { rows: instances } = await pool.query(
-      "SELECT * FROM instances_monitoring WHERE etude_id = $1",
-      [etudeId],
-    );
+    const { rows: instances } = await pool.query("SELECT * FROM instances_monitoring WHERE etude_id = $1", [etudeId]);
     const { rows: statsDossiers } = await pool.query(
       `
       SELECT
@@ -37,17 +31,17 @@ async function obtenirMonitoringInstance(
         COUNT(CASE WHEN statut_numerisation = 'NON_NUMERISE' THEN 1 END)::int AS non_numerises
       FROM dossiers WHERE etude_id = $1
     `,
-      [etudeId],
+      [etudeId]
     );
 
     const { rows: statsCartons } = await pool.query(
       "SELECT COUNT(*)::int AS total_cartons, COALESCE(SUM(nombre_dossiers), 0)::int AS total_dossiers_carton FROM cartons_archive WHERE etude_id = $1",
-      [etudeId],
+      [etudeId]
     );
 
     const { rows: statsSorties } = await pool.query(
       "SELECT COUNT(*)::int AS sortis FROM mouvements_dossiers_physiques WHERE etude_id = $1 AND statut = 'en_cours'",
-      [etudeId],
+      [etudeId]
     );
 
     const inst = instances.length ? instances[0] : {};
@@ -138,7 +132,7 @@ async function creerTicketSupport({
         niveau,
         priorite,
         JSON.stringify({ status: "ok" }),
-      ],
+      ]
     );
     if (rows && rows.length) return rows[0];
   } catch (_) {}
@@ -167,7 +161,7 @@ async function listerTickets(etudeId = "a0000000-0000-0000-0000-000000000001") {
        LEFT JOIN utilisateurs u ON u.id = t.utilisateur_id
        WHERE t.etude_id = $1
        ORDER BY t.created_at DESC`,
-      [etudeId],
+      [etudeId]
     );
     if (rows && rows.length) return rows;
   } catch (_) {}
@@ -192,12 +186,7 @@ async function accorderAccesTemporaireSupport({
            updated_at = now()
        WHERE id = $4
        RETURNING *`,
-      [
-        motif || "Diagnostic incident technique",
-        expiration,
-        intervenantSupport || "Équipe DevOps SaaS",
-        ticketId,
-      ],
+      [motif || "Diagnostic incident technique", expiration, intervenantSupport || "Équipe DevOps SaaS", ticketId]
     );
     if (rows && rows.length) return rows[0];
   } catch (_) {}

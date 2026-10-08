@@ -18,34 +18,22 @@ const router = express.Router();
 router.get("/", async (req, res, next) => {
   try {
     const host = (req.headers.host || "").split(":")[0].toLowerCase();
-    const etudeId =
-      req.query.etudeId || (req.utilisateur && req.utilisateur.etudeId) || host;
+    const etudeId = req.query.etudeId || (req.utilisateur && req.utilisateur.etudeId) || host;
     res.json(await parametresService.obtenir(etudeId));
   } catch (e) {
     next(e);
   }
 });
 
-router.put(
-  "/",
-  exigerPermission("parametres:gerer"),
-  async (req, res, next) => {
-    try {
-      const etudeId =
-        req.query.etudeId || (req.utilisateur && req.utilisateur.etudeId);
-      const resultat = await parametresService.mettreAJour(req.body, etudeId);
-      await auditService.consigner(
-        "parametres_etude",
-        resultat.id,
-        "modification",
-        req.utilisateur.id,
-        req.body,
-      );
-      res.json(resultat);
-    } catch (e) {
-      next(e);
-    }
-  },
-);
+router.put("/", exigerPermission("parametres:gerer"), async (req, res, next) => {
+  try {
+    const etudeId = req.query.etudeId || (req.utilisateur && req.utilisateur.etudeId);
+    const resultat = await parametresService.mettreAJour(req.body, etudeId);
+    await auditService.consigner("parametres_etude", resultat.id, "modification", req.utilisateur.id, req.body);
+    res.json(resultat);
+  } catch (e) {
+    next(e);
+  }
+});
 
 module.exports = router;

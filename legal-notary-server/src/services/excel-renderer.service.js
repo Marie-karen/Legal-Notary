@@ -22,21 +22,14 @@ function escapeHtml(str) {
 }
 
 function fmtFCFA(montant) {
-  if (montant === null || montant === undefined || isNaN(montant))
-    return "0 FCFA";
+  if (montant === null || montant === undefined || isNaN(montant)) return "0 FCFA";
   return Math.round(Number(montant)).toLocaleString("fr-FR") + " FCFA";
 }
 
 /**
  * Génère le rendu HTML haute fidélité d'une feuille Excel spécifique avec injection des données réelles
  */
-function rendreFeuilleExcelHtml(
-  cheminFichier,
-  nomFeuille,
-  dossier,
-  fiche,
-  parametres,
-) {
+function rendreFeuilleExcelHtml(cheminFichier, nomFeuille, dossier, fiche, parametres) {
   if (!fs.existsSync(cheminFichier)) {
     throw new Error(`Fichier Excel introuvable : ${cheminFichier}`);
   }
@@ -56,18 +49,11 @@ function rendreFeuilleExcelHtml(
   }
 
   // 2. Injecter les données dynamiques dans la feuille
-  const montantAssiette = Number(
-    (dossier && (dossier.montantAssiette || dossier.montant_assiette)) || 0,
-  );
+  const montantAssiette = Number((dossier && (dossier.montantAssiette || dossier.montant_assiette)) || 0);
   const clientNom =
-    (dossier &&
-      (dossier.comparantsNoms || dossier.clientNom || dossier.client_nom)) ||
-    "CLIENT DU DOSSIER";
-  const numDossier =
-    (dossier && (dossier.numeroDossier || dossier.numero_dossier)) || "DOSSIER";
-  const typeActeLibelle =
-    (dossier && (dossier.typeActeLibelle || dossier.type_acte_libelle)) ||
-    "ACTE NOTARIÉ";
+    (dossier && (dossier.comparantsNoms || dossier.clientNom || dossier.client_nom)) || "CLIENT DU DOSSIER";
+  const numDossier = (dossier && (dossier.numeroDossier || dossier.numero_dossier)) || "DOSSIER";
+  const typeActeLibelle = (dossier && (dossier.typeActeLibelle || dossier.type_acte_libelle)) || "ACTE NOTARIÉ";
   const dateJour = new Date().toLocaleDateString("fr-CI", {
     day: "numeric",
     month: "long",
@@ -102,34 +88,22 @@ function rendreFeuilleExcelHtml(
       if (
         parametres &&
         parametres.nomNotaire &&
-        (valStr.includes("OKOUE") ||
-          valStr.includes("KOFFI") ||
-          valStr.includes("NOTAIRE"))
+        (valStr.includes("OKOUE") || valStr.includes("KOFFI") || valStr.includes("NOTAIRE"))
       ) {
         if (r <= 5 && c <= 2) {
           if (valStr.startsWith("ETUDE") || valStr.startsWith("Etude")) {
-            cell.v = (
-              parametres.nomEtude || `ETUDE DE MAÎTRE ${parametres.nomNotaire}`
-            ).toUpperCase();
+            cell.v = (parametres.nomEtude || `ETUDE DE MAÎTRE ${parametres.nomNotaire}`).toUpperCase();
           }
         }
       }
 
       // Nom du client / Comparants
-      if (
-        valStr.includes("SCI LES HIBISCUS") ||
-        valStr.includes("PAR .") ||
-        valStr.includes("NOMINATIF")
-      ) {
+      if (valStr.includes("SCI LES HIBISCUS") || valStr.includes("PAR .") || valStr.includes("NOMINATIF")) {
         cell.v = clientNom;
       }
 
       // Nature de l'acte / Affaire
-      if (
-        valStr.includes("Mainlevée d'hypothèque") ||
-        valStr.includes("VENTE PAR") ||
-        valStr.includes("PROMESSE")
-      ) {
+      if (valStr.includes("Mainlevée d'hypothèque") || valStr.includes("VENTE PAR") || valStr.includes("PROMESSE")) {
         if (cell.t === "s") {
           cell.v = valStr
             .replace(/Mainlevée d'hypothèque SIB/g, typeActeLibelle)
@@ -188,9 +162,7 @@ function rendreFeuilleExcelHtml(
     html += `<tr style="min-height:20px">`;
 
     for (let c = range.s.c; c <= range.e.c; c++) {
-      const isMergeCovered = merges.some(
-        (m) => (r > m.s.r || c > m.s.c) && r <= m.e.r && c <= m.e.c,
-      );
+      const isMergeCovered = merges.some((m) => (r > m.s.r || c > m.s.c) && r <= m.e.r && c <= m.e.c);
       if (isMergeCovered) continue;
 
       const mergeInfo = merges.find((m) => m.s.r === r && m.s.c === c);
@@ -242,19 +214,12 @@ function rendreFeuilleExcelHtml(
         isBold = true;
       }
 
-      if (
-        valUpper.startsWith("RUBRIQUES") ||
-        valUpper.startsWith("POSTES") ||
-        (r === 16 && (c === 0 || c === 1))
-      ) {
+      if (valUpper.startsWith("RUBRIQUES") || valUpper.startsWith("POSTES") || (r === 16 && (c === 0 || c === 1))) {
         bgColor = "#f3f4f6";
         borderStyle = "border:1.5px solid #111;";
       }
 
-      if (
-        valUpper.includes("TOTAL A PAYER") ||
-        valUpper.includes("TOTAL GENERAL")
-      ) {
+      if (valUpper.includes("TOTAL A PAYER") || valUpper.includes("TOTAL GENERAL")) {
         isBold = true;
         bgColor = "#f9fafb";
         borderStyle = "border-top:2px solid #111;border-bottom:2px solid #111;";
@@ -262,8 +227,7 @@ function rendreFeuilleExcelHtml(
 
       let tdStyle = `${borderStyle}padding:3px 6px;vertical-align:middle;text-align:${textAlign};background:${bgColor};`;
       if (isBold) tdStyle += "font-weight:700;";
-      if (isNumeric)
-        tdStyle += "font-variant-numeric:tabular-nums;color:#1e3a8a;";
+      if (isNumeric) tdStyle += "font-variant-numeric:tabular-nums;color:#1e3a8a;";
 
       html += `<td${rowspan > 1 ? ` rowspan="${rowspan}"` : ""}${colspan > 1 ? ` colspan="${colspan}"` : ""} style="${tdStyle}">`;
       html += escapeHtml(cellValue);
@@ -282,28 +246,14 @@ function rendreFeuilleExcelHtml(
 /**
  * Génère l'interface complète de prévisualisation avec onglets pour toutes les feuilles du classeur Excel
  */
-function rendreClasseurExcelInteractif(
-  modeleId,
-  dossier,
-  fiche,
-  parametres,
-  feuilleActive,
-) {
+function rendreClasseurExcelInteractif(modeleId, dossier, fiche, parametres, feuilleActive) {
   const cheminFichier = excelService.obtenirCheminModele(modeleId);
   const wb = XLSX.readFile(cheminFichier);
   const feuillesDisponibles = wb.SheetNames;
   const activeSheet =
-    feuilleActive && feuillesDisponibles.includes(feuilleActive)
-      ? feuilleActive
-      : feuillesDisponibles[0];
+    feuilleActive && feuillesDisponibles.includes(feuilleActive) ? feuilleActive : feuillesDisponibles[0];
 
-  const htmlContenuFeuille = rendreFeuilleExcelHtml(
-    cheminFichier,
-    activeSheet,
-    dossier,
-    fiche,
-    parametres,
-  );
+  const htmlContenuFeuille = rendreFeuilleExcelHtml(cheminFichier, activeSheet, dossier, fiche, parametres);
 
   return {
     modeleId: modeleId || "TEST",

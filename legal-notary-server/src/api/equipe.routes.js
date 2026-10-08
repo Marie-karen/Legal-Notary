@@ -19,10 +19,7 @@ const router = express.Router();
 
 router.get("/", async (req, res, next) => {
   try {
-    const avecSalaires = aPermission(
-      req.utilisateur.role,
-      "equipe:voir_salaires",
-    );
+    const avecSalaires = aPermission(req.utilisateur.role, "equipe:voir_salaires");
     const etudeId = req.utilisateur ? req.utilisateur.etudeId : null;
     res.json(await authService.listerUtilisateurs({ avecSalaires, etudeId }));
   } catch (e) {
@@ -32,81 +29,48 @@ router.get("/", async (req, res, next) => {
 
 router.post("/", exigerPermission("equipe:gerer"), async (req, res, next) => {
   try {
-    const avecSalaires = aPermission(
-      req.utilisateur.role,
-      "equipe:voir_salaires",
-    );
+    const avecSalaires = aPermission(req.utilisateur.role, "equipe:voir_salaires");
     const etudeId = req.utilisateur ? req.utilisateur.etudeId : null;
-    const utilisateur = await authService.creerUtilisateur(
-      { ...req.body, etudeId },
-      { avecSalaire: avecSalaires },
-    );
-    await auditService.consigner(
-      "utilisateurs",
-      utilisateur.id,
-      "creation",
-      req.utilisateur.id,
-      { role: utilisateur.role, email: utilisateur.email },
-    );
+    const utilisateur = await authService.creerUtilisateur({ ...req.body, etudeId }, { avecSalaire: avecSalaires });
+    await auditService.consigner("utilisateurs", utilisateur.id, "creation", req.utilisateur.id, {
+      role: utilisateur.role,
+      email: utilisateur.email,
+    });
     res.status(201).json(utilisateur);
   } catch (e) {
     next(e);
   }
 });
 
-router.patch(
-  "/:id",
-  exigerPermission("equipe:gerer"),
-  async (req, res, next) => {
-    try {
-      const avecSalaires = aPermission(
-        req.utilisateur.role,
-        "equipe:voir_salaires",
-      );
-      if (!avecSalaires && req.body.salaireNet !== undefined) {
-        return res
-          .status(403)
-          .json({ erreur: "Seul le notaire peut modifier le salaire." });
-      }
-      const utilisateur = await authService.modifierUtilisateur(
-        req.params.id,
-        req.body,
-        { avecSalaire: avecSalaires },
-      );
-      if (!utilisateur)
-        return res.status(404).json({ erreur: "Utilisateur introuvable." });
-      await auditService.consigner(
-        "utilisateurs",
-        req.params.id,
-        "modification",
-        req.utilisateur.id,
-        Object.keys(req.body),
-      );
-      res.json(utilisateur);
-    } catch (e) {
-      next(e);
+router.patch("/:id", exigerPermission("equipe:gerer"), async (req, res, next) => {
+  try {
+    const avecSalaires = aPermission(req.utilisateur.role, "equipe:voir_salaires");
+    if (!avecSalaires && req.body.salaireNet !== undefined) {
+      return res.status(403).json({ erreur: "Seul le notaire peut modifier le salaire." });
     }
-  },
-);
+    const utilisateur = await authService.modifierUtilisateur(req.params.id, req.body, { avecSalaire: avecSalaires });
+    if (!utilisateur) return res.status(404).json({ erreur: "Utilisateur introuvable." });
+    await auditService.consigner(
+      "utilisateurs",
+      req.params.id,
+      "modification",
+      req.utilisateur.id,
+      Object.keys(req.body)
+    );
+    res.json(utilisateur);
+  } catch (e) {
+    next(e);
+  }
+});
 
-router.delete(
-  "/:id",
-  exigerPermission("equipe:gerer"),
-  async (req, res, next) => {
-    try {
-      await authService.desactiverUtilisateur(req.params.id);
-      await auditService.consigner(
-        "utilisateurs",
-        req.params.id,
-        "desactivation",
-        req.utilisateur.id,
-        null,
-      );
-      res.status(204).end();
-    } catch (e) {
-      next(e);
-    }
-  },
-);
+router.delete("/:id", exigerPermission("equipe:gerer"), async (req, res, next) => {
+  try {
+    await authService.desactiverUtilisateur(req.params.id);
+    await auditService.consigner("utilisateurs", req.params.id, "desactivation", req.utilisateur.id, null);
+    res.status(204).end();
+  } catch (e) {
+    next(e);
+  }
+});
 
 module.exports = router;

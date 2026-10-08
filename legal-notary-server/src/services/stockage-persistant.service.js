@@ -17,10 +17,7 @@ function assurerDossierData() {
       fs.mkdirSync(DATA_DIR, { recursive: true });
     }
   } catch (e) {
-    console.warn(
-      "[StockagePersistant] Impossible de créer le dossier data:",
-      e.message,
-    );
+    console.warn("[StockagePersistant] Impossible de créer le dossier data:", e.message);
   }
 }
 
@@ -33,10 +30,7 @@ function lireFichierJson(nomFichier, valeurDefaut = null) {
       return JSON.parse(brut);
     }
   } catch (e) {
-    console.warn(
-      "[StockagePersistant] Erreur lecture " + nomFichier + " :",
-      e.message,
-    );
+    console.warn("[StockagePersistant] Erreur lecture " + nomFichier + " :", e.message);
   }
   return valeurDefaut;
 }
@@ -49,10 +43,7 @@ function ecrireFichierJson(nomFichier, donnees) {
     fs.writeFileSync(temp, JSON.stringify(donnees, null, 2), "utf8");
     fs.renameSync(temp, chemin);
   } catch (e) {
-    console.warn(
-      "[StockagePersistant] Erreur écriture " + nomFichier + " :",
-      e.message,
-    );
+    console.warn("[StockagePersistant] Erreur écriture " + nomFichier + " :", e.message);
   }
 }
 

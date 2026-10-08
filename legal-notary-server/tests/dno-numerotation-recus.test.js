@@ -18,12 +18,7 @@ test("Numérotation - Incrémentation et génération de numéro séquentiel", (
 
   // Format personnalisé sans variable code
   const format3 = "ETUDE/{AAAA}/N{NUM}";
-  const num3 = dossiersService.formaterNumeroDossier(
-    format3,
-    annee,
-    150,
-    "SUC",
-  );
+  const num3 = dossiersService.formaterNumeroDossier(format3, annee, 150, "SUC");
   assert.strictEqual(num3, `ETUDE/${annee}/N0150`);
 });
 

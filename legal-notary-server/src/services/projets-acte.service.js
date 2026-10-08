@@ -80,7 +80,7 @@ async function obtenirVersionActuelle(dossierId) {
   try {
     const { rows } = await pool.query(
       "SELECT * FROM dossier_projets_acte WHERE dossier_id = $1 ORDER BY numero_version DESC LIMIT 1",
-      [dossierId],
+      [dossierId]
     );
     if (rows && rows.length) return versCamel(rows[0]);
   } catch (errDb) {
@@ -94,7 +94,7 @@ async function listerHistorique(dossierId) {
   try {
     const { rows } = await pool.query(
       "SELECT * FROM dossier_projets_acte WHERE dossier_id = $1 ORDER BY numero_version DESC",
-      [dossierId],
+      [dossierId]
     );
     if (rows && rows.length) return rows.map(versCamel);
   } catch (errDb) {
@@ -104,23 +104,19 @@ async function listerHistorique(dossierId) {
   return memoire ? [versCamel(memoire)] : [];
 }
 
-async function enregistrerBrouillon(
-  dossierId,
-  { contenu, pieceJointeUrl },
-  utilisateurId,
-) {
+async function enregistrerBrouillon(dossierId, { contenu, pieceJointeUrl }, utilisateurId) {
   try {
     return await avecTransaction(async (client) => {
       const { rows: dernieres } = await client.query(
         "SELECT * FROM dossier_projets_acte WHERE dossier_id = $1 ORDER BY numero_version DESC LIMIT 1",
-        [dossierId],
+        [dossierId]
       );
       const derniere = dernieres[0];
 
       if (derniere && derniere.statut === "en_redaction") {
         const { rows } = await client.query(
           "UPDATE dossier_projets_acte SET contenu = $1, piece_jointe_url = $2 WHERE id = $3 RETURNING *",
-          [contenu, pieceJointeUrl || null, derniere.id],
+          [contenu, pieceJointeUrl || null, derniere.id]
         );
         return versCamel(rows[0]);
       }
@@ -129,13 +125,7 @@ async function enregistrerBrouillon(
       const { rows } = await client.query(
         `INSERT INTO dossier_projets_acte (dossier_id, numero_version, contenu, piece_jointe_url, statut, redige_par_id)
          VALUES ($1, $2, $3, $4, 'en_redaction', $5) RETURNING *`,
-        [
-          dossierId,
-          prochainNumero,
-          contenu,
-          pieceJointeUrl || null,
-          utilisateurId,
-        ],
+        [dossierId, prochainNumero, contenu, pieceJointeUrl || null, utilisateurId]
       );
       return versCamel(rows[0]);
     });
@@ -166,23 +156,19 @@ async function soumettre(dossierId, utilisateurId) {
            SELECT id FROM dossier_projets_acte WHERE dossier_id = $1 AND statut = 'en_redaction'
            ORDER BY numero_version DESC LIMIT 1
          ) RETURNING *`,
-        [dossierId],
+        [dossierId]
       );
       if (!rows.length) return null;
 
-      const { rows: dossierRows } = await client.query(
-        "SELECT * FROM dossiers WHERE id = $1",
-        [dossierId],
-      );
-      const { rows: redacteurRows } = await client.query(
-        "SELECT nom_complet FROM utilisateurs WHERE id = $1",
-        [utilisateurId],
-      );
+      const { rows: dossierRows } = await client.query("SELECT * FROM dossiers WHERE id = $1", [dossierId]);
+      const { rows: redacteurRows } = await client.query("SELECT nom_complet FROM utilisateurs WHERE id = $1", [
+        utilisateurId,
+      ]);
       await dossiersService.ajouterMouvement(
         client,
         dossierId,
         utilisateurId,
-        "Projet d'acte soumis au notaire pour validation",
+        "Projet d'acte soumis au notaire pour validation"
       );
 
       await notificationsService.declencherEvenement("projet_acte_soumis", {
@@ -190,9 +176,7 @@ async function soumettre(dossierId, utilisateurId) {
         donnees: {
           numeroDossier: dossierRows[0] ? dossierRows[0].numero_dossier : "DOS",
           typeActe: dossierRows[0] ? dossierRows[0].type_acte_id : "vente",
-          nomRedacteur: redacteurRows[0]
-            ? redacteurRows[0].nom_complet
-            : "un clerc",
+          nomRedacteur: redacteurRows[0] ? redacteurRows[0].nom_complet : "un clerc",
         },
       });
 
@@ -229,20 +213,14 @@ async function valider(dossierId, utilisateurId, commentaire) {
            SELECT id FROM dossier_projets_acte WHERE dossier_id = $3 AND statut = 'soumis'
            ORDER BY numero_version DESC LIMIT 1
          ) RETURNING *`,
-        [utilisateurId, commentaire || null, dossierId],
+        [utilisateurId, commentaire || null, dossierId]
       );
       if (!rows.length) return null;
 
-      const { rows: dossierRows } = await client.query(
-        "SELECT numero_dossier FROM dossiers WHERE id = $1",
-        [dossierId],
-      );
-      await dossiersService.ajouterMouvement(
-        client,
+      const { rows: dossierRows } = await client.query("SELECT numero_dossier FROM dossiers WHERE id = $1", [
         dossierId,
-        utilisateurId,
-        "Projet d'acte validé par le notaire",
-      );
+      ]);
+      await dossiersService.ajouterMouvement(client, dossierId, utilisateurId, "Projet d'acte validé par le notaire");
       await notificationsService.declencherEvenement("projet_acte_valide", {
         dossierId,
         donnees: {
@@ -266,9 +244,7 @@ async function valider(dossierId, utilisateurId, commentaire) {
 
 async function renvoyerPourCorrection(dossierId, utilisateurId, commentaire) {
   if (!commentaire || !commentaire.trim()) {
-    throw new Error(
-      "Un commentaire est requis pour renvoyer un projet d'acte en correction.",
-    );
+    throw new Error("Un commentaire est requis pour renvoyer un projet d'acte en correction.");
   }
   try {
     return await avecTransaction(async (client) => {
@@ -278,19 +254,18 @@ async function renvoyerPourCorrection(dossierId, utilisateurId, commentaire) {
            SELECT id FROM dossier_projets_acte WHERE dossier_id = $3 AND statut = 'soumis'
            ORDER BY numero_version DESC LIMIT 1
          ) RETURNING *`,
-        [utilisateurId, commentaire, dossierId],
+        [utilisateurId, commentaire, dossierId]
       );
       if (!rows.length) return null;
 
-      const { rows: dossierRows } = await client.query(
-        "SELECT numero_dossier FROM dossiers WHERE id = $1",
-        [dossierId],
-      );
+      const { rows: dossierRows } = await client.query("SELECT numero_dossier FROM dossiers WHERE id = $1", [
+        dossierId,
+      ]);
       await dossiersService.ajouterMouvement(
         client,
         dossierId,
         utilisateurId,
-        `Projet d'acte renvoyé pour correction : ${commentaire}`,
+        `Projet d'acte renvoyé pour correction : ${commentaire}`
       );
       await notificationsService.declencherEvenement("projet_acte_a_corriger", {
         dossierId,

@@ -62,33 +62,69 @@ const REGLES_ETAPE = [
   [1, ["collecte d'information", "collecte d'informations", "collete d'information"]],
   [4, ["signature", "rdv de signature", "certification de signature"]],
   [3, ["redaction"]],
-  [6, [
-    "delivrance", "transmission de pieces aux clients",
-  ]],
+  [6, ["delivrance", "transmission de pieces aux clients"]],
   // Étape 2 — Réquisitions & états préalables : collecte des pièces
   // justificatives et vérifications AVANT rédaction (précède toujours la
   // rédaction dans l'ordre réel des tâches de l'Excel source).
-  [2, [
-    "requisition", "retrait etat foncier", "retrait d'etat foncier",
-    "verification", "verifiaction", "visite du bien", "demande de certificat", "demande d'etat domanial",
-    "etablissement du dossier technique", "etablissement de dossier technique", "demande d'acd",
-    "depot au guichet unique", "certificat de non faillite", "verification du lot",
-  ]],
+  [
+    2,
+    [
+      "requisition",
+      "retrait etat foncier",
+      "retrait d'etat foncier",
+      "verification",
+      "verifiaction",
+      "visite du bien",
+      "demande de certificat",
+      "demande d'etat domanial",
+      "etablissement du dossier technique",
+      "etablissement de dossier technique",
+      "demande d'acd",
+      "depot au guichet unique",
+      "certificat de non faillite",
+      "verification du lot",
+    ],
+  ],
   // Étape 5 — Formalités DGI & Conservation Foncière : dépôts et
   // démarches d'enregistrement/inscription APRÈS la signature.
-  [5, [
-    "depot a la conservation", "depots a la conservation", "depot a la concervation",
-    "enregistrement et retrait", "retrait de la minute", "retrait de la munite", // "munite" : coquille présente dans la source réelle
-    "mutation au livre foncier", "inscription au livre foncier",
-    "inscription hypothecaire", "transmission au cadastre", "bornage",
-    "creation de titre foncier", "creation du titre foncier", // les deux formulations apparaissent dans la source réelle
-    "creaton de dm", "transmission a la conservation", "transmission du tf",
-    "publicite a la conservation", "delivrance de l'attestation domaniale", "delivrance du bm",
-    "projet d'acd", "retrait de la notification", "retrait de l'acd", "mis en ligne",
-    "annonce legale", "legalisation des journaux", "depot au cepici", "preparation du dossier tca",
-    "depot et retrait au tca", "depot au greffe", "depots au greffe", "retrait de rccm",
-    "demande et retrait etat foncier", "depot a la conservation foncier et demande de radiation",
-  ]],
+  [
+    5,
+    [
+      "depot a la conservation",
+      "depots a la conservation",
+      "depot a la concervation",
+      "enregistrement et retrait",
+      "retrait de la minute",
+      "retrait de la munite", // "munite" : coquille présente dans la source réelle
+      "mutation au livre foncier",
+      "inscription au livre foncier",
+      "inscription hypothecaire",
+      "transmission au cadastre",
+      "bornage",
+      "creation de titre foncier",
+      "creation du titre foncier", // les deux formulations apparaissent dans la source réelle
+      "creaton de dm",
+      "transmission a la conservation",
+      "transmission du tf",
+      "publicite a la conservation",
+      "delivrance de l'attestation domaniale",
+      "delivrance du bm",
+      "projet d'acd",
+      "retrait de la notification",
+      "retrait de l'acd",
+      "mis en ligne",
+      "annonce legale",
+      "legalisation des journaux",
+      "depot au cepici",
+      "preparation du dossier tca",
+      "depot et retrait au tca",
+      "depot au greffe",
+      "depots au greffe",
+      "retrait de rccm",
+      "demande et retrait etat foncier",
+      "depot a la conservation foncier et demande de radiation",
+    ],
+  ],
 ];
 // NOTE : "delivrance de l'attestation domaniale" et "delivrance du bm"
 // apparaissent dans REGLES_ETAPE[5] (étape 5) alors que le mot "délivrance"
@@ -117,8 +153,11 @@ function classifierEtape(libelleTache) {
 // confirmée par l'exemple réel de mainlevée d'hypothèque — voir
 // fiscal.service.js) sur le type d'acte correspondant.
 const INDICES_TAXE_FONCIERE = [
-  "mutation au livre foncier", "inscription au livre foncier", "inscription hypothecaire",
-  "creation de titre foncier", "demande de radiation",
+  "mutation au livre foncier",
+  "inscription au livre foncier",
+  "inscription hypothecaire",
+  "creation de titre foncier",
+  "demande de radiation",
 ];
 
 function detecteTaxeFonciere(taches) {
@@ -136,7 +175,13 @@ function detecteTaxeFonciere(taches) {
 // structurelle sur le déroulement d'un acte notarié, pas une règle
 // fiscale ou juridique — le cabinet peut librement marquer d'autres
 // tâches comme bloquantes ensuite (le champ reste éditable).
-const MOTS_CLES_BLOQUANTE = ["collecte d'information", "collecte d'informations", "collete d'information", "redaction", "signature"];
+const MOTS_CLES_BLOQUANTE = [
+  "collecte d'information",
+  "collecte d'informations",
+  "collete d'information",
+  "redaction",
+  "signature",
+];
 
 function estBloquante(libelleTache) {
   const n = normaliser(libelleTache);
@@ -193,10 +238,10 @@ const BAREMES_DECRET = {
 async function creerBaremes(client) {
   const ids = {};
   for (const [code, tranches] of Object.entries(BAREMES_DECRET)) {
-    const { rows } = await client.query(
-      "INSERT INTO baremes_emoluments (code, libelle) VALUES ($1, $2) RETURNING id",
-      [code, `Barème ${code} (Décret 2013-279)`]
-    );
+    const { rows } = await client.query("INSERT INTO baremes_emoluments (code, libelle) VALUES ($1, $2) RETURNING id", [
+      code,
+      `Barème ${code} (Décret 2013-279)`,
+    ]);
     ids[code] = rows[0].id;
     let ordre = 1;
     for (const t of tranches) {
@@ -266,7 +311,14 @@ async function importer(nomProfil) {
         await client.query(
           `INSERT INTO taches_standard (type_acte_id, etape, ordre, libelle, duree_jours, bloquante)
            VALUES ($1, $2, $3, $4, $5, $6)`,
-          [typeActeId, classifierEtape(tache.libelle), ordre++, tache.libelle.trim(), jours, estBloquante(tache.libelle)]
+          [
+            typeActeId,
+            classifierEtape(tache.libelle),
+            ordre++,
+            tache.libelle.trim(),
+            jours,
+            estBloquante(tache.libelle),
+          ]
         );
         nombreTaches++;
       }

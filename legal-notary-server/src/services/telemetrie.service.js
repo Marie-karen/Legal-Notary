@@ -24,9 +24,7 @@ if (process.env.SENTRY_DSN) {
     });
     sentryClient = Sentry;
   } catch (e) {
-    console.warn(
-      "[telemetrie] Sentry SDK non installé ou non configuré : fallback sur le hub interne PostgreSQL.",
-    );
+    console.warn("[telemetrie] Sentry SDK non installé ou non configuré : fallback sur le hub interne PostgreSQL.");
   }
 }
 
@@ -36,14 +34,8 @@ if (process.env.SENTRY_DSN) {
 function assainirDonneesErreur(message, meta) {
   let msgPropre = String(message || "Erreur inconnue");
   // Masque d'éventuels tokens ou données confidentielles
-  msgPropre = msgPropre.replace(
-    /Bearer\s+[A-Za-z0-9-_.]+/gi,
-    "Bearer [MASQUÉ]",
-  );
-  msgPropre = msgPropre.replace(
-    /motDePasse['"]?\s*[:=]\s*['"]?[^'",\s]+/gi,
-    'motDePasse: "[MASQUÉ]"',
-  );
+  msgPropre = msgPropre.replace(/Bearer\s+[A-Za-z0-9-_.]+/gi, "Bearer [MASQUÉ]");
+  msgPropre = msgPropre.replace(/motDePasse['"]?\s*[:=]\s*['"]?[^'",\s]+/gi, 'motDePasse: "[MASQUÉ]"');
   return { msgPropre, metaPropre: meta || {} };
 }
 
@@ -108,16 +100,8 @@ async function enregistrerErreur({
 /**
  * Déclenche une notification d'incident immédiate (Webhook Slack / Discord / Email / Log système).
  */
-async function notifierIncidentDevOps({
-  titre,
-  message,
-  source,
-  typeErreur,
-  nomEtude,
-  id,
-}) {
-  const webhookUrl =
-    process.env.DEVOPS_WEBHOOK_URL || process.env.SLACK_WEBHOOK_URL;
+async function notifierIncidentDevOps({ titre, message, source, typeErreur, nomEtude, id }) {
+  const webhookUrl = process.env.DEVOPS_WEBHOOK_URL || process.env.SLACK_WEBHOOK_URL;
   const horodatage = new Date().toISOString();
 
   console.error(`\n🚨 [ALERTE DÉVELOPPEUR AUTOMATIQUE - ${horodatage}]`);
@@ -137,9 +121,7 @@ async function notifierIncidentDevOps({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
-      }).catch((e) =>
-        console.warn("[telemetrie] Erreur envoi webhook DevOps:", e.message),
-      );
+      }).catch((e) => console.warn("[telemetrie] Erreur envoi webhook DevOps:", e.message));
     } catch (e) {}
   }
 }
@@ -160,10 +142,7 @@ async function recevoirHeartbeat({
   // Recherche ou mise à jour du nœud
   let targetEtudeId = etudeId;
   if (!targetEtudeId && pairToken) {
-    const res = await pool.query(
-      "SELECT id FROM etudes WHERE id::text = $1 OR code_etude = $1",
-      [pairToken],
-    );
+    const res = await pool.query("SELECT id FROM etudes WHERE id::text = $1 OR code_etude = $1", [pairToken]);
     if (res.rows.length) targetEtudeId = res.rows[0].id;
   }
 
@@ -191,7 +170,7 @@ async function recevoirHeartbeat({
   // On cherche si un nœud avec ce nom/pairToken existe déjà pour mettre à jour
   const existant = await pool.query(
     "SELECT id FROM noeuds_heartbeat_parc WHERE nom_noeud = $1 OR (pair_token IS NOT NULL AND pair_token = $2)",
-    [nomNoeud, pairToken],
+    [nomNoeud, pairToken]
   );
 
   if (existant.rows.length) {
@@ -199,32 +178,14 @@ async function recevoirHeartbeat({
       `UPDATE noeuds_heartbeat_parc
        SET cpu_pct = $1, ram_pct = $2, disque_pct = $3, ip_locale = $4, version_agent = $5, derniere_activite = NOW(), statut = $6
        WHERE id = $7 RETURNING *`,
-      [
-        cpuPct,
-        ramPct,
-        disquePct,
-        ipLocale,
-        versionAgent,
-        statut,
-        existant.rows[0].id,
-      ],
+      [cpuPct, ramPct, disquePct, ipLocale, versionAgent, statut, existant.rows[0].id]
     );
     return updateRes.rows[0];
   } else {
     const insertRes = await pool.query(
       `INSERT INTO noeuds_heartbeat_parc (etude_id, nom_noeud, pair_token, ip_locale, cpu_pct, ram_pct, disque_pct, version_agent, derniere_activite, statut)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), $9) RETURNING *`,
-      [
-        targetEtudeId,
-        nomNoeud,
-        pairToken,
-        ipLocale,
-        cpuPct,
-        ramPct,
-        disquePct,
-        versionAgent,
-        statut,
-      ],
+      [targetEtudeId, nomNoeud, pairToken, ipLocale, cpuPct, ramPct, disquePct, versionAgent, statut]
     );
     return insertRes.rows[0];
   }
@@ -247,17 +208,12 @@ async function surveillerSanteNoeuds() {
   const noeudsTraites = [];
 
   for (const noeud of rows) {
-    const diffSec =
-      (maintenant.getTime() - new Date(noeud.derniere_activite).getTime()) /
-      1000;
+    const diffSec = (maintenant.getTime() - new Date(noeud.derniere_activite).getTime()) / 1000;
     let statutActuel = noeud.statut;
 
     if (diffSec > 120 && statutActuel !== "hors_ligne") {
       statutActuel = "hors_ligne";
-      await pool.query(
-        "UPDATE noeuds_heartbeat_parc SET statut = 'hors_ligne' WHERE id = $1",
-        [noeud.id],
-      );
+      await pool.query("UPDATE noeuds_heartbeat_parc SET statut = 'hors_ligne' WHERE id = $1", [noeud.id]);
 
       // Alerte proactive !
       await notifierIncidentDevOps({
@@ -270,10 +226,7 @@ async function surveillerSanteNoeuds() {
       });
     } else if (diffSec <= 120 && statutActuel === "hors_ligne") {
       statutActuel = "en_ligne";
-      await pool.query(
-        "UPDATE noeuds_heartbeat_parc SET statut = 'en_ligne' WHERE id = $1",
-        [noeud.id],
-      );
+      await pool.query("UPDATE noeuds_heartbeat_parc SET statut = 'en_ligne' WHERE id = $1", [noeud.id]);
     }
 
     noeudsTraites.push({
@@ -289,11 +242,7 @@ async function surveillerSanteNoeuds() {
 /**
  * Récupère la liste des erreurs et logs du parc avec filtres.
  */
-async function listerErreursParc({
-  limite = 50,
-  niveau = null,
-  statut = null,
-} = {}) {
+async function listerErreursParc({ limite = 50, niveau = null, statut = null } = {}) {
   let sql = "SELECT * FROM telemetrie_erreurs_parc WHERE 1=1";
   const params = [];
 
@@ -317,10 +266,9 @@ async function listerErreursParc({
  * Marque une erreur comme résolue par le développeur.
  */
 async function resoudreErreur(id) {
-  const { rows } = await pool.query(
-    "UPDATE telemetrie_erreurs_parc SET statut = 'resolu' WHERE id = $1 RETURNING *",
-    [id],
-  );
+  const { rows } = await pool.query("UPDATE telemetrie_erreurs_parc SET statut = 'resolu' WHERE id = $1 RETURNING *", [
+    id,
+  ]);
   return rows[0];
 }
 
@@ -335,8 +283,7 @@ async function testerAlerteCritique() {
     typeErreur: "SimulationTestIncident",
     message:
       "🧪 Test de validation du canal d'alerte instantanée (Sentry / Webhook / Email / Watchdog). Tout est opérationnel !",
-    stackTrace:
-      "Error: Simulation Test\n    at testerAlerteCritique (/src/services/telemetrie.service.js:195:10)",
+    stackTrace: "Error: Simulation Test\n    at testerAlerteCritique (/src/services/telemetrie.service.js:195:10)",
     niveau: "critique",
     meta: { testPar: "Direction SaaS", date: new Date().toISOString() },
   });

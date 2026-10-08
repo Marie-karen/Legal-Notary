@@ -3,10 +3,7 @@
  */
 
 const { pool } = require("../db/pool");
-const {
-  lireFichierJson,
-  ecrireFichierJson,
-} = require("./stockage-persistant.service");
+const { lireFichierJson, ecrireFichierJson } = require("./stockage-persistant.service");
 
 function versCamel(ligne) {
   if (!ligne) return null;
@@ -19,106 +16,64 @@ function versCamel(ligne) {
     numeroOrdre: ligne.numero_ordre || ligne.numeroOrdre || "NOT-ABJ-042",
     adresse: ligne.adresse || "Plateau, Abidjan, Côte d'Ivoire",
     telephone: ligne.telephone || "+225 27 20 00 00 00",
-    telephoneFixe:
-      ligne.telephone_fixe || ligne.telephoneFixe || "+225 27 20 00 00 00",
-    telephonePortable:
-      ligne.telephone_portable ||
-      ligne.telephonePortable ||
-      "+225 07 00 00 00 00",
-    boitePostale:
-      ligne.boite_postale || ligne.boitePostale || "01 BP 1000 Abidjan 01",
+    telephoneFixe: ligne.telephone_fixe || ligne.telephoneFixe || "+225 27 20 00 00 00",
+    telephonePortable: ligne.telephone_portable || ligne.telephonePortable || "+225 07 00 00 00 00",
+    boitePostale: ligne.boite_postale || ligne.boitePostale || "01 BP 1000 Abidjan 01",
     email: ligne.email || "contact@legalnotary.app",
     numeroCC: ligne.numero_cc || ligne.numeroCC || "9801234 A",
-    centreImpots:
-      ligne.centre_impots ||
-      ligne.centreImpots ||
-      "Direction des Moyennes Entreprises (DME)",
-    compteSequestreCDCI:
-      ligne.compte_sequestre_cdci ||
-      ligne.compteSequestreCDCI ||
-      "CI092 01001 12345678901 22",
-    tauxTVA: Number(
-      ligne.taux_tva !== undefined ? ligne.taux_tva : ligne.tauxTVA || 0.18,
-    ),
+    centreImpots: ligne.centre_impots || ligne.centreImpots || "Direction des Moyennes Entreprises (DME)",
+    compteSequestreCDCI: ligne.compte_sequestre_cdci || ligne.compteSequestreCDCI || "CI092 01001 12345678901 22",
+    tauxTVA: Number(ligne.taux_tva !== undefined ? ligne.taux_tva : ligne.tauxTVA || 0.18),
     minimumLegalMinute: Number(
-      ligne.minimum_legal_minute !== undefined
-        ? ligne.minimum_legal_minute
-        : ligne.minimumLegalMinute || 50000,
+      ligne.minimum_legal_minute !== undefined ? ligne.minimum_legal_minute : ligne.minimumLegalMinute || 50000
     ),
     tarifPageTimbre: Number(
-      ligne.tarif_page_timbre !== undefined
-        ? ligne.tarif_page_timbre
-        : ligne.tarifPageTimbre || 500,
+      ligne.tarif_page_timbre !== undefined ? ligne.tarif_page_timbre : ligne.tarifPageTimbre || 500
     ),
-    tarifPageRole: Number(
-      ligne.tarif_page_role !== undefined
-        ? ligne.tarif_page_role
-        : ligne.tarifPageRole || 500,
-    ),
+    tarifPageRole: Number(ligne.tarif_page_role !== undefined ? ligne.tarif_page_role : ligne.tarifPageRole || 500),
     taxeFonciereTauxProportionnel: Number(
       ligne.taxe_fonciere_taux_proportionnel !== undefined
         ? ligne.taxe_fonciere_taux_proportionnel
-        : ligne.taxeFonciereTauxProportionnel || 0.012,
+        : ligne.taxeFonciereTauxProportionnel || 0.012
     ),
     taxeFonciereDroitFixe: Number(
       ligne.taxe_fonciere_droit_fixe !== undefined
         ? ligne.taxe_fonciere_droit_fixe
-        : ligne.taxeFonciereDroitFixe || 3000,
+        : ligne.taxeFonciereDroitFixe || 3000
     ),
-    forfaitDivers: Number(
-      ligne.forfait_divers !== undefined
-        ? ligne.forfait_divers
-        : ligne.forfaitDivers || 20000,
-    ),
+    forfaitDivers: Number(ligne.forfait_divers !== undefined ? ligne.forfait_divers : ligne.forfaitDivers || 20000),
     seuilStagnationJours: Number(
-      ligne.seuil_stagnation_jours !== undefined
-        ? ligne.seuil_stagnation_jours
-        : ligne.seuilStagnationJours || 7,
+      ligne.seuil_stagnation_jours !== undefined ? ligne.seuil_stagnation_jours : ligne.seuilStagnationJours || 7
     ),
     seuilAlerteEcheanceHeures: Number(
       ligne.seuil_alerte_echeance_heures !== undefined
         ? ligne.seuil_alerte_echeance_heures
-        : ligne.seuilAlerteEcheanceHeures || 48,
+        : ligne.seuilAlerteEcheanceHeures || 48
     ),
     capaciteCartonArchive: Number(
-      ligne.capacite_carton_archive !== undefined
-        ? ligne.capacite_carton_archive
-        : ligne.capaciteCartonArchive || 50,
+      ligne.capacite_carton_archive !== undefined ? ligne.capacite_carton_archive : ligne.capaciteCartonArchive || 50
     ),
-    presenceArchiviste:
-      ligne.presence_archiviste !== false && ligne.presenceArchiviste !== false,
+    presenceArchiviste: ligne.presence_archiviste !== false && ligne.presenceArchiviste !== false,
 
     // Paramètres de Numérotation & Continuité de l'Étude
-    modeNumerotation:
-      ligne.mode_numerotation || ligne.modeNumerotation || "global", // 'global' | 'par_nature_acte'
-    formatNumerotation:
-      ligne.format_numerotation ||
-      ligne.formatNumerotation ||
-      "DOS-{AAAA}-{NUM}",
+    modeNumerotation: ligne.mode_numerotation || ligne.modeNumerotation || "global", // 'global' | 'par_nature_acte'
+    formatNumerotation: ligne.format_numerotation || ligne.formatNumerotation || "DOS-{AAAA}-{NUM}",
     dernierNumeroGlobal: Number(
-      ligne.dernier_numero_global !== undefined
-        ? ligne.dernier_numero_global
-        : ligne.dernierNumeroGlobal || 0,
+      ligne.dernier_numero_global !== undefined ? ligne.dernier_numero_global : ligne.dernierNumeroGlobal || 0
     ),
     derniersNumerosParNature:
-      ligne.derniers_numeros_par_nature &&
-      typeof ligne.derniers_numeros_par_nature === "object"
+      ligne.derniers_numeros_par_nature && typeof ligne.derniers_numeros_par_nature === "object"
         ? ligne.derniers_numeros_par_nature
-        : ligne.derniersNumerosParNature &&
-            typeof ligne.derniersNumerosParNature === "object"
+        : ligne.derniersNumerosParNature && typeof ligne.derniersNumerosParNature === "object"
           ? ligne.derniersNumerosParNature
           : {},
 
     // Confidentialité financière pour le Premier Clerc
-    premierClercVoirFinances: Boolean(
-      ligne.premier_clerc_voir_finances || ligne.premierClercVoirFinances,
-    ),
+    premierClercVoirFinances: Boolean(ligne.premier_clerc_voir_finances || ligne.premierClercVoirFinances),
 
     // Référence légale / Tarif réglementaire paramétrable
     nomTarifReglementaire:
-      ligne.nom_tarif_reglementaire ||
-      ligne.nomTarifReglementaire ||
-      "Tarif Réglementaire & Barème Notarial",
+      ligne.nom_tarif_reglementaire || ligne.nomTarifReglementaire || "Tarif Réglementaire & Barème Notarial",
   };
 }
 
@@ -170,7 +125,7 @@ async function obtenir(etudeIdOuDomaine) {
       // 1. Chercher par etude_id direct ou id
       const { rows } = await pool.query(
         "SELECT * FROM parametres_etude WHERE etude_id = $1 OR id = $1 ORDER BY created_at DESC LIMIT 1",
-        [etudeIdOuDomaine],
+        [etudeIdOuDomaine]
       );
       if (rows && rows.length) return versCamel(rows[0]);
 
@@ -180,26 +135,21 @@ async function obtenir(etudeIdOuDomaine) {
         .toLowerCase();
       const etudeRes = await pool.query(
         "SELECT id FROM etudes WHERE LOWER(domaine) = $1 OR LOWER(domaine) = $2 LIMIT 1",
-        [etudeIdOuDomaine.toLowerCase(), cleanHost],
+        [etudeIdOuDomaine.toLowerCase(), cleanHost]
       );
       if (etudeRes.rows && etudeRes.rows.length) {
         const foundEid = etudeRes.rows[0].id;
         const paramRes = await pool.query(
           "SELECT * FROM parametres_etude WHERE etude_id = $1 ORDER BY created_at DESC LIMIT 1",
-          [foundEid],
+          [foundEid]
         );
-        if (paramRes.rows && paramRes.rows.length)
-          return versCamel(paramRes.rows[0]);
+        if (paramRes.rows && paramRes.rows.length) return versCamel(paramRes.rows[0]);
       }
     }
   } catch (_) {}
 
   // Recherche dans les études persistées sur disque
-  if (
-    etudeIdOuDomaine &&
-    etudeIdOuDomaine !== "saas-bttech" &&
-    etudeIdOuDomaine !== "etude-abidjan-01"
-  ) {
+  if (etudeIdOuDomaine && etudeIdOuDomaine !== "saas-bttech" && etudeIdOuDomaine !== "etude-abidjan-01") {
     try {
       const etudes = lireFichierJson("etudes_persistantes.json", []);
       const cle = String(etudeIdOuDomaine).toLowerCase().trim();
@@ -207,7 +157,7 @@ async function obtenir(etudeIdOuDomaine) {
         (e) =>
           e.id === etudeIdOuDomaine ||
           (e.codeEtude && e.codeEtude.toLowerCase() === cle) ||
-          (e.domaine && e.domaine.toLowerCase().includes(cle)),
+          (e.domaine && e.domaine.toLowerCase().includes(cle))
       );
       if (etudeTrouvee) {
         const paramsMap = lireFichierJson("parametres_etudes_map.json", {});
@@ -221,18 +171,12 @@ async function obtenir(etudeIdOuDomaine) {
           titreNotaire: etudeTrouvee.titreNotaire || "Maître",
           nomNotaire:
             etudeTrouvee.nomNotaire ||
-            (etudeTrouvee.titreNotaire
-              ? etudeTrouvee.titreNotaire + " " + etudeTrouvee.nomEtude
-              : "Maître Notaire"),
+            (etudeTrouvee.titreNotaire ? etudeTrouvee.titreNotaire + " " + etudeTrouvee.nomEtude : "Maître Notaire"),
           ville: etudeTrouvee.ville || "Abidjan",
-          adresse:
-            etudeTrouvee.adresse ||
-            "Office Notarial, " + (etudeTrouvee.ville || "Abidjan"),
+          adresse: etudeTrouvee.adresse || "Office Notarial, " + (etudeTrouvee.ville || "Abidjan"),
           email:
             etudeTrouvee.emailContact ||
-            (etudeTrouvee.codeEtude
-              ? etudeTrouvee.codeEtude + "@notaire.ci"
-              : PARAMETRES_ACTUELS.email),
+            (etudeTrouvee.codeEtude ? etudeTrouvee.codeEtude + "@notaire.ci" : PARAMETRES_ACTUELS.email),
         };
       }
     } catch (_) {}
@@ -299,15 +243,11 @@ async function mettreAJour(champs, etudeId) {
         Boolean(fusion.premierClercVoirFinances),
         targetId,
         etudeId || targetId,
-      ],
+      ]
     );
     if (rows && rows.length) {
       const maj = versCamel(rows[0]);
-      if (
-        !etudeId ||
-        etudeId === "saas-bttech" ||
-        etudeId === "etude-abidjan-01"
-      ) {
+      if (!etudeId || etudeId === "saas-bttech" || etudeId === "etude-abidjan-01") {
         PARAMETRES_ACTUELS = maj;
       }
       return maj;
@@ -316,11 +256,7 @@ async function mettreAJour(champs, etudeId) {
 
   // Sauvegarde persistante sur disque JSON
   try {
-    if (
-      etudeId &&
-      etudeId !== "saas-bttech" &&
-      etudeId !== "etude-abidjan-01"
-    ) {
+    if (etudeId && etudeId !== "saas-bttech" && etudeId !== "etude-abidjan-01") {
       const paramsMap = lireFichierJson("parametres_etudes_map.json", {});
       paramsMap[etudeId] = fusion;
       ecrireFichierJson("parametres_etudes_map.json", paramsMap);

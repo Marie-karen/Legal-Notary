@@ -22,8 +22,7 @@ class BaseStorageAdapter {
 class LocalStorageAdapter extends BaseStorageAdapter {
   constructor(baseDir) {
     super();
-    this.baseDir =
-      baseDir || path.join(__dirname, "../../../uploads/documents");
+    this.baseDir = baseDir || path.join(__dirname, "../../../uploads/documents");
     try {
       if (!fs.existsSync(this.baseDir)) {
         fs.mkdirSync(this.baseDir, { recursive: true });
@@ -35,11 +34,7 @@ class LocalStorageAdapter extends BaseStorageAdapter {
     const hash = crypto.createHash("sha256").update(buffer).digest("hex");
     const safeName = `${Date.now()}_${nomFichier.replace(/[^a-zA-Z0-9_.-]/g, "_")}`;
     try {
-      const etudeDir = path.join(
-        this.baseDir,
-        String(etudeId),
-        String(dossierId),
-      );
+      const etudeDir = path.join(this.baseDir, String(etudeId), String(dossierId));
       if (!fs.existsSync(etudeDir)) {
         fs.mkdirSync(etudeDir, { recursive: true });
       }
@@ -105,13 +100,7 @@ class HybridStorageAdapter extends BaseStorageAdapter {
   }
 
   async enregistrerFichier(etudeId, dossierId, nomFichier, buffer, mimeType) {
-    const localRes = await this.local.enregistrerFichier(
-      etudeId,
-      dossierId,
-      nomFichier,
-      buffer,
-      mimeType,
-    );
+    const localRes = await this.local.enregistrerFichier(etudeId, dossierId, nomFichier, buffer, mimeType);
     return {
       ...localRes,
       mode: "hybride_local_et_queue_cloud",
@@ -157,13 +146,7 @@ class StorageService {
     metadata = {},
   }) {
     const adaptateur = obtenirAdaptateur("hybride");
-    const stock = await adaptateur.enregistrerFichier(
-      etudeId,
-      dossierId,
-      nomFichier,
-      buffer,
-      mimeType,
-    );
+    const stock = await adaptateur.enregistrerFichier(etudeId, dossierId, nomFichier, buffer, mimeType);
     const docId = "doc-" + crypto.randomUUID().slice(0, 8);
 
     try {
@@ -187,7 +170,7 @@ class StorageService {
           statutValidation,
           creeParId,
           JSON.stringify(metadata),
-        ],
+        ]
       );
       if (rows && rows.length) return rows[0];
     } catch (_) {}
@@ -222,7 +205,7 @@ class StorageService {
          LEFT JOIN utilisateurs u ON u.id = d.cree_par_id
          WHERE d.dossier_id = $1 AND d.archived_at IS NULL
          ORDER BY d.created_at DESC`,
-        [dossierId],
+        [dossierId]
       );
       if (rows && rows.length) return rows;
     } catch (_) {}
@@ -234,8 +217,7 @@ class StorageService {
           dossier_id: dossierId,
           nom_fichier: "Projet_Acte_Vente.pdf",
           type_document: "05_actes_minute",
-          hash_sha256:
-            "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          hash_sha256: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
           created_at: new Date().toISOString(),
         },
       ]

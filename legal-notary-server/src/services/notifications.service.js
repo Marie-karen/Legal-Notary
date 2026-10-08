@@ -33,9 +33,7 @@ const { dechiffrer, dechiffrerObjet } = require("../utils/crypto");
 function rendreModele(texte, donnees) {
   if (!texte) return texte;
   return texte.replace(/\{\{(\w+)\}\}/g, (correspondance, cle) => {
-    return Object.prototype.hasOwnProperty.call(donnees, cle)
-      ? String(donnees[cle])
-      : correspondance;
+    return Object.prototype.hasOwnProperty.call(donnees, cle) ? String(donnees[cle]) : correspondance;
   });
 }
 
@@ -47,16 +45,12 @@ function rendreModele(texte, donnees) {
 async function resoudreDestinataires(destinataire, dossier) {
   if (destinataire === "clerc_assigne") {
     if (!dossier || !dossier.clerc_assigne_id) return [];
-    const { rows } = await pool.query(
-      "SELECT * FROM utilisateurs WHERE id = $1 AND actif = true",
-      [dossier.clerc_assigne_id],
-    );
+    const { rows } = await pool.query("SELECT * FROM utilisateurs WHERE id = $1 AND actif = true", [
+      dossier.clerc_assigne_id,
+    ]);
     return rows;
   }
-  const { rows } = await pool.query(
-    "SELECT * FROM utilisateurs WHERE role = $1 AND actif = true",
-    [destinataire],
-  );
+  const { rows } = await pool.query("SELECT * FROM utilisateurs WHERE role = $1 AND actif = true", [destinataire]);
   return rows;
 }
 
@@ -72,13 +66,9 @@ function normaliserParametresLigne(ligne) {
 }
 
 async function obtenirParametresNotifications() {
-  const { rows } = await pool.query(
-    "SELECT * FROM parametres_notifications ORDER BY created_at ASC LIMIT 1",
-  );
+  const { rows } = await pool.query("SELECT * FROM parametres_notifications ORDER BY created_at ASC LIMIT 1");
   if (rows.length) return normaliserParametresLigne(rows[0]);
-  const inseree = await pool.query(
-    "INSERT INTO parametres_notifications DEFAULT VALUES RETURNING *",
-  );
+  const inseree = await pool.query("INSERT INTO parametres_notifications DEFAULT VALUES RETURNING *");
   return normaliserParametresLigne(inseree.rows[0]);
 }
 
@@ -89,8 +79,7 @@ async function envoyerEmail(parametres, destinataireEmail, sujet, corps) {
   if (!parametres.smtp_hote || !destinataireEmail) {
     return {
       succes: false,
-      erreur:
-        "SMTP non configuré pour ce cabinet (voir Paramètres > Notifications).",
+      erreur: "SMTP non configuré pour ce cabinet (voir Paramètres > Notifications).",
     };
   }
   try {
@@ -122,17 +111,11 @@ async function envoyerEmail(parametres, destinataireEmail, sujet, corps) {
 // les identifiants de SON fournisseur (voir migration 002,
 // parametres_notifications.sms_identifiants) — aucun fournisseur n'est
 // imposé par le logiciel.
-async function envoyerViaWebhookGenerique(
-  urlWebhook,
-  identifiants,
-  destinataireTelephone,
-  corps,
-) {
+async function envoyerViaWebhookGenerique(urlWebhook, identifiants, destinataireTelephone, corps) {
   if (!urlWebhook || !destinataireTelephone) {
     return {
       succes: false,
-      erreur:
-        "Fournisseur non configuré pour ce cabinet (voir Paramètres > Notifications).",
+      erreur: "Fournisseur non configuré pour ce cabinet (voir Paramètres > Notifications).",
     };
   }
   try {
@@ -164,10 +147,9 @@ async function envoyerPush(parametres, utilisateurId, titre, corps) {
       erreur: "Notifications push non configurées pour ce cabinet.",
     };
   }
-  const { rows: abonnements } = await pool.query(
-    "SELECT * FROM push_subscriptions WHERE utilisateur_id = $1",
-    [utilisateurId],
-  );
+  const { rows: abonnements } = await pool.query("SELECT * FROM push_subscriptions WHERE utilisateur_id = $1", [
+    utilisateurId,
+  ]);
   if (!abonnements.length) {
     return {
       succes: false,
@@ -177,7 +159,7 @@ async function envoyerPush(parametres, utilisateurId, titre, corps) {
   webPush.setVapidDetails(
     `mailto:${parametres.push_contact_email || "contact@example.com"}`,
     parametres.push_cle_publique,
-    parametres.push_cle_privee,
+    parametres.push_cle_privee
   );
   const charge = JSON.stringify({ titre, corps });
   let auMoinsUnSucces = false;
@@ -189,22 +171,18 @@ async function envoyerPush(parametres, utilisateurId, titre, corps) {
           endpoint: abonnement.endpoint,
           keys: { p256dh: abonnement.cle_p256dh, auth: abonnement.cle_auth },
         },
-        charge,
+        charge
       );
       auMoinsUnSucces = true;
     } catch (erreur) {
       erreurs.push(erreur.message);
       // Abonnement expiré/invalide (410 Gone) : on le retire pour ne pas réessayer indéfiniment.
       if (erreur.statusCode === 404 || erreur.statusCode === 410) {
-        await pool.query("DELETE FROM push_subscriptions WHERE id = $1", [
-          abonnement.id,
-        ]);
+        await pool.query("DELETE FROM push_subscriptions WHERE id = $1", [abonnement.id]);
       }
     }
   }
-  return auMoinsUnSucces
-    ? { succes: true }
-    : { succes: false, erreur: erreurs.join("; ") };
+  return auMoinsUnSucces ? { succes: true } : { succes: false, erreur: erreurs.join("; ") };
 }
 
 /**
@@ -218,32 +196,23 @@ async function envoyerPush(parametres, utilisateurId, titre, corps) {
  * @param {string} [options.dossierId]
  * @param {object} [options.donnees] - valeurs pour les {{placeholders}} des modèles
  */
-async function declencherEvenement(
-  evenement,
-  { dossierId, donnees = {} } = {},
-) {
+async function declencherEvenement(evenement, { dossierId, donnees = {} } = {}) {
   let dossier = null;
   if (dossierId) {
-    const { rows } = await pool.query("SELECT * FROM dossiers WHERE id = $1", [
-      dossierId,
-    ]);
+    const { rows } = await pool.query("SELECT * FROM dossiers WHERE id = $1", [dossierId]);
     dossier = rows[0] || null;
   }
 
-  const { rows: modeles } = await pool.query(
-    "SELECT * FROM modeles_message WHERE evenement = $1 AND actif = true",
-    [evenement],
-  );
+  const { rows: modeles } = await pool.query("SELECT * FROM modeles_message WHERE evenement = $1 AND actif = true", [
+    evenement,
+  ]);
   if (!modeles.length) return [];
 
   const parametresNotif = await obtenirParametresNotifications();
   const resultats = [];
 
   for (const modele of modeles) {
-    const destinataires = await resoudreDestinataires(
-      modele.destinataire,
-      dossier,
-    );
+    const destinataires = await resoudreDestinataires(modele.destinataire, dossier);
     for (const utilisateur of destinataires) {
       const titre = rendreModele(modele.sujet, donnees);
       const corps = rendreModele(modele.corps, donnees);
@@ -251,14 +220,7 @@ async function declencherEvenement(
       const { rows: notifRows } = await pool.query(
         `INSERT INTO notifications (utilisateur_id, dossier_id, evenement, canal, titre, corps, statut_envoi)
          VALUES ($1, $2, $3, $4, $5, $6, 'en_attente') RETURNING *`,
-        [
-          utilisateur.id,
-          dossierId || null,
-          evenement,
-          modele.canal,
-          titre,
-          corps,
-        ],
+        [utilisateur.id, dossierId || null, evenement, modele.canal, titre, corps]
       );
       const notification = notifRows[0];
 
@@ -268,12 +230,7 @@ async function declencherEvenement(
           resultatEnvoi = { succes: true }; // le fil in-app EST le stockage, rien de plus à envoyer
           break;
         case "email":
-          resultatEnvoi = await envoyerEmail(
-            parametresNotif,
-            utilisateur.email,
-            titre,
-            corps,
-          );
+          resultatEnvoi = await envoyerEmail(parametresNotif, utilisateur.email, titre, corps);
           break;
         case "sms":
           resultatEnvoi = parametresNotif.sms_actif
@@ -281,7 +238,7 @@ async function declencherEvenement(
                 parametresNotif.sms_url_webhook,
                 parametresNotif.sms_identifiants,
                 utilisateur.telephone,
-                corps,
+                corps
               )
             : { succes: false, erreur: "SMS désactivé pour ce cabinet." };
           break;
@@ -291,17 +248,12 @@ async function declencherEvenement(
                 parametresNotif.whatsapp_url_webhook,
                 parametresNotif.whatsapp_identifiants,
                 utilisateur.telephone,
-                corps,
+                corps
               )
             : { succes: false, erreur: "WhatsApp désactivé pour ce cabinet." };
           break;
         case "push":
-          resultatEnvoi = await envoyerPush(
-            parametresNotif,
-            utilisateur.id,
-            titre,
-            corps,
-          );
+          resultatEnvoi = await envoyerPush(parametresNotif, utilisateur.id, titre, corps);
           break;
         default:
           resultatEnvoi = {
@@ -310,15 +262,12 @@ async function declencherEvenement(
           };
       }
 
-      await pool.query(
-        "UPDATE notifications SET statut_envoi = $1, erreur = $2, envoye_le = $3 WHERE id = $4",
-        [
-          resultatEnvoi.succes ? "envoye" : "echec",
-          resultatEnvoi.erreur || null,
-          resultatEnvoi.succes ? new Date() : null,
-          notification.id,
-        ],
-      );
+      await pool.query("UPDATE notifications SET statut_envoi = $1, erreur = $2, envoye_le = $3 WHERE id = $4", [
+        resultatEnvoi.succes ? "envoye" : "echec",
+        resultatEnvoi.erreur || null,
+        resultatEnvoi.succes ? new Date() : null,
+        notification.id,
+      ]);
       resultats.push({
         utilisateurId: utilisateur.id,
         canal: modele.canal,
@@ -330,16 +279,13 @@ async function declencherEvenement(
   return resultats;
 }
 
-async function listerNotificationsUtilisateur(
-  utilisateurId,
-  { nonLuesSeulement = false } = {},
-) {
+async function listerNotificationsUtilisateur(utilisateurId, { nonLuesSeulement = false } = {}) {
   try {
     const conditions = ["utilisateur_id = $1", "canal = 'in_app'"];
     if (nonLuesSeulement) conditions.push("lu = false");
     const { rows } = await pool.query(
       `SELECT * FROM notifications WHERE ${conditions.join(" AND ")} ORDER BY created_at DESC LIMIT 100`,
-      [utilisateurId],
+      [utilisateurId]
     );
     return rows;
   } catch (err) {
@@ -349,10 +295,10 @@ async function listerNotificationsUtilisateur(
 
 async function marquerLue(notificationId, utilisateurId) {
   try {
-    await pool.query(
-      "UPDATE notifications SET lu = true WHERE id = $1 AND utilisateur_id = $2",
-      [notificationId, utilisateurId],
-    );
+    await pool.query("UPDATE notifications SET lu = true WHERE id = $1 AND utilisateur_id = $2", [
+      notificationId,
+      utilisateurId,
+    ]);
   } catch (err) {}
 }
 
@@ -362,12 +308,7 @@ async function enregistrerAbonnementPush(utilisateurId, abonnement) {
       `INSERT INTO push_subscriptions (utilisateur_id, endpoint, cle_p256dh, cle_auth)
        VALUES ($1, $2, $3, $4)
        ON CONFLICT (endpoint) DO UPDATE SET utilisateur_id = EXCLUDED.utilisateur_id`,
-      [
-        utilisateurId,
-        abonnement.endpoint,
-        abonnement.keys.p256dh,
-        abonnement.keys.auth,
-      ],
+      [utilisateurId, abonnement.endpoint, abonnement.keys.p256dh, abonnement.keys.auth]
     );
   } catch (err) {}
 }

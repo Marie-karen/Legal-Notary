@@ -23,9 +23,7 @@ function chargerPacksDepuisDisque() {
       const fichiersReg = fs.readdirSync(CHEMIN_PACKS_REGIONAL);
       for (const f of fichiersReg) {
         if (f.endsWith(".json")) {
-          const contenu = JSON.parse(
-            fs.readFileSync(path.join(CHEMIN_PACKS_REGIONAL, f), "utf8"),
-          );
+          const contenu = JSON.parse(fs.readFileSync(path.join(CHEMIN_PACKS_REGIONAL, f), "utf8"));
           CACHE_PACKS_REGIONAL.set(contenu.code, contenu);
         }
       }
@@ -35,18 +33,13 @@ function chargerPacksDepuisDisque() {
       const fichiersPays = fs.readdirSync(CHEMIN_PACKS_PAYS);
       for (const f of fichiersPays) {
         if (f.endsWith(".json")) {
-          const contenu = JSON.parse(
-            fs.readFileSync(path.join(CHEMIN_PACKS_PAYS, f), "utf8"),
-          );
+          const contenu = JSON.parse(fs.readFileSync(path.join(CHEMIN_PACKS_PAYS, f), "utf8"));
           CACHE_PACKS_PAYS_BRUTS.set(contenu.code, contenu);
         }
       }
     }
   } catch (err) {
-    console.warn(
-      "[Packs Service] Erreur lors de la lecture des packs :",
-      err.message,
-    );
+    console.warn("[Packs Service] Erreur lors de la lecture des packs :", err.message);
   }
 }
 
@@ -80,9 +73,7 @@ function obtenirPackPays(codePays = "ci") {
     return CACHE_PACKS_COMPILES.get(codeNormalise);
   }
 
-  const packBrut =
-    CACHE_PACKS_PAYS_BRUTS.get(codeNormalise) ||
-    CACHE_PACKS_PAYS_BRUTS.get("ci");
+  const packBrut = CACHE_PACKS_PAYS_BRUTS.get(codeNormalise) || CACHE_PACKS_PAYS_BRUTS.get("ci");
   if (!packBrut) {
     // Fallback minimal de sécurité
     return {

@@ -49,31 +49,16 @@ async function obtenirHealth() {
 
 async function obtenirStats() {
   try {
-    const [
-      totalUsersRes,
-      newUsers7dRes,
-      newUsers30dRes,
-      activeUsersRes,
-      etudesRes,
-      dossiersRes,
-      minutesRes,
-    ] = await Promise.all([
-      pool.query("SELECT COUNT(*)::int AS n FROM utilisateurs"),
-      pool.query(
-        "SELECT COUNT(*)::int AS n FROM utilisateurs WHERE created_at >= NOW() - INTERVAL '7 days'",
-      ),
-      pool.query(
-        "SELECT COUNT(*)::int AS n FROM utilisateurs WHERE created_at >= NOW() - INTERVAL '30 days'",
-      ),
-      pool.query(
-        "SELECT COUNT(*)::int AS n FROM utilisateurs WHERE actif = true AND archived_at IS NULL",
-      ),
-      pool.query(
-        "SELECT id, code_etude, nom_etude, mode_infrastructure, actif FROM etudes",
-      ),
-      pool.query("SELECT COUNT(*)::int AS n FROM dossiers"),
-      pool.query("SELECT COUNT(*)::int AS n FROM minutes_archive"),
-    ]);
+    const [totalUsersRes, newUsers7dRes, newUsers30dRes, activeUsersRes, etudesRes, dossiersRes, minutesRes] =
+      await Promise.all([
+        pool.query("SELECT COUNT(*)::int AS n FROM utilisateurs"),
+        pool.query("SELECT COUNT(*)::int AS n FROM utilisateurs WHERE created_at >= NOW() - INTERVAL '7 days'"),
+        pool.query("SELECT COUNT(*)::int AS n FROM utilisateurs WHERE created_at >= NOW() - INTERVAL '30 days'"),
+        pool.query("SELECT COUNT(*)::int AS n FROM utilisateurs WHERE actif = true AND archived_at IS NULL"),
+        pool.query("SELECT id, code_etude, nom_etude, mode_infrastructure, actif FROM etudes"),
+        pool.query("SELECT COUNT(*)::int AS n FROM dossiers"),
+        pool.query("SELECT COUNT(*)::int AS n FROM minutes_archive"),
+      ]);
 
     const etudes = etudesRes.rows || [];
     const etudesActives = etudes.filter((e) => e.actif !== false);
@@ -99,13 +84,10 @@ async function obtenirStats() {
         totalDossiers: dossiersRes.rows[0].n,
         totalMinutesArchived: minutesRes.rows[0].n,
         repartitionModes: {
-          hybride: etudes.filter((e) => e.mode_infrastructure === "hybride")
-            .length,
+          hybride: etudes.filter((e) => e.mode_infrastructure === "hybride").length,
           cloud: etudes.filter((e) => e.mode_infrastructure === "cloud").length,
           serveur_physique: etudes.filter(
-            (e) =>
-              e.mode_infrastructure === "local" ||
-              e.mode_infrastructure === "serveur_physique",
+            (e) => e.mode_infrastructure === "local" || e.mode_infrastructure === "serveur_physique"
           ).length,
         },
       },
@@ -132,12 +114,7 @@ async function obtenirStats() {
   }
 }
 
-async function rechercherUtilisateurs({
-  search,
-  limit = 50,
-  page = 1,
-  status,
-} = {}) {
+async function rechercherUtilisateurs({ search, limit = 50, page = 1, status } = {}) {
   const lim = Math.min(Math.max(Number(limit) || 50, 1), 200);
   const p = Math.max(Number(page) || 1, 1);
   const offset = (p - 1) * lim;
@@ -151,19 +128,12 @@ async function rechercherUtilisateurs({
       params.push(`%${s}%`);
       const idx = params.length;
 
-      const estUuid =
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-          s,
-        );
+      const estUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s);
       if (estUuid) {
         params.push(s);
-        conditions.push(
-          `(u.nom_complet ILIKE $${idx} OR u.email ILIKE $${idx} OR u.id = $${params.length})`,
-        );
+        conditions.push(`(u.nom_complet ILIKE $${idx} OR u.email ILIKE $${idx} OR u.id = $${params.length})`);
       } else {
-        conditions.push(
-          `(u.nom_complet ILIKE $${idx} OR u.email ILIKE $${idx})`,
-        );
+        conditions.push(`(u.nom_complet ILIKE $${idx} OR u.email ILIKE $${idx})`);
       }
     }
 
@@ -263,10 +233,7 @@ async function rechercherUtilisateurs({
 
 async function executerActionUtilisateur(userId, action, payload = {}) {
   try {
-    const { rows } = await pool.query(
-      "SELECT * FROM utilisateurs WHERE id = $1",
-      [userId],
-    );
+    const { rows } = await pool.query("SELECT * FROM utilisateurs WHERE id = $1", [userId]);
     if (rows && rows.length) {
       const user = rows[0];
       let resultat = {};
@@ -276,7 +243,7 @@ async function executerActionUtilisateur(userId, action, payload = {}) {
         case "suspendre": {
           await pool.query(
             "UPDATE utilisateurs SET actif = false, archived_at = NOW(), updated_at = NOW() WHERE id = $1",
-            [userId],
+            [userId]
           );
           resultat = {
             succes: true,
@@ -295,7 +262,7 @@ async function executerActionUtilisateur(userId, action, payload = {}) {
         case "activer": {
           await pool.query(
             "UPDATE utilisateurs SET actif = true, archived_at = NULL, updated_at = NOW() WHERE id = $1",
-            [userId],
+            [userId]
           );
           resultat = {
             succes: true,
@@ -324,10 +291,10 @@ async function executerActionUtilisateur(userId, action, payload = {}) {
             "superadmin",
           ];
           if (nouveauRole && rolesValides.includes(nouveauRole)) {
-            await pool.query(
-              "UPDATE utilisateurs SET role = $1, updated_at = NOW() WHERE id = $2",
-              [nouveauRole, userId],
-            );
+            await pool.query("UPDATE utilisateurs SET role = $1, updated_at = NOW() WHERE id = $2", [
+              nouveauRole,
+              userId,
+            ]);
             resultat = {
               succes: true,
               nouveauRole,
@@ -340,13 +307,12 @@ async function executerActionUtilisateur(userId, action, payload = {}) {
         case "reset_password":
         case "reinitialiser_mot_de_passe": {
           const mdpTemporaire =
-            payload.nouveauMotDePasse ||
-            `Notaire-${crypto.randomBytes(4).toString("hex").toUpperCase()}!`;
+            payload.nouveauMotDePasse || `Notaire-${crypto.randomBytes(4).toString("hex").toUpperCase()}!`;
           const hash = await bcrypt.hash(mdpTemporaire, TOURS_HACHAGE);
-          await pool.query(
-            "UPDATE utilisateurs SET mot_de_passe_hash = $1, updated_at = NOW() WHERE id = $2",
-            [hash, userId],
-          );
+          await pool.query("UPDATE utilisateurs SET mot_de_passe_hash = $1, updated_at = NOW() WHERE id = $2", [
+            hash,
+            userId,
+          ]);
           resultat = {
             succes: true,
             temporaryPassword: mdpTemporaire,
@@ -358,8 +324,7 @@ async function executerActionUtilisateur(userId, action, payload = {}) {
         case "upgrade_plan":
         case "grant_trial":
         case "modifier_plan": {
-          const nouveauMode =
-            payload.modeInfrastructure || payload.plan || "cloud";
+          const nouveauMode = payload.modeInfrastructure || payload.plan || "cloud";
           resultat = {
             succes: true,
             plan: nouveauMode,
@@ -386,10 +351,9 @@ async function genererTokenImpersonation({ userId, email }) {
   let user = null;
   if (userId) {
     try {
-      const { rows } = await pool.query(
-        "SELECT id, role, email, nom_complet FROM utilisateurs WHERE id = $1",
-        [userId],
-      );
+      const { rows } = await pool.query("SELECT id, role, email, nom_complet FROM utilisateurs WHERE id = $1", [
+        userId,
+      ]);
       if (rows && rows.length) {
         user = rows[0];
       }
@@ -397,10 +361,9 @@ async function genererTokenImpersonation({ userId, email }) {
   }
   if (!user && email) {
     try {
-      const { rows } = await pool.query(
-        "SELECT id, role, email, nom_complet FROM utilisateurs WHERE email = $1",
-        [email],
-      );
+      const { rows } = await pool.query("SELECT id, role, email, nom_complet FROM utilisateurs WHERE email = $1", [
+        email,
+      ]);
       if (rows && rows.length) {
         user = rows[0];
       }
@@ -426,11 +389,10 @@ async function genererTokenImpersonation({ userId, email }) {
 
   const token = jwt.sign(
     impersonatePayload,
-    process.env.JWT_SECRET ||
-      "16cbed43fe9ca83aa64e0d0dcc9adcba7a69eaabfe07f68acece208de51d3782",
+    process.env.JWT_SECRET || "16cbed43fe9ca83aa64e0d0dcc9adcba7a69eaabfe07f68acece208de51d3782",
     {
       expiresIn: "60s",
-    },
+    }
   );
 
   return {

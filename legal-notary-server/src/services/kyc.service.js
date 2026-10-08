@@ -46,14 +46,14 @@ async function genererOuRecupererTokenKyc(dossierId, utilisateurId) {
        FROM dossiers d
        JOIN types_actes ta ON ta.id = d.type_acte_id
        WHERE d.id = $1`,
-      [dossierId],
+      [dossierId]
     );
 
     if (dossierRes.rows && dossierRes.rows.length) {
       const dossier = dossierRes.rows[0];
       const kycRes = await pool.query(
         "SELECT id, token_acces, statut, type_personne, donnees_kyc, signature_client, signe_le, signe_a FROM dossier_kyc WHERE dossier_id = $1",
-        [dossierId],
+        [dossierId]
       );
 
       let kycRow;
@@ -65,7 +65,7 @@ async function genererOuRecupererTokenKyc(dossierId, utilisateurId) {
           `INSERT INTO dossier_kyc (dossier_id, token_acces, statut, type_personne, cree_par)
            VALUES ($1, $2, 'en_attente', 'physique', $3)
            RETURNING id, token_acces, statut, type_personne, donnees_kyc, signature_client, signe_le, signe_a`,
-          [dossierId, token, utilisateurId || null],
+          [dossierId, token, utilisateurId || null]
         );
         kycRow = insertRes.rows[0];
       }
@@ -89,9 +89,9 @@ async function genererOuRecupererTokenKyc(dossierId, utilisateurId) {
   }
 
   const dossiersService = require("./dossiers.service");
-  const d = (
-    await dossiersService.listerDossiersPourUtilisateur({ role: "notaire" })
-  ).find((it) => it.id === dossierId) || {
+  const d = (await dossiersService.listerDossiersPourUtilisateur({ role: "notaire" })).find(
+    (it) => it.id === dossierId
+  ) || {
     id: dossierId,
     numeroDossier: "DOS-2026-001",
     typeActeId: "vente_immobiliere",
@@ -150,7 +150,7 @@ async function obtenirFormulaireKycPublic(token) {
      JOIN dossiers d ON d.id = k.dossier_id
      JOIN types_actes ta ON ta.id = d.type_acte_id
      WHERE k.token_acces = $1`,
-    [token],
+    [token]
   );
 
   if (!kycRes.rows.length) {
@@ -183,11 +183,7 @@ async function obtenirFormulaireKycPublic(token) {
       numeroOffice: params.numeroOrdre || "Office Notarial",
       adresse: params.adresse || "Abidjan, Côte d'Ivoire",
       boitePostale: params.boitePostale || "",
-      telephone:
-        params.telephoneFixe ||
-        params.telephonePortable ||
-        params.telephone ||
-        "",
+      telephone: params.telephoneFixe || params.telephonePortable || params.telephone || "",
       email: params.email || "",
     },
     donnees: kyc.donnees_kyc || {},
@@ -207,10 +203,7 @@ async function soumettreKycClient(token, payload, ip, userAgent) {
     throw err;
   }
 
-  const kycRes = await pool.query(
-    "SELECT id, dossier_id, statut FROM dossier_kyc WHERE token_acces = $1",
-    [token],
-  );
+  const kycRes = await pool.query("SELECT id, dossier_id, statut FROM dossier_kyc WHERE token_acces = $1", [token]);
 
   if (!kycRes.rows.length) {
     const err = new Error("Fiche KYC introuvable");
@@ -224,8 +217,7 @@ async function soumettreKycClient(token, payload, ip, userAgent) {
   const donneesKyc = payload.donnees || payload;
   const signatureClient = payload.signature || donneesKyc.signature || null;
   const signeA = payload.signeA || donneesKyc.signeA || "Abidjan";
-  const typePersonne =
-    payload.typePersonne || donneesKyc.typePersonne || "physique";
+  const typePersonne = payload.typePersonne || donneesKyc.typePersonne || "physique";
 
   const updateRes = await pool.query(
     `UPDATE dossier_kyc
@@ -240,28 +232,17 @@ async function soumettreKycClient(token, payload, ip, userAgent) {
          updated_at = NOW()
      WHERE id = $7
      RETURNING id, dossier_id, token_acces, statut, type_personne, donnees_kyc, signature_client, signe_le, signe_a`,
-    [
-      typePersonne,
-      JSON.stringify(donneesKyc),
-      signatureClient,
-      signeA,
-      ip || null,
-      userAgent || null,
-      kycId,
-    ],
+    [typePersonne, JSON.stringify(donneesKyc), signatureClient, signeA, ip || null, userAgent || null, kycId]
   );
 
   // Mettre à jour le nom du comparant dans le dossier s'il a été renseigné
   if (donneesKyc.nomPrenoms && donneesKyc.nomPrenoms.trim()) {
     const nomComplet = donneesKyc.nomPrenoms.trim();
-    const compExist = await pool.query(
-      "SELECT id FROM dossier_comparants WHERE dossier_id = $1",
-      [dossierId],
-    );
+    const compExist = await pool.query("SELECT id FROM dossier_comparants WHERE dossier_id = $1", [dossierId]);
     if (!compExist.rows.length) {
       await pool.query(
         "INSERT INTO dossier_comparants (dossier_id, nom, qualite) VALUES ($1, $2, 'Client principal')",
-        [dossierId, nomComplet],
+        [dossierId, nomComplet]
       );
     }
   }
@@ -280,7 +261,7 @@ async function obtenirKycDossier(dossierId) {
      FROM dossier_kyc k
      LEFT JOIN utilisateurs u ON u.id = k.valide_par
      WHERE k.dossier_id = $1`,
-    [dossierId],
+    [dossierId]
   );
 
   if (!kycRes.rows.length) {
@@ -317,7 +298,7 @@ async function validerKycDossier(dossierId, utilisateurId) {
          updated_at = NOW()
      WHERE dossier_id = $2
      RETURNING id, statut, valide_le`,
-    [utilisateurId, dossierId],
+    [utilisateurId, dossierId]
   );
 
   if (!res.rows.length) {

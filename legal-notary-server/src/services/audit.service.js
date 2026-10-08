@@ -17,11 +17,10 @@ async function consigner(tableCible, ligneId, action, utilisateurId, details) {
   // fait échouer l'insertion si `details` est un tableau (ex.
   // Object.keys(...)). D'où le JSON.stringify explicite ici, qui couvre
   // les deux cas sans que chaque appelant ait à s'en souvenir.
-  const detailsJson =
-    details === undefined || details === null ? null : JSON.stringify(details);
+  const detailsJson = details === undefined || details === null ? null : JSON.stringify(details);
   await pool.query(
     "INSERT INTO journal_audit (table_cible, ligne_id, action, utilisateur_id, details) VALUES ($1, $2, $3, $4, $5)",
-    [tableCible, ligneId || null, action, utilisateurId || null, detailsJson],
+    [tableCible, ligneId || null, action, utilisateurId || null, detailsJson]
   );
 }
 

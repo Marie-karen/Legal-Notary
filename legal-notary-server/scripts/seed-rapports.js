@@ -1,7 +1,9 @@
 const { pool } = require("../src/db/pool");
 
 async function seedRapports() {
-  const users = await pool.query("SELECT id, nom_complet, role FROM utilisateurs WHERE role IN ('commercial', 'support', 'dev', 'assistante_editeur')");
+  const users = await pool.query(
+    "SELECT id, nom_complet, role FROM utilisateurs WHERE role IN ('commercial', 'support', 'dev', 'assistante_editeur')"
+  );
   const userMap = {};
   users.rows.forEach((u) => {
     userMap[u.role] = u;
@@ -32,12 +34,14 @@ async function seedRapports() {
         contratsSignes: 2,
         mrrGenereFCFA: 500000,
         etudesEnClosing: ["Étude Me Touré (Plateau)", "Étude Me Kouamé (Yopougon)", "Étude Me Diabaté (Cocody)"],
-        faitsMarquants: "Très fort intérêt pour la simulation fiscale Décret 2013 et la numérisation des cartons d'archives. 2 contrats signés avec paiement annuel anticipé.",
+        faitsMarquants:
+          "Très fort intérêt pour la simulation fiscale Décret 2013 et la numérisation des cartons d'archives. 2 contrats signés avec paiement annuel anticipé.",
         pointsBloquants: "Besoin d'un guide PDF pas-à-pas pour rassurer les assistantes d'accueil.",
-        prioritesSemaineProchaine: "Finaliser l'onboarding de Me Touré et démarrer la prospection sur la zone de San Pedro."
+        prioritesSemaineProchaine:
+          "Finaliser l'onboarding de Me Touré et démarrer la prospection sur la zone de San Pedro.",
       }),
       false,
-      "2026-08-22 16:30:00"
+      "2026-08-22 16:30:00",
     ]
   );
 
@@ -59,12 +63,13 @@ async function seedRapports() {
         ticketsResolus: 36,
         scoreCsatPct: 98.2,
         tempsReponseMinutes: 12,
-        topProblemes: "1. Paramétrage scanner réseau · 2. Question sur émoluments mixtes · 3. Réinitialisation mot de passe clerc.",
+        topProblemes:
+          "1. Paramétrage scanner réseau · 2. Question sur émoluments mixtes · 3. Réinitialisation mot de passe clerc.",
         etudesSousSurveillance: "Étude Me Bamba (formation prévue lundi 10h pour le nouveau clerc formaliste).",
-        recommandations: "Créer une courte vidéo de 2 minutes sur l'enregistrement des sorties de cartons physiques."
+        recommandations: "Créer une courte vidéo de 2 minutes sur l'enregistrement des sorties de cartons physiques.",
       }),
       false,
-      "2026-08-22 17:15:00"
+      "2026-08-22 17:15:00",
     ]
   );
 
@@ -86,11 +91,13 @@ async function seedRapports() {
         incidentsBloquants: 0,
         snapshotsWormGeneres: 7,
         testPraConformite: "100% OK",
-        misesEnProduction: "Mise en ligne de la protection anti-brute-force et du renforcement des en-têtes HTTP de sécurité.",
-        prioritesTechniques: "Surveillance continue de la télémétrie et optimisation des index PostgreSQL pour le fonds ancien 1995-2025."
+        misesEnProduction:
+          "Mise en ligne de la protection anti-brute-force et du renforcement des en-têtes HTTP de sécurité.",
+        prioritesTechniques:
+          "Surveillance continue de la télémétrie et optimisation des index PostgreSQL pour le fonds ancien 1995-2025.",
       }),
       false,
-      "2026-08-22 15:45:00"
+      "2026-08-22 15:45:00",
     ]
   );
 

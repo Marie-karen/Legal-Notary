@@ -139,7 +139,7 @@ async function verifierPrerequisSignature(dossierId, utilisateur) {
   try {
     dossier = await dossiersService.obtenirDossierPourUtilisateur(
       dossierId,
-      utilisateur || { role: "notaire", id: "0000" },
+      utilisateur || { role: "notaire", id: "0000" }
     );
   } catch {
     dossier = null;
@@ -157,18 +157,13 @@ async function verifierPrerequisSignature(dossierId, utilisateur) {
     }
 
     // Vérification de la taxe / provision
-    if (
-      dossier.taxePayee ||
-      dossier.statutTaxe === "payee" ||
-      dossier.provisionRecue
-    ) {
+    if (dossier.taxePayee || dossier.statutTaxe === "payee" || dossier.provisionRecue) {
       provisionReglee = true;
     } else {
       alertes.push({
         type: "provision_non_reglee",
         gravite: "haute",
-        message:
-          "La provision / taxe prévisionnelle n'est pas encore enregistrée comme réglée.",
+        message: "La provision / taxe prévisionnelle n'est pas encore enregistrée comme réglée.",
       });
     }
 
@@ -176,15 +171,13 @@ async function verifierPrerequisSignature(dossierId, utilisateur) {
       alertes.push({
         type: "projet_non_redige",
         gravite: "moyenne",
-        message:
-          "Le projet d'acte est encore en phase initiale de collecte ou rédaction.",
+        message: "Le projet d'acte est encore en phase initiale de collecte ou rédaction.",
       });
     }
   }
 
   return {
-    pretPourSignature:
-      alertes.filter((a) => a.gravite === "haute").length === 0,
+    pretPourSignature: alertes.filter((a) => a.gravite === "haute").length === 0,
     projetValide,
     provisionReglee,
     piecesKycConformes,
@@ -198,10 +191,7 @@ async function verifierPrerequisSignature(dossierId, utilisateur) {
 
 async function listerEvenements(filtres = {}, utilisateur = {}) {
   await assurerTables();
-  const etudeId =
-    utilisateur.etudeId ||
-    filtres.etudeId ||
-    "a0000000-0000-0000-0000-000000000001";
+  const etudeId = utilisateur.etudeId || filtres.etudeId || "a0000000-0000-0000-0000-000000000001";
 
   if (tablesInitialisees) {
     try {
@@ -234,13 +224,9 @@ async function listerEvenements(filtres = {}, utilisateur = {}) {
   }
 
   // Repli mémoire
-  let evts = Array.from(memoireEvenements.values()).filter(
-    (e) => e.etudeId === etudeId,
-  );
+  let evts = Array.from(memoireEvenements.values()).filter((e) => e.etudeId === etudeId);
   if (filtres.notaireId && filtres.notaireId !== "all") {
-    evts = evts.filter(
-      (e) => !e.notaireId || e.notaireId === filtres.notaireId,
-    );
+    evts = evts.filter((e) => !e.notaireId || e.notaireId === filtres.notaireId);
   }
   if (filtres.debut) {
     const dDebut = new Date(filtres.debut).getTime();
@@ -261,10 +247,7 @@ async function creerEvenement(donnees, utilisateur) {
   // Vérification automatique des prérequis si signature d'acte
   let prerequis = null;
   if (donnees.typeRdv === "signature_acte" && donnees.dossierId) {
-    prerequis = await verifierPrerequisSignature(
-      donnees.dossierId,
-      utilisateur,
-    );
+    prerequis = await verifierPrerequisSignature(donnees.dossierId, utilisateur);
   }
 
   const evt = {
@@ -273,9 +256,7 @@ async function creerEvenement(donnees, utilisateur) {
     notaire_id: donnees.notaireId || utilisateur.id,
     notaire_nom: donnees.notaireNom || "Maître Notaire",
     cree_par_id: utilisateur.id || crypto.randomUUID(),
-    cree_par_nom: utilisateur.prenom
-      ? utilisateur.prenom + " " + utilisateur.nom
-      : "Assistante",
+    cree_par_nom: utilisateur.prenom ? utilisateur.prenom + " " + utilisateur.nom : "Assistante",
     dossier_id: donnees.dossierId || null,
     numero_dossier: donnees.numeroDossier || null,
     client_nom: donnees.clientNom || "",
@@ -328,7 +309,7 @@ async function creerEvenement(donnees, utilisateur) {
           evt.rappel_email,
           evt.created_at,
           evt.updated_at,
-        ],
+        ]
       );
     } catch {
       // fallback
@@ -352,10 +333,7 @@ async function mettreAJourEvenement(id, modifications, utilisateur) {
         ? ancien.prerequisStatut
         : null;
   if (modifications.typeRdv === "signature_acte" && modifications.dossierId) {
-    prerequis = await verifierPrerequisSignature(
-      modifications.dossierId,
-      utilisateur,
-    );
+    prerequis = await verifierPrerequisSignature(modifications.dossierId, utilisateur);
   }
 
   if (tablesInitialisees) {
@@ -376,22 +354,16 @@ async function mettreAJourEvenement(id, modifications, utilisateur) {
       `,
         [
           modifications.titre || null,
-          modifications.description !== undefined
-            ? modifications.description
-            : null,
+          modifications.description !== undefined ? modifications.description : null,
           modifications.typeRdv || null,
           modifications.salle || null,
-          modifications.dateDebut
-            ? new Date(modifications.dateDebut).toISOString()
-            : null,
-          modifications.dateFin
-            ? new Date(modifications.dateFin).toISOString()
-            : null,
+          modifications.dateDebut ? new Date(modifications.dateDebut).toISOString() : null,
+          modifications.dateFin ? new Date(modifications.dateFin).toISOString() : null,
           modifications.statut || null,
           prerequis ? JSON.stringify(prerequis) : null,
           dateMaj,
           id,
-        ],
+        ]
       );
     } catch {}
   }
@@ -429,10 +401,7 @@ async function supprimerEvenement(id) {
 
 async function listerTaches(filtres = {}, utilisateur = {}) {
   await assurerTables();
-  const etudeId =
-    utilisateur.etudeId ||
-    filtres.etudeId ||
-    "a0000000-0000-0000-0000-000000000001";
+  const etudeId = utilisateur.etudeId || filtres.etudeId || "a0000000-0000-0000-0000-000000000001";
   const utilisateurId = filtres.assigneAId || utilisateur.id;
 
   if (tablesInitialisees) {
@@ -457,16 +426,13 @@ async function listerTaches(filtres = {}, utilisateur = {}) {
         pIdx++;
       }
 
-      query +=
-        " ORDER BY CASE WHEN statut = 'a_faire' THEN 0 ELSE 1 END, echeance ASC NULLS LAST, created_at DESC";
+      query += " ORDER BY CASE WHEN statut = 'a_faire' THEN 0 ELSE 1 END, echeance ASC NULLS LAST, created_at DESC";
       const { rows } = await pool.query(query, params);
       return rows.map(camelTache);
     } catch {}
   }
 
-  let list = Array.from(memoireTaches.values()).filter(
-    (t) => t.etudeId === etudeId,
-  );
+  let list = Array.from(memoireTaches.values()).filter((t) => t.etudeId === etudeId);
   if (utilisateurId && utilisateurId !== "all") {
     list = list.filter((t) => t.assigneAId === utilisateurId);
   }
@@ -480,10 +446,7 @@ async function listerTaches(filtres = {}, utilisateur = {}) {
   return list.sort((a, b) => {
     if (a.statut === "a_faire" && b.statut !== "a_faire") return -1;
     if (a.statut !== "a_faire" && b.statut === "a_faire") return 1;
-    return (
-      new Date(a.echeance || 9999999999999) -
-      new Date(b.echeance || 9999999999999)
-    );
+    return new Date(a.echeance || 9999999999999) - new Date(b.echeance || 9999999999999);
   });
 }
 
@@ -497,19 +460,14 @@ async function creerTache(donnees, utilisateur) {
     etude_id: etudeId,
     assigne_a_id: donnees.assigneAId || utilisateur.id || crypto.randomUUID(),
     assigne_a_nom:
-      donnees.assigneANom ||
-      (utilisateur.prenom
-        ? utilisateur.prenom + " " + utilisateur.nom
-        : "Collaborateur"),
+      donnees.assigneANom || (utilisateur.prenom ? utilisateur.prenom + " " + utilisateur.nom : "Collaborateur"),
     cree_par_id: utilisateur.id || crypto.randomUUID(),
     dossier_id: donnees.dossierId || null,
     numero_dossier: donnees.numeroDossier || null,
     titre: donnees.titre || "Nouvelle tâche",
     description: donnees.description || "",
     priorite: donnees.priorite || "normale",
-    echeance: donnees.echeance
-      ? new Date(donnees.echeance).toISOString()
-      : null,
+    echeance: donnees.echeance ? new Date(donnees.echeance).toISOString() : null,
     statut: donnees.statut || "a_faire",
     source: donnees.source || "manuel",
     etape_dossier: donnees.etapeDossier || null,
@@ -544,7 +502,7 @@ async function creerTache(donnees, utilisateur) {
           t.etape_dossier,
           t.complete_le,
           t.created_at,
-        ],
+        ]
       );
     } catch {}
   }
@@ -575,7 +533,7 @@ async function basculerTache(id) {
         SET statut = $1, complete_le = $2
         WHERE id = $3
       `,
-        [nouveauStatut, completeLe, id],
+        [nouveauStatut, completeLe, id]
       );
     } catch {}
   }
@@ -605,34 +563,10 @@ async function supprimerTache(id) {
 // Initialisation de quelques données de démonstration réalistes
 (async function initDemo() {
   const now = new Date();
-  const journeeCourante = new Date(
-    now.getFullYear(),
-    now.getMonth(),
-    now.getDate(),
-    9,
-    0,
-  ).toISOString();
-  const fin1 = new Date(
-    now.getFullYear(),
-    now.getMonth(),
-    now.getDate(),
-    10,
-    0,
-  ).toISOString();
-  const rdv2Debut = new Date(
-    now.getFullYear(),
-    now.getMonth(),
-    now.getDate(),
-    11,
-    30,
-  ).toISOString();
-  const rdv2Fin = new Date(
-    now.getFullYear(),
-    now.getMonth(),
-    now.getDate(),
-    12,
-    30,
-  ).toISOString();
+  const journeeCourante = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 9, 0).toISOString();
+  const fin1 = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 10, 0).toISOString();
+  const rdv2Debut = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 11, 30).toISOString();
+  const rdv2Fin = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 30).toISOString();
 
   creerEvenement(
     {
@@ -645,10 +579,9 @@ async function supprimerTache(id) {
       salle: "Grande Salle des Actes",
       dateDebut: journeeCourante,
       dateFin: fin1,
-      description:
-        "Lecture de l'acte authentique et recueil des signatures électroniques / manuscrites.",
+      description: "Lecture de l'acte authentique et recueil des signatures électroniques / manuscrites.",
     },
-    { id: "notaire-01", nom: "Notaire Titulaire", role: "notaire" },
+    { id: "notaire-01", nom: "Notaire Titulaire", role: "notaire" }
   ).catch(() => {});
 
   creerEvenement(
@@ -662,24 +595,22 @@ async function supprimerTache(id) {
       salle: "Bureau du Notaire",
       dateDebut: rdv2Debut,
       dateFin: rdv2Fin,
-      description:
-        "Collecte des actes de naissance, certificat de décès et inventaire du patrimoine.",
+      description: "Collecte des actes de naissance, certificat de décès et inventaire du patrimoine.",
     },
-    { id: "notaire-01", nom: "Notaire Titulaire", role: "notaire" },
+    { id: "notaire-01", nom: "Notaire Titulaire", role: "notaire" }
   ).catch(() => {});
 
   // Tâches de démo
   creerTache(
     {
       id: "tache-demo-01",
-      titre:
-        "Vérifier le virement de provision (15 000 000 F CFA) pour le dossier Vente KOUASSI",
+      titre: "Vérifier le virement de provision (15 000 000 F CFA) pour le dossier Vente KOUASSI",
       numeroDossier: "2024-VTE-0042",
       priorite: "haute",
       echeance: new Date(Date.now() + 3600000 * 4).toISOString(),
       source: "dossier_auto",
     },
-    { id: "notaire-01", nom: "Maître Notaire" },
+    { id: "notaire-01", nom: "Maître Notaire" }
   ).catch(() => {});
 
   creerTache(
@@ -691,7 +622,7 @@ async function supprimerTache(id) {
       echeance: new Date(Date.now() + 86400000).toISOString(),
       source: "manuel",
     },
-    { id: "notaire-01", nom: "Maître Notaire" },
+    { id: "notaire-01", nom: "Maître Notaire" }
   ).catch(() => {});
 })();
 
