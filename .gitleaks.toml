@@ -4,19 +4,13 @@ title = "Configuration Gitleaks — Legal Notary"
 useDefault = true
 
 [[rules]]
-id = "cle-secours-jwt-auth-service"
-description = "Clé secrète de secours écrite en dur dans auth.service.js (Section 15 bis & S04)"
-regex = '''16cbed43fe9ca83aa64e0d0dcc9adcba7a69eaabfe07f68acece208de51d3782'''
+id = "generic-fallback-secret-hex"
+description = "Chaîne hexadécimale de 32 caractères ou plus utilisée comme valeur de repli d'un secret (Section 15 bis & S04)"
+regex = '''(?i)(?:JWT_SECRET|CLE_CHIFFREMENT|SECRET_KEY|SECRET)\s*(?:=|\|\|)\s*['\"][a-f0-9]{32,}['\"]'''
 keywords = [
-    "16cbed43fe9ca83aa64e0d0dcc9adcba7a69eaabfe07f68acece208de51d3782",
     "JWT_SECRET",
+    "CLE_CHIFFREMENT",
+    "SECRET_KEY",
+    "SECRET",
 ]
-
-[[rules]]
-id = "cle-chiffrement-notifs-hardcoded"
-description = "Clé de chiffrement des notifications écrite en dur"
-regex = '''4f8b9e1a2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f'''
-keywords = [
-    "4f8b9e1a2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f",
-    "CLE_CHIFFREMENT_NOTIFS",
-]
+entropy = 3.0

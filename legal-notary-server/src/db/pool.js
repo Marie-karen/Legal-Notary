@@ -60,8 +60,7 @@ const poolConfig = {
 // Résolution de la chaîne de connexion
 let connectionStringCible = "";
 if (isTestEnv) {
-  connectionStringCible =
-    process.env.TEST_DATABASE_URL || process.env.DATABASE_URL || "postgresql://localhost:5432/legal_notary_test";
+  connectionStringCible = process.env.TEST_DATABASE_URL || "postgresql://localhost:5432/legal_notary_test";
 
   // SÉCURITÉ STRICTE (Règle 2) : les tests refusent catégoriquement de s'exécuter
   // si l'adresse de la base ne contient pas "localhost" ou "127.0.0.1".
