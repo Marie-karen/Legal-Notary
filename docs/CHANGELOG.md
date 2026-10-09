@@ -36,3 +36,25 @@ Format conforme à [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
     - Validation du rejet 401 en l'absence de jeton sur chaque routeur.
     - Validation de la réponse 200 pour le rôle `superadmin` sur les routes de lecture.
     - Contrôle de la structure et de la non-divulgation de secrets dans les journaux de refus 403.
+
+### Sécurité & Contrôle d'accès — Correctif S03 (9 octobre 2026)
+- **Validation stricte des rôles d'étude et interdiction d'escalade (S03)** :
+  - Définition de la liste fermée `ROLES_ETUDE` dans `src/rbac/roles.js` regroupant les 7 rôles d'office autorisés (`notaire`, `premier_clerc`, `clerc_redacteur`, `clerc_formaliste`, `comptable_taxateur`, `assistante`, `archiviste`).
+  - `POST /api/equipe` et `PATCH /api/equipe/:id` : rejet immédiat (HTTP 400) de tout rôle non autorisé (notamment `superadmin` ou rôles éditeur).
+  - Obligation du rôle à la création : aucun rôle par défaut toléré (rejet 400 "Rôle obligatoire.").
+- **Hiérarchie d'équipe et interdiction d'auto-promotion** :
+  - Un premier clerc ne peut ni créer ni promouvoir un collaborateur aux rôles de notaire ou premier clerc (HTTP 403).
+  - Un premier clerc ne peut ni modifier ni désactiver un notaire ou un premier clerc (HTTP 403).
+  - Interdiction stricte pour quiconque de modifier son propre rôle (HTTP 403) ou de désactiver son propre compte (HTTP 403).
+- **Sanctuarisation du dernier notaire actif** :
+  - Interdiction de rétrograder ou de désactiver le dernier notaire actif d'une étude (HTTP 403 "Impossible de rétrograder/désactiver le dernier notaire actif de l'étude.").
+- **Élimination de l'écrasement de comptes et gestion 409 Conflict** :
+  - Suppression de `ON CONFLICT (email) DO UPDATE` dans `auth.service.js#creerUtilisateur`.
+  - Tentative de création avec un email déjà existant interceptée en amont et au niveau de la contrainte PostgreSQL 23505 (`utilisateurs_email_key`) avec réponse HTTP 409 Conflict sans écraser ni altérer les données de la victime.
+- **Liste fermée des champs modifiables et étanchéité d'étude** :
+  - `PATCH /api/equipe/:id` : seuls les champs légitimes (`nomComplet`, `telephone`, `dateEmbauche`, `typeContrat`, `salaireNet`, `role`) sont pris en compte. Les champs `etude_id`, `email`, `actif`, `mot_de_passe_hash` sont strictement ignorés.
+  - Cloisonnement d'office : toute tentative de modification ou de désactivation d'un utilisateur d'une autre étude renvoie un statut HTTP 404.
+- **Traçabilité complète dans journal_audit** :
+  - Consignation dans `journal_audit` de chaque création de collaborateur, modification / changement de rôle, et désactivation de compte (auteur, cible, action, horodatage et métadonnées).
+- **Batterie de tests automatisés (S03)** :
+  - Création de `tests/securite_s03_equipe_roles.test.js` (9 suites de tests couvrant 12 exigences de sécurité, 100% passantes).

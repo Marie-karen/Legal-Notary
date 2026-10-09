@@ -172,6 +172,23 @@ function persisterUtilisateursSurDisque() {
   ecrireFichierJson("utilisateurs_persistants.json", tous);
 }
 
+async function compterNotairesActifs(etudeId) {
+  try {
+    let query = "SELECT COUNT(*)::int AS count FROM utilisateurs WHERE role = 'notaire' AND actif = true";
+    const params = [];
+    if (etudeId) {
+      params.push(etudeId);
+      query += ` AND etude_id = $${params.length}`;
+    }
+    const { rows } = await pool.query(query, params);
+    if (rows && rows.length) return Number(rows[0].count);
+  } catch (_) {}
+
+  return Array.from(UTILISATEURS_MEMOIRE.values()).filter(
+    (u) => u.role === "notaire" && u.actif !== false && (!etudeId || u.etude_id === etudeId || u.etudeId === etudeId)
+  ).length;
+}
+
 async function creerUtilisateur(
   { nomComplet, email, motDePasse, role, telephone, dateEmbauche, typeContrat, salaireNet, etudeId, etude_id },
   { avecSalaire = false } = {}
@@ -181,52 +198,63 @@ async function creerUtilisateur(
     err.status = 400;
     throw err;
   }
+  if (!role || typeof role !== "string" || !role.trim()) {
+    const err = new Error("Rôle obligatoire.");
+    err.status = 400;
+    throw err;
+  }
   const emailNorm = (email || "").toLowerCase().trim();
-  const mdpNorm = motDePasse.trim();
+  if (!emailNorm) {
+    const err = new Error("Adresse email obligatoire.");
+    err.status = 400;
+    throw err;
+  }
+
+  const roleNorm = role.trim();
   const eid = etudeId || etude_id || "a0000000-0000-0000-0000-000000000001";
+
+  // 1. Vérification préalable d'unicité de l'email : erreur 409 sans rien modifier (S03)
+  try {
+    const { rows: existants } = await pool.query(
+      "SELECT id, email, etude_id, nom_complet, role FROM utilisateurs WHERE LOWER(TRIM(email)) = $1",
+      [emailNorm]
+    );
+    if (existants && existants.length > 0) {
+      const err = new Error("Cette adresse email est déjà utilisée.");
+      err.status = 409;
+      throw err;
+    }
+  } catch (errDb) {
+    if (errDb.status === 409) throw errDb;
+  }
+
+  // Vérification mémoire
+  if (
+    COMPTES_DEMO_OFFLINE[emailNorm] ||
+    Array.from(UTILISATEURS_MEMOIRE.values()).some((u) => (u.email || "").toLowerCase().trim() === emailNorm)
+  ) {
+    const err = new Error("Cette adresse email est déjà utilisée.");
+    err.status = 409;
+    throw err;
+  }
+
+  const mdpNorm = motDePasse.trim();
   let hash = "hash_demo";
   try {
     hash = await bcrypt.hash(mdpNorm, TOURS_HACHAGE);
   } catch (_) {}
 
-  // Toujours enregistrer immédiatement en mémoire et sur disque pour un accès immédiat (< 0.1ms)
-  const nouvelId = "user-" + crypto.randomUUID().slice(0, 8);
-  const userLocal = {
-    id: nouvelId,
-    nom_complet: nomComplet,
-    email: emailNorm,
-    mot_de_passe_hash: hash,
-    role: role || "clerc_redacteur",
-    telephone: telephone || "",
-    date_embauche: dateEmbauche || new Date().toISOString().split("T")[0],
-    type_contrat: typeContrat || "CDI",
-    salaire_net: salaireNet || 750000,
-    actif: true,
-    etude_id: eid,
-  };
-  UTILISATEURS_MEMOIRE.set(nouvelId, userLocal);
-  COMPTES_DEMO_OFFLINE[emailNorm] = userLocal;
-  persisterUtilisateursSurDisque();
-
+  // 2. Insertion en base SANS ON CONFLICT (email) DO UPDATE (S03)
   try {
     const { rows } = await pool.query(
       `INSERT INTO utilisateurs (nom_complet, email, mot_de_passe_hash, role, telephone, date_embauche, type_contrat, salaire_net, etude_id)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-       ON CONFLICT (email) DO UPDATE SET
-         mot_de_passe_hash = EXCLUDED.mot_de_passe_hash,
-         nom_complet = EXCLUDED.nom_complet,
-         role = EXCLUDED.role,
-         telephone = EXCLUDED.telephone,
-         etude_id = EXCLUDED.etude_id,
-         actif = true,
-         archived_at = NULL,
-         updated_at = now()
        RETURNING *`,
       [
         nomComplet,
         emailNorm,
         hash,
-        role,
+        roleNorm,
         telephone || "",
         dateEmbauche || null,
         typeContrat || null,
@@ -236,7 +264,19 @@ async function creerUtilisateur(
     );
     if (rows && rows.length) {
       const u = rows[0];
-      userLocal.id = u.id;
+      const userLocal = {
+        id: u.id,
+        nom_complet: u.nom_complet,
+        email: u.email,
+        mot_de_passe_hash: u.mot_de_passe_hash,
+        role: u.role,
+        telephone: u.telephone || "",
+        date_embauche: u.date_embauche,
+        type_contrat: u.type_contrat,
+        salaire_net: u.salaire_net,
+        actif: true,
+        etude_id: eid,
+      };
       UTILISATEURS_MEMOIRE.set(u.id, userLocal);
       persisterUtilisateursSurDisque();
       notifyControlHub("user.created", {
@@ -249,34 +289,78 @@ async function creerUtilisateur(
       return utilisateurVersCamel(u, { avecSalaire });
     }
   } catch (errDb) {
+    if (errDb.code === "23505" || (errDb.message && errDb.message.includes("utilisateurs_email_key"))) {
+      const err = new Error("Cette adresse email est déjà utilisée.");
+      err.status = 409;
+      throw err;
+    }
+    if (errDb.status === 409) throw errDb;
     console.warn("[AuthService] Repli mémoire création utilisateur :", errDb.message);
   }
 
+  const nouvelId = "user-" + crypto.randomUUID().slice(0, 8);
+  const userLocal = {
+    id: nouvelId,
+    nom_complet: nomComplet,
+    email: emailNorm,
+    mot_de_passe_hash: hash,
+    role: roleNorm,
+    telephone: telephone || "",
+    date_embauche: dateEmbauche || new Date().toISOString().split("T")[0],
+    type_contrat: typeContrat || "CDI",
+    salaire_net: salaireNet || 750000,
+    actif: true,
+    etude_id: eid,
+  };
+  UTILISATEURS_MEMOIRE.set(nouvelId, userLocal);
+  persisterUtilisateursSurDisque();
   return utilisateurVersCamel(userLocal, { avecSalaire });
 }
 
-async function modifierUtilisateur(id, champs, { avecSalaire = false } = {}) {
+async function modifierUtilisateur(id, champs, { avecSalaire = false, etudeId } = {}) {
   try {
-    const { rows: actuels } = await pool.query("SELECT * FROM utilisateurs WHERE id = $1", [id]);
-    if (actuels && actuels.length) {
-      const a = actuels[0];
-      const { rows } = await pool.query(
-        `UPDATE utilisateurs SET
-           nom_complet = $1, telephone = $2, date_embauche = $3, type_contrat = $4, salaire_net = $5, updated_at = now()
-         WHERE id = $6 RETURNING *`,
-        [
-          champs.nomComplet ?? a.nom_complet,
-          champs.telephone ?? a.telephone,
-          champs.dateEmbauche ?? a.date_embauche,
-          champs.typeContrat ?? a.type_contrat,
-          champs.salaireNet ?? a.salaire_net,
-          id,
-        ]
-      );
-      if (rows && rows.length) {
+    let sqlVerif = "SELECT * FROM utilisateurs WHERE id = $1";
+    const paramsVerif = [id];
+    if (etudeId) {
+      paramsVerif.push(etudeId);
+      sqlVerif += " AND etude_id = $2";
+    }
+    const { rows: actuels } = await pool.query(sqlVerif, paramsVerif);
+    if (!actuels || !actuels.length) {
+      return null;
+    }
+    const a = actuels[0];
+
+    const { rows } = await pool.query(
+      `UPDATE utilisateurs SET
+         nom_complet = $1, telephone = $2, date_embauche = $3, type_contrat = $4, salaire_net = $5, role = $6, updated_at = now()
+       WHERE id = $7 AND etude_id = $8 RETURNING *`,
+      [
+        champs.nomComplet ?? a.nom_complet,
+        champs.telephone ?? a.telephone,
+        champs.dateEmbauche ?? a.date_embauche,
+        champs.typeContrat ?? a.type_contrat,
+        champs.salaireNet ?? a.salaire_net,
+        champs.role ?? a.role,
+        id,
+        a.etude_id,
+      ]
+    );
+    if (rows && rows.length) {
+      const u = rows[0];
+      const mem = UTILISATEURS_MEMOIRE.get(id);
+      if (mem) {
+        Object.assign(mem, {
+          nom_complet: u.nom_complet,
+          telephone: u.telephone,
+          date_embauche: u.date_embauche,
+          type_contrat: u.type_contrat,
+          salaire_net: u.salaire_net,
+          role: u.role,
+        });
         persisterUtilisateursSurDisque();
-        return utilisateurVersCamel(rows[0], { avecSalaire });
       }
+      return utilisateurVersCamel(u, { avecSalaire });
     }
   } catch (errDb) {
     console.warn("[AuthService] Repli mémoire modification utilisateur :", errDb.message);
@@ -285,11 +369,15 @@ async function modifierUtilisateur(id, champs, { avecSalaire = false } = {}) {
   // Mutation mémoire
   const existant = UTILISATEURS_MEMOIRE.get(id);
   if (existant) {
+    if (etudeId && existant.etude_id !== etudeId && existant.etudeId !== etudeId) {
+      return null;
+    }
     if (champs.nomComplet) existant.nom_complet = champs.nomComplet;
     if (champs.telephone !== undefined) existant.telephone = champs.telephone;
     if (champs.dateEmbauche) existant.date_embauche = champs.dateEmbauche;
     if (champs.typeContrat) existant.type_contrat = champs.typeContrat;
     if (champs.salaireNet !== undefined) existant.salaire_net = champs.salaireNet;
+    if (champs.role) existant.role = champs.role;
     persisterUtilisateursSurDisque();
     return utilisateurVersCamel(existant, { avecSalaire });
   }
@@ -459,13 +547,41 @@ async function listerUtilisateursParEtude(etudeId) {
     .map((l) => utilisateurVersCamel(l, { avecSalaire: true }));
 }
 
-async function desactiverUtilisateur(id) {
+async function desactiverUtilisateur(id, { etudeId } = {}) {
   try {
-    await pool.query("UPDATE utilisateurs SET actif = false, archived_at = now() WHERE id = $1", [id]);
+    let sqlVerif = "SELECT * FROM utilisateurs WHERE id = $1";
+    const paramsVerif = [id];
+    if (etudeId) {
+      paramsVerif.push(etudeId);
+      sqlVerif += " AND etude_id = $2";
+    }
+    const { rows: actuels } = await pool.query(sqlVerif, paramsVerif);
+    if (!actuels || !actuels.length) {
+      return false;
+    }
+
+    await pool.query("UPDATE utilisateurs SET actif = false, archived_at = now() WHERE id = $1 AND etude_id = $2", [
+      id,
+      actuels[0].etude_id,
+    ]);
+    const u = UTILISATEURS_MEMOIRE.get(id);
+    if (u) {
+      u.actif = false;
+      persisterUtilisateursSurDisque();
+    }
+    return true;
   } catch (_) {}
+
   const u = UTILISATEURS_MEMOIRE.get(id);
-  if (u) u.actif = false;
-  persisterUtilisateursSurDisque();
+  if (u) {
+    if (etudeId && u.etude_id !== etudeId && u.etudeId !== etudeId) {
+      return false;
+    }
+    u.actif = false;
+    persisterUtilisateursSurDisque();
+    return true;
+  }
+  return false;
 }
 
 async function supprimerUtilisateursParEtude(etudeId) {
@@ -503,5 +619,6 @@ module.exports = {
   desactiverUtilisateur,
   supprimerUtilisateursParEtude,
   trouverUtilisateurParId,
+  compterNotairesActifs,
   utilisateurVersCamel,
 };

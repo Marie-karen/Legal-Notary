@@ -167,6 +167,19 @@ const ROLES = {
 
 const LISTE_ROLES = Object.values(ROLES);
 
+/**
+ * Liste fermée des 7 rôles officiels d'un office notarial (S03 / Cahier des charges section 2 & 5).
+ */
+const ROLES_ETUDE = [
+  "notaire",
+  "premier_clerc",
+  "clerc_redacteur",
+  "clerc_formaliste",
+  "comptable_taxateur",
+  "assistante",
+  "archiviste",
+];
+
 function aPermission(role, permission) {
   const definition = LISTE_ROLES.find((r) => r.id === role);
   if (!definition) return false; // rôle inconnu => refus (échec fermé)
@@ -202,4 +215,4 @@ function porteeDossiers(role) {
   }
 }
 
-module.exports = { ROLES, LISTE_ROLES, aPermission, porteeDossiers };
+module.exports = { ROLES, LISTE_ROLES, ROLES_ETUDE, aPermission, porteeDossiers };

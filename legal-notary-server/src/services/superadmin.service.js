@@ -473,9 +473,11 @@ async function ajouterCollaborateurEtude(etudeId, donnees) {
     err.status = 400;
     throw err;
   }
+  const role = donnees.role || "clerc_redacteur";
   const u = await authService.creerUtilisateur(
     {
       ...donnees,
+      role,
       motDePasse: mdp.trim(),
       etudeId,
     },

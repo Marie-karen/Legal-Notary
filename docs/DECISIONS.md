@@ -106,6 +106,41 @@ Décisions arrêtées :
 4. **Journalisation structurée des refus (403)** : Chaque rejet pour rôle non autorisé émet un log JSON structuré (`ACCES_REFUSE_ROLE`) consignant l'identifiant utilisateur, son rôle, la méthode, la route et l'horodatage, à l'exclusion stricte de tout secret, jeton ou corps de requête.
 5. **Couverture de tests automatisés** : Création de `tests/securite_s02_superadmin_role.test.js` (7 tests) validant par découverte dynamique le rejet 403 des 7 rôles d'étude sur l'intégralité des routes concernées, le rejet 401 en l'absence de jeton, la réponse 200 pour le rôle `superadmin`, et la conformité des journaux de sécurité.
 
+## Décision S03 — Escalade de rôle et écrasement de comptes (9 octobre 2026)
+
+**Date** : 9 octobre 2026 · **Branche** : `securite-1` · **Réf. audit** : Section 3 (S03) & Cahier des charges (Section 3 bis, Exigence 5)
+
+### Contexte et Décision
+L'audit de sécurité approfondi a révélé des vulnérabilités critiques dans la gestion d'équipe et des utilisateurs (`src/api/equipe.routes.js`, `src/services/auth.service.js`) :
+1. N'importe quel rôle pouvait être injecté lors de la création d'un collaborateur (notamment `"superadmin"`), permettant une escalade de privilèges SaaS depuis un office.
+2. Un premier clerc pouvait s'auto-promouvoir ou créer un notaire / premier clerc.
+3. Un utilisateur pouvait modifier son propre rôle ou injecter un `etude_id` arbitraire pour transférer un compte vers un autre office.
+4. L'instruction `INSERT INTO utilisateurs ... ON CONFLICT (email) DO UPDATE` écrasait aveuglément les comptes existants (y compris d'autres études), modifiant le mot de passe, l'office et le rôle sans vérification.
+5. `PATCH /:id` et `DELETE /:id` ne contrôlaient pas l'appartenance de la cible à l'office de l'appelant, autorisant des modifications trans-études.
+6. Il était possible de rétrograder ou désactiver le dernier notaire actif d'une étude, risquant de bloquer l'office.
+
+Décisions arrêtées :
+1. **Validation stricte sur liste fermée des 7 rôles d'étude** :
+   - Définition et export de `ROLES_ETUDE` dans `src/rbac/roles.js` (`notaire`, `premier_clerc`, `clerc_redacteur`, `clerc_formaliste`, `comptable_taxateur`, `assistante`, `archiviste`).
+   - Refus systématique (HTTP 400) de tout autre rôle (ex. `superadmin`, rôles techniques, rôles inconnus).
+   - Aucun rôle par défaut : un rôle absent ou vide renvoie systématiquement une erreur 400 ("Rôle obligatoire.").
+2. **Hiérarchie stricte des privilèges d'étude** :
+   - Un `premier_clerc` ne peut ni créer ni promouvoir un collaborateur aux rôles de `notaire` ou `premier_clerc` (HTTP 403).
+   - Un `premier_clerc` ne peut pas modifier ni désactiver un compte ayant le rôle de `notaire` ou `premier_clerc` (HTTP 403).
+   - Interdiction formelle pour tout collaborateur de modifier son propre rôle (HTTP 403) ou de désactiver son propre compte (HTTP 403).
+3. **Protection du dernier notaire actif** :
+   - Interdiction formelle de rétrograder ou de désactiver le dernier notaire actif d'un office (HTTP 403 avec message clair explicite).
+4. **Suppression de `ON CONFLICT DO UPDATE` et garantie d'unicité d'email** :
+   - Suppression définitive de `ON CONFLICT (email) DO UPDATE` dans `auth.service.js#creerUtilisateur`.
+   - Contrôle d'unicité préalable et capture de la contrainte PostgreSQL `utilisateurs_email_key` (code d'erreur 23505) renvoyant un statut HTTP 409 Conflict sans altérer le compte existant.
+5. **Cloisonnement multi-tenant strict (Isolation d'étude)** :
+   - `modifierUtilisateur` et `desactiverUtilisateur` vérifient que l'utilisateur ciblé appartient bien à l'office (`etude_id`) de l'appelant. Si la cible n'appartient pas à l'étude ou n'existe pas, renvoie HTTP 404 (sans fuite d'existence).
+   - `PATCH /:id` applique une liste fermée de champs modifiables (`nomComplet`, `nom`, `prenom`, `telephone`, `dateEmbauche`, `typeContrat`, `salaireNet` sous condition de permission, `role` sous contrôle hiérarchique). Tout champ sensible injecté (`etude_id`, `email`, `actif`, `mot_de_passe_hash`, etc.) est strictement ignoré.
+6. **Journalisation d'audit complète** :
+   - Consignation systématique dans `journal_audit` de chaque création d'utilisateur, changement de rôle et désactivation de compte avec l'identifiant de l'auteur, l'action, l'horodatage et les métadonnées associées.
+7. **Batterie de tests automatisés (S03)** :
+   - `tests/securite_s03_equipe_roles.test.js` valide 12 exigences couvrant l'ensemble des règles et la non-régression de la console super-administrateur.
+
 
 
 
