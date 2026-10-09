@@ -239,6 +239,9 @@ async function autoMigrerSchema() {
           observations TEXT,
           created_at TIMESTAMPTZ NOT NULL DEFAULT now()
         );
+
+        -- Audit générique : ligne_id en text pour supporter tous les identifiants d'entités
+        ALTER TABLE journal_audit ALTER COLUMN ligne_id TYPE text;
       `);
       console.log("[PostgreSQL] Schéma auto-migré et colonnes synchronisées avec succès.");
     } finally {

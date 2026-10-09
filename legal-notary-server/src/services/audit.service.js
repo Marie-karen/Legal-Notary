@@ -14,9 +14,8 @@ const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12
 
 async function consigner(tableCible, ligneId, action, utilisateurId, details) {
   // Règle de sécurité : un événement ne doit JAMAIS être enregistré sans
-  // l'identifiant de son auteur ou de sa cible. Si l'un des identifiants est
-  // manquant ou n'a pas un format UUID valide pour PostgreSQL, l'action échoue
-  // explicitement plutôt que d'insérer une valeur vide (null).
+  // l'identifiant de son auteur ou de sa cible. L'action échoue explicitement
+  // plutôt que d'insérer une valeur vide (null).
   if (!utilisateurId || !UUID_REGEX.test(String(utilisateurId))) {
     const err = new Error(
       `Identifiant auteur invalide ou manquant (${utilisateurId}) pour la journalisation d'audit de l'action ${action} sur ${tableCible}.`
@@ -26,7 +25,12 @@ async function consigner(tableCible, ligneId, action, utilisateurId, details) {
     throw err;
   }
 
-  if (!ligneId || !UUID_REGEX.test(String(ligneId))) {
+  if (
+    ligneId === undefined ||
+    ligneId === null ||
+    (typeof ligneId !== "string" && typeof ligneId !== "number") ||
+    String(ligneId).trim() === ""
+  ) {
     const err = new Error(
       `Identifiant cible invalide ou manquant (${ligneId}) pour la journalisation d'audit de l'action ${action} sur ${tableCible}.`
     );
@@ -34,6 +38,8 @@ async function consigner(tableCible, ligneId, action, utilisateurId, details) {
     err.status = 500;
     throw err;
   }
+
+  const ligneIdTexte = String(ligneId).trim();
 
   // `details` est une colonne jsonb. node-postgres JSON.stringify les
   // objets simples automatiquement, mais sérialise un TABLEAU JS comme un
@@ -45,7 +51,7 @@ async function consigner(tableCible, ligneId, action, utilisateurId, details) {
 
   await pool.query(
     "INSERT INTO journal_audit (table_cible, ligne_id, action, utilisateur_id, details) VALUES ($1, $2, $3, $4, $5)",
-    [tableCible, ligneId, action, utilisateurId, detailsJson]
+    [tableCible, ligneIdTexte, action, utilisateurId, detailsJson]
   );
 }
 

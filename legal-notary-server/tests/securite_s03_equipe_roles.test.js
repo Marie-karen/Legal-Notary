@@ -33,6 +33,9 @@ const equipeRoutes = require("../src/api/equipe.routes");
 const superadminService = require("../src/services/superadmin.service");
 const authService = require("../src/services/auth.service");
 const auditService = require("../src/services/audit.service");
+const parametresRoutes = require("../src/api/parametres.routes");
+const parametresNotificationsRoutes = require("../src/api/parametres-notifications.routes");
+const referentielRoutes = require("../src/api/referentiel.routes");
 
 const JWT_SECRET = process.env.JWT_SECRET || "16cbed43fe9ca83aa64e0d0dcc9adcba7a69eaabfe07f68acece208de51d3782";
 
@@ -54,6 +57,9 @@ function creerAppTest() {
   app.use(express.json());
   app.use("/api", authentifier);
   app.use("/api/equipe", equipeRoutes);
+  app.use("/api/parametres", parametresRoutes);
+  app.use("/api/parametres-notifications", parametresNotificationsRoutes);
+  app.use("/api/referentiel", referentielRoutes);
   return app;
 }
 
@@ -594,7 +600,7 @@ test("S03 — 13. Audit fail-secure : refus formel d'enregistrer un événement 
   // Auteur invalide (non UUID ou vide) -> échec immédiat
   await assert.rejects(
     async () => {
-      await auditService.consigner("utilisateurs", validUuid, "creation", "auteur-non-uuid", {});
+      await auditService.consigner("utilisateurs", "cible-valide", "creation", "auteur-non-uuid", {});
     },
     (err) => {
       assert.equal(err.code, "AUDIT_AUTEUR_INVALIDE");
@@ -602,14 +608,225 @@ test("S03 — 13. Audit fail-secure : refus formel d'enregistrer un événement 
     }
   );
 
-  // Cible invalide (non UUID ou vide) -> échec immédiat
+  // Cible invalide (vide / null) -> échec immédiat
   await assert.rejects(
     async () => {
-      await auditService.consigner("utilisateurs", "cible-non-uuid", "creation", validUuid, {});
+      await auditService.consigner("utilisateurs", "", "creation", validUuid, {});
     },
     (err) => {
       assert.equal(err.code, "AUDIT_CIBLE_INVALIDE");
       return true;
     }
   );
+  await assert.rejects(
+    async () => {
+      await auditService.consigner("utilisateurs", null, "creation", validUuid, {});
+    },
+    (err) => {
+      assert.equal(err.code, "AUDIT_CIBLE_INVALIDE");
+      return true;
+    }
+  );
+});
+
+test("S03 — 14. Effet audit fail-secure sur le reste de l'application : journalisation réelle de parametres, parametres-notifications et referentiel", async () => {
+  const app = creerAppTest();
+  const server = http.createServer(app);
+  await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
+  const port = server.address().port;
+  const baseUrl = `http://127.0.0.1:${port}`;
+
+  const etudeId = crypto.randomUUID();
+  const notaireId = crypto.randomUUID();
+
+  await pool.query(
+    `INSERT INTO etudes (id, nom_etude, code_etude)
+     VALUES ($1, 'Étude Test Actions Audit', $2)`,
+    [etudeId, `ETD-ACT-${Date.now()}`]
+  );
+  await pool.query(
+    `INSERT INTO utilisateurs (id, nom_complet, email, mot_de_passe_hash, role, etude_id, actif)
+     VALUES ($1, 'Me Notaire Test Audit', $2, 'hash_fake', 'notaire', $3, true)`,
+    [notaireId, `notaire.act.${Date.now()}@etude.ci`, etudeId]
+  );
+
+  const jetonNotaire = genererJeton({
+    id: notaireId,
+    email: `notaire.act.${Date.now()}@etude.ci`,
+    role: "notaire",
+    etudeId,
+  });
+
+  try {
+    // 1. PUT /api/parametres (table: parametres_etude)
+    const resParam = await fetch(`${baseUrl}/api/parametres`, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${jetonNotaire}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ telephone: "+225 27 20 00 11 22", nomEtude: "Étude Test Audit" }),
+    });
+    assert.equal(resParam.status, 200, "Mise à jour paramètres d'étude doit renvoyer 200");
+    const paramMaj = await resParam.json();
+    assert.ok(paramMaj.id, "Paramètres d'étude doivent avoir un ID");
+
+    const { rows: auditParam } = await pool.query(
+      "SELECT * FROM journal_audit WHERE table_cible = 'parametres_etude' AND utilisateur_id = $1 ORDER BY created_at DESC LIMIT 1",
+      [notaireId]
+    );
+    assert.equal(auditParam.length, 1, "La mise à jour des paramètres d'étude doit être journalisée");
+    assert.equal(auditParam[0].ligne_id, String(paramMaj.id));
+
+    // 2. PUT /api/parametres-notifications (table: parametres_notifications)
+    const resNotif = await fetch(`${baseUrl}/api/parametres-notifications`, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${jetonNotaire}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ smsActif: true, pushActif: true }),
+    });
+    assert.equal(resNotif.status, 200, "Mise à jour notifications doit renvoyer 200");
+    const notifMaj = await resNotif.json();
+    assert.ok(notifMaj.id, "Paramètres notifications doivent avoir un ID");
+
+    const { rows: auditNotif } = await pool.query(
+      "SELECT * FROM journal_audit WHERE table_cible = 'parametres_notifications' AND utilisateur_id = $1 ORDER BY created_at DESC LIMIT 1",
+      [notaireId]
+    );
+    assert.equal(auditNotif.length, 1, "La modification des notifications doit être journalisée");
+    assert.equal(auditNotif[0].ligne_id, String(notifMaj.id));
+
+    // 3. POST /api/referentiel/types-actes (table: types_actes)
+    const resActe = await fetch(`${baseUrl}/api/referentiel/types-actes`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${jetonNotaire}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ libelle: `Acte Test Audit ${Date.now()}` }),
+    });
+    assert.equal(resActe.status, 201, "Création type d'acte doit renvoyer 201");
+    const acteCree = await resActe.json();
+    assert.ok(acteCree.id, "Type d'acte doit avoir un ID");
+
+    const { rows: auditActe } = await pool.query(
+      "SELECT * FROM journal_audit WHERE table_cible = 'types_actes' AND ligne_id = $1 AND action = 'creation'",
+      [String(acteCree.id)]
+    );
+    assert.equal(auditActe.length, 1, "La création du type d'acte doit être journalisée");
+    assert.equal(auditActe[0].utilisateur_id, notaireId);
+
+    // 4. POST /api/referentiel/types-actes/:id/taches-standard (table: taches_standard)
+    const resTache = await fetch(`${baseUrl}/api/referentiel/types-actes/${acteCree.id}/taches-standard`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${jetonNotaire}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ libelle: `Tâche Test Audit ${Date.now()}`, dureeJours: 4 }),
+    });
+    assert.equal(resTache.status, 201, "Ajout tâche standard doit renvoyer 201");
+    const tacheCree = await resTache.json();
+    assert.ok(tacheCree.id, "Tâche standard doit avoir un ID");
+
+    const { rows: auditTache } = await pool.query(
+      "SELECT * FROM journal_audit WHERE table_cible = 'taches_standard' AND ligne_id = $1 AND action = 'creation_etape'",
+      [String(tacheCree.id)]
+    );
+    assert.equal(auditTache.length, 1, "La création d'étape/tâche doit être journalisée");
+
+    // 5. PATCH /api/referentiel/taches-standard/:id/duree (table: taches_standard)
+    const resDuree = await fetch(`${baseUrl}/api/referentiel/taches-standard/${tacheCree.id}/duree`, {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${jetonNotaire}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ dureeJours: 7 }),
+    });
+    assert.equal(resDuree.status, 200, "Modification durée tâche doit renvoyer 200");
+
+    const { rows: auditDuree } = await pool.query(
+      "SELECT * FROM journal_audit WHERE table_cible = 'taches_standard' AND ligne_id = $1 AND action = 'modification_duree'",
+      [String(tacheCree.id)]
+    );
+    assert.equal(auditDuree.length, 1, "La modification de durée de tâche doit être journalisée");
+
+    // 6. POST /api/referentiel/baremes (table: baremes_emoluments)
+    const codeBareme = `bar_test_${Date.now()}`;
+    const resBareme = await fetch(`${baseUrl}/api/referentiel/baremes`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${jetonNotaire}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        code: codeBareme,
+        libelle: `Barème Test Audit ${Date.now()}`,
+        tranches: [{ ordre: 1, jusqua: 5000000, taux: 0.05 }],
+      }),
+    });
+    assert.equal(resBareme.status, 201, "Création barème doit renvoyer 201");
+    const baremeCree = await resBareme.json();
+    assert.ok(baremeCree.id, "Barème doit avoir un ID");
+
+    const { rows: auditBareme } = await pool.query(
+      "SELECT * FROM journal_audit WHERE table_cible = 'baremes_emoluments' AND ligne_id = $1 AND action = 'creation'",
+      [String(baremeCree.id)]
+    );
+    assert.equal(auditBareme.length, 1, "La création de barème doit être journalisée");
+
+    // 7. PUT /api/referentiel/baremes/:id (table: baremes_emoluments)
+    const resModBareme = await fetch(`${baseUrl}/api/referentiel/baremes/${baremeCree.id}`, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${jetonNotaire}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ libelle: "Barème Renommé Audit" }),
+    });
+    assert.equal(resModBareme.status, 200, "Modification barème doit renvoyer 200");
+
+    const { rows: auditModBareme } = await pool.query(
+      "SELECT * FROM journal_audit WHERE table_cible = 'baremes_emoluments' AND ligne_id = $1 AND action = 'modification'",
+      [String(baremeCree.id)]
+    );
+    assert.equal(auditModBareme.length, 1, "La modification de barème doit être journalisée");
+
+    // 8. DELETE /api/referentiel/baremes/:id (table: baremes_emoluments)
+    const resDelBareme = await fetch(`${baseUrl}/api/referentiel/baremes/${baremeCree.id}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${jetonNotaire}`,
+      },
+    });
+    assert.equal(resDelBareme.status, 200, "Suppression barème doit renvoyer 200");
+
+    const { rows: auditDelBareme } = await pool.query(
+      "SELECT * FROM journal_audit WHERE table_cible = 'baremes_emoluments' AND ligne_id = $1 AND action = 'suppression'",
+      [String(baremeCree.id)]
+    );
+    assert.equal(auditDelBareme.length, 1, "La suppression de barème doit être journalisée");
+
+    // 9. POST /api/referentiel/types-actes/:id/associer-bareme (table: types_actes)
+    const resAssoc = await fetch(`${baseUrl}/api/referentiel/types-actes/${acteCree.id}/associer-bareme`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${jetonNotaire}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ baremeId: "bareme_vente" }),
+    });
+    assert.equal(resAssoc.status, 200, "Association barème doit renvoyer 200");
+
+    const { rows: auditAssoc } = await pool.query(
+      "SELECT * FROM journal_audit WHERE table_cible = 'types_actes' AND ligne_id = $1 AND action = 'association_bareme'",
+      [String(acteCree.id)]
+    );
+    assert.equal(auditAssoc.length, 1, "L'association de barème doit être journalisée");
+  } finally {
+    server.close();
+  }
 });
