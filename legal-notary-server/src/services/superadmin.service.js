@@ -9,6 +9,7 @@ const authService = require("./auth.service");
 const emailDeploiementService = require("./email-deploiement.service");
 const packsService = require("./packs.service");
 const { lireFichierJson, ecrireFichierJson } = require("./stockage-persistant.service");
+const { ROLES_ETUDE } = require("../rbac/roles");
 
 let ETUDES_MEMOIRE = [];
 
@@ -473,7 +474,17 @@ async function ajouterCollaborateurEtude(etudeId, donnees) {
     err.status = 400;
     throw err;
   }
-  const role = donnees.role || "clerc_redacteur";
+  const role = typeof donnees.role === "string" ? donnees.role.trim() : "";
+  if (!role) {
+    const err = new Error("Rôle obligatoire.");
+    err.status = 400;
+    throw err;
+  }
+  if (!ROLES_ETUDE.includes(role)) {
+    const err = new Error("Rôle invalide pour un collaborateur d'étude.");
+    err.status = 400;
+    throw err;
+  }
   const u = await authService.creerUtilisateur(
     {
       ...donnees,

@@ -32,6 +32,7 @@ const { authentifier } = require("../src/middleware/authentifier");
 const equipeRoutes = require("../src/api/equipe.routes");
 const superadminService = require("../src/services/superadmin.service");
 const authService = require("../src/services/auth.service");
+const auditService = require("../src/services/audit.service");
 
 const JWT_SECRET = process.env.JWT_SECRET || "16cbed43fe9ca83aa64e0d0dcc9adcba7a69eaabfe07f68acece208de51d3782";
 
@@ -447,7 +448,40 @@ test("S03 — 11. Non-régression Console : creerEtude et ajouterCollaborateurEt
 
   assert.ok(etudeCreee.id, "L'étude doit être créée avec succès");
 
-  // Ajout d'un collaborateur via la console
+  // 1. Tentative sans rôle -> 400 "Rôle obligatoire"
+  await assert.rejects(
+    async () => {
+      await superadminService.ajouterCollaborateurEtude(etudeCreee.id, {
+        nomComplet: "Clerc Sans Rôle",
+        email: `sans.role.console.${Date.now()}@etude.ci`,
+        motDePasse: "ClercPassword123!#",
+      });
+    },
+    (err) => {
+      assert.equal(err.status, 400);
+      assert.match(err.message, /rôle obligatoire/i);
+      return true;
+    }
+  );
+
+  // 2. Tentative avec rôle invalide -> 400 "Rôle invalide pour un collaborateur d'étude."
+  await assert.rejects(
+    async () => {
+      await superadminService.ajouterCollaborateurEtude(etudeCreee.id, {
+        nomComplet: "Clerc Superadmin",
+        email: `hacker.console.${Date.now()}@etude.ci`,
+        motDePasse: "ClercPassword123!#",
+        role: "superadmin",
+      });
+    },
+    (err) => {
+      assert.equal(err.status, 400);
+      assert.match(err.message, /rôle invalide/i);
+      return true;
+    }
+  );
+
+  // 3. Ajout légitime avec rôle valide
   const collaborateur = await superadminService.ajouterCollaborateurEtude(etudeCreee.id, {
     nomComplet: "Clerc Déployé Console",
     email: `clerc.console.${Date.now()}@etude.ci`,
@@ -552,4 +586,30 @@ test("S03 — 12. Traçabilité complète dans journal_audit (qui, quoi, quand)"
   } finally {
     server.close();
   }
+});
+
+test("S03 — 13. Audit fail-secure : refus formel d'enregistrer un événement sans identifiant auteur ou cible valide", async () => {
+  const validUuid = crypto.randomUUID();
+
+  // Auteur invalide (non UUID ou vide) -> échec immédiat
+  await assert.rejects(
+    async () => {
+      await auditService.consigner("utilisateurs", validUuid, "creation", "auteur-non-uuid", {});
+    },
+    (err) => {
+      assert.equal(err.code, "AUDIT_AUTEUR_INVALIDE");
+      return true;
+    }
+  );
+
+  // Cible invalide (non UUID ou vide) -> échec immédiat
+  await assert.rejects(
+    async () => {
+      await auditService.consigner("utilisateurs", "cible-non-uuid", "creation", validUuid, {});
+    },
+    (err) => {
+      assert.equal(err.code, "AUDIT_CIBLE_INVALIDE");
+      return true;
+    }
+  );
 });

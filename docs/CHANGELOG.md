@@ -54,7 +54,9 @@ Format conforme à [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 - **Liste fermée des champs modifiables et étanchéité d'étude** :
   - `PATCH /api/equipe/:id` : seuls les champs légitimes (`nomComplet`, `telephone`, `dateEmbauche`, `typeContrat`, `salaireNet`, `role`) sont pris en compte. Les champs `etude_id`, `email`, `actif`, `mot_de_passe_hash` sont strictement ignorés.
   - Cloisonnement d'office : toute tentative de modification ou de désactivation d'un utilisateur d'une autre étude renvoie un statut HTTP 404.
-- **Traçabilité complète dans journal_audit** :
+- **Traçabilité structurée dans journal_audit (fail-secure)** :
   - Consignation dans `journal_audit` de chaque création de collaborateur, modification / changement de rôle, et désactivation de compte (auteur, cible, action, horodatage et métadonnées).
+  - Validation fail-secure stricte des identifiants : refus d'enregistrer si l'identifiant auteur ou cible est manquant ou non-UUID (aucune valeur vide).
+  - *Précision* : le journal d'audit n'est pas immuable actuellement (l'immuabilité et le scellement WORM seront traités en S17).
 - **Batterie de tests automatisés (S03)** :
-  - Création de `tests/securite_s03_equipe_roles.test.js` (9 suites de tests couvrant 12 exigences de sécurité, 100% passantes).
+  - Création de `tests/securite_s03_equipe_roles.test.js` (10 suites de tests couvrant 13 exigences de sécurité, 100% passantes).

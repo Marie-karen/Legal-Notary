@@ -136,10 +136,12 @@ Décisions arrêtées :
 5. **Cloisonnement multi-tenant strict (Isolation d'étude)** :
    - `modifierUtilisateur` et `desactiverUtilisateur` vérifient que l'utilisateur ciblé appartient bien à l'office (`etude_id`) de l'appelant. Si la cible n'appartient pas à l'étude ou n'existe pas, renvoie HTTP 404 (sans fuite d'existence).
    - `PATCH /:id` applique une liste fermée de champs modifiables (`nomComplet`, `nom`, `prenom`, `telephone`, `dateEmbauche`, `typeContrat`, `salaireNet` sous condition de permission, `role` sous contrôle hiérarchique). Tout champ sensible injecté (`etude_id`, `email`, `actif`, `mot_de_passe_hash`, etc.) est strictement ignoré.
-6. **Journalisation d'audit complète** :
+6. **Journalisation d'audit fail-secure** :
    - Consignation systématique dans `journal_audit` de chaque création d'utilisateur, changement de rôle et désactivation de compte avec l'identifiant de l'auteur, l'action, l'horodatage et les métadonnées associées.
+   - Règle fail-secure stricte : un événement d'audit ne peut jamais être enregistré sans identifiant auteur ou cible valide. Si l'un des identifiants est manquant ou non-UUID, l'action échoue immédiatement (aucune insertion avec valeur vide/null tolérée).
+   - *Précision importante* : le journal d'audit n'est **pas immuable** aujourd'hui. L'immuabilité et le scellement cryptographique WORM seront traités lors du correctif **S17** (*Journal d'audit immuable et scellé*).
 7. **Batterie de tests automatisés (S03)** :
-   - `tests/securite_s03_equipe_roles.test.js` valide 12 exigences couvrant l'ensemble des règles et la non-régression de la console super-administrateur.
+   - `tests/securite_s03_equipe_roles.test.js` valide 13 exigences couvrant l'ensemble des règles, l'obligation et validation stricte du rôle dans `ajouterCollaborateurEtude`, le comportement fail-secure de l'audit et la non-régression de la console super-administrateur.
 
 
 
