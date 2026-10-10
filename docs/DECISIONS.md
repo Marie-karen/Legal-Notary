@@ -143,6 +143,39 @@ Décisions arrêtées :
 7. **Batterie de tests automatisés (S03)** :
    - `tests/securite_s03_equipe_roles.test.js` valide 13 exigences couvrant l'ensemble des règles, l'obligation et validation stricte du rôle dans `ajouterCollaborateurEtude`, le comportement fail-secure de l'audit et la non-régression de la console super-administrateur.
 
+## Décision S04 — Clés secrètes de secours et réutilisation de clés (10 octobre 2026)
+
+**Date** : 10 octobre 2026 · **Branche** : `securite-1` · **Réf. audit** : Section 3 (S04) & Cahier des charges (Section 3 bis, Exigence 4 & Section 15 bis)
+
+### Contexte et Décision
+L'audit de sécurité approfondi a révélé des failles critiques dans la gestion des clés secrètes :
+1. Présence de valeurs de secours écrites en dur dans le code pour `JWT_SECRET`, `BACKUP_ENCRYPTION_KEY` et `CLE_CHIFFREMENT_NOTIFS`.
+2. Retombée de la clé de sauvegarde et de la clé de notifications sur la clé JWT, liant dangereusement des domaines cryptographiques distincts.
+3. Absence de validation au démarrage : le serveur pouvait s'exécuter avec des clés par défaut publiques ou de longueur insuffisante.
+
+Décisions arrêtées :
+1. **Suppression définitive des replis et valeurs de secours** :
+   - Suppression complète de toutes les valeurs de secours en dur dans `src/services/auth.service.js`, `src/services/internal-control.service.js`, `src/services/sauvegarde-immuable.service.js`, `src/utils/crypto.js` et `src/services/webhook-dispatcher.service.js`.
+   - Interdiction absolue de retombée d'une clé sur une autre : chaque domaine possède sa propre clé distincte.
+2. **Module de configuration et validation fail-secure au démarrage (`src/config/index.js`)** :
+   - Exigence stricte pour les 4 clés obligatoires : `JWT_SECRET`, `BACKUP_ENCRYPTION_KEY`, `CLE_CHIFFREMENT_NOTIFS`, `CONTROL_HUB_SECRET_KEY`.
+   - Format obligatoire : **exactement 64 caractères hexadécimaux** (32 octets aléatoires générés cryptographiquement). Tout autre format (même long) est formellement refusé.
+   - Rejet immédiat des anciennes clés bannies via la comparaison d'empreintes SHA-256 (aucun secret stocké en clair).
+   - Arrêt immédiat (`process.exit(1)`) au démarrage si une seule clé manque ou est invalide, sans jamais afficher la moindre valeur dans les journaux ou messages d'erreur.
+   - Avertissement de sécurité si le fichier `.env` possède des droits d'accès trop permissifs (mode différent de `600`).
+3. **Procédures et mécanismes de rotation des clés** :
+   - **Sauvegardes WORM** : chaque snapshot enregistre l'identifiant public `keyId` de la clé utilisée. En cas de rotation vers une nouvelle clé active, les anciennes clés restent déclarables dans `BACKUP_ENCRYPTION_KEYS_ARCHIVE` et utilisables en lecture seule pour restaurer les archives historiques.
+   - **Notifications** : mise à disposition du script `scripts/rechiffrer-secrets-notifs.js` pour rechiffrer dans une transaction SQL atomique l'ensemble des identifiants stockés dans `parametres_notifications` de l'ancienne clé vers la nouvelle.
+   - Documentation complète des 4 procédures de rotation dans `docs/CONFIGURATION.md`.
+4. **Script de génération d'installation (`scripts/generer-cles-installation.js`)** :
+   - Génère des clés cryptographiques indépendantes de 32 octets via `crypto.randomBytes(32).toString('hex')`.
+   - Écrit directement dans le fichier `.env` avec application automatique des droits `chmod 600`.
+   - Refuse d'écraser des clés existantes sans l'option `--force`.
+   - N'affiche jamais les valeurs générées, seulement les noms des variables créées.
+5. **Batterie de tests automatisés (S04)** :
+   - `tests/securite_s04_cles_secretes.test.js` valide l'ensemble des cas d'erreur et de succès, l'absence de secret en dur dans `src/`, la rotation des sauvegardes et le rechiffrement des notifications.
+
+
 
 
 

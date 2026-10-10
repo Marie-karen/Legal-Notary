@@ -12,17 +12,30 @@ const path = require("path");
 const crypto = require("crypto");
 const { pool } = require("../db/pool");
 const telemetrieService = require("./telemetrie.service");
+const { config } = require("../config");
 
 const BACKUP_DIR = path.join(__dirname, "..", "..", "uploads", "backups");
 if (!fs.existsSync(BACKUP_DIR)) {
   fs.mkdirSync(BACKUP_DIR, { recursive: true });
 }
 
-// Clé secrète de chiffrement AES-256 dérivée pour les sauvegardes WORM
-const CLE_CHIFFREMENT_SNAPSHOT = crypto
-  .createHash("sha256")
-  .update(process.env.BACKUP_ENCRYPTION_KEY || process.env.JWT_SECRET || "legal_notary_backup_master_key_2026")
-  .digest();
+/**
+ * Calcule l'identifiant public unique de clé (16 caractères hex)
+ */
+function calculerKeyId(cle) {
+  if (!cle || typeof cle !== "string") return null;
+  return crypto.createHash("sha256").update(cle.trim()).digest("hex").slice(0, 16);
+}
+
+/**
+ * Dérive la clé de chiffrement AES-256 (32 octets)
+ */
+function deriverCleAES256(cle) {
+  if (!cle || typeof cle !== "string") {
+    throw new Error("Clé de chiffrement de sauvegarde manquante ou non configurée.");
+  }
+  return crypto.createHash("sha256").update(cle.trim()).digest();
+}
 
 /**
  * Générer un snapshot immuable chiffré AES-256-GCM
@@ -67,17 +80,27 @@ async function genererSnapshotWORM({
 
   const brutJson = Buffer.from(JSON.stringify(payload), "utf8");
 
-  // 2. Calcul de l'empreinte SHA-256 sur les données brutes
+  // 2. Résolution de la clé active et dérivation
+  const cleActive = config.backupEncryptionKey || process.env.BACKUP_ENCRYPTION_KEY;
+  if (!cleActive) {
+    throw new Error("Impossible de générer le snapshot : BACKUP_ENCRYPTION_KEY non configurée.");
+  }
+  const keyId = calculerKeyId(cleActive);
+  const cleDerivee = deriverCleAES256(cleActive);
+
+  // 3. Calcul de l'empreinte SHA-256 sur les données brutes
   const hashSha256 = crypto.createHash("sha256").update(brutJson).digest("hex");
 
-  // 3. Chiffrement AES-256-GCM
+  // 4. Chiffrement AES-256-GCM
   const iv = crypto.randomBytes(12);
-  const cipher = crypto.createCipheriv("aes-256-gcm", CLE_CHIFFREMENT_SNAPSHOT, iv);
+  const cipher = crypto.createCipheriv("aes-256-gcm", cleDerivee, iv);
   const payloadChiffre = Buffer.concat([cipher.update(brutJson), cipher.final()]);
   const authTag = cipher.getAuthTag();
 
   const fichierFinal = {
     entete: "LEGAL_NOTARY_WORM_ENCRYPTED",
+    versionFormat: "2.0.0-WORM-SECURE",
+    keyId,
     algorithme: "AES-256-GCM",
     hashSha256,
     iv: iv.toString("hex"),
@@ -160,7 +183,7 @@ async function listerSnapshots({ etudeId = "a0000000-0000-0000-0000-000000000001
 /**
  * Simuler un Plan de Reprise d'Activité (PRA) pour tester la restauration en temps réel
  */
-async function simulerPlanRepriseActivite({ snapshotId, etudeId }) {
+async function simulerPlanRepriseActivite({ snapshotId, etudeId, cleDechiffrement = null } = {}) {
   const debut = Date.now();
   let nomFichier = snapshotId;
   if (!nomFichier.endsWith(".worm.json")) nomFichier = `${snapshotId}.worm.json`;
@@ -173,12 +196,56 @@ async function simulerPlanRepriseActivite({ snapshotId, etudeId }) {
 
   const donneesFichier = JSON.parse(fs.readFileSync(cheminFichier, "utf8"));
 
-  // 1. Déchiffrement AES-256-GCM en bac à sable
+  // Résolution de la clé de déchiffrement (support de la rotation des clés)
+  const clesCandidates = [];
+  if (cleDechiffrement) clesCandidates.push(cleDechiffrement);
+
+  const cleActive = config.backupEncryptionKey || process.env.BACKUP_ENCRYPTION_KEY;
+  if (cleActive && !clesCandidates.includes(cleActive)) {
+    clesCandidates.push(cleActive);
+  }
+
+  if (process.env.BACKUP_ENCRYPTION_KEYS_ARCHIVE) {
+    const archiveKeys = process.env.BACKUP_ENCRYPTION_KEYS_ARCHIVE.split(",")
+      .map((k) => k.trim())
+      .filter(Boolean);
+    for (const ak of archiveKeys) {
+      if (!clesCandidates.includes(ak)) clesCandidates.push(ak);
+    }
+  }
+
+  const keyIdCible = donneesFichier.keyId;
+  let cleResolue = null;
+
+  if (keyIdCible) {
+    cleResolue = clesCandidates.find((c) => calculerKeyId(c) === keyIdCible);
+  }
+
+  // Fallback si keyId absent ou introuvable : tester chaque candidat
   const iv = Buffer.from(donneesFichier.iv, "hex");
   const authTag = Buffer.from(donneesFichier.authTag, "hex");
   const payloadChiffre = Buffer.from(donneesFichier.payloadChiffreHex, "hex");
 
-  const decipher = crypto.createDecipheriv("aes-256-gcm", CLE_CHIFFREMENT_SNAPSHOT, iv);
+  if (!cleResolue) {
+    for (const c of clesCandidates) {
+      try {
+        const testDecipher = crypto.createDecipheriv("aes-256-gcm", deriverCleAES256(c), iv);
+        testDecipher.setAuthTag(authTag);
+        Buffer.concat([testDecipher.update(payloadChiffre), testDecipher.final()]);
+        cleResolue = c;
+        break;
+      } catch (_) {}
+    }
+  }
+
+  if (!cleResolue) {
+    throw new Error(
+      `Échec d'authentification cryptographique AES-256-GCM : aucune clé disponible ne permet de déchiffrer l'archive (identifiant de clé : ${keyIdCible || "non spécifié"}).`
+    );
+  }
+
+  // Déchiffrement AES-256-GCM
+  const decipher = crypto.createDecipheriv("aes-256-gcm", deriverCleAES256(cleResolue), iv);
   decipher.setAuthTag(authTag);
 
   let payloadClairBuffer;

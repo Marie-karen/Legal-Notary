@@ -15,23 +15,10 @@
  */
 const fs = require("fs");
 const path = require("path");
-const dotenv = require("dotenv");
+const { validerClesSecurite } = require("./config");
 
-const cheminsPossibles = [
-  path.join(process.cwd(), ".env"),
-  path.join(__dirname, "..", ".env"),
-  path.join(__dirname, "..", "..", ".env"),
-  path.join(process.cwd(), "legal-notary-server", ".env"),
-  "/var/www/legal-notary/legal-notary-server/.env",
-  "/var/www/legal-notary/.env",
-];
-for (const chemin of cheminsPossibles) {
-  if (fs.existsSync(chemin)) {
-    dotenv.config({ path: chemin });
-    break;
-  }
-}
-dotenv.config();
+// Validation stricte des clés secrètes au démarrage (Correctif S04 — Section 3 bis & 15 bis)
+validerClesSecurite({ quitterEnCasDErreur: true });
 
 const express = require("express");
 

@@ -12,9 +12,11 @@ const { pool } = require("../src/db/pool");
 const internalControlService = require("../src/services/internal-control.service");
 const { notifyControlHub } = require("../src/services/webhook-dispatcher.service");
 const { exigerCleControlHub } = require("../src/middleware/controlHubAuth.middleware");
+const { config } = require("../src/config");
 
 test("Control Hub — 1. Middleware de sécurité et rejet 401", async (t) => {
-  const secretCorrect = process.env.CONTROL_HUB_SECRET_KEY || "cle_secrete_ultra_securisee";
+  const secretCorrect = config.controlHubSecretKey;
+  assert.ok(secretCorrect, "CONTROL_HUB_SECRET_KEY doit être présent dans .env.test");
 
   // Cas 1 : Aucune clé fournie -> 401
   let statutReponse = null;
@@ -146,7 +148,7 @@ test("Control Hub — 6. Impersonation & Magic Token 60s (genererTokenImpersonat
   assert.ok(impersonation.loginUrl.includes("impersonate_token="));
 
   // Vérification de la signature du JWT
-  const decode = jwt.verify(impersonation.token, process.env.JWT_SECRET);
+  const decode = jwt.verify(impersonation.token, config.jwtSecret);
   assert.equal(decode.id, user.id);
   assert.equal(decode.impersonated, true);
   assert.equal(decode.impersonatedBy, "ControlHub-MasterAdmin");

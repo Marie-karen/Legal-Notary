@@ -7,6 +7,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { pool } = require("../db/pool");
 const { notifyControlHub } = require("./webhook-dispatcher.service");
+const { config } = require("../config");
 
 const TOURS_HACHAGE = 12;
 
@@ -387,13 +388,13 @@ async function genererTokenImpersonation({ userId, email }) {
     impersonatedBy: "ControlHub-MasterAdmin",
   };
 
-  const token = jwt.sign(
-    impersonatePayload,
-    process.env.JWT_SECRET || "16cbed43fe9ca83aa64e0d0dcc9adcba7a69eaabfe07f68acece208de51d3782",
-    {
-      expiresIn: "60s",
-    }
-  );
+  if (!config.jwtSecret) {
+    throw new Error("Configuration invalide : JWT_SECRET non configuré.");
+  }
+
+  const token = jwt.sign(impersonatePayload, config.jwtSecret, {
+    expiresIn: "60s",
+  });
 
   return {
     succes: true,

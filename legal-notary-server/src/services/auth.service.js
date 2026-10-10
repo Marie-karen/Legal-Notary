@@ -8,6 +8,7 @@ const crypto = require("crypto");
 const { pool } = require("../db/pool");
 const { notifyControlHub } = require("./webhook-dispatcher.service");
 const { lireFichierJson, ecrireFichierJson } = require("./stockage-persistant.service");
+const { config } = require("../config");
 
 const TOURS_HACHAGE = 12;
 
@@ -451,13 +452,16 @@ async function connecter(email, motDePasse) {
         }
       }
       if (motDePasseValide) {
+        if (!config.jwtSecret) {
+          throw new Error("Configuration invalide : JWT_SECRET non défini.");
+        }
         const jeton = jwt.sign(
           {
             id: utilisateur.id,
             role: utilisateur.role,
             etudeId: utilisateur.etude_id,
           },
-          process.env.JWT_SECRET || "16cbed43fe9ca83aa64e0d0dcc9adcba7a69eaabfe07f68acece208de51d3782",
+          config.jwtSecret,
           { expiresIn: process.env.JWT_EXPIRATION || "12h" }
         );
         return { jeton, utilisateur: utilisateurVersCamel(utilisateur) };
@@ -481,13 +485,16 @@ async function connecter(email, motDePasse) {
       }
     }
     if (motDePasseValide) {
+      if (!config.jwtSecret) {
+        throw new Error("Configuration invalide : JWT_SECRET non défini.");
+      }
       const jeton = jwt.sign(
         {
           id: compteSecours.id,
           role: compteSecours.role,
           etudeId: compteSecours.etude_id || compteSecours.etudeId,
         },
-        process.env.JWT_SECRET || "16cbed43fe9ca83aa64e0d0dcc9adcba7a69eaabfe07f68acece208de51d3782",
+        config.jwtSecret,
         { expiresIn: process.env.JWT_EXPIRATION || "12h" }
       );
       return { jeton, utilisateur: utilisateurVersCamel(compteSecours) };
@@ -499,10 +506,8 @@ async function connecter(email, motDePasse) {
 
 function verifierJeton(jeton) {
   try {
-    return jwt.verify(
-      jeton,
-      process.env.JWT_SECRET || "16cbed43fe9ca83aa64e0d0dcc9adcba7a69eaabfe07f68acece208de51d3782"
-    );
+    if (!config.jwtSecret) return null;
+    return jwt.verify(jeton, config.jwtSecret);
   } catch (erreur) {
     return null;
   }

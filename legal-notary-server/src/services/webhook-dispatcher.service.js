@@ -14,13 +14,19 @@ const crypto = require("crypto");
  * @param {object} payload - Données associées à l'événement
  * @returns {Promise<{ succes: boolean, statut?: number, erreur?: string }>}
  */
+const { config } = require("../config");
+
 async function notifyControlHub(event, payload = {}) {
   const webhookUrl = process.env.CONTROL_HUB_WEBHOOK_URL;
-  const secretKey = process.env.CONTROL_HUB_SECRET_KEY || "";
+  const secretKey = config.controlHubSecretKey || process.env.CONTROL_HUB_SECRET_KEY;
 
   if (!webhookUrl || !webhookUrl.trim() || webhookUrl.includes("votredomaine.com")) {
     // Webhook non configuré ou valeur d'exemple : on ne tente pas l'envoi
     return { succes: false, erreur: "CONTROL_HUB_WEBHOOK_URL non configuré" };
+  }
+
+  if (!secretKey) {
+    return { succes: false, erreur: "CONTROL_HUB_SECRET_KEY non configuré" };
   }
 
   const timestamp = new Date().toISOString();

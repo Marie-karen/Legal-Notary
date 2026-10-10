@@ -17,7 +17,9 @@
     "lint:pr": "node ../scripts/securite/verifier-eslint-pr.js",
     "format:check": "prettier --check \"src/**/*.js\" \"tests/**/*.js\" \"scripts/**/*.js\"",
     "securite:fichiers": "node ../scripts/securite/verifier-fichiers-interdits.js",
-    "securite:audit": "npm audit --audit-level=high"
+    "securite:audit": "npm audit --audit-level=high",
+    "generer-cles": "node scripts/generer-cles-installation.js",
+    "rechiffrer-notifs": "node scripts/rechiffrer-secrets-notifs.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

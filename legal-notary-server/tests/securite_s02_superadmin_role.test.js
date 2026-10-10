@@ -20,7 +20,12 @@ const express = require("express");
 const jwt = require("jsonwebtoken");
 const { authentifier } = require("../src/middleware/authentifier");
 
-const JWT_SECRET = process.env.JWT_SECRET || "16cbed43fe9ca83aa64e0d0dcc9adcba7a69eaabfe07f68acece208de51d3782";
+const { config } = require("../src/config");
+
+const JWT_SECRET = config.jwtSecret;
+if (!JWT_SECRET) {
+  throw new Error("Variable JWT_SECRET absente de la configuration de test (.env.test).");
+}
 
 function genererJeton(utilisateur) {
   return jwt.sign(

@@ -7,9 +7,10 @@
  */
 
 const crypto = require("crypto");
+const { config } = require("../config");
 
 function exigerCleControlHub(req, res, next) {
-  const secretAttendu = process.env.CONTROL_HUB_SECRET_KEY;
+  const secretAttendu = config.controlHubSecretKey || process.env.CONTROL_HUB_SECRET_KEY;
 
   if (!secretAttendu || !secretAttendu.trim()) {
     console.error(
