@@ -60,3 +60,26 @@ Format conforme à [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
   - *Précision* : le journal d'audit n'est pas immuable actuellement (l'immuabilité et le scellement WORM seront traités en S17).
 - **Batterie de tests automatisés (S03)** :
   - Création de `tests/securite_s03_equipe_roles.test.js` (10 suites de tests couvrant 13 exigences de sécurité, 100% passantes).
+
+### Sécurité & Cryptographie — Correctif S04 (10 octobre 2026)
+- **Suppression intégrale des clés de secours et des retombées (S04)** :
+  - Élimination de toutes les valeurs secrètes écrites en dur dans `auth.service.js`, `internal-control.service.js`, `sauvegarde-immuable.service.js`, `utils/crypto.js` et `webhook-dispatcher.service.js`.
+  - Suppression de toute retombée d'une clé sur une autre (sauvegardes et notifications ne dérivent plus de la clé JWT).
+- **Module de configuration et validation fail-secure au démarrage (`src/config/index.js`)** :
+  - Contrôle obligatoire au démarrage des 4 clés : `JWT_SECRET`, `BACKUP_ENCRYPTION_KEY`, `CLE_CHIFFREMENT_NOTIFS`, `CONTROL_HUB_SECRET_KEY`.
+  - Format strict exigé : **exactement 64 caractères hexadécimaux** (32 octets aléatoires générés cryptographiquement). Tout autre format est refusé.
+  - Rejet de toute réutilisation de clé entre variables et révocation immédiate des anciennes clés bannies via SHA-256 (aucun secret en clair).
+  - Arrêt immédiat (`process.exit(1)`) en cas de configuration invalide, sans jamais afficher la valeur de la clé.
+  - Avertissement au démarrage si le fichier `.env` possède des permissions trop permissives (différentes de `chmod 600`).
+- **Support de la rotation des clés** :
+  - **Sauvegardes WORM** : enregistrement de l'identifiant public `keyId` dans chaque snapshot chiffré AES-256-GCM. Les anciennes clés restent conservables dans `BACKUP_ENCRYPTION_KEYS_ARCHIVE` pour restaurer les archives historiques en lecture seule.
+  - **Notifications** : création du script `scripts/rechiffrer-secrets-notifs.js` pour migrer et rechiffrer dans une transaction SQL atomique les identifiants de `parametres_notifications` de l'ancienne clé vers la nouvelle.
+- **Script de génération d'installation (`scripts/generer-cles-installation.js`)** :
+  - Commande `npm run generer-cles` générant directement les 4 clés dans `.env` avec application des droits `chmod 600`.
+  - Protection contre l'écrasement involontaire sans option `--force` et masquage complet des valeurs.
+- **Documentation et modèles** :
+  - Création de `docs/CONFIGURATION.md` décrivant les variables et les 4 procédures de rotation de clés.
+  - Mise à jour de `.env.example` sans aucune valeur de repli fonctionnelle.
+- **Batterie de tests automatisés (S04)** :
+  - Création de `tests/securite_s04_cles_secretes.test.js` (10 tests automatisés dédiés, 100% passants).
+
